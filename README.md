@@ -1,4 +1,5 @@
-att-hybrid-sdk
+webrtc-sdk
 ==============
 
-AT&amp;T Hybrid (PhoneGap, Titanium, IBM Worklight, appery.io) SDKs
+WebRTC SDK
+
