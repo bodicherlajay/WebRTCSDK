@@ -96,6 +96,7 @@ function init() {
                 });
             }
         };
+        pc.onaddstream = handleRemoteStreamAdded;
     };
 
     //socket = io.connect();
@@ -119,8 +120,7 @@ function init() {
     socket.onopen = function() {
 
     };
-    //socket.on('joined', function(msg){console.log('Room joined: ' + msg); alert('Room joined: ' + msg.room);})
-    //socket.on('full', function(msg) { console.log('Room ' + msg + ' is full.');})
+
     socket.onclose = function(){};
     socket.onmessage = function(e){
         var data = e.data;
@@ -149,23 +149,6 @@ function init() {
         //socket.emit('create or join', room);
     }
 
-   /* socket.on('full', function (room){
-        console.log('Room ' + room + ' is full');
-    });
-
-    socket.on('empty', function (room){
-        isInitiator = true;
-        console.log('Room ' + room + ' is empty');
-    });
-
-    socket.on('join', function (room){
-        console.log('Making request to join room ' + room);
-        console.log('You are the initiator!');
-    });
-
-    socket.on('log', function (array){
-        console.log.apply(console, array);
-    });*/
 
     startLocalVideoStream();
 }
@@ -183,6 +166,12 @@ function startLocalVideoStream(){
         gotStream,
         function (error){trace("GetUserMedia error: " + error)}
     );
+}
+
+function handleRemoteStreamAdded(event) {
+    console.log('Remote stream added.');
+    remoteVideo.src = window.URL.createObjectURL(event.stream);
+    remoteStream = event.stream;
 }
 
 function createAnswer(offerSDP){
