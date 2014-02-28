@@ -122,6 +122,10 @@ function init() {
     };
 
     socket.onclose = function(){};
+    socket.on('joined', function(){
+        console.log("a new client has joined the room");
+    });
+
     socket.onmessage = function(e){
         var data = e.data;
         console.log("Message from server: " + e.data);
