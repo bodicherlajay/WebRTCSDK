@@ -47,7 +47,7 @@ function gotStream(stream){
 function start(){
     console.log("Requesting local stream");
     startbutton.disabled = true;
-    navigator.getUserMedia({audio: true, video: true},
+    navigator.getUserMedia({audio: false, video: true},
         gotStream,
     function (error){trace("GetUserMedia error: " + error())}
     );
