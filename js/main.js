@@ -12,7 +12,7 @@ var remoteStream;
 var turnReady;
 var socket;
 var pc_config = {'iceServers': [{'url': 'stun:stun.l.google.com:19302'}]};
-var room;
+var room = 'def';
 
 var isChrome = !!navigator.webkitGetUserMedia;
 
