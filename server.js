@@ -1,13 +1,15 @@
 /**
  * Created by Rakesh Malik on 2/25/14.
  */
+
+var port = process.env.PORT || 2013
 var static = require('node-static');
 var http = require('http');
 var https = require('https');
 var file = new(static.Server)();
 var app = http.createServer(function (req, res) {
     file.serve(req, res);
-}).listen(80);
+}).listen(port);
 
 var io = require('socket.io').listen(app);
 
