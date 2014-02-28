@@ -38,10 +38,12 @@ io.sockets.on('connection', function (socket){
 
         if (numClients === 0){
             socket.join(room);
+            console.log("Room: " + room + " created.");
             socket.emit('created', room);
         } else if (numClients === 1) {
             io.sockets.in(room).emit('join', room);
             socket.join(room);
+            console.log("Client joined room.");
             socket.emit('joined', {joined: room});
         } else { // max two clients
             socket.emit('full', room);
