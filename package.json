@@ -1,0 +1,29 @@
+{
+  "name": "RTCPeer",
+  "version": "0.0.0",
+  "description": "RTC Peer communications prototype",
+  "main": "server.js",
+  "dependencies": {
+    "node-static": "~0.7.3",
+    "socket.io": "^0.9.16"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tamerlin/RTCPeer.git"
+  },
+  "keywords": [
+    "webrtc",
+    "peer"
+  ],
+  "author": "Rakesh Malik",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tamerlin/RTCPeer/issues"
+  },
+  "homepage": "https://github.com/Tamerlin/RTCPeer"
+}
