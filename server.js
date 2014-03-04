@@ -1,60 +1,34 @@
 /**
- * Created by Rakesh Malik on 2/25/14.
+ * Created by Rakesh Malik on 3/2/2014.
  */
 
-var port = process.env.PORT || 2013
-var static = require('node-static');
-var http = require('http');
-var https = require('https');
-var file = new(static.Server)();
-var app = http.createServer(function (req, res) {
-    file.serve(req, res);
-}).listen(port);
+require('newrelic');
+var express = require('express');
+var app = express();
+var port = process.env.PORT || 8080;
+var mongoose = require('mongoose');
+var passport = require('passport');
+var flash = require('connect-flash');
+var configDB = require('./js/config/database.js');
 
-var io = require('socket.io').listen(app);
+mongoose.connect(configDB.url);
 
-io.sockets.on('connection', function (socket){
+require('./js/config/passport.js')(passport);
 
-    // convenience function to log server messages on the client
-    function log(){
-        var array = [">>> Message from client: "];
-        for (var i = 0; i < arguments.length; i++) {
-            array.push(arguments[i]);
-        }
-        socket.emit('log', array);
-    }
+app.configure(function () {
+    app.use(express.logger('dev'));
+    app.use(express.cookieParser());
+    app.use(express.bodyParser());
 
-    socket.on('login', function () {
-        socket.emit('success', {token: 'token'});
-    });
+    app.set('view engine', 'ejs');
 
-    socket.on('message', function (message) {
-        log('Got message:', message);
-        // for a real app, would be room only (not broadcast)
-        socket.broadcast.emit('message', message);
-    });
+    app.use(express.session({secret: 'ilovescotchscotchyscotchscotch'}));
+    app.use(passport.initialize());
+    app.use(passport.session());
+    app.use(flash());
+})
 
-    socket.on('create or join', function (room) {
-        var numClients = io.sockets.clients(room).length;
+require('./routes.js')(app, passport);
 
-        log('Room ' + room + ' has ' + numClients + ' client(s)');
-        log('Request to create or join room ' + room);
-
-        if (numClients === 0){
-            socket.join(room);
-            console.log("Room: " + room + " created.");
-            socket.emit('created', room);
-        } else if (numClients === 1) {
-            io.sockets.in(room).emit('join', room);
-            socket.join(room);
-            console.log("Client joined room.");
-            socket.emit('joined', {joined: room});
-        } else { // max two clients
-            socket.emit('full', room);
-        }
-        socket.emit('emit(): client ' + socket.id + ' joined room ' + room);
-        socket.broadcast.emit('broadcast(): client ' + socket.id + ' joined room ' + room);
-
-    });
-
-});
+app.listen(port);
+console.log('Server listening on port: ' + port);

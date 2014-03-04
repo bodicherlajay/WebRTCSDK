@@ -1,5 +1,0 @@
-webrtc-sdk
-==============
-
-WebRTC SDK
-
