@@ -1,5 +1,6 @@
-// Karma configuration
-// Generated on Thu Mar 06 2014 15:14:24 GMT-0800 (Pacific Standard Time)
+// Jenkins Karma configuration
+// Coppied from karma.config.js 
+// Tune and maintain as needed... -GW
 
 module.exports = function(config) {
   config.set({
