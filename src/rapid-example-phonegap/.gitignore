@@ -1,0 +1,20 @@
+lib-cov
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+pids
+logs
+results
+
+# Commented out on purpose, to show explicitly 
+# that the requirejs library is necesary for the 
+# build process of the final JS module.
+# node_modules 
+
+# ATT Specific
+builds

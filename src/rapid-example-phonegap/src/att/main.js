@@ -507,502 +507,123 @@ define(function(require, exports, module) {
 		oAuthCode = newCode;
 	};
 	
-	if(has('SMS')) {
-		ATT.addDefinition('SMS', new RESTfulDefinition({
-			appendUrl: '/sms/v3/messaging',
-			headerConfig: { 'Accept': false },
-			methods: {
-				'sendSMS': {
-					appendUrl: '/outbox',
-					method: 'POST',
-					headerConfig: { 'Content-Type': true }
-				},
-				'getSMSDeliveryStatus': {
-					appendUrl: '/outbox/:smsId',
-					method: 'GET'
-				},
-				'getSMS': {
-					appendUrl: '/inbox/:registrationId',
-					method: 'GET'
-				}
-			}
-		}));
-	}
 	
-	if(has('MMS')) {
-		ATT.addDefinition('MMS', new RESTfulDefinition({
-			appendUrl: '/mms/v3/messaging/outbox',
-			headerConfig: { 'Accept': false },
-			methods: {
-				'sendMMS': {
-					method: 'POST',
-					headerConfig: { 'Content-Type': true },
-					useBridge: true
-				},
-				'getMMSDeliveryStatus': {
-					method: 'GET',
-					appendUrl: '/:mmsId'
-				}
-			}
-		}));
-	}
-	
-	
-	if(has('PAYMENT')) {
-		(function() {
-			var paymentQSConfig = {
-				'Signature'           : true,
-				'SignedPaymentDetail' : true,
-				'clientid'			  : { backup: function() { return appKey; }, required: true }
-			};
-			
-			function newInteraction(formattedParams, params, successCB, failCB) {
-				return formattedParams.url + '?' + formattedParams.query;
-			}
-			
-			ATT.addDefinition('Payment', new RESTfulDefinition({
-				appendUrl: '/rest/3/Commerce/Payment',
-				methods: {
-					'newSubscription': {
-						appendUrl: '/Subscriptions',
-						method: 'GET',
-						tokenType: ATT.TokenType.NONE,
-						executor: newInteraction,
-						queryStringConfig: paymentQSConfig
-					},
-					'getSubscriptionStatus': {
-						appendUrl: '/Subscriptions/:idType/:id',
-						method: 'GET',
-						headerConfig: { 'Accept': false }
-					},
-					'getSubscriptionDetails': {
-						appendUrl: '/Subscriptions/:merchantSubscriptionId/Detail/:consumerId',
-						method: 'GET',
-						headerConfig: { 'Accept': false }
-					},
-					'newTransaction': {
-						appendUrl: '/Transactions',
-						method: 'GET',
-						tokenType: ATT.TokenType.NONE,
-						executor: newInteraction,
-						queryStringConfig: paymentQSConfig
-					},
-					'getTransactionStatus': {
-						method: 'GET',
-						headerConfig: { 'Accept': false },
-						appendUrl: '/Transactions/:idType/:id'
-					},
-					'refundTransaction': {
-						appendUrl: '/Transactions/:transactionId',
-						method: 'PUT',
-						headerConfig: {
-							'Content-Type': true,
-							'Accept': false
-						},
-						queryStringConfig: {
-							'Action': true
-						}
-					},
-					'getNotification': {
-						appendUrl: '/Notifications/:notificationId',
-						method: 'GET',
-						headerConfig: { 'Accept': false }
-					},
-					'acknowledgeNotification': {
-						appendUrl: '/Notifications/:notificationId',
-						method: 'PUT',
-						headerConfig: { 'Accept': false }
-					}
-				}
-			}));
-		})();
-	}
-	
-	// IMMN - This is IMMNv1
-	if(has('IMMN')) {
-		ATT.addDefinition('IMMN', new RESTfulDefinition({
-			appendUrl: '/rest/1/MyMessages',
-			headerConfig: { 'Accept': false },
-			methods: {
-				'sendMessage': {
-					method: 'POST',
-					headerConfig: {
-						'Content-Type': true
-					},
-					tokenType: ATT.TokenType.USER,
-					useBridge: true
-				},
-				'getMessageHeaders': {
-					method: 'GET',
-					tokenType: ATT.TokenType.USER,
-					queryStringConfig: {
-						HeaderCount: true,
-						IndexCursor: false
-					}
-				},
-				'getMessageContent': {
-					method: 'GET',
-					tokenType: ATT.TokenType.USER,
-					appendUrl: '/:messageId/:partNumber?'
-				}
-			}
-		}));
-	}
-	
-	if(has('IMMNv2')) {
-		ATT.addDefinition('IMMNv2', new RESTfulDefinition({
-			appendUrl: '/myMessages/v2/',
-			headerConfig: { 'Accept': false },
-			methods: {
-				'sendMessage': {
-					method: 'POST',
-					appendUrl:'messages',
-					tokenType: ATT.TokenType.USER,
-					headerConfig: {
-						'Content-Type': true,
-						'Content-Length': false
-					},
-					useBridge: true
-				},
-				'getMessageList': {
-					method: 'GET',
-					appendUrl:'messages',
-					tokenType: ATT.TokenType.USER,
-					queryStringConfig: {
-						messageIds: false,
-						isFavorite: false,
-						limit: {
-							backup : '500',
-							required : true
-						},
-						offset: {
-							backup: '0',
-							required: true
-						},
-						isUnread: false,
-						type: {
-							backup: 'SMS,MMS'
-						},
-						isIncoming: false
-					}
-				},
-				'getMessage': {
-					method: 'GET',
-					appendUrl:'messages/:messageId',
-					tokenType: ATT.TokenType.USER,
-
-				},
-				'getMessageContent': {
-					method: 'GET',
-					appendUrl:'messages/:messageId/parts/:partId',
-					tokenType: ATT.TokenType.USER,
-				},
-				'getMessagesDelta': {
-					method: 'GET',
-					appendUrl:'delta',
-					tokenType: ATT.TokenType.USER,
-					queryStringConfig: {
-						state: true
-					},
-				},
-				'updateMessages': {
-					method: 'PUT',
-					appendUrl:'messages',
-					tokenType: ATT.TokenType.USER,
-					headerConfig: {
-						'Content-Type': true,
-						'Content-Length': { 
-							backup: function(params) {
-								return params.body.length;
-							},
-						},
-
-					}
-				},
-				'updateMessage': {
-					method: 'PUT',
-					appendUrl:'messages/:messageId',
-					tokenType: ATT.TokenType.USER,
-					headerConfig: {
-						'Content-Type': true,
-						'Content-Length': { 
-							backup: function(params) {
-								return params.body.length;
-							}
-						}
-					}
-				},
-				'deleteMessages': {
-					method: 'DELETE',
-					appendUrl:'messages',
-					tokenType: ATT.TokenType.USER,
-					queryStringConfig: {
-						messageIds: true
-					}
-				},
-				'deleteMessage': {
-					method: 'DELETE',
-					appendUrl:'messages/:messageId',
-					tokenType: ATT.TokenType.USER,
-				},
-				'createMessageIndex': {
-					method: 'POST',
-					appendUrl:'messages/index',
-					tokenType: ATT.TokenType.USER
-				},
-				'getMessageIndexInfo': {
-					method: 'GET',
-					appendUrl:'messages/index/info',
-					tokenType: ATT.TokenType.USER
-				},
-				'getNotificationConnectionDetails': {
-					method: 'GET',
-					appendUrl:'notificationConnectionDetails',
-					tokenType: ATT.TokenType.USER,
-					queryStringConfig: {
-						queues: true
-					}
-				},
-			}
-		}));
-	}
-	
-	if(has('CMS')) {
-		ATT.addDefinition('CMS', new RESTfulDefinition({
-			appendUrl: '/rest/1/Sessions',
-			headerConfig: {
-				'Content-Type': true,
-				'Accept': false
-			},
-			methods: {
-				'createSession': {
-					method: 'POST'
-				},
-				'sendSignal': {
-					method: 'POST',
-					appendUrl: '/:cmsId/Signals'
-				}
-			}
-		}));
-	}
-	
-	if(has('ADS')) {
-		ATT.addDefinition('Ads', new RESTfulDefinition({
-			appendUrl: '/rest/1/ads',
-			methods: {
-				'getAds': {
-					method: 'GET',
-					headerConfig: {
-						'Accept': false,
-						'Udid': true
-					},
-					queryStringConfig: {
-						Category: true,
-						Gender: false,
-						ZipCode: false,
-						AreaCode: false,
-						City: false,
-						Country: false,
-						Longitude: false,
-						Latitude: false,
-						MaxHeight: false,
-						MaxWidth: false,
-						MinHeight: false,
-						MinWidth: false,
-						Type: false,
-						Timeout: false,
-						AgeGroup: false,
-						Over18: false,
-						KeyWords: false,
-						IsSizeRequired: false,
-						Premium: false
-					}
-				}
-			}
-		}));
-	}
-	
-	if(has('WAP')) {
-		ATT.addDefinition('WAPPush', new RESTfulDefinition({
-			appendUrl: '/1/messages/outbox/wapPush',
-			methods: {
-				'sendWAPPush': {
-					method: 'POST',
-					headerConfig: {
-						'Content-Type': true,
-						'Accept': false
-					},
-					useBridge: true
-				}
-			}
-		}));
-	}
-	
-	if(has('TL')) {
-		ATT.addDefinition('Location', new RESTfulDefinition({
-			appendUrl: '/2/devices/location',
-			methods: {
-				'getDeviceLocation': {
-					method: 'GET',
-					tokenType: ATT.TokenType.USER,
-					headerConfig: {
-						'Accept': false
-					},
-					queryStringConfig: {
-						'requestedAccuracy'  : false,
-						'Tolerance'			 : false,
-						'acceptableAccuracy' : false
-					}
-				}
-			}
-		}));
-	}
-	
-	function processXArgs(val, params) {
-		return (typeof val === 'string') ? val : QS.stringify(val, ',');
-	}
-	
-	if(has('SPEECH') || has('TTS') || has('STTC')) {
-		ATT.addDefinition('Speech', new RESTfulDefinition({
-			appendUrl: '/speech/v3/'
-		}));
-	}
-	
-	if(has('SPEECH')) {
-		ATT.Speech.addMethod('speechToText', null, {
-			appendUrl: 'speechToText',
-			method: 'POST',
-			headerConfig: {
-				'Accept': false,
-				'Content-Type': true,
-				'Transfer-Encoding': false,
-				'X-SpeechContext': false,
-				'X-SpeechSubContext': false,
-				'Content-Language': false,
-				'Content-Length': false,
-				'X-Arg': {
-					postProcess: processXArgs
-				}
-			},
-			useBridge: true
-		});
-		
-		/*
-		ATT.addDefinition('Speech', new RESTfulDefinition({
-			appendUrl: '/speech/v3/speechToText',
-			methods: {
-				'speechToText': {
-					method: 'POST',
-					headerConfig: {
-						'Accept': false,
-						'Content-Type': true,
-						'Transfer-Encoding': false,
-						'X-SpeechContext': false,
-						'X-SpeechSubContext': false,
-						'Content-Language': false,
-						'Content-Length': false,
-						'X-Arg': {
-							postProcess: processXArgs
-						}
-					},
-					useBridge: true
-				}
-			}
-		}));
-		*/
-	}
-	
-	if(has('TTS')) {
-		ATT.Speech.addMethod('textToSpeech', null, {
-			appendUrl: 'textToSpeech',
-			method: 'POST',
-			headerConfig: {
-				'Accept': false,
-				'Content-Type': true,
-				'Content-Language': false,
-				'Content-Length': { 
-					backup: function(params) {
-						return params.body.length;
-					}
-				},
-				'X-Arg': {
-					postProcess: processXArgs
-				}
-			},
-			useBridge: true
-		});
-		
-		/*
-		ATT.addDefinition('TTS', new RESTfulDefinition({
-			appendUrl: '/speech/v3/textToSpeech',
-			methods: {
-				'textToSpeech': {
-					method: 'POST',
-					headerConfig: {
-						'Accept': false,
-						'Content-Type': true,
-						'Content-Language': false,
-						'Content-Length': { 
-							backup: function(params) {
-								return params.body.length;
-							}
-						},
-						'X-Arg': {
-							postProcess: processXArgs
-						}
-					},
-					useBridge: true
-				}
-			}
-		}));
-		*/
-	}
-	
-	if(has('STTC')) {
-		ATT.Speech.addMethod('speechToTextCustom', null, {
-			appendUrl: 'speechToTextCustom',
-			method: 'POST',
-			headerConfig: {
-				'Accept': false,
-				'Content-Type': 'multipart/x-srgs-audio',
-				'Transfer-Encoding': false,
-				'X-SpeechContext': false,
-				'Content-Language': false,
-				'Content-Length': false,
-				'X-Arg': {
-					postProcess: processXArgs
-				}
-			},
-			useBridge: true
-		});
-	}
-	
-	ATT.addDefinition('Notary', new RESTfulDefinition({
-		appendUrl: '/Security/Notary/Rest/1/SignedPayload',
+	ATT.addDefinition('IMMNv2', new RESTfulDefinition({
+		appendUrl: '/myMessages/v2/',
+		headerConfig: { 'Accept': false },
 		methods: {
-			'signedPayload': {
+			'sendMessage': {
 				method: 'POST',
+				appendUrl:'messages',
+				tokenType: ATT.TokenType.USER,
 				headerConfig: {
-					'Accept': false,
 					'Content-Type': true,
-					'Client_id': true, 
-					'Client_secret': true
+					'Content-Length': false
 				},
-				//TODO: Verify that this logic is correct...
-				executor: function(formattedParams, params) {
-					var token = ATT.accessToken.token;
-					
-					if(token && params.headers['Content-Type'] === constants.header.contentType.JSON
-							&& util.getFromObject(params, 'body.MerchantPaymentRedirectUrl'))
-					{
-						params.body.MerchantPaymentRedirectUrl += "?token=" + token;
-					}
-					
-					return formattedParams;
+				useBridge: true
+			},
+			'getMessageList': {
+				method: 'GET',
+				appendUrl:'messages',
+				tokenType: ATT.TokenType.USER,
+				queryStringConfig: {
+					messageIds: false,
+					isFavorite: false,
+					limit: {
+						backup : '500',
+						required : true
+					},
+					offset: {
+						backup: '0',
+						required: true
+					},
+					isUnread: false,
+					type: {
+						backup: 'SMS,MMS'
+					},
+					isIncoming: false
 				}
-			}
+			},
+			'getMessage': {
+				method: 'GET',
+				appendUrl:'messages/:messageId',
+				tokenType: ATT.TokenType.USER,
+
+			},
+			'getMessageContent': {
+				method: 'GET',
+				appendUrl:'messages/:messageId/parts/:partId',
+				tokenType: ATT.TokenType.USER,
+			},
+			'getMessagesDelta': {
+				method: 'GET',
+				appendUrl:'delta',
+				tokenType: ATT.TokenType.USER,
+				queryStringConfig: {
+					state: true
+				},
+			},
+			'updateMessages': {
+				method: 'PUT',
+				appendUrl:'messages',
+				tokenType: ATT.TokenType.USER,
+				headerConfig: {
+					'Content-Type': true,
+					'Content-Length': { 
+						backup: function(params) {
+							return params.body.length;
+						},
+					},
+
+				}
+			},
+			'updateMessage': {
+				method: 'PUT',
+				appendUrl:'messages/:messageId',
+				tokenType: ATT.TokenType.USER,
+				headerConfig: {
+					'Content-Type': true,
+					'Content-Length': { 
+						backup: function(params) {
+							return params.body.length;
+						}
+					}
+				}
+			},
+			'deleteMessages': {
+				method: 'DELETE',
+				appendUrl:'messages',
+				tokenType: ATT.TokenType.USER,
+				queryStringConfig: {
+					messageIds: true
+				}
+			},
+			'deleteMessage': {
+				method: 'DELETE',
+				appendUrl:'messages/:messageId',
+				tokenType: ATT.TokenType.USER,
+			},
+			'createMessageIndex': {
+				method: 'POST',
+				appendUrl:'messages/index',
+				tokenType: ATT.TokenType.USER
+			},
+			'getMessageIndexInfo': {
+				method: 'GET',
+				appendUrl:'messages/index/info',
+				tokenType: ATT.TokenType.USER
+			},
+			'getNotificationConnectionDetails': {
+				method: 'GET',
+				appendUrl:'notificationConnectionDetails',
+				tokenType: ATT.TokenType.USER,
+				queryStringConfig: {
+					queues: true
+				}
+			},
 		}
 	}));
+	
 	
 	return ATT;
 });
