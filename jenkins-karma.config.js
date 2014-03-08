@@ -24,16 +24,27 @@ module.exports = function(config) {
     exclude: [
       
     ],
-
+   
+    //Preprocessors for code coverage 
+    preprocessors: {
+      'js/**/*.js': 'coverage'
+    },
 
     // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['junit'],
+    reporters: ['junit', 'coverage'],
 
 
     //JUnit report args
     junitReporter: {
       outputFile: 'results.xml'
+    },
+
+    //Coverage report    
+    coverageReporter: {
+      type : 'cobertura',
+      dir : 'coverage/',
+      file: 'coverage.xml'
     },
 
     // web server port
