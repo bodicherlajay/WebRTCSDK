@@ -1,7 +1,7 @@
-var RestClient = (function () {
-  
-  function RestClient (config) {
-    if (typeof config !== 'object') config = {};
+var RESTClient = (function () {
+
+  function RESTClient (config) {
+    config = config || {};
     
     // default ajax configuration
     config.async =        config.async || true;
@@ -22,7 +22,7 @@ var RestClient = (function () {
   }
   
   // public methods
-  RestClient.prototype.ajax = function (config) {
+  RESTClient.prototype.ajax = function (config) {
     var xhr =  new XMLHttpRequest(),
         data = config.data && JSON.stringify(config.data);
 
@@ -47,17 +47,17 @@ var RestClient = (function () {
       xhr.send(data);   
   };
     
-  RestClient.prototype.get = function (config) {
+  RESTClient.prototype.get = function (config) {
     config.method = 'get';
     this.ajax(config);
   };
 
-  RestClient.prototype.post = function (config) {
+  RESTClient.prototype.post = function (config) {
     config.method = 'post';
     var contentType = 'application/json;charset=utf-8';
     config.headers = config.headers || {};  
     config.headers['Content-Type'] = contentType;
     this.ajax(config);
   };
-  return RestClient;
+  return RESTClient;
 })();

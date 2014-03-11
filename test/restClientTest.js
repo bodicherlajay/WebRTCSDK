@@ -9,7 +9,7 @@ describe('Rest Client', function () {
 
 	beforeEach(function() {
 
-		rc = new RestClient();
+		rc = new RESTClient();
 
  		this.xhr = sinon.useFakeXMLHttpRequest();
         requests = this.requests = [];
@@ -39,7 +39,7 @@ describe('Rest Client', function () {
 		this.xhr.restore();
 	});
 
-	it('should create a new RestClient', function () {
+	it('should create a new RESTClient', function () {
 		expect(rc).to.exist;
 		expect(rc.get).to.be.a('function');
 	});
@@ -147,7 +147,7 @@ describe('Rest Client', function () {
 
 	it('should use correct defaults if no config provided', function() {
 		var config = {};
-		var client = new RestClient(config);
+		var client = new RESTClient(config);
 		expect(config.success).to.be.a('function');
 		expect(config.error).to.be.a('function');
 		expect(config.timeout).to.equal(10000);
