@@ -4,15 +4,10 @@ var RestClient = (function () {
     if (typeof config !== 'object') config = {};
     
     // default ajax configuration
-  // config.type =         config.type || 'get';
-  //  config.async =        config.async || true;
-  //   config.headers =      config.headers || [];
-  //   config.params =       config.params || [];
-  //   config.contentType =  config.contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
-  //   config.dataType =     config.dataType || 'json';
-  //   config.timeout =      config.timeout || 10000;
-  //   config.success =      config.success || function () {};     
-  //   config.error =        config.error || function () {};
+    config.async =        config.async || true;
+    config.timeout =      config.timeout || 10000;
+    config.success =      config.success || function () {};     
+    config.error =        config.error || function () {};
   }
   
   // private methods
@@ -22,13 +17,16 @@ var RestClient = (function () {
   }
 
   function error (errorCallback) {
-    errorCallback.call(this, JSON.parse(this.responseText));
+    //errorCallback.call(this, JSON.parse(this.responseText));
+    errorCallback.call(this, this.responseText);
   }
   
   // public methods
   RestClient.prototype.ajax = function (config) {
     var xhr =  new XMLHttpRequest(),
         data = config.data && JSON.stringify(config.data);
+
+      xhr.timeout = config.timeout;
 
       // success callback
       xhr.onload = success.bind(xhr, config.success);
@@ -40,12 +38,12 @@ var RestClient = (function () {
       xhr.open(config.method, config.url, config.async);
  
       // optional headers from config
-       if (Array.isArray(config.headers)) {
-        config.headers.forEach(function (header) {
-          var key = Object.keys(header)[0];
-          xhr.setRequestHeader(key, header[key]);
-        });
-       }
+      for (var key in config.headers) {
+        if (config.headers.hasOwnProperty(key)) {
+          xhr.setRequestHeader(key, config.headers[key]);
+        }
+      }
+
       xhr.send(data);   
   };
     
@@ -56,11 +54,10 @@ var RestClient = (function () {
 
   RestClient.prototype.post = function (config) {
     config.method = 'post';
-    if(!config.headers) {
-      config.headers = [{'Content-Type': 'application/json'}];
-    }
+    var contentType = 'application/json;charset=utf-8';
+    config.headers = config.headers || {};  
+    config.headers['Content-Type'] = contentType;
     this.ajax(config);
   };
-
   return RestClient;
 })();
