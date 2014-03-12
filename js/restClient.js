@@ -17,12 +17,15 @@ var RESTClient = (function () {
   }
 
   function error (errorCallback) {
-    //errorCallback.call(this, JSON.parse(this.responseText));
     errorCallback.call(this, this.responseText);
   }
   
   // public methods
   RESTClient.prototype.ajax = function (config) {
+
+    config.headers = config.headers || {};
+    config.headers['Content-Type'] = config.headers['Content-Type'] || 'application/json';
+
     var xhr =  new XMLHttpRequest(),
         data = config.data && JSON.stringify(config.data);
 
@@ -54,9 +57,13 @@ var RESTClient = (function () {
 
   RESTClient.prototype.post = function (config) {
     config.method = 'post';
-    config.headers = config.headers || {};
-    config.headers['Content-Type'] = config.headers['Content-Type'] || 'application/json;charset=utf-8';
     this.ajax(config);
   };
+
+  RESTClient.prototype.delete = function (config) {
+    config.method = 'delete';
+    this.ajax(config);
+  };
+
   return RESTClient;
 })();

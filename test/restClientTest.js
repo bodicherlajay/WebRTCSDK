@@ -64,6 +64,16 @@ describe('Rest Client', function () {
 		expect(this.requests[0].async).to.equal(config.async);
 	});
 
+	it('should call xhr open correctly for delete', function () {
+		//act
+		rc.delete(config);
+		
+		//assert
+		expect(this.requests[0].url).to.equal(config.url);
+		expect(this.requests[0].method).to.equal('delete');
+		expect(this.requests[0].async).to.equal(config.async);
+	});
+
 	it('should call xhr send with serialized data string', function () {
 		//act
 		rc.post(config);
@@ -100,20 +110,18 @@ describe('Rest Client', function () {
 		sinon.assert.notCalled(successSpy);
 	});
 
-	it('should not set any headers if none specified', function() {
-		//config.headers = null;
-
+	it('should only set Content-Type header if none specified', function() {
 		//act
 		rc.get(config);
-		expect(this.requests[0].requestHeaders).to.eql({});
+		expect(this.requests[0].requestHeaders).to.eql({'Content-Type': 'application/json'});
 	});
 
-	it('should not set any headers if {} specified', function() {
+	it('should only set Content-Type header if {} specified', function() {
 		config.headers = {};
 
 		//act
 		rc.get(config);
-		expect(this.requests[0].requestHeaders).to.eql({});
+		expect(this.requests[0].requestHeaders).to.eql({'Content-Type': 'application/json'});
 	});
 
 	it('should set all headers specified', function() {
