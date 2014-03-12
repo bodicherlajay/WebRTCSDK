@@ -1,24 +1,22 @@
 'use strict'
 var ATT = {};
 
-(function (ATT) {
+(function (app) {
 
-	// api operations namespace: (ATT.WebRTCAPI)
+	// api operations namespace: (app.WebRTCAPI)
 	var apiNamespace = 'WebRTCAPI',
-		apiObject = ATT[apiNamespace] = {};
+		apiObject = app[apiNamespace] = {};
 
 	function init(config) {
-		// Remove all API operations
-		clearAPI();
+		var localConfig = config || {apiConfigs: app.APIConfigs};
+		apiObject = app[apiNamespace] = {};
+		
 
 		// add methods from config
-		config && config.apiConfigs && addOperations(config.apiConfigs);
+		localConfig.apiConfigs && addOperations(localConfig.apiConfigs);
 	}
 
-	// Remove all API operations from ATT namespace.
-	function clearAPI() {
-		apiObject = ATT[apiNamespace] = {};
-	}
+	
 
 	// Add all API operations from config.
 	function addOperations(methodConfigs) {
@@ -62,7 +60,7 @@ var ATT = {};
 	};
 
 	// exposed methods/object
-	ATT.utils = utils;
-	ATT.RESTClient = RESTClient;
-	ATT.init = init;
+	app.utils = utils;
+	app.init = init;
+	app.RESTClient = RESTClient;
 }(ATT || {}))

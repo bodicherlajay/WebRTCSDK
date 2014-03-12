@@ -14,8 +14,11 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'js/**/*.js',
-	  'test/**/*.js'
+      '../js-shared/js/restClient.js',
+      'js/webRTC.js',
+      'js/APIConfigs.js',
+      // 'js/**/*.js',
+      'test/**/*.js'
     ],
 
 

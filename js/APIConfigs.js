@@ -1,13 +1,14 @@
 var ATT = ATT || {};
-(function (ATT) {
+(function (app) {
 
 	var APIConfigs = {
 		// Configuration for the DHS endpoint
 		login: {
 			method: 'post',
-			url: 'http://localhost:3000' // change to the login endpoint on the DHS
+			url: 'http://localhost:8080/user/authenticate', // change to the login endpoint on the DHS
+			headers: {'Accept': 'application/json'}
 		}
 	};
 
-	ATT.APIConfigs = APIConfigs;
+	app.APIConfigs = APIConfigs;
 }(ATT || {}))
