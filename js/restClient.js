@@ -54,9 +54,8 @@ var RESTClient = (function () {
 
   RESTClient.prototype.post = function (config) {
     config.method = 'post';
-    var contentType = 'application/json;charset=utf-8';
-    config.headers = config.headers || {};  
-    config.headers['Content-Type'] = contentType;
+    config.headers = config.headers || {};
+    config.headers['Content-Type'] = config.headers['Content-Type'] || 'application/json;charset=utf-8';
     this.ajax(config);
   };
   return RESTClient;

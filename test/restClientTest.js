@@ -108,7 +108,7 @@ describe('Rest Client', function () {
 		expect(this.requests[0].requestHeaders).to.eql({});
 	});
 
-	it('should not set any headers if [] specified', function() {
+	it('should not set any headers if {} specified', function() {
 		config.headers = {};
 
 		//act
@@ -128,12 +128,12 @@ describe('Rest Client', function () {
 		expect(this.requests[0].requestHeaders['two']).to.equal('twoValue');
 	});
 
-	it('should set content type header for post if not specified', function(){
+	it('should set content type header for post if no header specified', function(){
 		config.headers = null;
 
 		//act
 		rc.post(config);
-		expect(this.requests[0].requestHeaders['Content-Type']).to.equal('application/json;charset=utf-8');
+		expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/json');
 	});
 
 	it('should set content type header for post if not specified and retain existing headers', function(){
@@ -141,8 +141,16 @@ describe('Rest Client', function () {
 
 		//act
 		rc.post(config);
-		expect(this.requests[0].requestHeaders['Content-Type']).to.equal('application/json;charset=utf-8');
+		expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/json');
 		expect(this.requests[0].requestHeaders['a']).to.equal(1);
+	});
+
+	it('should not override Content-Type header if its specified', function(){
+		config.headers = {'Content-Type': 'application/xml'};
+
+		//act
+		rc.post(config);
+		expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/xml');
 	});
 
 	it('should use correct defaults if no config provided', function() {
