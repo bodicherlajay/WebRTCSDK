@@ -28,16 +28,18 @@ describe('Rest Client', function() {
             error: errorSpy,
             async: true
         }
-
     });
 
     afterEach(function() {
-        rc = null;
-        successSpy = null;
-        errorSpy = null;
-        config = null;
         this.xhr.restore();
     });
+
+    it ('should not share config objects', function () {
+        var rc1 = new RESTClient({a:1});
+        var rc2 = new RESTClient({a:2});
+    });
+
+
 
     it('should create a new RESTClient', function() {
         expect(rc).to.exist;
@@ -116,14 +118,6 @@ describe('Rest Client', function() {
         expect(this.requests[0].requestHeaders).to.eql({'Content-Type': 'application/json'});
     });
 
-    it('should only set Content-Type header if {} specified', function() {
-        config.headers = {};
-
-        //act
-        rc.get(config);
-        expect(this.requests[0].requestHeaders).to.eql({'Content-Type': 'application/json'});
-    });
-
     it('should set all headers specified', function() {
 
         config.headers = {'one': 'oneValue',
@@ -136,21 +130,31 @@ describe('Rest Client', function() {
         expect(this.requests[0].requestHeaders['two']).to.equal('twoValue');
     });
 
-    it('should set content type header for post if no header specified', function() {
-        config.headers = null;
-
-        //act
-        rc.post(config);
-        expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/json');
-    });
-
     it('should set content type header for post if not specified and retain existing headers', function() {
         config.headers = {a: 1};
 
         //act
         rc.post(config);
-        expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/json');
         expect(this.requests[0].requestHeaders['a']).to.equal(1);
+        expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/json');
+    });
+
+    it('should set content type header for get if not specified and retain existing headers', function() {
+        config.headers = {a: 1};
+
+        //act
+        rc.get(config);
+        expect(this.requests[0].requestHeaders['a']).to.equal(1);
+        expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/json');
+    });
+
+    it('should set content type header for delete if not specified and retain existing headers', function() {
+        config.headers = {a: 1};
+
+        //act
+        rc.delete(config);
+        expect(this.requests[0].requestHeaders['a']).to.equal(1);
+        expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/json');
     });
 
     it('should not override Content-Type header if its specified', function() {
@@ -162,10 +166,11 @@ describe('Rest Client', function() {
     });
 
     it('should use correct defaults if no config provided', function() {
-        var config = {};
-        var client = new RESTClient(config);
-        expect(config.success).to.be.a('function');
-        expect(config.error).to.be.a('function');
+        
+        var client = new RESTClient({});
+        var config = client.getConfig();
+        expect(config.success).to.be.a('function', 'success callback not set');
+        expect(config.error).to.be.a('function', 'error callback not set');
         expect(config.timeout).to.equal(10000);
         expect(config.async).to.be.true;
     });
@@ -174,8 +179,25 @@ describe('Rest Client', function() {
         config.timeout = 50;
 
         //act
-        rc.ajax(config);
+        rc.get(config);
         expect(this.requests[0].timeout).to.equal(50);
+    });
+
+    it('should not share config (unique instances of RESTClient)', function() {
+        //act
+        var rc1 = new RESTClient({headers: {'Content-Type': 'application/xml'}});
+        var rc2 = new RESTClient();
+
+        rc1.get({url:'url1'});
+        var requests1 = this.requests[0];
+        expect(requests1.url).to.eql('url1');
+        expect(requests1.requestHeaders['Content-Type']).to.contain('application/xml', 'request from rc1 had wrong header');
+
+        rc2.get({url:'url2'});
+        var requests2 = this.requests[1];
+        expect(requests2.url).to.eql('url2');
+        expect(requests2.requestHeaders['Content-Type']).to.contain('application/json', 'request from rc2 had wrong header');
+        
     });
 
 });

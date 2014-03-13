@@ -1,19 +1,19 @@
 var RESTClient = (function() {
 
+    addHttpMethodsToProtype(['get', 'post', 'delete']);
+    
     function RESTClient(config) {
-        config = config || {};
-
+        this.config =  _.extend({}, config || {});
         // default ajax configuration
-        config.async = config.async || true;
-        config.timeout = config.timeout || 10000;
-        config.success = config.success || function() {
-        };
-        config.error = config.error || function() {
-        };
+        this.config.async = this.config.async || true;
+        this.config.timeout = this.config.timeout || 10000;
+        this.config.success = this.config.success || function() {};
+        this.config.error = this.config.error || function() {};
+        this.config.headers = this.config.headers || {};
+        this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
     }
 
     // private methods
-
     function success(successCallback) {
         successCallback.call(this, JSON.parse(this.responseText));
     }
@@ -24,12 +24,8 @@ var RESTClient = (function() {
 
     // public methods
     RESTClient.prototype.ajax = function(config) {
-
-        config.headers = config.headers || {};
-        config.headers['Content-Type'] = config.headers['Content-Type'] || 'application/json';
-
         var xhr = new XMLHttpRequest(),
-                data = config.data && JSON.stringify(config.data);
+            data = config.data && JSON.stringify(config.data);
 
         xhr.timeout = config.timeout;
 
@@ -52,19 +48,18 @@ var RESTClient = (function() {
         xhr.send(data);
     };
 
-    RESTClient.prototype.get = function(config) {
-        config.method = 'get';
-        this.ajax(config);
+    function addHttpMethodsToProtype(methods) {
+        methods.forEach(function (method) {
+            RESTClient.prototype[method] = function(config) {
+                config.method = method;
+                config.headers = _.extend(this.config.headers, config.headers);
+                this.ajax(config);
+            };
+        })
     };
 
-    RESTClient.prototype.post = function(config) {
-        config.method = 'post';
-        this.ajax(config);
-    };
-
-    RESTClient.prototype.delete = function(config) {
-        config.method = 'delete';
-        this.ajax(config);
+    RESTClient.prototype.getConfig = function() {
+        return this.config;
     };
 
     return RESTClient;
