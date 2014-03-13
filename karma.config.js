@@ -14,6 +14,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      'node_modules/underscore/underscore.js',
       'js-shared/js/restClient.js',
       'js/webRTC.js',
       'js/APIConfigs.js',

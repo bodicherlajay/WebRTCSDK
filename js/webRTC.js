@@ -1,3 +1,8 @@
+/**
+	The WebRTC SDK.
+	API Method namespace is set on the apiNamespace variable.
+	
+*/
 'use strict'
 var ATT = {};
 
@@ -15,8 +20,6 @@ var ATT = {};
 		// add methods from config
 		localConfig.apiConfigs && addOperations(localConfig.apiConfigs);
 	}
-
-	
 
 	// Add all API operations from config.
 	function addOperations(methodConfigs) {

@@ -96,26 +96,23 @@ describe('webRTC', function () {
 		});
 
 		it('should use APIConfigs.js if no config passed in', function() {
-
 			ATT.init();
 			expect(ATT.WebRTCAPI.login).is.a('function');
 		});
-	});
-
-	describe('login', function() {
-		it('should call login with username and password data', function() {
-			ATT.init();
-			var authSpy = sinon.spy(ATT.WebRTCAPI,'login'),
-				data = {password: 'password', username: 'username'},
-				expectedErrorCB = function(){},
-				expectedSuccessCB = function(){};
-
-			//act
-			ATT.WebRTCAPI.login(data, expectedSuccessCB, expectedErrorCB);
-			
-			sinon.assert.calledWith(authSpy, data, expectedSuccessCB, expectedErrorCB);
-
-			authSpy.restore();
+		
+		// Add API methods as you add to the APIConfig.js file.
+		[
+			'login', 
+			'logout'
+		].forEach(function(methodName){
+			describe('Function ' + methodName, function () {
+    			it("should exist", function (done) {
+					ATT.init();
+					expect(ATT.WebRTCAPI[methodName]).is.a('function');
+					done();
+    			});
+  			});			
 		});
+
 	});
 });
