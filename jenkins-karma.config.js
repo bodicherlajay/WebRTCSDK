@@ -15,8 +15,9 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      'node_modules/underscore/underscore.js',
       'js/**/*.js',
-	  'test/**/*.js'
+	    'test/**/*.js'
     ],
 
 
