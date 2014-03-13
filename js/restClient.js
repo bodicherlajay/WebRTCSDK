@@ -61,6 +61,5 @@ var RESTClient = (function() {
     RESTClient.prototype.getConfig = function() {
         return this.config;
     };
-
     return RESTClient;
 })();
