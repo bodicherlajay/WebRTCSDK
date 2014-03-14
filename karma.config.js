@@ -14,7 +14,6 @@
 
         // list of files / patterns to load in the browser
         files: [
-          'node_modules/underscore/underscore.js',
           'js/**/*.js',
     	  'test/**/*.js'
         ],
@@ -28,8 +27,17 @@
 
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-        reporters: ['progress'],
+        reporters: ['spec', 'junit', 'coverage'],
 
+        //Preprocessors for code coverage 
+        preprocessors: {
+          'js/**/*.js': 'coverage'
+        },
+
+        //JUnit report args
+        junitReporter: {
+          outputFile: 'results.xml'
+        },
 
         // web server port
         port: 9876,

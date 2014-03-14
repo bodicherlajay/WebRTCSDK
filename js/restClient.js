@@ -3,7 +3,7 @@ var RESTClient = (function() {
     addHttpMethodsToProtype(['get', 'post', 'delete']);
     
     function RESTClient(config) {
-        this.config =  _.extend({}, config || {});
+        this.config =  deepExtend({}, config);
         // default ajax configuration
         this.config.async = this.config.async || true;
         this.config.timeout = this.config.timeout || 10000;
@@ -52,10 +52,23 @@ var RESTClient = (function() {
         methods.forEach(function (method) {
             RESTClient.prototype[method] = function(config) {
                 config.method = method;
-                config.headers = _.extend(this.config.headers, config.headers);
+                config.headers = deepExtend(this.config.headers, config.headers);
                 this.ajax(config);
             };
         })
+    };
+
+    function deepExtend (destination, source) {
+      for (var property in source) {
+        if (source[property] && source[property].constructor &&
+         source[property].constructor === Object) {
+          destination[property] = destination[property] || {};
+          arguments.callee(destination[property], source[property]);
+        } else {
+          destination[property] = source[property];
+        }
+      }
+      return destination;
     };
 
     RESTClient.prototype.getConfig = function() {
