@@ -4,7 +4,7 @@
 	
 */
 'use strict'
-var ATT = {};
+var ATT = ATT || {};
 
 (function (app) {
 
