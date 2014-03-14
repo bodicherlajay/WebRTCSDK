@@ -114,6 +114,16 @@ describe('webRTC', function () {
     			});
   			});			
 		});
-
 	});
+
+	describe('utils', function(){
+		describe('hasWebRTC', function(){
+			it('should return true if navigator.mozGetUserMedia or navigator.webkitGetUserMedia or navigator.getUserMedia is a function',function(){
+				//act
+				var hasWebRTC = ATT.utils.hasWebRTC();
+				expect(hasWebRTC).to.be.true;
+			});
+		});	
+	});
+
 });

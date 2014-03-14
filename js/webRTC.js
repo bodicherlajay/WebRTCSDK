@@ -58,7 +58,10 @@ var ATT = {};
 		*/
 
 		hasWebRTC: function () {
-			return typeof (navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.getUserMedia) === 'function';
+			return (typeof navigator.mozGetUserMedia === 'function'
+			  || typeof navigator.webkitGetUserMedia === 'function'
+			  || typeof navigator.getUserMedia === 'function'
+			 ) ;
 		}
 	};
 
