@@ -14,7 +14,6 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'node_modules/underscore/underscore.js',
       'js-shared/js/restClient.js',
       'js/webRTC.js',
       'js/APIConfigs.js',
@@ -28,11 +27,19 @@ module.exports = function(config) {
       
     ],
 
-
     // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['spec'],
+    reporters: ['spec', 'junit', 'coverage'],
 
+    //Preprocessors for code coverage 
+    preprocessors: {
+      'js/**/*.js': 'coverage'
+    },
+
+    //JUnit report args
+    junitReporter: {
+      outputFile: 'results.xml'
+    },
 
     // web server port
     port: 9876,
