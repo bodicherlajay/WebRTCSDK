@@ -16,6 +16,11 @@ var ATT = ATT || {};
 			method: 'delete',
 			url: 'http://localhost:8080/user/authenticate', // change to the login endpoint on the DHS
 			headers: {'Accept': 'application/json'}
+		},
+		getSession: {
+			method: 'get',
+			url: 'http://localhost:8080/user/session',
+			headers: {'Accept': 'application/json'}
 		}
 	};
 

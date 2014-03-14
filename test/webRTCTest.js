@@ -103,7 +103,8 @@ describe('webRTC', function () {
 		// Add API methods as you add to the APIConfig.js file.
 		[
 			'login', 
-			'logout'
+			'logout',
+			'getSession'
 		].forEach(function(methodName){
 			describe('Function ' + methodName, function () {
     			it("should exist", function (done) {
