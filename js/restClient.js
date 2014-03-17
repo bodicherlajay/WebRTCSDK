@@ -1,7 +1,7 @@
-var RESTClient = (function() {
 
-    addHttpMethodsToProtype(['get', 'post', 'delete']);
-    
+var RESTClient = (function() {
+    "use strict";
+
     function RESTClient(config) {
         this.config =  deepExtend({}, config);
         // default ajax configuration
@@ -48,28 +48,30 @@ var RESTClient = (function() {
         xhr.send(data);
     };
 
-    function addHttpMethodsToProtype(methods) {
+    function addHttpMethodsToPrototype(methods) {
         methods.forEach(function (method) {
             RESTClient.prototype[method] = function(config) {
                 config.method = method;
                 config.headers = deepExtend(this.config.headers, config.headers);
                 this.ajax(config);
             };
-        })
-    };
+        });
+    }
+
+    addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
     function deepExtend (destination, source) {
       for (var property in source) {
         if (source[property] && source[property].constructor &&
          source[property].constructor === Object) {
           destination[property] = destination[property] || {};
-          arguments.callee(destination[property], source[property]);
+          deepExtend(destination[property], source[property]);
         } else {
           destination[property] = source[property];
         }
       }
       return destination;
-    };
+    }
 
     RESTClient.prototype.getConfig = function() {
         return this.config;
