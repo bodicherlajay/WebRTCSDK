@@ -3,11 +3,11 @@
 	API Method namespace is set on the apiNamespace variable.
 	
 */
-'use strict'
+
 var ATT = ATT || {};
 
 (function (app) {
-
+    "use strict";
 	// api operations namespace: (app.WebRTCAPI)
 	var apiNamespace = 'WebRTCAPI',
 		apiObject = app[apiNamespace] = {};
@@ -15,18 +15,21 @@ var ATT = ATT || {};
 	function init(config) {
 		var localConfig = config || {apiConfigs: app.APIConfigs};
 		apiObject = app[apiNamespace] = {};
-		
 
 		// add methods from config
-		localConfig.apiConfigs && addOperations(localConfig.apiConfigs);
+		if (Object.keys(localConfig.apiConfigs).length > 0) {
+            addOperations(localConfig.apiConfigs);
+        }
 	}
 
 	// Add all API operations from config.
 	function addOperations(methodConfigs) {
 		for (var methodName in methodConfigs) {
-			var o = {};
-			o[methodName] = methodConfigs[methodName];
-			addOperation(o);
+            if (methodConfigs.hasOwnProperty(methodName)) {
+                var o = {};
+                o[methodName] = methodConfigs[methodName];
+                addOperation(o);
+            }
 		}	
 	}
 
@@ -48,7 +51,7 @@ var ATT = ATT || {};
 			var restClient = new RESTClient(methodConfig);
 
 			// call the RESTClient
- 			return restClient[methodConfig.method](methodConfig);
+            return restClient[methodConfig.method](methodConfig);
 		};
 	}
 
@@ -58,10 +61,9 @@ var ATT = ATT || {};
 		*/
 
 		hasWebRTC: function () {
-			return (typeof navigator.mozGetUserMedia === 'function'
-			  || typeof navigator.webkitGetUserMedia === 'function'
-			  || typeof navigator.getUserMedia === 'function'
-			 ) ;
+			return typeof navigator.mozGetUserMedia === 'function' ||
+                typeof navigator.webkitGetUserMedia === 'function' ||
+                typeof navigator.getUserMedia === 'function';
 		}
 	};
 
@@ -69,4 +71,4 @@ var ATT = ATT || {};
 	app.utils = utils;
 	app.init = init;
 	app.RESTClient = RESTClient;
-}(ATT || {}))
+}(ATT || {}));

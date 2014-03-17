@@ -25,4 +25,4 @@ var ATT = ATT || {};
 	};
 
 	app.APIConfigs = APIConfigs;
-}(ATT || {}))
+}(ATT || {}));
