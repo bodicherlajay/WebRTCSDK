@@ -1,5 +1,5 @@
 
-var RESTClient = (function() {
+var RESTClient = (function () {
     "use strict";
 
     function RESTClient(config) {
@@ -7,8 +7,8 @@ var RESTClient = (function() {
         // default ajax configuration
         this.config.async = this.config.async || true;
         this.config.timeout = this.config.timeout || 10000;
-        this.config.success = this.config.success || function() {};
-        this.config.error = this.config.error || function() {};
+        this.config.success = this.config.success || function () {};
+        this.config.error = this.config.error || function () {};
         this.config.headers = this.config.headers || {};
         this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
     }
@@ -23,9 +23,10 @@ var RESTClient = (function() {
     }
 
     // public methods
-    RESTClient.prototype.ajax = function(config) {
+    RESTClient.prototype.ajax = function (config) {
         var xhr = new XMLHttpRequest(),
-            data = config.data && JSON.stringify(config.data);
+            data = config.data && JSON.stringify(config.data),
+            header;
 
         xhr.timeout = config.timeout;
 
@@ -39,9 +40,9 @@ var RESTClient = (function() {
         xhr.open(config.method, config.url, config.async);
 
         // optional headers from config
-        for (var key in config.headers) {
-            if (config.headers.hasOwnProperty(key)) {
-                xhr.setRequestHeader(key, config.headers[key]);
+        for (header in config.headers) {
+            if (config.headers.hasOwnProperty(header)) {
+                xhr.setRequestHeader(header, config.headers[header]);
             }
         }
 
@@ -60,21 +61,23 @@ var RESTClient = (function() {
 
     addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
-    function deepExtend (destination, source) {
-      for (var property in source) {
-        if (source[property] && source[property].constructor &&
-         source[property].constructor === Object) {
-          destination[property] = destination[property] || {};
-          deepExtend(destination[property], source[property]);
-        } else {
-          destination[property] = source[property];
+    function deepExtend(destination, source) {
+        var property;
+        for (property in source) {
+            if (source.hasOwnProperty(property)) {
+                if (source[property].constructor && source[property].constructor === Object) {
+                    destination[property] = destination[property] || {};
+                    deepExtend(destination[property], source[property]);
+                } else {
+                    destination[property] = source[property];
+                }
+            }
         }
-      }
-      return destination;
+        return destination;
     }
 
     RESTClient.prototype.getConfig = function() {
         return this.config;
     };
     return RESTClient;
-})();
+}());
