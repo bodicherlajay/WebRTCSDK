@@ -15,10 +15,23 @@ var RESTClient = (function () {
 
     // private methods
     function success(successCallback) {
-        successCallback.call(this, JSON.parse(this.responseText));
+        /*jshint validthis:true */
+        var xhr = this,
+            responseObject = {
+                getJson: function () {
+                    return JSON.parse(xhr.responseText);
+                },
+                getResponseHeader: function (key) {
+                    return xhr.getResponseHeader(key);
+                },
+                responseText: xhr.responseText
+            },
+            responseCopy = deepExtend({}, responseObject);
+        successCallback.call(xhr, responseCopy);
     }
 
     function error(errorCallback) {
+        /*jshint validthis:true */
         errorCallback.call(this, this.responseText);
     }
 

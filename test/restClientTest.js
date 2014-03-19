@@ -91,8 +91,13 @@ describe('Rest Client', function() {
         this.requests[0].respond(200, {"Content-Type": "application/json"}, '{"some":"data"}');
 
         //assert
-        var calledWith = successSpy.getCall(0).args[0];
-        expect(calledWith.some).to.equal('data');
+        //expect(successSpy.calledWith({some:'data'})).to.be.true;
+        
+        var calledWith = successSpy.getCall(0).args[0]; // {some:data}
+        expect(calledWith.getJson).to.be.a('function');
+        expect(calledWith.responseText).to.equal('{"some":"data"}');
+        
+        expect(errorSpy.called).to.be.false;
         sinon.assert.notCalled(errorSpy);
     });
 
