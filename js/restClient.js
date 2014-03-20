@@ -74,16 +74,21 @@ var RESTClient = (function () {
 
     addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
+    /**
+     * Make a deep copy of an object.
+     * Todo: Move this to a util submodule once we figure out where this type of functionality should live.
+     * @param destination
+     * @param source
+     * @returns {*} destination
+     */
     function deepExtend(destination, source) {
         var property;
         for (property in source) {
-            if (source.hasOwnProperty(property)) {
-                if (source[property].constructor && source[property].constructor === Object) {
-                    destination[property] = destination[property] || {};
-                    deepExtend(destination[property], source[property]);
-                } else {
-                    destination[property] = source[property];
-                }
+            if (source.property && source[property].constructor && source[property].constructor === Object) {
+                destination[property] = destination[property] || {};
+                deepExtend(destination[property], source[property]);
+            } else {
+                destination[property] = source[property];
             }
         }
         return destination;
