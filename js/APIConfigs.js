@@ -7,9 +7,9 @@ var ATT = ATT || {};
     'use strict';
 
     var APIConfigs = {
-        login: {
+        authenticate: {
             method: 'post',
-            url: 'http://localhost:8080/user/authenticate',
+            url: 'http://localhost:8080/user/authenticate', // DHS
             headers: {'Content-type': 'application/json','Accept' : 'application/json'}
         },
         logout: {
@@ -17,9 +17,14 @@ var ATT = ATT || {};
             url: 'http://localhost:8080/user/logout',
             headers: {'Content-type': 'application/json','Accept' : 'application/json'}
         },
-        getSession: {
+        getBrowserSession: {
             method: 'get',
             url: 'http://localhost:8080/user/session',
+            headers: {'Content-type': 'application/json','Accept' : 'application/json'}
+        },
+        createWebRTCSession: {
+            method: 'post',
+            url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions',   // BF Emulator
             headers: {'Content-type': 'application/json','Accept' : 'application/json'}
         }
     };
