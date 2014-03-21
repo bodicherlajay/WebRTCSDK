@@ -11,7 +11,7 @@ var ATT = ATT || {};
         DHSResource: 'http://localhost:9000',
         BFResource: 'http://wdev.code-api-att.com:8080/RTC',
         headers: {'Content-type': 'application/json','Accept' : 'application/json'}
-    };       
+    };
 
     var APIConfigs = {
         authenticate: {
