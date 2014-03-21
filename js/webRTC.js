@@ -25,7 +25,10 @@ var ATT = ATT || {};
         }
 	}
 
-	// Add all API operations from config.
+	/**
+	* Add all API operations from config.
+	* @param {Object} methodConfigs The config for each method
+	*/
 	function addOperations(methodConfigs) {
 		for (var methodName in methodConfigs) {
             if (methodConfigs.hasOwnProperty(methodName)) {
@@ -36,7 +39,10 @@ var ATT = ATT || {};
 		}
 	}
 
-	// Add an API method to the ATT namespace
+	/**
+	* Add an API method to the ATT namespace
+	* @param {Object} apiMethodConfig The config for each method
+	*/
 	function addOperation(apiMethodConfig) {
 		var methodName = Object.keys(apiMethodConfig)[0],
 			methodDescription = apiMethodConfig[methodName];
@@ -106,10 +112,11 @@ var ATT = ATT || {};
     }
 
 	var utils = {
+		
 		/**
-			Check if browser has WebRTC capability.
+		* Check if browser has WebRTC capability.
+		* @return {Boolean} 
 		*/
-
 		hasWebRTC: function () {
 			return typeof navigator.mozGetUserMedia === 'function' ||
                 typeof navigator.webkitGetUserMedia === 'function' ||
