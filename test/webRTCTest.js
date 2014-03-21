@@ -118,7 +118,7 @@ describe('webRTC', function () {
             'logout',
             'getBrowserSession',
             'createWebRTCSession',
-            'loginAndCreateWebRTCSession'
+            'getEvents'
         ].forEach(function(methodName){
             describe('Function ' + methodName, function () {
                 it("should exist", function (done) {
