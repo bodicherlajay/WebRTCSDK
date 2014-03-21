@@ -19,6 +19,11 @@ var ATT = ATT || {};
             url: DEFAULTS.DHSResource + '/user/authenticate',
             headers: DEFAULTS.headers
         },
+        getAccessToken: {
+            method: 'get',
+            url: DEFAULTS.DHSResource + '/user/token',
+            headers: DEFAULTS.headers
+        },
         logout: {
             method: 'delete',
             url: DEFAULTS.DHSResource + '/user/logout',
