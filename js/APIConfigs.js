@@ -3,39 +3,45 @@
     All configured methods will be placed in the ATT.WebRTCAPI namespace.
 */
 var ATT = ATT || {};
+
 (function (app) {
     'use strict';
 
-    var dhsResource = 'http://localhost:9000',
-        bfResource = 'http://wdev.code-api-att.com:8080/RTC';
+    var DEFAULTS = {
+        DHSResource: 'http://localhost:9000',
+        BFResource: 'http://wdev.code-api-att.com:8080/RTC',
+        headers: {'Content-type': 'application/json','Accept' : 'application/json'}
+    };       
 
     var APIConfigs = {
         authenticate: {
             method: 'post',
-            url: dhsResource + '/user/authenticate',
-            headers: {'Content-type': 'application/json','Accept' : 'application/json'}
+            url: DEFAULTS.DHSResource + '/user/authenticate',
+            headers: DEFAULTS.headers
         },
         logout: {
             method: 'delete',
-            url: dhsResource + '/user/logout',
-            headers: {'Content-type': 'application/json','Accept' : 'application/json'}
+            url: DEFAULTS.DHSResource + '/user/logout',
+            headers: DEFAULTS.headers
         },
         getBrowserSession: {
             method: 'get',
-            url: dhsResource + '/user/session',
-            headers: {'Content-type': 'application/json','Accept' : 'application/json'}
+            url: DEFAULTS.DHSResource + '/user/session',
+            headers: DEFAULTS.headers
         },
         createWebRTCSession: {
             method: 'post',
-            url: bfResource + '/v1/sessions',
-            headers: {'Content-type': 'application/json','Accept' : 'application/json'}
+            url: DEFAULTS.BFResource + '/v1/sessions',
+            headers: DEFAULTS.headers
         },
         getEvents: {
             method: 'get',
-            url: bfResource + '/v1/sessions/{sessionId}/events',
-            headers: {'Content-type': 'application/json','Accept' : 'application/json'}
+            url: DEFAULTS.BFResource + '/v1/sessions/{sessionId}/events',
+            headers: DEFAULTS.headers
         }
     };
 
+    // place on the ATT.WebRTCAPI namespace.
     app.APIConfigs = APIConfigs;
+
 }(ATT || {}));
