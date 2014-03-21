@@ -32,7 +32,7 @@ module.exports = function(config) {
 
     //Preprocessors for code coverage 
     preprocessors: {
-      'js/**/*.js': 'coverage'
+      //'js/**/*.js': 'coverage'
     },
 
     //JUnit report args

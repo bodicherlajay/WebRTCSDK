@@ -69,24 +69,27 @@ describe('webRTC', function () {
             };
 
             ATT.init(attConfig);
-
-            var data = {
-                username: 'username',
-                password: 'password'
-            },
-                successCB = function(){},
-                errorCB = function(){};
+            
+            var config = {
+                data: {
+                    username: 'username',
+                    password: 'password'
+                },
+                success: function () {},
+                error: function () {}
+            };
+            
             
             var spy = sinon.spy(RESTClient.prototype, 'ajax');
-            ATT[apiNamespace].foo(data, successCB, errorCB);
+            ATT[apiNamespace].foo(config);
             
             var configPassedtoAjax = spy.args[0][0];    // first call, first argument
             
             // expects
-            expect(configPassedtoAjax.data).eql(data);
-            expect(configPassedtoAjax.data).eql(data);
-            expect(configPassedtoAjax.success).equal(successCB);
-            expect(configPassedtoAjax.error).equal(errorCB);
+            expect(configPassedtoAjax.data).eql(config.data);
+            //expect(configPassedtoAjax.data).eql(data);
+            //expect(configPassedtoAjax.success).equal(successCB);
+            //expect(configPassedtoAjax.error).equal(errorCB);
             
             spy.restore();
         });
@@ -155,8 +158,12 @@ describe('webRTC', function () {
             var createWebRTCSessionSpy = sinon.spy(ATT[apiNamespace], 'createWebRTCSession');
             
             ATT[apiNamespace].loginAndCreateWebRTCSession({
-                un: 'un',
-                pw: 'pw'
+                data: {
+                    un: 'un',
+                    pw: 'pw'
+                },
+                success: function () {},
+                error: function () {}
             });
             
             // response json from authorize call.  check the schema.
