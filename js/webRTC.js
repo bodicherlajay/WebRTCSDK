@@ -107,11 +107,15 @@ var ATT = ATT || {};
                             }
                         },
                         headers: {
-                            "Authorization": "Bearer " + data.access_token.access_token,    // check this.
+                            "Authorization": "Bearer " + data.access_token.access_token, 
                             "x-e911Id": e911Id
                         },
                         success: function (responseObject) {
-                            console.log(responseObject.getResponseHeader('location'));
+                            var sessionId = responseObject.getResponseHeader('location').split('/')[4];     
+                            ATT.WebRTC.Session = {
+                                Id: sessionId,
+                                accessToken: data.access_token.access_token
+                            }
                         },
                         error: function () {}
                     };
