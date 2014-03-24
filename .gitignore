@@ -1,5 +1,6 @@
 /nbproject/private/
 /node_modules
 /nbproject
+/.idea
 /coverage
 results.xml
