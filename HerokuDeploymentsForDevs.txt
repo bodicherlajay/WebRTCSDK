@@ -1,0 +1,21 @@
+Heroku Deployments for Node.JS
+
+You will need:
+
+1.) Git 1.7.11 or Higher with subtree support enabled.  To verify this, go to your friendly neighborhood command prompt and type:
+
+git --version
+git subtree
+
+The Git version command should report 1.7.11 or higher, and the subtree command should provide you with help information.  If your Git version is below 1.7.11 or you see "git: 'subtree' is not a git command", please see the JenkinsHerokuMagic.txt file for details on upgrading Git and/or enabling the subtree command.
+
+2.) Install the Heroku tool belt (works fine for Wheezy or Ubuntu 12.04)
+
+3.) Review the the general instructions for setting up a Heroku Node.JS app as shown here: https://devcenter.heroku.com/articles/getting-started-with-nodejs  BUT, keep an eye out for one primary difference:  If your package.json file lives in a subdirectory of your Git project, you need to use the git subtree split with a temporary branch and then deploy the temporary branch like so:
+
+    git subtree split --prefix=some/pathto/fix -b hdeploy
+    git push heroku hdeploy:master
+
+If your git project structure has package.json at the top level, follow the directions as usual and your app should deploy.
+
+
