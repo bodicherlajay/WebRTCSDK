@@ -1,8 +1,8 @@
 /**
-    The WebRTC SDK.
-    API Method namespace is set on the apiNamespace variable.
-
-*/
+  *  The WebRTC SDK.
+  *  API Method namespace is set on the apiNamespace variable.
+  *  @namespace WebRTC
+  */
 
 var ATT = ATT || {};
 
@@ -14,6 +14,7 @@ var ATT = ATT || {};
 
     /**
      * Method to initialize the ATT namespace with API methods defined in APIConfigs.js.
+     * @memberof WebRTC
      * @param config
      */
     function init(config) {
@@ -83,7 +84,7 @@ var ATT = ATT || {};
      * if successfully creates a webrtc session.
      * 
      * Todo:  Handle error conditions!
-     * 
+     * @memberof WebRTC
      * @param {Object} data The required login form data from the UI.
      */
     function loginAndCreateWebRTCSession (data) {
