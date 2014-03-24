@@ -70,24 +70,11 @@ var ATT = ATT || {};
                 }
             }
             
-            //methodConfig.success = success;
-            //methodConfig.error = error;
-            //methodConfig.data = data;
             var restClient = new RESTClient(methodConfig);
 
             // call the RESTClient
             return restClient[methodConfig.method](methodConfig);
         };
-
-//          return function (data, success, error) {
-//          methodConfig.success = success;
-//          methodConfig.error = error;
-//          methodConfig.data = data;
-//          var restClient = new RESTClient(methodConfig);
-//
-//          // call the RESTClient
-//            return restClient[methodConfig.method](methodConfig);
-//      };
     }
     
     /**
