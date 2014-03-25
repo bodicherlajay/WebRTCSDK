@@ -96,7 +96,7 @@ var ATT = ATT || {};
                 var data = responseObject.getJson(),
                 	successCallback = config.success, // success callback for UI
                     e911Id = data.e911,
-                    accessToken = data.accesstoken.access_token,
+                    accessToken = data.access_token.access_token,
 
                     dataForCreateWebRTCSession = {
                         data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
