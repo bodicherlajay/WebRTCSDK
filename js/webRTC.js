@@ -87,10 +87,10 @@ var ATT = ATT || {};
      * @memberof WebRTC
      * @param {Object} data The required login form data from the UI.
      */
-    function loginAndCreateWebRTCSession (data) {
+    function loginAndCreateWebRTCSession (config) {
         
         var authenticateConfig = {
-            data: data,
+            data: config.data,
             success: function (responseObject) {
                 // get access token, e911 id that is needed to create webrtc session
                 var data = responseObject.getJson(),
@@ -115,6 +115,10 @@ var ATT = ATT || {};
                             ATT.WebRTC.Session = {
                                 Id: sessionId,
                                 accessToken: data.access_token.access_token
+                            }
+                            data.webRTCSessionId = sessionId;
+                            if (config.callback) {
+                            	config.callback (data);
                             }
                         },
                         error: function () {}

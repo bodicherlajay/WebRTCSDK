@@ -228,9 +228,10 @@ describe('webRTC', function () {
                     "access_token": "abcd"
                 }
                 },
-                expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
+                expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204",
+                jsonSpy = sinon.spy();
 
-            ATT[apiNamespace].loginAndCreateWebRTCSession({});
+            ATT[apiNamespace].loginAndCreateWebRTCSession({data : {}, callback : jsonSpy});
             
             // response to authorize
             requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(responseObject1));
@@ -239,6 +240,7 @@ describe('webRTC', function () {
             requests[1].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
             
             expect(requests[1].getResponseHeader('location')).to.equal(expectedLocationHeader);
+            expect(jsonSpy.called).to.be.true;
         });
     });
 });
