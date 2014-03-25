@@ -1,3 +1,5 @@
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, white: true, maxlen: 150*/
+
 /**
  Event Emitter implements Mediator pattern publishes local SDP offers to SignallingChannel - triggered by PeerConnectionService
  Publishes remote SDP answer... to PeerConnectionService - triggered by EventChannel

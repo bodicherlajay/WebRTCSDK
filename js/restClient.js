@@ -1,3 +1,4 @@
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, white: true, maxlen: 150 */
 
 var RESTClient = (function () {
     "use strict";
