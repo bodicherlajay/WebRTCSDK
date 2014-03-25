@@ -71,6 +71,11 @@ var ATT = ATT || {};
                 }
             }
             
+            // url formatter.  urlParams should be set on method config so pass in.
+            if (typeof methodConfig.urlFormatter === 'function') {
+                methodConfig.url = methodConfig.urlFormatter(methodConfig.urlParams);
+            }
+            
             var restClient = new RESTClient(methodConfig);
 
             // call the RESTClient
@@ -87,16 +92,18 @@ var ATT = ATT || {};
      * @memberof WebRTC
      * @param {Object} data The required login form data from the UI.
      */
+
     function loginAndCreateWebRTCSession (config) {
+
         
         var authenticateConfig = {
             data: config.data,
             success: function (responseObject) {
                 // get access token, e911 id that is needed to create webrtc session
                 var data = responseObject.getJson(),
-                	successCallback = config.success, // success callback for UI
+                    successCallback = config.success, // success callback for UI
                     e911Id = data.e911,
-                    accessToken = data.access_token.access_token,
+                    accessToken = data.accesstoken.access_token,
 
                     dataForCreateWebRTCSession = {
                         data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
@@ -110,18 +117,20 @@ var ATT = ATT || {};
                             }
                         },
                         headers: {
-                            "Authorization": "Bearer " + accessToken
-                            //,"x-e911Id": e911Id // BFE doesn't support this yet
+                            "Authorization": "Bearer " + accessToken,
+                            "x-e911Id": e911Id
                         },
+                        
                         success: function (responseObject) {
-                            var sessionId = responseObject.getResponseHeader('location').split('/')[4];     
+                            var sessionId = responseObject.getResponseHeader('location').split('/')[4];
                             ATT.WebRTC.Session = {
                                 Id: sessionId,
                                 accessToken: accessToken
-                            }
+                            };
+                            
                             data.webRtcSessionId = sessionId;
                             if (successCallback) {
-                            	successCallback (data);
+                                successCallback (data);
                             }
                             // call BF to create event channel
                         },
