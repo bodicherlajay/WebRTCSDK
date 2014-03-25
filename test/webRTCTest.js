@@ -160,7 +160,8 @@ describe('webRTC', function () {
             ATT[apiNamespace].loginAndCreateWebRTCSession({
                 data: {
                     un: 'un',
-                    pw: 'pw'
+                    pw: 'pw',
+                    access_token: {access_token: 'tokin' }
                 },
                 success: function () {},
                 error: function () {}
@@ -179,7 +180,6 @@ describe('webRTC', function () {
             
             // expect
             expect(args1[0].headers.Authorization).to.contain(responseObject1.access_token.access_token);
-            expect(args1[0].headers['x-e911Id']).to.exist;
             
             // restore
             createWebRTCSessionSpy.restore();
@@ -231,7 +231,7 @@ describe('webRTC', function () {
                 expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204",
                 jsonSpy = sinon.spy();
 
-            ATT[apiNamespace].loginAndCreateWebRTCSession({data : {}, callback : jsonSpy});
+            ATT[apiNamespace].loginAndCreateWebRTCSession({data : {}, success : jsonSpy});
             
             // response to authorize
             requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(responseObject1));
