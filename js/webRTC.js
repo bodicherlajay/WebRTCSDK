@@ -110,14 +110,14 @@ var ATT = ATT || {};
                             }
                         },
                         headers: {
-                            "Authorization": "Bearer " + accessToken,
-                            "x-e911Id": e911Id
+                            "Authorization": "Bearer " + accessToken
+                            //,"x-e911Id": e911Id // BFE doesn't support this yet
                         },
                         success: function (responseObject) {
                             var sessionId = responseObject.getResponseHeader('location').split('/')[4];     
                             ATT.WebRTC.Session = {
                                 Id: sessionId,
-                                accessToken: accessTokenåå
+                                accessToken: accessToken
                             }
                             data.webRtcSessionId = sessionId;
                             if (successCallback) {
