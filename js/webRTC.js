@@ -116,6 +116,7 @@ var ATT = ATT || {};
                                 Id: sessionId,
                                 accessToken: data.access_token.access_token
                             }
+                            // call BF to create event channel
                         },
                         error: function () {}
                     };
