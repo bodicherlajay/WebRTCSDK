@@ -1,21 +1,26 @@
 {
-    "name": "js-shared",
-    "version": "0.0.0",
-
-    "devDependencies": {
-        "karma": "^0.10.9",
-        "mocha": "^1.17.1",
-        "karma-mocha": "^0.1.1",
-        "chai": "^1.9.0",
-        "karma-chai": "^0.1.0",
-        "sinon": "^1.9.0",
-        "karma-sinon": "^1.0.2",
-        "karma-junit-reporter": "^0.2.1",
-        "karma-coverage": "^0.2.0",
-        "karma-spec-reporter": "^0.0.10",
-        "jshint": "^2.4.4"
-    },
-    "jshintConfig": {
-        "validthis": true
-    }
+  "name": "js-shared",
+  "version": "0.0.0",
+  "devDependencies": {
+    "karma": "^0.10.9",
+    "mocha": "^1.17.1",
+    "karma-mocha": "^0.1.1",
+    "chai": "^1.9.0",
+    "karma-chai": "^0.1.0",
+    "sinon": "^1.9.0",
+    "karma-sinon": "^1.0.2",
+    "karma-junit-reporter": "^0.2.1",
+    "karma-coverage": "^0.2.0",
+    "karma-spec-reporter": "^0.0.10",
+    "jshint": "^2.4.4",
+    "grunt": "~0.4.2",
+    "grunt-contrib-jshint": "~0.6.3",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-contrib-concat": "^0.3.0"
+  },
+  "jshintConfig": {
+    "validthis": true
+  }
 }
