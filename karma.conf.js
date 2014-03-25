@@ -19,9 +19,7 @@ module.exports = function(config) {
 
       'js/eventChannel.js',
       'js-shared/js/ws.js',
-
       'js/signalingServiceModule.js',
-
       // 'js/**/*.js',
       'test/**/*.js'
     ],

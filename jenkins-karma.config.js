@@ -19,6 +19,7 @@ module.exports = function(config) {
       'js-shared/js/restClient.js',
       'js/webRTC.js',
       'js/APIConfigs.js',
+      'js/signalingServiceModule.js',
       // 'js/**/*.js',
       'test/**/*.js'
     ],
