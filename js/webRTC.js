@@ -87,19 +87,22 @@ var ATT = ATT || {};
      * @memberof WebRTC
      * @param {Object} data The required login form data from the UI.
      */
-    function loginAndCreateWebRTCSession (data) {
+    function loginAndCreateWebRTCSession (config) {
         
         var authenticateConfig = {
-            data: data,
+            data: config.data,
             success: function (responseObject) {
                 // get access token, e911 id that is needed to create webrtc session
                 var data = responseObject.getJson(),
-                    e911Id = "f81d4fae-7dec-11d0-a765-00a0c91e6bf", // comes from authenticate?
+                	successCallback = config.success, // success callback for UI
+                    e911Id = data.e911,
+                    accessToken = data.accesstoken.access_token,
 
                     dataForCreateWebRTCSession = {
                         data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
                             "session": {
-                                "mediaType": "rtp",
+                                "mediaType": "dtls-srtp",
+                                "ice":"true",
                                 "services": [
                                     "ip_voice_call",
                                     "ip_video_call"
@@ -107,14 +110,18 @@ var ATT = ATT || {};
                             }
                         },
                         headers: {
-                            "Authorization": "Bearer " + data.access_token.access_token, 
-                            "x-e911Id": e911Id
+                            "Authorization": "Bearer " + accessToken
+                            //,"x-e911Id": e911Id // BFE doesn't support this yet
                         },
                         success: function (responseObject) {
                             var sessionId = responseObject.getResponseHeader('location').split('/')[4];     
                             ATT.WebRTC.Session = {
                                 Id: sessionId,
-                                accessToken: data.access_token.access_token
+                                accessToken: accessToken
+                            }
+                            data.webRtcSessionId = sessionId;
+                            if (successCallback) {
+                            	successCallback (data);
                             }
                             // call BF to create event channel
                         },
