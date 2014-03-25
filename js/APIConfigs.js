@@ -86,7 +86,15 @@ var ATT = ATT || {};
      * Get WebRTC events from BFResource
      * @memberof WebRTCAPI.APIConfigs
      */
-        getEvents: { }
+        getEvents: { },
+        startCall: {
+            method: 'post',
+            urlFormatter: function () {
+                return DEFAULTS.BFResource + '/sessions/' + arguments[0] + '/calls';
+            },
+            headers: DEFAULTS.headers
+        }
+
     };
 
     // place on the ATT.WebRTCAPI namespace.
