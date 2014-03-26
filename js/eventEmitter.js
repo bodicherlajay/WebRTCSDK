@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-
+/*global ATT:true*/
 /**
  Event Emitter implements Mediator pattern publishes local SDP offers to SignallingChannel - triggered by PeerConnectionService
  Publishes remote SDP answer... to PeerConnectionService - triggered by EventChannel
@@ -8,7 +8,10 @@
  Give a call object it will give you callback handle for this call object
  Maintains topic style of pub/sub
  **/
-var ATT = ATT || {};
+
+if (ATT === undefined) {
+  var ATT = {};
+}
 
 (function (mainModule) {
   "use strict";
