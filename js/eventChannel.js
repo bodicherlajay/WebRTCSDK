@@ -11,13 +11,13 @@ var ATT = ATT || {};
     * @param {Boolean} useLongPolling Use Long Polling
     * @param {Function} cb The Callback
     */
-    function getEventChannel( useLongPolling, cb ) {
+    function getEventChannel( useLongPolling, messageHandler ) {
 
       // config for setting up Web Socket with BF
       var wsConfig = {
         method: 'post',
         // CURL endpoint to gen new sessionID
-        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + 'd5cb9e41-1f16-4a02-b434-e965c3ad9a7d' + '/websocket',
+        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + '439bfe71-ca89-4983-9919-3b0931b95c04' + '/websocket',
         headers: {
           // Where is our access token now?
           'Authorization': 'Bearer abcd',
@@ -27,8 +27,10 @@ var ATT = ATT || {};
         success: function( response ) {
           var location = response.getResponseHeader('location');
           console.log('Connected to websocket: ' + location);
-          // Create New Web Socket Instance
-          _initWebSocket( location );
+          var ws = new WS(location, function messageHandler(e) {
+            console.log(e);
+            //ATT.event.publish(event);
+          });
         }
       }
 
@@ -37,14 +39,6 @@ var ATT = ATT || {};
       } else {
         // use websockets
         ATT.WebRTC.getEvents(wsConfig);
-      }
-
-      /**
-      * Initialize Socket instance
-      * @param {String} locaiton The WebSocket Location URL
-      **/
-      function _initWebSocket( location ) {
-        var ws = new WS(location);
       }
     }
 
