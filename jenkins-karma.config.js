@@ -15,10 +15,12 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'node_modules/underscore/underscore.js',
       'js-shared/js/restClient.js',
       'js/webRTC.js',
       'js/APIConfigs.js',
+      'js-shared/js/eventEmitter.js',
+      'js/eventChannel.js',
+      'js-shared/js/ws.js',
       'js/signalingServiceModule.js',
       // 'js/**/*.js',
       'test/**/*.js'
