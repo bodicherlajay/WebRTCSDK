@@ -28,7 +28,7 @@ var ATT = ATT || {};
      * Default headers.
      * @memberof WebRTCAPI.DEFAULTS
      */
-        headers: {'Content-type': 'application/json','Accept' : 'application/json'}
+        headers: {'Content-Type': 'application/json','Accept' : 'application/json'}
     };
 
   /**
