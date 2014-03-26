@@ -29,6 +29,8 @@ var ATT = ATT || {};
           var ws = new WS(location, function(e) {
             // parse response
             var responseEvent = JSON.parse(e.data);
+            // dump to console
+            console.log(responseEvent);
             // grab the sessionID
             var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
             // publish sessionID along with responseEvent payload
