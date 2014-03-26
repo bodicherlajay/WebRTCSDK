@@ -16,17 +16,19 @@ var ATT = ATT || {};
       // config for setting up Web Socket with BF
       var wsConfig = {
         method: 'post',
-        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + '24a9a483-d603-4d23-8d52-4a4f643c1e5a' + '/websocket',
+        // CURL endpoint to gen new sessionID
+        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + 'd5cb9e41-1f16-4a02-b434-e965c3ad9a7d' + '/websocket',
         headers: {
-          'Authorization': 'Bearer ' + ATT.WebRTC.Session.accessToken,
+          // Where is our access token now?
+          'Authorization': 'Bearer abcd',
           'Content-type': 'application/json',
           'Accept' : 'application/json'
         },
         success: function( response ) {
           var location = response.getResponseHeader('location');
-          
+          console.log('Connected to websocket: ' + location);
           // Create New Web Socket Instance
-          _initSocket( location );
+          _initWebSocket( location );
         }
       }
 
@@ -41,8 +43,8 @@ var ATT = ATT || {};
       * Initialize Socket instance
       * @param {String} locaiton The WebSocket Location URL
       **/
-      function _initSocket(location) {
-        var ws = new WS(location, cb, 1);
+      function _initWebSocket( location ) {
+        var ws = new WS(location);
       }
     }
 
