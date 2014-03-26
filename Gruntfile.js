@@ -16,7 +16,8 @@ module.exports = function (grunt) {
         src: ['js/**/*.js'],
         options: {
           log: 'jslint.log',
-          checkstyle: 'jslint.xml' // write a checkstyle-XML
+          checkstyle: 'jslint.xml', // write a checkstyle-XML
+          junit: 'junit-jslint.xml' // write results to JUnit XML
         }
       }
     },
