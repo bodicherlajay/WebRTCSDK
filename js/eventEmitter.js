@@ -1,4 +1,4 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, white: true, maxlen: 150*/
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 
 /**
  Event Emitter implements Mediator pattern publishes local SDP offers to SignallingChannel - triggered by PeerConnectionService
@@ -25,11 +25,12 @@ var ATT = ATT || {};
     };
 
     module.unsubscribe = function(topic,callback){
+        var i, len;
         if( ! _topics.hasOwnProperty( topic ) ) {
             return false;
         }
 
-        for( var i = 0, len = _topics[ topic ].length; i < len; i++ ) {
+        for( i = 0, len = _topics[ topic ].length; i < len; i++ ) {
             if( _topics[ topic ][ i ] === callback ) {
                 _topics[ topic ].splice( i, 1 );
                 return true;
@@ -41,12 +42,13 @@ var ATT = ATT || {};
     module.publish = function(){
         var args = Array.prototype.slice.call( arguments );
         var topic = args.shift();
+        var i, len;
 
         if( ! _topics.hasOwnProperty( topic ) ) {
             return false;
         }
 
-        for( var i = 0, len = _topics[ topic ].length; i < len; i++ ) {
+        for( i = 0, len = _topics[ topic ].length; i < len; i++ ) {
             _topics[ topic ][ i ].apply( undefined, args );
         }
         return true;

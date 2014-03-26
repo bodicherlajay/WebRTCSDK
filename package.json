@@ -2,7 +2,7 @@
   "name": "js-shared",
   "version": "0.0.0",
   "devDependencies": {
-    "karma": "^0.10.9",
+    "karma": "^0.12.1",
     "mocha": "^1.17.1",
     "karma-mocha": "^0.1.1",
     "chai": "^1.9.0",
@@ -18,7 +18,8 @@
     "grunt-contrib-nodeunit": "~0.2.0",
     "grunt-contrib-uglify": "~0.2.2",
     "grunt-contrib-watch": "^0.6.1",
-    "grunt-contrib-concat": "^0.3.0"
+    "grunt-contrib-concat": "^0.3.0",
+    "grunt-karma": "^0.8.2"
   },
   "jshintConfig": {
     "validthis": true
