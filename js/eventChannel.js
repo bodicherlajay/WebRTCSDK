@@ -11,7 +11,7 @@ var ATT = ATT || {};
     * @param {Boolean} useLongPolling Use Long Polling
     */
     function getEventChannel( useLongPolling ) {
-      
+
       // config for setting up Web Socket with BF
       var wsConfig = {
         method: 'post',
@@ -32,11 +32,11 @@ var ATT = ATT || {};
             // grab the sessionID
             var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
             // publish sessionID along with responseEvent payload
-            ATT.events.publish( sessID + '.responseEvent', responseEvent );
+            ATT.event.publish( sessID + '.responseEvent', responseEvent );
           });
         }
       }
-      
+
       if (useLongPolling) {
         // use long polling
       } else {
