@@ -132,7 +132,7 @@ var ATT = ATT || {};
                             if (successCallback) {
                                 successCallback (data);
                             }
-                            
+
                             // call BF to create event channel
                             ATT.WebRTC.eventChannel(false);
                         },
@@ -161,7 +161,7 @@ var ATT = ATT || {};
                 typeof navigator.getUserMedia === 'function';
         }
     };
-
+    
     // exposed methods/object
     app.utils = utils;
     app.init = init;

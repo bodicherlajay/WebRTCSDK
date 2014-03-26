@@ -9,10 +9,9 @@ var ATT = ATT || {};
     /**
     * Get Event Channel
     * @param {Boolean} useLongPolling Use Long Polling
-    * @param {Function} cb The Callback
     */
     function getEventChannel( useLongPolling ) {
-
+      
       // config for setting up Web Socket with BF
       var wsConfig = {
         method: 'post',
@@ -23,14 +22,21 @@ var ATT = ATT || {};
           'Accept' : 'application/json'
         },
         success: function( response ) {
+          // grab the location from response headers
           var location = response.getResponseHeader('location');
           console.log('Connected to websocket: ' + location);
+          // create new WebSocket instance with
           var ws = new WS(location, function(e) {
-            console.log(e);
+            // parse response
+            var responseEvent = JSON.parse(e.data);
+            // grab the sessionID
+            var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
+            // publish sessionID along with responseEvent payload
+            ATT.events.publish( sessID + '.responseEvent', responseEvent );
           });
         }
       }
-
+      
       if (useLongPolling) {
         // use long polling
       } else {
@@ -39,6 +45,7 @@ var ATT = ATT || {};
       }
     }
 
+    // place on ATT namespace
     app.WebRTC.eventChannel = getEventChannel;
 
 }(ATT || {}));
