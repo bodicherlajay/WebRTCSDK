@@ -8,6 +8,10 @@ module.exports = function (grunt) {
       unit: {
         configFile: 'karma.conf.js',
         autoWatch: true
+      },
+      continuous: {
+        configFile: 'jenkins-karma.config.js',
+        singleRun: true
       }
     },
     jslint: { // configure the task
@@ -16,8 +20,7 @@ module.exports = function (grunt) {
         src: ['js/**/*.js'],
         options: {
           log: 'jslint.log',
-          checkstyle: 'jslint.xml', // write a checkstyle-XML
-          junit: 'junit-jslint.xml' // write results to JUnit XML
+          checkstyle: 'jslint.xml' // write a checkstyle-XML
         }
       }
     },
@@ -50,5 +53,5 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
 
   // concatenate first, then minify
-  grunt.registerTask('default', ['jslint', 'concat', 'uglify']);
+  grunt.registerTask('default', ['karma:continuous', 'jslint', 'concat', 'uglify']);
 };
