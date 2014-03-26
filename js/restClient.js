@@ -4,7 +4,8 @@ var RESTClient = (function () {
   "use strict";
 
   /**
-   * Make a deep copy of an object.
+   * Extends an existing object using deep copy.
+   * Note: It will only deep-copy instances of Object. 
    * Todo: Move this to a util submodule once we figure out where this type of functionality should live.
    * @param destination
    * @param source
@@ -13,11 +14,16 @@ var RESTClient = (function () {
   function deepExtend(destination, source) {
     var property;
     for (property in source) {
-      if (source.property && source[property].constructor && source[property].constructor === Object) {
-        destination[property] = destination[property] || {};
-        deepExtend(destination[property], source[property]);
-      } else {
-        destination[property] = source[property];
+      // if the source has `property` as a `direct property`
+      if (source.hasOwnProperty(property)) {
+        // if that property is NOT an `Object`
+        if (!(source[property] instanceof Object)) {
+          // copy the value into the destination object
+          destination[property] = source[property];
+        } else { // `property` IS an `Object`
+          // copy `property` recursively
+          destination[property] = deepExtend(source[property]);
+        }
       }
     }
     return destination;
