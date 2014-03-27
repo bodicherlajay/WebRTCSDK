@@ -12,9 +12,9 @@ var ATT = ATT || {};
     
     var module = {
         
-        localVideoElement: null, //document.getElementById(ATT.WebRTC.localVideoDOMId),
+        localVideoElement: document.getElementById(ATT.WebRTC.localVideoDOMId),
         
-        remoteVideoElement: null, //document.getElementById(ATT.WebRTC.remoteVideoDOMId),
+        remoteVideoElement: document.getElementById(ATT.WebRTC.remoteVideoDOMId),
         
         remoteStream: null,
         
