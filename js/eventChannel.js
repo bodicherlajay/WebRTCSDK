@@ -14,7 +14,7 @@ var ATT = ATT || {};
       // config for setting up Web Socket with BF
       var wsConfig = {
         method: 'post',
-        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + '3c0112b2-96a7-4c9e-ba63-850bc520fe3e' + '/websocket',
+        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + ATT.WebRTC.Session.Id + '/websocket',
         headers: {
           'Authorization': 'Bearer ' + ATT.WebRTC.Session.accessToken,
           'Content-type': 'application/json',
