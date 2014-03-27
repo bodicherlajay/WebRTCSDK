@@ -14,7 +14,7 @@ module.exports = function (grunt) {
         singleRun: true
       }
     },
-    jslint: { // configure the task
+    jslint: { 
       // lint your project's server code
       server: {
         src: ['js/**/*.js'],
@@ -31,7 +31,7 @@ module.exports = function (grunt) {
       },
       dist: {
         src: ['js/**/*.js'],
-        dest: 'dist/<%= pkg.name %>_<%= grunt.template.today("dd-mm-yyyy") %>.js'
+        dest: 'dist/<%= pkg.name %>.js'
       }
     },
     // Minify concatenated file.
@@ -41,17 +41,16 @@ module.exports = function (grunt) {
       },
       dist: {
         files: {
-          'dist/<%= pkg.name %>_<%= grunt.template.today("dd-mm-yyyy") %>.min.js': ['<%= concat.dist.dest %>']
+          'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
         }
       }
     }
   });
 
   grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-jslint'); // load the task
+  grunt.loadNpmTasks('grunt-jslint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
-  // concatenate first, then minify
-  grunt.registerTask('default', ['karma:continuous', 'jslint', 'concat', 'uglify']);
+  grunt.registerTask('default', ['jslint', 'karma:continuous', 'concat', 'uglify']);
 };
