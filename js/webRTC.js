@@ -112,7 +112,7 @@ var ATT = ATT || {};
                 var data = responseObject.getJson(),
                     successCallback = config.success, // success callback for UI
                     e911Id = data.e911,
-                    accessToken = data.accesstoken.access_token,
+                    accessToken = data.accesstoken ? data.accesstoken.access_token : null,
 
                     dataForCreateWebRTCSession = {
                         data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
@@ -133,9 +133,9 @@ var ATT = ATT || {};
                         },
                         
                         success: function (responseObject) {
-                            var sessionId = responseObject.getResponseHeader('location').split('/')[4];
-
-                            // Set WebRTC.Session data object that will be needed downstream.
+                            var sessionId = responseObject && responseObject.getResponseHeader('location') ? responseObject.getResponseHeader('location').split('/')[4] : null;
+                            
+                             // Set WebRTC.Session data object that will be needed downstream.
                             setWebRTCSessionData({
                                 sessionId: sessionId,
                                 accessToken: accessToken
@@ -146,12 +146,21 @@ var ATT = ATT || {};
                                 successCallback (data);
                             }
 
-                            // call BF to create event channel
-                            ATT.WebRTC.eventChannel(false);
+                            /**
+                            * Call BF to create event channel
+                            * @param {Boolean} true/false Use Long Polling?
+                            * @returns Event Channel
+                            **/
+                            ATT.WebRTC.eventChannel(true);
                         },
                         error: function () {}
                     };
 
+                    // if no access token return user data to UI, without webrtc session id
+                    if (!accessToken) {
+                        return successCallback(data);
+                    }
+                    
                 // Call BF to create WebRTC Session.
                 ATT[apiNamespace].createWebRTCSession(dataForCreateWebRTCSession);
             },
@@ -174,7 +183,6 @@ var ATT = ATT || {};
                 typeof navigator.getUserMedia === 'function';
         }
     };
-
     /**
      * 
      * @param config Dial configuration object.
@@ -190,7 +198,7 @@ var ATT = ATT || {};
         ATT.UserMediaService.startCall(config.mediaConstraints || {audio: true, video: true});
         
         // Subscribe to event and call success callback.
-        ATT.event.subscribe(ATT.WebRTC.Session. + '.responseEvent', function (event) {
+        ATT.event.subscribe(ATT.WebRTC.Session.webRTCChannel, function (event) {
             success.call(null, event);
         });
     }

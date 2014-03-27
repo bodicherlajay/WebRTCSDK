@@ -20,7 +20,6 @@ module.exports = function(config) {
       'js/APIConfigs.js',
       'js-shared/js/eventEmitter.js',
       'js/eventChannel.js',
-      'js-shared/js/ws.js',
       'js/signalingServiceModule.js',
       'js/peerConnectionServiceModule.js',
       'js/userMediaServiceModule.js',
