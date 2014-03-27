@@ -193,7 +193,7 @@ var ATT = ATT || {};
         ATT.UserMediaService.startCall(config.mediaConstraints || {audio: true, video: true});
         
         // Subscribe to event and call success callback.
-        ATT.event.subscribe(ATT.WebRTC.Session. + '.responseEvent', function (event) {
+        ATT.event.subscribe(ATT.WebRTC.Session.webRTCChannel, function (event) {
             success.call(null, event);
         });
     }
