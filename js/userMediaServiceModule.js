@@ -7,21 +7,23 @@ var ATT = ATT || {};
 (function (app, PeerConnectionService) {
     "use strict";
     
-    //ATT.WebRTC.localVideoDOMId = '#x';
-    //ATT.WebRTC.remoteVideoDOMId = '#y';
-    
     var module = {
         
-        localVideoElement: document.getElementById(ATT.WebRTC.localVideoDOMId),
+        localVideoElement: null,
         
-        remoteVideoElement: document.getElementById(ATT.WebRTC.remoteVideoDOMId),
+        remoteVideoElement: null,
         
         remoteStream: null,
         
         localStream: null,
         
-        startCall: function (mediaConstraints) {
-           PeerConnectionService.start(mediaConstraints || this.mediaConstraints);
+        startCall: function (config) {
+            
+            // set local/remote vid element
+            this.localVideoElement = config.localVideo;
+            this.remoteVideoElement = config.remoteVideo;
+            
+           PeerConnectionService.start(config.mediaConstraints || this.mediaConstraints);
         },
 
         //standard webRTC audio, video constraints
