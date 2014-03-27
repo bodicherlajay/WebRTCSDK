@@ -181,9 +181,6 @@ var ATT = ATT || {};
                 typeof navigator.getUserMedia === 'function';
         }
     };
-
-<<<<<<< HEAD
-=======
     /**
      * 
      * @param config Dial configuration object.
@@ -204,7 +201,6 @@ var ATT = ATT || {};
         });
     }
     
->>>>>>> 2c50e77eb909051aded3caebf202dce7336fb87d
     // exposed methods/object
     app.utils = utils;
     app.init = init;

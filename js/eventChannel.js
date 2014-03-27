@@ -15,7 +15,7 @@ var ATT = ATT || {};
       // Long Pollling Config
       var lpConfig = {
         method: 'get',
-        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + '7e7e337e-bec0-46c5-92a1-c6071951b8c1' + '/events',
+        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + ATT.WebRTC.Session.Id + '/events',
         headers: {
           'Authorization': 'Bearer ' + ATT.WebRTC.Session.accessToken,
           'Content-type': 'application/json',
@@ -48,7 +48,7 @@ var ATT = ATT || {};
       // Web Socket Config
       var wsConfig = {
         method: 'post',
-        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + '38a0bd4e-74ee-4cc1-89ba-16916cf2a7f2' + '/websocket',
+        url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + ATT.WebRTC.Session.Id + '/websocket',
         headers: {
           'Authorization': 'Bearer ' + ATT.WebRTC.Session.accessToken,
           'Content-type': 'application/json',
