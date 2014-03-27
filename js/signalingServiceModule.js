@@ -13,7 +13,7 @@ var ATT = ATT || {};
             
             var data = {
                 call: {
-                    calledParty: 'tel:+' + config.calledParty,
+                    calledParty: config.calledParty,
                     sdp: config.sdp
                 }
             };

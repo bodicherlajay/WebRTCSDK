@@ -95,7 +95,7 @@ if (undefined === ATT) {
       startCall: {
         method: 'post',
         urlFormatter: function (urlParams) {
-          return DEFAULTS.BFResource + '/sessions/' + urlParams + '/calls';
+          return DEFAULTS.BFResource + '/v1/sessions/' + urlParams + '/calls';
         },
         headers: DEFAULTS.headers
       }

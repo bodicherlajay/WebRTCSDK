@@ -12,10 +12,14 @@ var ATT = ATT || {};
 
 (function(app, UserMediaService, SignalingService){
     "use strict";
-    
-    var module = {};
+   
+    // STUN Server configuration
+    var  stun = { url: 'stun:stun.l.google.com:19302' },
 
-    module = {
+        // TURN server configuration
+        turn = { url: 'turn:homeo@turn.bistri.com:80', credential: 'homeo' },
+   
+        module = {
 
         createPeerConnection: function () {
             return new RTCPeerConnection(this.iceServers, this.pcConstraints);
@@ -30,12 +34,12 @@ var ATT = ATT || {};
         },
 
         // STUN Server configuration
-        STUN: { url: 'stun:stun.l.google.com:19302' },
+        STUN: stun,
 
         // TURN server configuration
-        TURN: { url: 'turn:homeo@turn.bistri.com:80', credential: 'homeo' },
+        TURN: turn,
 
-        iceServers: { iceServers: [module.STUN] },
+        iceServers: { iceServers: [stun] },
 
         localStream: null,
 
@@ -59,7 +63,7 @@ var ATT = ATT || {};
 
             // send any ice candidates to the other peer
             // get a local stream, show it in a self-view and add it to be sent
-            getUserMedia(config.mediaConstraints, this.getUserMediaSuccess, this.onLocalStreamCreateError);
+            getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind (this), this.onLocalStreamCreateError);
         },
 
         getUserMediaSuccess: function (stream) {
