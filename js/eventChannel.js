@@ -46,7 +46,7 @@ var ATT = ATT || {};
         error: function() {
           console.log('ERROR');
         }
-      }
+      };
 
       if (useLongPolling) {
         // use long polling
