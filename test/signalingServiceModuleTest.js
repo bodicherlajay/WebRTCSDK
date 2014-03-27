@@ -62,7 +62,6 @@ describe('SignalingService', function () {
 
     
     it('should receive 201 and Location url and x-state: invitation-sent in header', function () {
-
         // setup
         ATT.WebRTC.Session = {
             accessToken: 'access_token',
@@ -122,11 +121,5 @@ describe('SignalingService', function () {
 
         // send callback should be called
         expect(errorSpy.called).to.be.true;
-        
     });
-    
-    
-    
-    
-    
 });

@@ -37,7 +37,7 @@ var ATT = ATT || {};
             ATT.event.publish( sessID + '.responseEvent', responseEvent );
           });
         }
-      }
+      };
 
       if (useLongPolling) {
         // use long polling
