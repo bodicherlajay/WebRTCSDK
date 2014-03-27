@@ -1,3 +1,4 @@
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 describe('Rest Client', function() {
 
     // globals used in each test.

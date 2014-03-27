@@ -44,16 +44,16 @@ var RESTClient = (function () {
   function success(successCallback) {
     /*jshint validthis:true */
     var xhr = this,
-    responseObject = {
-      getJson: function () {
-        return JSON.parse(xhr.responseText);
+      responseObject = {
+        getJson: function () {
+          return JSON.parse(xhr.responseText);
+        },
+        getResponseHeader: function (key) {
+          return xhr.getResponseHeader(key);
+        },
+        responseText: xhr.responseText
       },
-      getResponseHeader: function (key) {
-        return xhr.getResponseHeader(key);
-      },
-      responseText: xhr.responseText
-    },
-    responseCopy = deepExtend({}, responseObject);
+      responseCopy = deepExtend({}, responseObject);
     successCallback.call(xhr, responseCopy);
   }
 
@@ -65,8 +65,8 @@ var RESTClient = (function () {
   // public methods
   RESTClient.prototype.ajax = function (config) {
     var xhr = new XMLHttpRequest(),
-    data = config.data && JSON.stringify(config.data),
-    header;
+      data = config.data && JSON.stringify(config.data),
+      header;
 
     xhr.timeout = config.timeout;
 
@@ -91,7 +91,7 @@ var RESTClient = (function () {
 
   function addHttpMethodsToPrototype(methods) {
     methods.forEach(function (method) {
-      RESTClient.prototype[method] = function(config) {
+      RESTClient.prototype[method] = function (config) {
         config.method = method;
         config.headers = deepExtend(this.config.headers, config.headers);
         this.ajax(config);
@@ -101,7 +101,7 @@ var RESTClient = (function () {
 
   addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
-  RESTClient.prototype.getConfig = function() {
+  RESTClient.prototype.getConfig = function () {
     return this.config;
   };
   return RESTClient;
