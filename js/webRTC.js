@@ -127,7 +127,9 @@ var ATT = ATT || {};
                         },
                         headers: {
                             "Authorization": "Bearer " + accessToken,
-                            "x-e911Id": e911Id
+                            "x-e911Id": e911Id,
+                            'Content-Type': 'application/json',
+                            'Accept' : 'application/json'
                         },
                         
                         success: function (responseObject) {
