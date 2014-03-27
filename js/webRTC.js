@@ -103,7 +103,7 @@ var ATT = ATT || {};
                 var data = responseObject.getJson(),
                     successCallback = config.success, // success callback for UI
                     e911Id = data.e911,
-                    accessToken = data.accesstoken.access_token,
+                    accessToken = data.accesstoken ? data.accesstoken.access_token : null,
 
                     dataForCreateWebRTCSession = {
                         data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
@@ -122,7 +122,8 @@ var ATT = ATT || {};
                         },
                         
                         success: function (responseObject) {
-                            var sessionId = responseObject.getResponseHeader('location').split('/')[4];
+                            var sessionId = responseObject && responseObject.getResponseHeader('location') ? responseObject.getResponseHeader('location').split('/')[4] : null;
+                            
                             ATT.WebRTC.Session = {
                                 Id: sessionId,
                                 accessToken: accessToken
@@ -139,6 +140,11 @@ var ATT = ATT || {};
                         error: function () {}
                     };
 
+                    // if no access token return user data to UI, without webrtc session id
+                    if (!accessToken) {
+                        return successCallback(data);
+                    }
+                    
                 // Call BF to create WebRTC Session.
                 ATT[apiNamespace].createWebRTCSession(dataForCreateWebRTCSession);
             },
