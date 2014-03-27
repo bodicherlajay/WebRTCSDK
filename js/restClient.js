@@ -1,5 +1,10 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 
+/**
+ * Abstraction of the XMLHttpRequest used in the SDK and DHS.
+ * Todo:  Add 'exports' handling so this can be used a node module (see underscore.js).
+ */
+
 var RESTClient = (function () {
   "use strict";
 
