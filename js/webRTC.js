@@ -133,8 +133,12 @@ var ATT = ATT || {};
                                 successCallback (data);
                             }
 
-                            // call BF to create event channel
-                            ATT.WebRTC.eventChannel(false);
+                            /**
+                            * Call BF to create event channel
+                            * @param {Boolean} true/false Use Long Polling?
+                            * @returns Event Channel
+                            **/
+                            ATT.WebRTC.eventChannel(true);
                         },
                         error: function () {}
                     };
@@ -161,7 +165,7 @@ var ATT = ATT || {};
                 typeof navigator.getUserMedia === 'function';
         }
     };
-    
+
     // exposed methods/object
     app.utils = utils;
     app.init = init;
