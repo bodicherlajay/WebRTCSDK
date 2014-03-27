@@ -42,20 +42,24 @@ var ATT = ATT || {};
         remoteStream: null,
 
         peerConnection: null,
+        
+        calledParty: null,
 
         /**
          * Create a new RTCPeerConnection.  Depends on the adapter.js module that abstracts away browser differences.
          * @returns {RTCPeerConnection}
          */
-        start: function (mediaConstraints) {
+        start: function (config) {
+            
+            this.calledParty = config.calledParty;
 
-            this.mediaConstrains = mediaConstraints;
+            this.mediaConstrains = config.mediaConstraints;
 
             this.peerConnection = this.createPeerConnection();
 
             // send any ice candidates to the other peer
             // get a local stream, show it in a self-view and add it to be sent
-            getUserMedia(mediaConstraints, this.getUserMediaSuccess, this.onLocalStreamCreateError);
+            getUserMedia(config.mediaConstraints, this.getUserMediaSuccess, this.onLocalStreamCreateError);
         },
 
         getUserMediaSuccess: function (stream) {
@@ -81,9 +85,11 @@ var ATT = ATT || {};
         },
 
         createOffer: function (pc) {
+            var self = this;
             pc.createOffer(function (description) {
                 pc.setLocalDescription(description);
                 SignalingService.send({
+                    calledParty: self.calledParty,
                     sdp: description
                 });
             });
@@ -100,7 +106,6 @@ var ATT = ATT || {};
 //            pc.onnegotiationneeded = function () {
 //                pc.createOffer(this.cbk_localSDPOffer, this.cbk_streamError);
 //            };
-
 
             // once remote stream arrives, show it in the remote video element
             pc.onaddstream = function (evt) {
