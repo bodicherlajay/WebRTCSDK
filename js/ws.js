@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global arg, WebSocket, log */
+/*global arg, WebSocket*/
 /**
 * WebSocket Class
 * @param {String} URL The Web Socket Location
@@ -9,55 +9,57 @@
 
 function WS(url, message_handler, debug_level) {
   "use strict";
-  var self = this;
-  debug_level = (typeof arg == 'undefined' ? debug_level : 1);
 
-  var queue = [ ];
-  var websocket = new WebSocket(url);
-  self.websocket = websocket;
+  var self = this,
+    queue = [],
+    message;
 
-  websocket.onopen = function (evt) {
+  function log(message) {
+    console.log('WebSocket:' + message);
+  }
+
+  debug_level = (arg === undefined ? debug_level : 1);
+
+  self.websocket = new WebSocket(url);
+
+  self.websocket.onopen = function () {
     log('OnOpen');
-    while (queue.length > 0){
-      msg = queue[0];
-      self.send(msg);
+    while (queue.length > 0) {
+      message = queue[0];
+      self.send(message);
       queue.shift();
     }
   };
 
-  websocket.onclose = function (evt) {
+  self.websocket.onclose = function (evt) {
     log('OnClose');
   };
 
-  websocket.onmessage = function (evt) {
+  self.websocket.onmessage = function (evt) {
     log('OnMessage');
-     message_handler(evt);
+    message_handler(evt);
   };
 
-  websocket.onerror = function (evt) {
+  self.websocket.onerror = function (evt) {
     log('OnError');
-   };
-
-  function log(msg) {
-    console.log('WebSocket:' + msg);
   };
 
   self.close = function () {
-    websocket.close();
+    self.websocket.close();
   };
 
-  self.send = function (msg) {
-    var CONNECTING = 0;
-    var OPEN = 1;
-    var CLOSING = 2;
-    var CLOSED = 3;
+  self.send = function (message) {
+    var CONNECTING = 0,
+      OPEN = 1,
+      CLOSING = 2,
+      CLOSED = 3;
 
-    if (websocket.readyState == OPEN){
-      log('sent ' + msg);
-      websocket.send(msg);
+    if (self.websocket.readyState === OPEN) {
+      log('sent ' + message);
+      self.websocket.send(message);
     } else {
       log('sent queued due to non-open WebSocket');
-      queue.push(msg);
+      queue.push(message);
     }
   };
 }

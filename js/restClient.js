@@ -34,8 +34,8 @@ var RESTClient = (function () {
       // default ajax configuration
     this.config.async = this.config.async || true;
     this.config.timeout = this.config.timeout || 10000;
-    this.config.success = this.config.success || function () {};
-    this.config.error = this.config.error || function () {};
+    this.config.success = this.config.success || function () { return; };
+    this.config.error = this.config.error || function () { return; };
     this.config.headers = this.config.headers || {};
     this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
   }
