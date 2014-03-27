@@ -82,6 +82,15 @@ var ATT = ATT || {};
             return restClient[methodConfig.method](methodConfig);
         };
     }
+
+    // Set the session id, access token, event channel name to subscribe to for events.
+    function setWebRTCSessionData (data) {
+        return ATT.WebRTC.Session = {
+            Id: data.sessionId,
+            accessToken: data.accessToken,
+            webRTCChannel: data.sessionId + '.responseEvent' // This is what UI will be subscribing to.
+        };
+    }
     
     /**
      * This method will be hit by the login button on the sample app.
@@ -103,7 +112,7 @@ var ATT = ATT || {};
                 var data = responseObject.getJson(),
                     successCallback = config.success, // success callback for UI
                     e911Id = data.e911,
-                    accessToken = data.accesstoken.access_token,
+                    accessToken = data.accesstoken ? data.accesstoken.access_token : null,
 
                     dataForCreateWebRTCSession = {
                         data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
@@ -122,11 +131,13 @@ var ATT = ATT || {};
                         },
                         
                         success: function (responseObject) {
-                            var sessionId = responseObject.getResponseHeader('location').split('/')[4];
-                            ATT.WebRTC.Session = {
-                                Id: sessionId,
+                            var sessionId = responseObject && responseObject.getResponseHeader('location') ? responseObject.getResponseHeader('location').split('/')[4] : null;
+                            
+                             // Set WebRTC.Session data object that will be needed downstream.
+                            setWebRTCSessionData({
+                                sessionId: sessionId,
                                 accessToken: accessToken
-                            };
+                            });
                             
                             data.webRtcSessionId = sessionId;
                             if (successCallback) {
@@ -143,6 +154,11 @@ var ATT = ATT || {};
                         error: function () {}
                     };
 
+                    // if no access token return user data to UI, without webrtc session id
+                    if (!accessToken) {
+                        return successCallback(data);
+                    }
+                    
                 // Call BF to create WebRTC Session.
                 ATT[apiNamespace].createWebRTCSession(dataForCreateWebRTCSession);
             },
@@ -166,9 +182,38 @@ var ATT = ATT || {};
         }
     };
 
+<<<<<<< HEAD
+=======
+    /**
+     * 
+     * @param config Dial configuration object.
+     * {
+     *  phoneNumber: '',
+     *  localVideoDOMID: '',
+     *  remoteVideoDOMID: '',
+     *  mediaConstraints: { audio: bool, video: bool }
+     * }
+     * @param success Success callback. Event object will be passed to this.
+     */
+    function dial (config, success) {
+        ATT.UserMediaService.startCall(config.mediaConstraints || {audio: true, video: true});
+        
+        // Subscribe to event and call success callback.
+        ATT.event.subscribe(ATT.WebRTC.Session.webRTCChannel, function (event) {
+            success.call(null, event);
+        });
+    }
+    
+>>>>>>> 2c50e77eb909051aded3caebf202dce7336fb87d
     // exposed methods/object
     app.utils = utils;
     app.init = init;
     app.RESTClient = RESTClient;
-    apiObject.loginAndCreateWebRTCSession = loginAndCreateWebRTCSession;
+    
+    // Authenticates and creates WebRTC session
+    apiObject.login = loginAndCreateWebRTCSession;
+    
+    // Create call.
+    apiObject.dial = dial;
+    
 }(ATT || {}));
