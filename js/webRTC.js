@@ -150,7 +150,7 @@ var ATT = ATT || {};
                             * @param {Boolean} true/false Use Long Polling?
                             * @returns Event Channel
                             **/
-                            ATT.WebRTC.eventChannel(true);
+                            ATT.WebRTC.eventChannel(false);
                         },
                         error: function () {}
                     };
@@ -193,7 +193,7 @@ var ATT = ATT || {};
      * @param success Success callback. Event object will be passed to this.
      */
     function dial (config, success) {
-        ATT.UserMediaService.startCall(config.mediaConstraints || {audio: true, video: true});
+        ATT.UserMediaService.startCall(config);
         
         // Subscribe to event and call success callback.
         ATT.event.subscribe(ATT.WebRTC.Session.webRTCChannel, function (event) {

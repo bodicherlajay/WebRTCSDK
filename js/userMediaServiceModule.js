@@ -23,7 +23,7 @@ var ATT = ATT || {};
             this.localVideoElement = config.localVideo;
             this.remoteVideoElement = config.remoteVideo;
             
-           PeerConnectionService.start(config.mediaConstraints || this.mediaConstraints);
+           ATT.PeerConnectionService.start(config);
         },
 
         //standard webRTC audio, video constraints
