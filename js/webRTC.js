@@ -103,7 +103,6 @@ var ATT = ATT || {};
      */
 
     function loginAndCreateWebRTCSession (config) {
-
         
         var authenticateConfig = {
             data: config.data,
@@ -183,15 +182,14 @@ var ATT = ATT || {};
                 typeof navigator.getUserMedia === 'function';
         }
     };
+    
     /**
      * 
-     * @param config Dial configuration object.
-     * {
-     *  phoneNumber: '',
-     *  localVideoDOMID: '',
-     *  remoteVideoDOMID: '',
-     *  mediaConstraints: { audio: bool, video: bool }
-     * }
+     * @param {Object} config Dial configuration object.
+     * @attribute {String} phoneNumber
+     * @attribute {HTMLElement} localVideo
+     * @attribute {HTMLElement} remoteVideo
+     * @attribute {Object} mediaConstraints
      * @param success Success callback. Event object will be passed to this.
      */
     function dial (config, success) {
