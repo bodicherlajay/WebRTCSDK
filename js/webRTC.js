@@ -196,9 +196,15 @@ var ATT = ATT || {};
         ATT.UserMediaService.startCall(config);
         
         // Subscribe to event and call success callback.
-        ATT.event.subscribe(ATT.WebRTC.Session.webRTCChannel, function (event) {
+        // ATT.event.subscribe(ATT.WebRTC.Session.webRTCChannel, function (event) {
+            // success.call(null, event);
+        // });
+
+        // Subscribe to event and call success callback.
+        ATT.event.subscribe('call-initiated', function (event) {
             success.call(null, event);
         });
+
     }
     
     // exposed methods/object

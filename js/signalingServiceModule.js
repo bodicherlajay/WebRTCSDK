@@ -10,7 +10,7 @@ var ATT = ATT || {};
         function removeSDPAttribute(attributeValue, sdp) {
         //remove attribute from the middle.
         var attribute = "a=" + attributeValue + "\r\n";
-        var index = sdp.sdp.indexOf(attribute);
+        var index = sdp.indexOf(attribute);
         if (index > 0) {
             var prefix = sdp.substr(0, index);
             var rest = sdp.substr(index + attribute.length);
@@ -23,7 +23,7 @@ var ATT = ATT || {};
 
         //Remove the 'crypto' attribute because Chrome is going to remove support for SDES, and only implement DTLS-SRTP
         //We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
-        while (sdp.indexOf('crypto:') != -1) {
+        while (sdp.sdp.indexOf('crypto:') != -1) {
             sdp.sdp = removeSDPAttribute(sdp.sdp.match(/crypto.+/)[0], sdp.sdp);
         }
 
@@ -72,10 +72,12 @@ var ATT = ATT || {};
                             xState: xState
                         };
                     
+                    ATT.event.publish ('call-initiated', headers);
+                    
                     // call success callback passed to send.
-                    if (typeof config.success === 'function') {
-                        config.success.call(null, headers);
-                    }
+                    // if (typeof config.success === 'function') {
+                        // config.success.call(null, headers);
+                    // }
                     
                     // new ATT.EventChannel.Event({})?
 //                    var event = {

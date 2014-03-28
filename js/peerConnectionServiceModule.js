@@ -86,17 +86,28 @@ var ATT = ATT || {};
 
         onLocalStreamCreateError: function () {
             //Call the UI callback to inform the user about the error
+            console.log ('Failed to get User Media');
         },
 
         createOffer: function (pc) {
             var self = this;
-            pc.createOffer(function (description) {
+            var arg1 = function(description) {
                 pc.setLocalDescription(description);
                 SignalingService.send({
-                    calledParty: self.calledParty,
-                    sdp: description
+                    calledParty : self.calledParty,
+                    sdp : description
                 });
-            });
+            };
+            if (navigator.userAgent.indexOf('Chrome') < 0) {
+                var arg2 = function(err) {
+                    console.error(err);
+                };
+                var arg3 = this.mediaConstrains;
+                pc.createOffer(arg1, arg2, arg3);
+            } else {
+                pc.createOffer(arg1);
+            }
+            
         },
 
         setUpICETrickling: function (pc) {
