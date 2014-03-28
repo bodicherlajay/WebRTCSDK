@@ -12,10 +12,13 @@ var ATT = ATT || {};
     */
     function getEventChannel( useLongPolling ) {
 
-      // Long Pollling Config
+      /*===========================================
+      =            Long Polling Config           =
+      ===========================================*/  
       var lpConfig = {
         method: 'get',
         url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + ATT.WebRTC.Session.Id + '/events',
+        async: true,
         headers: {
           'Authorization': 'Bearer ' + ATT.WebRTC.Session.accessToken,
           'Content-type': 'application/json',
@@ -35,7 +38,7 @@ var ATT = ATT || {};
             ATT.event.publish( sessID + '.responseEvent', responseEvent );
           }
 
-          // repoll
+          // repoll ^_^
           if ( state !== 'session-terminated' ) {
             ATT.WebRTC.getEvents(lpConfig);
           }
@@ -45,10 +48,13 @@ var ATT = ATT || {};
         }
       };
 
-      // Web Socket Config
+      /*===========================================
+      =        Web Socket Config                 =
+      ===========================================*/ 
       var wsConfig = {
         method: 'post',
         url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + ATT.WebRTC.Session.Id + '/websocket',
+        async: true,
         headers: {
           'Authorization': 'Bearer ' + ATT.WebRTC.Session.accessToken,
           'Content-type': 'application/json',
@@ -84,6 +90,7 @@ var ATT = ATT || {};
         }
       };
 
+      // Create the event channel
       if (useLongPolling) {
         // use long pollling
         ATT.WebRTC.getEvents(lpConfig);
