@@ -157,7 +157,7 @@ describe('webRTC', function () {
             // spy on createWebRTCSession
             var createWebRTCSessionSpy = sinon.spy(ATT[apiNamespace], 'createWebRTCSession');
             
-            ATT[apiNamespace].loginAndCreateWebRTCSession({
+            ATT[apiNamespace].login({
                 data: {
                     un: 'un',
                     pw: 'pw',
@@ -198,7 +198,7 @@ describe('webRTC', function () {
             // spy on createWebRTCSession
             var createWebRTCSessionSpy = sinon.spy(ATT[apiNamespace], 'createWebRTCSession');
             
-            ATT[apiNamespace].loginAndCreateWebRTCSession({
+            ATT[apiNamespace].login({
                 un: 'un',
                 pw: 'pw'
             });
@@ -235,7 +235,7 @@ describe('webRTC', function () {
                 expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204",
                 jsonSpy = sinon.spy();
 
-            ATT[apiNamespace].loginAndCreateWebRTCSession({data : {}, success : jsonSpy});
+            ATT[apiNamespace].login({data : {}, success : jsonSpy});
             
             // response to authorize
             requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(responseObject1));
