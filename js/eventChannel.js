@@ -21,30 +21,29 @@ var ATT = ATT || {};
         async: true,
         headers: {
           'Authorization': 'Bearer ' + ATT.WebRTC.Session.accessToken,
-          'Content-type': 'application/json',
           'Accept' : 'application/json'
         },
         success: function( response ) {
           var responseEvent = JSON.parse(response.responseText);
-          
-          if ( responseEvent ) {
-            // dump to console
-            console.log( JSON.stringify(response.responseText) );
+          // dump to console
+          console.log( JSON.stringify(response.responseText) );
+          // if we have events in the responseText
+          if ( responseEvent.events ) {
             // grab session id
             var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
             // grab state
             var state = responseEvent.events.eventList[0].eventObject.state;
             // publish event
             ATT.event.publish( sessID + '.responseEvent', responseEvent );
-          }
-
-          // repoll ^_^
-          if ( state !== 'session-terminated' ) {
-            ATT.WebRTC.getEvents(lpConfig);
+            // repoll if session is alive
+            if ( state !== 'session-terminated' ) {
+              ATT.WebRTC.getEvents(lpConfig);
+            }
           }
         },
-        error: function(response) {
-          console.log('ERROR');
+        error: function() {
+          // repoll
+          ATT.WebRTC.getEvents(lpConfig);
         }
       };
 
@@ -90,14 +89,8 @@ var ATT = ATT || {};
         }
       };
 
-      // Create the event channel
-      if (useLongPolling) {
-        // use long pollling
-        ATT.WebRTC.getEvents(lpConfig);
-      } else {
-        // use websockets
-        ATT.WebRTC.getEvents(wsConfig);
-      }
+      // Create the event channel based on the useLongPolling flag
+      useLongPolling ? ATT.WebRTC.getEvents(lpConfig) : ATT.WebRTC.getEvents(wsConfig);
     }
 
     // place on ATT namespace
