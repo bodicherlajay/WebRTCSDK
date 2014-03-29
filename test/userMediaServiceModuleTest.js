@@ -47,9 +47,9 @@ describe('SignalingService', function () {
     });
     
     it('should call PeerConnectionService.start', function () {
-       var spy = sinon.spy(ATT.PeerConnectionService, 'start');
-        ATT.UserMediaService.startCall({});
-        expect(spy.called).to.be.true;
-        spy.restore();
+      var stub = sinon.stub(ATT.PeerConnectionService, 'start', function () {});
+      ATT.UserMediaService.startCall({});
+      expect(stub.called).to.be.true;
+      stub.restore();
     });
 });
