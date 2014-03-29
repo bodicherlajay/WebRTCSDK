@@ -1,3 +1,4 @@
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /**
  * Created by Alex on 3/24/2014.
  */
@@ -6,7 +7,7 @@ var ATT = ATT || {};
 
 (function (app) {
   "use strict";
-  
+
   //Todo:  Move these SDP functions out.
   function removeSDPAttribute(attributeValue, sdp) {
     //remove attribute from the middle.
@@ -32,7 +33,7 @@ var ATT = ATT || {};
     //Remove the 'crypto' attribute because Chrome is going to remove support for SDES, and only implement DTLS-SRTP
     //We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
     while (sdp.indexOf('crypto:') !== -1) {
-      sdp = removeSDPAttribute(sdp.match(/crypto.+/)[0], sdp);
+      sdp = removeSDPAttribute(sdp.match(/crypto\.+/)[0], sdp);
     }
 
     //Remove the BUNDLE because it does not work with the ERelay. Media must be separated not bundle.
