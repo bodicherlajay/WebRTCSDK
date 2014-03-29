@@ -28,7 +28,7 @@ if (undefined === ATT) {
     * Black Flag Resource url.
     * @memberof WebRTCAPI.DEFAULTS
     */
-    BFResource: 'http://wdev.code-api-att.com:8080/RTC',
+    BFResource: 'http://wdev.code-api-att.com:8080/RTC/v1',
     /**
     * Default headers.
     * @memberof WebRTCAPI.DEFAULTS
@@ -84,7 +84,7 @@ if (undefined === ATT) {
       */
       createWebRTCSession: {
         method: 'post',
-        url: DEFAULTS.BFResource + '/v1/sessions',
+        url: DEFAULTS.BFResource + '/sessions',
         headers: DEFAULTS.headers
       },
       /**
@@ -92,10 +92,14 @@ if (undefined === ATT) {
       * @memberof WebRTCAPI.APIConfigs
       */
       getEvents: { },
+      /**
+      * Start Call via BFResource
+      * @memberof WebRTCAPI.APIConfigs
+      */
       startCall: {
         method: 'post',
         urlFormatter: function (urlParams) {
-          return DEFAULTS.BFResource + '/v1/sessions/' + urlParams + '/calls';
+          return DEFAULTS.BFResource + '/sessions/' + urlParams + '/calls';
         },
         headers: DEFAULTS.headers
       }
