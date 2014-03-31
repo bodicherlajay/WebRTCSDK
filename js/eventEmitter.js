@@ -9,7 +9,7 @@
  Maintains topic style of pub/sub
  **/
 
-if (ATT === undefined) {
+if (!ATT) {
   var ATT = {};
 }
 
