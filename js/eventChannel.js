@@ -4,9 +4,7 @@
     WebRTC Event Channel Module
 */
 
-if (!ATT) {
-  var ATT = {};
-}
+var ATT = ATT || {};
 
 (function (app) {
   'use strict';
@@ -29,6 +27,11 @@ if (!ATT) {
         'Accept' : 'application/json'
       },
       success: function(response) {
+        // repoll
+        if (app.WebRTC.Session.isAlive) {
+          app.WebRTC.getEvents(lpConfig);
+        }
+        // parse response
         var responseEvent = JSON.parse(response.responseText);
         // dump to console
         console.log(JSON.stringify(response.responseText));
@@ -39,15 +42,13 @@ if (!ATT) {
             state = responseEvent.events.eventList[0].eventObject.state;
           // publish event
           app.event.publish(sessID + '.responseEvent', responseEvent);
-          // repoll if session is alive
-          if (state !== 'session-terminated') {
-            app.WebRTC.getEvents(lpConfig);
-          }
         }
       },
       error: function() {
         // repoll
-        app.WebRTC.getEvents(lpConfig);
+        if (app.WebRTC.Session.isAlive) {
+          app.WebRTC.getEvents(lpConfig);
+        }
       }
     };
 
@@ -66,7 +67,6 @@ if (!ATT) {
       success: function(response) {
         // grab the location from response headers
         var location = response.getResponseHeader('location');
-
         // if we have a success location
         if (location) {
           // channelID is channel query string param

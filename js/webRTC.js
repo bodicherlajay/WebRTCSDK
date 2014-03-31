@@ -161,6 +161,7 @@ var ATT = ATT || {};
                * @param {Boolean} true/false Use Long Polling?
                * @returns Event Channel
                **/
+              ATT.WebRTC.Session.isAlive = true;
               ATT.WebRTC.eventChannel(false);
             },
             error: function () {
