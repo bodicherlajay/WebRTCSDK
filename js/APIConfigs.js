@@ -6,7 +6,7 @@
 *  @namespace WebRTCAPI
 */
 
-if (undefined === ATT) {
+if (!ATT) {
   var ATT = {};
 }
 
