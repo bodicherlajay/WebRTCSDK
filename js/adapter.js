@@ -6,6 +6,9 @@
  * Adapter.js.
  * From: https://code.google.com/p/webrtc/source/browse/stable/samples/js/base/adapter.js
  */
+/*global navigator, console, mozRTCPeerConnection, mozRTCSessionDescription, mozRTCIceCandidate, RTCSessionDescription, MediaStream*/
+"use strict";
+
 var RTCPeerConnection = null;
 var getUserMedia = null;
 var attachMediaStream = null;
@@ -43,7 +46,7 @@ if (navigator.mozGetUserMedia) {
     getUserMedia = navigator.mozGetUserMedia.bind(navigator);
 
     // Creates iceServer from the url for FF.
-    createIceServer = function(url, username, password) {
+    createIceServer = function (url, username, password) {
         var iceServer = null;
         var url_parts = url.split(':');
         if (url_parts[0].indexOf('stun') === 0) {
@@ -72,13 +75,13 @@ if (navigator.mozGetUserMedia) {
     };
 
     // Attach a media stream to an element.
-    attachMediaStream = function(element, stream) {
+    attachMediaStream = function (element, stream) {
         console.log("Attaching media stream");
         element.mozSrcObject = stream;
         element.play();
     };
 
-    reattachMediaStream = function(to, from) {
+    reattachMediaStream = function (to, from) {
         console.log("Reattaching media stream");
         to.mozSrcObject = from.mozSrcObject;
         to.play();
@@ -86,13 +89,13 @@ if (navigator.mozGetUserMedia) {
 
     // Fake get{Video,Audio}Tracks
     if (!MediaStream.prototype.getVideoTracks) {
-        MediaStream.prototype.getVideoTracks = function() {
+        MediaStream.prototype.getVideoTracks = function () {
             return [];
         };
     }
 
     if (!MediaStream.prototype.getAudioTracks) {
-        MediaStream.prototype.getAudioTracks = function() {
+        MediaStream.prototype.getAudioTracks = function () {
             return [];
         };
     }
@@ -104,7 +107,7 @@ if (navigator.mozGetUserMedia) {
         parseInt(navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)[2], 10);
 
     // Creates iceServer from the url for Chrome.
-    createIceServer = function(url, username, password) {
+    createIceServer = function (url, username, password) {
         var iceServer = null;
         var url_parts = url.split(':');
         if (url_parts[0].indexOf('stun') === 0) {
@@ -127,7 +130,7 @@ if (navigator.mozGetUserMedia) {
     getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
 
     // Attach a media stream to an element.
-    attachMediaStream = function(element, stream) {
+    attachMediaStream = function (element, stream) {
         if (typeof element.srcObject !== 'undefined') {
             element.srcObject = stream;
         } else if (typeof element.mozSrcObject !== 'undefined') {
@@ -139,7 +142,7 @@ if (navigator.mozGetUserMedia) {
         }
     };
 
-    reattachMediaStream = function(to, from) {
+    reattachMediaStream = function (to, from) {
         to.src = from.src;
     };
 } else {
