@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global WebSocket,ATT:true*/
+/*global WebSocket, ATT:true*/
 /**
     WebRTC Event Channel Module
 */
@@ -20,8 +20,9 @@ var ATT = ATT || {};
     ===========================================*/
     var lpConfig = {
       method: 'get',
-      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/events',
+      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + '27f58850-6002-48ec-a656-77681d67f8db' + '/events',
       async: true,
+      timeout: 30000,
       headers: {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken,
         'Accept' : 'application/json'
@@ -38,8 +39,7 @@ var ATT = ATT || {};
         // if we have events in the responseText
         if (responseEvent.events) {
           // grab session id & state
-          var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4],
-            state = responseEvent.events.eventList[0].eventObject.state;
+          var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
           // publish event
           app.event.publish(sessID + '.responseEvent', responseEvent);
         }
@@ -49,12 +49,18 @@ var ATT = ATT || {};
         if (app.WebRTC.Session.isAlive) {
           app.WebRTC.getEvents(lpConfig);
         }
+      },
+      ontimeout: function() {
+        // repoll
+        if (app.WebRTC.Session.isAlive) {
+          app.WebRTC.getEvents(lpConfig);
+        }
       }
     };
 
     /*===========================================
     =        Web Socket Config                 =
-    ===========================================*/ 
+    ===========================================*/
     var wsConfig = {
       method: 'post',
       url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/websocket',

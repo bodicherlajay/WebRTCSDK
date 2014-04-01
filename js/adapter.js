@@ -107,7 +107,7 @@ if (navigator.mozGetUserMedia) {
         parseInt(navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)[2], 10);
 
     // Creates iceServer from the url for Chrome.
-    createIceServer = function (url, username, password) {
+    var createIceServer = function (url, username, password) {
         var iceServer = null;
         var url_parts = url.split(':');
         if (url_parts[0].indexOf('stun') === 0) {
