@@ -1,10 +1,12 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global WebSocket, ATT:true*/
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150, nomen: true*/
+/*global ATT,WebSocket:true*/
 /**
     WebRTC Event Channel Module
 */
 
-var ATT = ATT || {};
+if (!ATT) {
+  var ATT = {};
+}
 
 (function (app) {
   'use strict';
@@ -14,13 +16,48 @@ var ATT = ATT || {};
   * @param {Boolean} useLongPolling Use Long Polling
   */
   function getEventChannel(useLongPolling) {
+    // to appease the JSLint gods
+    var lpConfig,
+      // websocket config
+      wsConfig,
+      // response event
+      responseEvent,
+      // session id
+      sessID,
+      // channel id
+      channelID,
+      // websocket instance
+      ws;
 
+    /**
+    * Process Events
+    * @param {Object} response The response
+    **/
+    function _processMessages(response) {
+      // repoll
+      if (app.WebRTC.Session.isAlive) {
+        app.WebRTC.getEvents(lpConfig);
+      }
+      // parse response
+      responseEvent = JSON.parse(response.responseText);
+      // dump to console
+      console.log(JSON.stringify(response.responseText));
+      // if we have events in the responseText
+      if (responseEvent.events) {
+        // grab session id
+        sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
+        // publish event
+        app.event.publish(sessID + '.responseEvent', responseEvent.events.eventList);
+        // log the publish
+        console.log(sessID + '.responseEvent', responseEvent.events.eventList);
+      }
+    }
     /*===========================================
     =            Long Polling Config           =
     ===========================================*/
-    var lpConfig = {
+    lpConfig = {
       method: 'get',
-      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + '27f58850-6002-48ec-a656-77681d67f8db' + '/events',
+      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/events',
       async: true,
       timeout: 30000,
       headers: {
@@ -28,21 +65,7 @@ var ATT = ATT || {};
         'Accept' : 'application/json'
       },
       success: function(response) {
-        // repoll
-        if (app.WebRTC.Session.isAlive) {
-          app.WebRTC.getEvents(lpConfig);
-        }
-        // parse response
-        var responseEvent = JSON.parse(response.responseText);
-        // dump to console
-        console.log(JSON.stringify(response.responseText));
-        // if we have events in the responseText
-        if (responseEvent.events) {
-          // grab session id & state
-          var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
-          // publish event
-          app.event.publish(sessID + '.responseEvent', responseEvent);
-        }
+        _processMessages(response);
       },
       error: function() {
         // repoll
@@ -61,7 +84,7 @@ var ATT = ATT || {};
     /*===========================================
     =        Web Socket Config                 =
     ===========================================*/
-    var wsConfig = {
+    wsConfig = {
       method: 'post',
       url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/websocket',
       async: true,
@@ -76,22 +99,15 @@ var ATT = ATT || {};
         // if we have a success location
         if (location) {
           // channelID is channel query string param
-          var channelID = location.split('=')[1];
+          channelID = location.split('=')[1];
           // dump to console
           console.log('CONNECTION CREATED. CHANNEL ID = ' + channelID);
           // create new WebSocket instance
-          var ws = new WebSocket(location);
+          ws = new WebSocket(location);
           // handle messages
-          ws.onmessage = function(e) {
-            // parse response
-            var responseEvent = JSON.parse(e.data);
-            // dump res & event state to console
-            console.log(JSON.stringify(responseEvent));
-            // grab the sessionID
-            var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
-            // publish sessionID along with responseEvent Object
-            app.event.publish(sessID + '.responseEvent', responseEvent);
-          }
+          ws.onmessage = function(response) {
+            _processMessages(response);
+          };
         }
       },
       error: function(e) {
@@ -99,9 +115,13 @@ var ATT = ATT || {};
       }
     };
 
-    // Create the event channel based on the useLongPolling flag
-    useLongPolling ? app.WebRTC.getEvents(lpConfig) : app.WebRTC.getEvents(wsConfig);
-
+    // Kickstart the event channel
+    // @TODO: invalid session bug
+    if (useLongPolling) {
+      app.WebRTC.getEvents(lpConfig);
+    } else {
+      app.WebRTC.getEvents(wsConfig);
+    }
   }
 
   // place on ATT namespace
