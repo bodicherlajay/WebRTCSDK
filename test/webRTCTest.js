@@ -16,6 +16,7 @@ describe('webRTC', function () {
             requests.push(xhr);
         };
     });
+  
 
     afterEach(function () {
         xhr.restore();
@@ -38,7 +39,7 @@ describe('webRTC', function () {
             expect(ATT[apiNamespace].foo).is.a('function');
         });
 
-        it('should call rest client with proper arguments from config', function () {
+        it('should create restClient with async of true if not specified (should set defaults)', function () {
             var attConfig = {
                 apiConfigs: {
                     foo: {
@@ -47,16 +48,11 @@ describe('webRTC', function () {
                     }
                 }
             };
-            
-            var spy = sinon.spy(RESTClient.prototype, 'ajax');
+          
             ATT.init(attConfig);
-            ATT[apiNamespace].foo({}, function(){}, function(){});
+            ATT[apiNamespace].foo({});
             
-            var configPassedtoAjax = spy.args[0][0];    // first call, first argument
-            expect(configPassedtoAjax.method).to.equal(attConfig.apiConfigs.foo.method);
-            expect(configPassedtoAjax.url).to.equal(attConfig.apiConfigs.foo.url);
-            
-            spy.restore();
+            expect(ATT[apiNamespace].foo.restClient.config.async).to.be.true;
         });
 
         it('should call rest client with correct callbacks and data', function () {
@@ -80,18 +76,15 @@ describe('webRTC', function () {
             };
             
             
-            var spy = sinon.spy(RESTClient.prototype, 'ajax');
-            ATT[apiNamespace].foo(config);
-            
-            var configPassedtoAjax = spy.args[0][0];    // first call, first argument
-            
+            var spy = sinon.spy(RESTClient.prototype, 'ajax'),
+              method = ATT[apiNamespace].foo;
+          
+          method(config);
+          
             // expects
-            expect(configPassedtoAjax.data).eql(config.data);
-            //expect(configPassedtoAjax.data).eql(data);
-            //expect(configPassedtoAjax.success).equal(successCB);
-            //expect(configPassedtoAjax.error).equal(errorCB);
-            
-            spy.restore();
+            expect(method.restClient.config.data).eql(config.data);
+            expect(method.restClient.config.success).to.be.a('function');
+            expect(method.restClient.config.error).to.be.a('function');
         });
 
         it('should add api methods during init.', function () {

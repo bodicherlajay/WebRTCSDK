@@ -1,12 +1,14 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT: true, RESTClient */
+/*global ATT:true, RESTClient */
 /**
  *  The WebRTC SDK.
  *  API Method namespace is set on the apiNamespace variable.
  *  @namespace WebRTC
  */
 
-var ATT = ATT || {};
+if (!ATT) {
+  var ATT = {};
+}
 
 (function (app) {
   "use strict";
@@ -23,7 +25,10 @@ var ATT = ATT || {};
    * @param {Object} methodConfig XHR configuration object, e.g. object at APIConfigs['login'].
    * @returns {Function}
    */
-  function getConfiguredRESTMethod(methodConfig) {
+  function getConfiguredRESTMethod(apiMethodConfig) {
+
+    var methodConfig = apiMethodConfig.methodDescription,
+      methodName = apiMethodConfig.methodName;
 
     // runtime call
     return function (config) {
@@ -46,8 +51,11 @@ var ATT = ATT || {};
 
       restClient = new RESTClient(methodConfig);
 
-      // call the RESTClient
-      return restClient[methodConfig.method](methodConfig);
+      // attach the restclient to the method (to expose actual rest client for unit testability).
+      apiObject[methodName].restClient = restClient;
+
+      // make request
+      restClient.ajax();
     };
   }
 
@@ -60,7 +68,10 @@ var ATT = ATT || {};
       methodDescription = apiMethodConfig[methodName];
 
     // Add API operation to the ATT namespace.
-    apiObject[methodName] = getConfiguredRESTMethod(methodDescription);
+    apiObject[methodName] = getConfiguredRESTMethod({
+      methodName: methodName,
+      methodDescription: methodDescription
+    });
   }
 
   /**
