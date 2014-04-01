@@ -1,9 +1,13 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
+/*global ATT:true, RTCPeerConnection, getUserMedia */
+
 /**
  * PeerConnection Service
  * Dependencies:  adapter.js
  */
-var ATT = ATT || {};
+if (!ATT) {
+  var ATT = {};
+}
 
 (function (app, UserMediaService, SignalingService) {
   "use strict";

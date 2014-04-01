@@ -64,16 +64,16 @@ if (!ATT) {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken,
         'Accept' : 'application/json'
       },
-      success: function(response) {
+      success: function (response) {
         _processMessages(response);
       },
-      error: function() {
+      error: function () {
         // repoll
         if (app.WebRTC.Session.isAlive) {
           app.WebRTC.getEvents(lpConfig);
         }
       },
-      ontimeout: function() {
+      ontimeout: function () {
         // repoll
         if (app.WebRTC.Session.isAlive) {
           app.WebRTC.getEvents(lpConfig);
@@ -93,7 +93,7 @@ if (!ATT) {
         'Content-type': 'application/json',
         'Accept' : 'application/json'
       },
-      success: function(response) {
+      success: function (response) {
         // grab the location from response headers
         var location = response.getResponseHeader('location');
         // if we have a success location
@@ -105,12 +105,12 @@ if (!ATT) {
           // create new WebSocket instance
           ws = new WebSocket(location);
           // handle messages
-          ws.onmessage = function(response) {
+          ws.onmessage = function (response) {
             _processMessages(response);
           };
         }
       },
-      error: function(e) {
+      error: function (e) {
         console.log('ERROR', e);
       }
     };

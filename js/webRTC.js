@@ -12,7 +12,7 @@ if (!ATT) {
 
 (function (app) {
   "use strict";
-  // api operations namespace: (app.WebRTCAPI)
+  // api operations namespace:
   var apiNamespace = 'WebRTC',
     apiObject,
     utils;
@@ -22,7 +22,7 @@ if (!ATT) {
 
   /**
    * Returns function that will call configured REST method.
-   * @param {Object} methodConfig XHR configuration object, e.g. object at APIConfigs['login'].
+   * @param {Object} apiMethodConfig API method config object.
    * @returns {Function}
    */
   function getConfiguredRESTMethod(apiMethodConfig) {
@@ -52,6 +52,7 @@ if (!ATT) {
       restClient = new RESTClient(methodConfig);
 
       // attach the restclient to the method (to expose actual rest client for unit testability).
+      // probably a better way to do this..drawing a blank at the moment.
       apiObject[methodName].restClient = restClient;
 
       // make request
