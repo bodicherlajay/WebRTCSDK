@@ -23,11 +23,20 @@ module.exports = function (grunt) {
           checkstyle: 'jslint.xml' // write a checkstyle-XML
         }
       }
+    },
+    jsdoc: {
+        dist: {
+            src: ['js/**/*.js'], 
+            options: {
+                destination: 'doc'
+            }
+        }
     }
   });
 
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-jslint');
+  grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('default', ['jslint', 'karma:continuous']);
 };

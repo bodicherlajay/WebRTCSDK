@@ -5,4 +5,5 @@
 /.idea
 /coverage
 /out
+/doc
 results.xml
