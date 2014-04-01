@@ -39,9 +39,9 @@ var RESTClient = (function () {
       // default ajax configuration
     this.config.async = this.config.async || true;
     this.config.timeout = this.config.timeout || 10000;
-    this.config.success = this.config.success || function () { return; };
-    this.config.error = this.config.error || function () { return; };
-    this.config.ontimeout = this.config.ontimeout || function () { return; };
+    this.config.success = this.config.success || function () {};
+    this.config.error = this.config.error || function () {};
+    this.config.ontimeout = this.config.ontimeout || function () {};
     this.config.headers = this.config.headers || {};
     this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
   }
@@ -69,8 +69,9 @@ var RESTClient = (function () {
   }
 
   // public methods
-  RESTClient.prototype.ajax = function (config) {
-    var xhr = new XMLHttpRequest(),
+  RESTClient.prototype.ajax = function () {
+    var config = this.config,
+      xhr = new XMLHttpRequest(),
       data = config.data && JSON.stringify(config.data),
       header;
 

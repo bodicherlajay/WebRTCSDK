@@ -10,8 +10,6 @@ describe('Rest Client', function() {
 
     beforeEach(function() {
 
-        rc = new RESTClient();
-
         this.xhr = sinon.useFakeXMLHttpRequest();
         requests = this.requests = [];
 
@@ -28,7 +26,9 @@ describe('Rest Client', function() {
             success: successSpy,
             error: errorSpy,
             async: true
-        }
+        };
+      
+      rc = new RESTClient(config);
     });
 
     afterEach(function() {
@@ -47,9 +47,12 @@ describe('Rest Client', function() {
         expect(rc.get).to.be.a('function');
     });
 
-    it('should call xhr open correctly for get', function() {
-        //act
-        rc.get(config);
+    it('should call xhr open correctly for ajax', function() {
+      config.method = 'get';
+      rc = new RESTClient(config);
+      
+      //act
+      rc.ajax(config);
 
         //assert
         expect(this.requests[0].url).to.equal(config.url);
@@ -59,21 +62,14 @@ describe('Rest Client', function() {
 
     it('should call xhr open correctly for post', function() {
         //act
-        rc.post(config);
+      config.method = 'post';
+      rc = new RESTClient(config);
+      
+      rc.ajax(config);
 
         //assert
         expect(this.requests[0].url).to.equal(config.url);
         expect(this.requests[0].method).to.equal('post');
-        expect(this.requests[0].async).to.equal(config.async);
-    });
-
-    it('should call xhr open correctly for delete', function() {
-        //act
-        rc.delete(config);
-
-        //assert
-        expect(this.requests[0].url).to.equal(config.url);
-        expect(this.requests[0].method).to.equal('delete');
         expect(this.requests[0].async).to.equal(config.async);
     });
 
@@ -120,8 +116,9 @@ describe('Rest Client', function() {
 
     it('should only set Content-Type header if none specified', function() {
         //act
-        rc.get(config);
-        expect(this.requests[0].requestHeaders).to.eql({'Content-Type': 'application/json'});
+      rc = new RESTClient(config);
+        rc.ajax();
+        expect(this.requests[0].requestHeaders['Content-Type']).to.contain('application/json');
     });
 
     it('should set all headers specified', function() {
@@ -172,7 +169,6 @@ describe('Rest Client', function() {
     });
 
     it('should use correct defaults if no config provided', function() {
-        
         var client = new RESTClient({});
         var config = client.getConfig();
         expect(config.success).to.be.a('function', 'success callback not set');
@@ -183,27 +179,33 @@ describe('Rest Client', function() {
 
     it('should use set the timeout on the XMLHttpRequest', function() {
         config.timeout = 50;
+      
+      rc = new RESTClient(config);
+      rc.ajax(config);
 
         //act
-        rc.get(config);
         expect(this.requests[0].timeout).to.equal(50);
     });
 
     it('should not share config (unique instances of RESTClient)', function() {
         //act
-        var rc1 = new RESTClient({headers: {'Content-Type': 'application/xml'}});
-        var rc2 = new RESTClient();
+        var rc1 = new RESTClient({
+          url: 'url1',
+          headers: {'Content-Type': 'application/xml'}
+        });
+        var rc2 = new RESTClient({
+          url: 'url2'
+        });
 
-        rc1.get({url:'url1'});
+        rc1.ajax();
         var requests1 = this.requests[0];
         expect(requests1.url).to.eql('url1');
         expect(requests1.requestHeaders['Content-Type']).to.contain('application/xml', 'request from rc1 had wrong header');
 
-        rc2.get({url:'url2'});
+        rc2.ajax();
         var requests2 = this.requests[1];
         expect(requests2.url).to.eql('url2');
         expect(requests2.requestHeaders['Content-Type']).to.contain('application/json', 'request from rc2 had wrong header');
-        
     });
 
 });
