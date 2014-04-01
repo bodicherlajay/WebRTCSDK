@@ -48,7 +48,6 @@ var RESTClient = (function () {
 
   // private methods
   function success(successCallback) {
-    /*jshint validthis:true */
     var xhr = this,
       responseObject = {
         getJson: function () {
@@ -64,7 +63,6 @@ var RESTClient = (function () {
   }
 
   function error(errorCallback) {
-    /*jshint validthis:true */
     errorCallback.call(this, this.responseText);
   }
 
