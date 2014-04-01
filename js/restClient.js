@@ -41,6 +41,7 @@ var RESTClient = (function () {
     this.config.timeout = this.config.timeout || 10000;
     this.config.success = this.config.success || function () { return; };
     this.config.error = this.config.error || function () { return; };
+    this.config.ontimeout = this.config.ontimeout || function() { return; };
     this.config.headers = this.config.headers || {};
     this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
   }
@@ -73,6 +74,7 @@ var RESTClient = (function () {
       data = config.data && JSON.stringify(config.data),
       header;
 
+    // timeout
     xhr.timeout = config.timeout;
 
     // success callback
@@ -80,6 +82,9 @@ var RESTClient = (function () {
 
     // error callback
     xhr.onerror = error.bind(xhr, config.error);
+
+    // on timeout callback
+    xhr.ontimeout = config.ontimeout;
 
     // open connection
     xhr.open(config.method, config.url, config.async);
