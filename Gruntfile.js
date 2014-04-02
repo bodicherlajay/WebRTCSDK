@@ -18,6 +18,7 @@ module.exports = function (grunt) {
       // lint your project's server code
       server: {
         src: ['js/**/*.js'],
+        exclude: ['js/adapter.js'],
         options: {
           log: 'jslint.log',
           checkstyle: 'jslint.xml' // write a checkstyle-XML
@@ -26,7 +27,7 @@ module.exports = function (grunt) {
     },
     jsdoc: {
         dist: {
-            src: ['js/**/*.js'], 
+            src: ['js/**/*.js'],
             options: {
                 destination: 'doc'
             }
