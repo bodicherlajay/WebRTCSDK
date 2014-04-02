@@ -54,7 +54,7 @@ if (!ATT) {
     }
     return false;
   };
-  
+
   module.publish  =  function () {
     var args  =  Array.prototype.slice.call(arguments),
       topic  =  args.shift(),
