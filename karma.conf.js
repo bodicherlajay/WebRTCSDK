@@ -4,29 +4,32 @@
 module.exports = function(config) {
   config.set({
 
+    pattern: 'fixtures/**/*.html', included: true,
+
     // base path, that will be used to resolve files and exclude
     basePath: '.',
 
     // frameworks to use
     frameworks: ['mocha', 'chai', 'sinon'],
 
-
     // list of files / patterns to load in the browser
     files: [
+      'js/adapter.js',
       'js-shared/js/restClient.js',
       'js/webRTC.js',
       'js/APIConfigs.js',
       'js-shared/js/eventEmitter.js',
       'js/eventChannel.js',
-      'js-shared/js/ws.js',
       'js/signalingServiceModule.js',
+      'js/peerConnectionServiceModule.js',
+      'js/userMediaServiceModule.js',
       // 'js/**/*.js',
       'test/**/*.js'
     ],
 
-
     // list of files to exclude
-    exclude: [],
+    exclude: [
+    ],
 
     // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'

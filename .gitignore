@@ -1,7 +1,9 @@
 /nbproject/private/
+/js/npm-debug.log
 /node_modules
 /nbproject
 /.idea
 /coverage
 /out
+/doc
 results.xml
