@@ -230,18 +230,17 @@ if (!ATT) {
     ATT.event.subscribe('call-initiated', function (event) {
       success.call(null, event);
     });
-
   }
 
-  // exposed methods/object
+  // sub-namespaces on ATT.
   app.utils = utils;
   app.init = init;
   app.RESTClient = RESTClient;
 
+  // The SDK public API.
   // Authenticates and creates WebRTC session
   apiObject.login = loginAndCreateWebRTCSession;
 
   // Create call.
   apiObject.dial = dial;
-
 }(ATT || {}));

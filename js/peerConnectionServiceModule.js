@@ -5,9 +5,14 @@
  * PeerConnection Service
  * Dependencies:  adapter.js
  */
-if (!ATT) {
-  var ATT = {};
-}
+//if (!ATT) {
+//  var ATT = {};
+//}
+//if (typeof ATT === 'undefined') {
+//  var ATT = {};
+//}
+//
+//var ATT = ATT || {};
 
 (function (app, UserMediaService, SignalingService) {
   "use strict";
@@ -146,4 +151,4 @@ if (!ATT) {
   //Name of the module
   app.PeerConnectionService = module;
 
-}(ATT, ATT.UserMediaService || {}, ATT.SignalingService || {}));
+}(ATT || {}, ATT.UserMediaService || {}, ATT.SignalingService || {}));

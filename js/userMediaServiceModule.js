@@ -7,7 +7,6 @@
 if (!ATT) {
   var ATT = {};
 }
-//var ATT = ATT || {};
 
 (function (app) {
   "use strict";
