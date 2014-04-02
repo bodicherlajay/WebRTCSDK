@@ -23,6 +23,7 @@ module.exports = function(config) {
       'js/signalingServiceModule.js',
       'js/peerConnectionServiceModule.js',
       'js/userMediaServiceModule.js',
+      'js/eventEnum.js',
       // 'js/**/*.js',
       'test/**/*.js'
     ],
