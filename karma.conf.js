@@ -24,6 +24,8 @@ module.exports = function(config) {
       'js/peerConnectionServiceModule.js',
       'js/userMediaServiceModule.js',
       'js/eventEnum.js',
+      'js/SDPFilterModule.js',
+      'js/resourceManagerModule.js',
       // 'js/**/*.js',
       'test/**/*.js'
     ],

@@ -19,8 +19,10 @@ module.exports = function(config) {
       'js/webRTC.js',
       'js/APIConfigs.js',
       'js-shared/js/eventEmitter.js',
-      'js/eventChannel.js'
+      'js/eventChannel.js',
+      'js/eventEnum.js',
       'js/signalingServiceModule.js',
+      'js/resourceManagerModule.js',
       // 'js/**/*.js',
       'test/**/*.js'
     ],
