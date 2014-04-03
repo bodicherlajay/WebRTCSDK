@@ -1,11 +1,11 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT:true*/
+/*global Env:true*/
 
-if (!ATT) {
-  var ATT = {};
+if (!Env) {
+  var Env = {};
 }
 
-(function (mainModule) {
+Env = (function () {
   "use strict";
 
   var module = {}, instance, init = function () {
@@ -20,6 +20,8 @@ if (!ATT) {
     return instance;
   };
 
-  mainModule.resourceManager = module;
+  return {
+    resourceManager : module
+  };
 
-}(ATT || {}));
+}());
