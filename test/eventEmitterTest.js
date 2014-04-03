@@ -1,5 +1,5 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT:true, describe:true, beforeEach:true, afterEach:true, it:true, sinon:true, expect:true, done:true*/
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150, unparam: true*/
+/*global ATT:true, describe:true, beforeEach:true, afterEach:true, it:true, sinon:true, assert:true, expect:true, done:true */
 
 /**
  * Unit tests for event emitter module.
@@ -19,33 +19,35 @@ describe('Event emitter', function () {
   });
 
   it('should call registered callbacks for a topic.', function (done) {
-    var subscribe1Spy = sinon.spy(function (arg1, arg2) {
-      expect(subscribe1Spy.calledWith(123, 'abc')).to.be.true;
+    var subscribe1Spy, subscribe2Spy;
+    subscribe1Spy = sinon.spy(function (arg1, arg2) {
+      assert(expect(subscribe1Spy.calledWith(123, 'abc')).to.be.true);
       done();
     });
 
-    var subscribe2Spy = sinon.spy(function (arg1, arg2) {
-      expect(subscribe2Spy.called).to.be.true;
-      expect(subscribe2Spy.calledWith(123, 'abc')).to.be.true;
+    subscribe2Spy = sinon.spy(function (arg1, arg2) {
+      assert(expect(subscribe2Spy.called).to.be.true);
+      assert(expect(subscribe2Spy.calledWith(123, 'abc')).to.be.true);
       done();
     });
 
     ATT.event.subscribe('topicXYZ', subscribe1Spy);
     ATT.event.subscribe('topicXYZ', subscribe2Spy);
     ATT.event.publish('topicXYZ', 123, 'abc');
-    expect(ATT.event.publish('topicXYZ', 123, 'abc')).to.be.true;
+    assert(expect(ATT.event.publish('topicXYZ', 123, 'abc')).to.be.true);
   });
 
   it('shouldnt call callbacks not registered on a topic', function (done) {
-    var subscribe1Spy = sinon.spy(function (arg1, arg2) {
-      expect(subscribe1Spy.called).to.be.true;
-      expect(subscribe1Spy.calledWith(123)).to.be.true;
+    var subscribe1Spy, subscribe2Spy;
+    subscribe1Spy = sinon.spy(function (arg1, arg2) {
+      assert(expect(subscribe1Spy.called).to.be.true);
+      assert(expect(subscribe1Spy.calledWith(123)).to.be.true);
       done();
     });
 
-    var subscribe2Spy = sinon.spy(function (arg1, arg2) {
-      expect(subscribe2Spy.called).to.be.false;
-      expect(subscribe2Spy.calledWith(123)).to.be.false;
+    subscribe2Spy = sinon.spy(function (arg1, arg2) {
+      assert(expect(subscribe2Spy.called).to.be.false);
+      assert(expect(subscribe2Spy.calledWith(123)).to.be.false);
       done();
     });
 
@@ -68,8 +70,9 @@ describe('Event emitter', function () {
   });
 
   it('should call callback every time publish called.', function (done) {
-    var cnt = 0;
-    var subscribe1Spy = sinon.spy(function () {
+    var subscribe1Spy, cnt;
+    cnt = 0;
+    subscribe1Spy = sinon.spy(function () {
       cnt += 1;
     // need to return closure to keep track of cnt calls
       return {
@@ -84,7 +87,7 @@ describe('Event emitter', function () {
     expect(subscribe1Spy().getCount()).to.equal(1);
 
     ATT.event.publish('topicABC', 123);
-    expect(subscribe1Spy().getCount()).to.equal(2);
+    assert(expect(subscribe1Spy().getCount()).to.equal(2));
 
     done();
   });
@@ -97,14 +100,14 @@ describe('Event emitter', function () {
     });
 
     ATT.event.subscribe('topicABC', subscribe1Spy);
-    expect(ATT.event.unsubscribe('topicAAA', subscribe1Spy)).to.be.false;
+    assert(expect(ATT.event.unsubscribe('topicAAA', subscribe1Spy)).to.be.false);
 
     ATT.event.publish('topicABC');
   });
 
   it('shouldn\'t call any callbacks on non-existent topic', function () {
     var subscribe1Spy = sinon.spy(function () {
-      expect(ATT.event.publish('topicBBB')).to.be.false;
+      assert(expect(ATT.event.publish('topicBBB')).to.be.false);
       expect(subscribe1Spy.callCount).to.equal(0);
       done();
     });

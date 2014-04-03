@@ -45,7 +45,7 @@ var RESTClient = (function () {
     this.config.ontimeout = this.config.ontimeout || function () {};
     this.config.headers = this.config.headers || {};
     this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
-    this.config.headers['Accept'] = this.config.headers['Accept'] || 'application/json';
+    this.config.headers.Accept = this.config.headers.Accept || 'application/json';
   }
 
   // private methods
