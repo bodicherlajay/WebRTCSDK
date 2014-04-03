@@ -20,22 +20,22 @@ module.exports = function (grunt) {
       'js/userMediaServiceModule.js',
       'js/eventEnum.js',
       'test/**/*.js'],
-    junitReporter: {
-      outputFile: 'out/junit/results.xml'
-    },
-    logLevel: 'INFO',
+    logLevel: 'DEBUG',
     port: 9876,
     browsers: ['Firefox', 'Chrome'],
-    captureTimeout: 6000000
+    captureTimeout: 60000
   },
     karmaConfigUnit = {
-      reporters: ['spec', 'junit', 'coverage'],
+      reporters: ['spec'],
       colors: true,
       singleRun: false
     },
     karmaConfigJenkins = {
       preprocessors: {
         'js/**/*.js': 'coverage'
+      },
+      junitReporter: {
+        outputFile: 'out/junit/results.xml'
       },
       reporters: ['junit', 'coverage'],
       coverageReporter: {
@@ -93,5 +93,5 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-jslint');
   grunt.loadNpmTasks('grunt-jsdoc');
 
-  grunt.registerTask('default', ['karma:continuous', 'jslint']);
+  grunt.registerTask('default', ['karma:jenkins', 'jslint']);
 };
