@@ -22,6 +22,6 @@ if (!ATT) {
     ERROR: 8
   };
 
-  mainModule.Event = module.Event;
+  mainModule.Event = Object.freeze(module.Event);
 
 }(ATT || {}));
