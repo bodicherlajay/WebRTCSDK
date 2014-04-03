@@ -1,4 +1,51 @@
+/*jslint indent:2*/
 module.exports = function (grunt) {
+  'use strict';
+  var karmaConfig = {
+    basePath: '.',
+    frameworks: ['mocha', 'chai', 'sinon'],
+    files: [
+      'js/**/*.js',
+      'test/**/*.js'
+    ],
+    logLevel: 'DEBUG',
+    port: 9876,
+    browsers: ['Firefox', 'Chrome'],
+    captureTimeout: 60000
+  },
+    karmaConfigUnit = {
+      reporters: ['spec'],
+      colors: true,
+      singleRun: false
+    },
+    karmaConfigJenkins = {
+      preprocessors: {
+        'js/**/*.js': 'coverage'
+      },
+      junitReporter: {
+        outputFile: 'out/junit/results.xml'
+      },
+      reporters: ['junit', 'coverage'],
+      coverageReporter: {
+        type : 'cobertura',
+        dir : 'coverage/',
+        file: 'coverage.xml'
+      },
+      colors: false,
+      autoWatch: false,
+      singleRun: true
+    },
+    attrname;
+
+  // little utility to merge options
+  for (attrname in karmaConfig) {
+    if (karmaConfig.hasOwnProperty(attrname)) {
+      // copy all properties from the Global config to the Jenkins config
+      karmaConfigJenkins[attrname] = karmaConfig[attrname];
+      // copy all properties from the Global config to the Unit Testing config
+      karmaConfigUnit[attrname] = karmaConfig[attrname];
+    }
+  }
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -6,21 +53,20 @@ module.exports = function (grunt) {
     // equivalent to `karma start <config file>
     karma: {
       unit: {
-        configFile: 'karma.conf.js',
+        options: karmaConfigUnit,
         autoWatch: true
       },
-      continuous: {
-        configFile: 'jenkins-karma.config.js',
-        singleRun: true
+      jenkins: {
+        options: karmaConfigJenkins
       }
     },
-    jslint: { 
+    jslint: {
       // lint your project's server code
       server: {
-        src: ['js/**/*.js'],
+        src: ['js/**/*.js', 'test/**/*.js'],
         options: {
-          log: 'jslint.log',
-          checkstyle: 'jslint.xml' // write a checkstyle-XML
+          log: 'out/jslint/jslint.log',
+          checkstyle: 'out/jslint/jslint.xml' // write a checkstyle-XML
         }
       }
     },
@@ -52,5 +98,5 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
-  grunt.registerTask('default', ['jslint', 'karma:continuous', 'concat', 'uglify']);
+  grunt.registerTask('default', ['karma:jenkins', 'jslint', 'concat', 'uglify']);
 };
