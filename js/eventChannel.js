@@ -4,10 +4,6 @@
     WebRTC Event Channel Module
 */
 
-if (!ATT) {
-  var ATT = {};
-}
-
 (function (app) {
   'use strict';
 
@@ -22,8 +18,6 @@ if (!ATT) {
       wsConfig,
       // response event
       responseEvent,
-      // session id
-      sessID,
       // channel id
       channelID,
       // websocket instance
@@ -40,16 +34,20 @@ if (!ATT) {
       }
       // parse response
       responseEvent = JSON.parse(response.responseText);
-      // dump to console
       console.log(JSON.stringify(response.responseText));
       // if we have events in the responseText
       if (responseEvent.events) {
-        // grab session id
-        sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
-        // publish event
-        app.event.publish(sessID + '.responseEvent', responseEvent.events.eventList);
-        // log the publish
-        console.log(sessID + '.responseEvent', responseEvent.events.eventList);
+        // grab session id & loop through event list
+        var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4],
+          events = responseEvent.events.eventList,
+          e;
+        // publish
+        for (e in events) {
+          if (events.hasOwnProperty(e)) {
+            app.event.publish(sessID + '.responseEvent', events[e]);
+            console.log(sessID + '.responseEvent', events[e]);
+          }
+        }
       }
     }
     /*===========================================
