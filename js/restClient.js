@@ -36,6 +36,7 @@ var RESTClient = (function () {
 
   function RESTClient(config) {
     this.config =  deepExtend({}, config);
+
       // default ajax configuration
     this.config.async = this.config.async || true;
     this.config.timeout = this.config.timeout || 10000;
@@ -44,6 +45,7 @@ var RESTClient = (function () {
     this.config.ontimeout = this.config.ontimeout || function () {};
     this.config.headers = this.config.headers || {};
     this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
+    this.config.headers['Accept'] = this.config.headers['Accept'] || 'application/json';
   }
 
   // private methods
