@@ -162,17 +162,30 @@ if (!ATT) {
               });
 
               data.webRtcSessionId = sessionId;
+              
               if (successCallback) {
-                successCallback(data);
+                var event = {
+                  type : 'READY'
+                };
+                
+                event.data = data;
+                successCallback(event);
               }
+              // ATT.event.subscribe (sessionId + '.responseEvent', function (event) {
+                // if (successCallback) {
+                  // event.data = data;
+                  // successCallback(event);
+                // }
+              // });
 
-              /**
-               * Call BF to create event channel
-               * @param {Boolean} true/false Use Long Polling?
-               * @returns Event Channel
-               **/
-              ATT.WebRTC.Session.isAlive = true;
-              ATT.WebRTC.eventChannel(false);
+              if (sessionId) {
+                /**
+                 * Call BF to create event channel
+                 * @param {Boolean} true/false Use Long Polling?
+                 * @returns Event Channel
+                 **/
+                ATT.WebRTC.eventChannel(false);
+              }
             },
             error: function () {
             }
