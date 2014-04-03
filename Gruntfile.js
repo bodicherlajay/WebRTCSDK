@@ -4,11 +4,13 @@ module.exports = function (grunt) {
   'use strict';
 
   var karmaConfig = {
-    pattern: 'fixtures/**/*.html',
-    included: true,
     basePath: '.',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
+      {
+        pattern: 'fixtures/**/*.html',
+        included: true
+      },
       'js/adapter.js',
       'js-shared/js/restClient.js',
       'js/webRTC.js',
