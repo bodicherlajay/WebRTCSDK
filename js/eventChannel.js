@@ -58,11 +58,9 @@ if (!ATT) {
     lpConfig = {
       method: 'get',
       url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/events',
-      async: true,
       timeout: 30000,
       headers: {
-        'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken,
-        'Accept' : 'application/json'
+        'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
       success: function (response) {
         _processMessages(response);
@@ -87,11 +85,8 @@ if (!ATT) {
     wsConfig = {
       method: 'post',
       url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/websocket',
-      async: true,
       headers: {
-        'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken,
-        'Content-type': 'application/json',
-        'Accept' : 'application/json'
+        'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
       success: function (response) {
         // grab the location from response headers

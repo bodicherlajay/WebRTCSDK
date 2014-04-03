@@ -148,9 +148,7 @@ if (!ATT) {
             },
             headers: {
               "Authorization": "Bearer " + accessToken,
-              "x-e911Id": e911Id,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
+              "x-e911Id": e911Id
             },
 
             success: function (responseObject) {
