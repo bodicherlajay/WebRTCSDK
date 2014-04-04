@@ -19,6 +19,9 @@ if (!ATT) {
           }
         };
 
+        console.log ("Making the call now");
+        console.log (data);
+        
         ATT.WebRTC.startCall({
           urlParams : [ATT.WebRTC.Session.Id], // pass this to the urlFormatter
           headers : {
@@ -32,6 +35,10 @@ if (!ATT) {
               xState : xState
             };
 
+            console.log ('Making call succeceded');
+            console.log (headers);
+            console.log (obj);
+            
             ATT.event.publish('call-initiated', headers);
 
             // call success callback passed to send.
@@ -39,7 +46,9 @@ if (!ATT) {
               config.success.call(null, headers);
             }
           },
-          error : function() {
+          error : function(obj) {
+            console.log ('Making call failed');
+            console.log (obj);
             if ( typeof config.error === 'function') {
               config.error.call(null);
             }

@@ -89,6 +89,10 @@
 
         // create the offer.
         this.createOffer.call(this, this.peerConnection);
+
+        // create the answer.
+        this.createAnswer.call(this, this.peerConnection);
+
       },
 
       onLocalStreamCreateError: function () {
@@ -116,6 +120,21 @@
           pc.createOffer(arg1);
         }
       },
+      
+      createAnswer: function (pc) {
+
+        ATT.event.subscribe(ATT.WebRTC.Session.Id + '.responseEvent', function(event) {
+          if (event.type === 'calls' && event.state === 'session-open') {
+            console.log('Received answer...');
+            console.log(event.sdp);
+            pc.setRemoteDescription(new RTCSessionDescription({
+              sdp : event.sdp,
+              type : 'answer'
+            }));
+          }
+        });
+      },
+
 
       setUpICETrickling: function (pc) {
         var self = this;

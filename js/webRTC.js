@@ -184,7 +184,7 @@ if (!ATT) {
                  * @param {Boolean} true/false Use Long Polling?
                  * @returns Event Channel
                  **/
-                ATT.WebRTC.eventChannel(true);
+                ATT.WebRTC.eventChannel(false);
               }
             },
             error: function () {
@@ -233,13 +233,10 @@ if (!ATT) {
     ATT.UserMediaService.startCall(config);
 
     // Subscribe to event and call success callback.
-    // ATT.event.subscribe(ATT.WebRTC.Session.webRTCChannel, function (event) {
-    // success.call(null, event);
-    // });
-
-    // Subscribe to event and call success callback.
-    ATT.event.subscribe('call-initiated', function (event) {
-      success.call(null, event);
+    ATT.event.subscribe (ATT.WebRTC.Session.Id + '.responseEvent', function (event) {
+      if (success) {
+        success(event);
+      }
     });
   }
 
