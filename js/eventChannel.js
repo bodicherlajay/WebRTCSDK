@@ -1,4 +1,4 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150, nomen: true*/
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT,WebSocket:true*/
 /**
     WebRTC Event Channel Module
@@ -25,16 +25,14 @@
 
     /**
     * Process Events
-    * @param {Object} response The response
+    * @param {Object} messages The messages
     **/
-    function _processMessages(response) {
+    function processMessages(messages) {
       // repoll
-      if (app.WebRTC.Session.isAlive) {
-        app.WebRTC.getEvents(lpConfig);
-      }
+      app.WebRTC.getEvents(lpConfig);
       // parse response
-      responseEvent = JSON.parse(response.responseText);
-      console.log(JSON.stringify(response.responseText));
+      responseEvent = JSON.parse(messages.responseText);
+      console.log(JSON.stringify(messages.responseText));
       // if we have events in the responseText
       if (responseEvent.events) {
         // grab session id & loop through event list
@@ -61,19 +59,15 @@
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
       success: function (response) {
-        _processMessages(response);
+        processMessages(response);
       },
       error: function () {
         // repoll
-        if (app.WebRTC.Session.isAlive) {
-          app.WebRTC.getEvents(lpConfig);
-        }
+        app.WebRTC.getEvents(lpConfig);
       },
       ontimeout: function () {
         // repoll
-        if (app.WebRTC.Session.isAlive) {
-          app.WebRTC.getEvents(lpConfig);
-        }
+        app.WebRTC.getEvents(lpConfig);
       }
     };
 
@@ -86,9 +80,9 @@
       headers: {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
-      success: function (response) {
+      success: function (messages) {
         // grab the location from response headers
-        var location = response.getResponseHeader('location');
+        var location = messages.getResponseHeader('location');
         // if we have a success location
         if (location) {
           // channelID is channel query string param
@@ -98,8 +92,8 @@
           // create new WebSocket instance
           ws = new WebSocket(location);
           // handle messages
-          ws.onmessage = function (response) {
-            _processMessages(response);
+          ws.onmessage = function (messages) {
+            processMessages(messages);
           };
         }
       },
