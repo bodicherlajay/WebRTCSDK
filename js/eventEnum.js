@@ -22,10 +22,10 @@ if (!ATT) {
     ERROR: 8
   };
 
-  module.RTCEvent = {
-    SESSION_OPEN: "Session Open",
+  module.RTCEvents = {
+    SESSION_OPEN: "session-open",
     SESSION_MODIFIED: "Session Modified",
-    SESSION_TERMINATED: "Session Terminated",
+    SESSION_TERMINATED: "session-terminated",
     INVITATION_RECEIVED: "Invitation Received",
     MODIFICATION_RECEIVED: "Modification Received",
     MODIFICATION_TERMINATED: "Modification Terminated",
@@ -34,12 +34,12 @@ if (!ATT) {
     UNKNOWN: "Unknown"
   };
 
-  module.MediaType = {
+  module.MediaTypes = {
     AUDIO_VIDEO: "audiovideo",
     MEDIA_CONFERENCE: "media-conference",
     MEDIACONFERENCE: "mediaconference"
   };
   mainModule.CallStatus = Object.freeze(module.CallStatus);
-  mainModule.RTCEvent = Object.freeze(module.RTCEvent);
+  mainModule.RTCEvents = Object.freeze(module.RTCEvents);
 
 }(ATT || {}));

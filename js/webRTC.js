@@ -91,14 +91,10 @@ if (!Env) {
                 event.data = data;
                 successCallback(event);
               }
-              // ATT.event.subscribe (sessionId + '.responseEvent', function (event) {
-                // if (successCallback) {
-                  // event.data = data;
-                  // successCallback(event);
-                // }
-              // });
 
               if (sessionId) {
+                // setting up event callbacks using RTC Events
+                apiObject.RTCEvent.getInstance().setupEventCallbacks(config);
                 /**
                  * Call BF to create event channel
                  * @param {Boolean} true/false Use Long Polling?
@@ -113,7 +109,12 @@ if (!Env) {
 
         // if no access token return user data to UI, without webrtc session id
         if (!accessToken) {
-          return successCallback(data);
+            event = {
+              type : 'READY'
+            };
+
+            event.data = data; 
+          return successCallback(event);
         }
 
         // Call BF to create WebRTC Session.
@@ -136,6 +137,24 @@ if (!Env) {
       return typeof navigator.mozGetUserMedia === 'function' ||
         typeof navigator.webkitGetUserMedia === 'function' ||
         typeof navigator.getUserMedia === 'function';
+    },
+    
+    deepExtend: function (destination, source) {
+      var property;
+      for (property in source) {
+        // if the source has `property` as a `direct property`
+        if (source.hasOwnProperty(property)) {
+          // if that property is NOT an `Object`
+          if (!(source[property] instanceof Object)) {
+            // copy the value into the destination object
+            destination[property] = source[property];
+          } else {// `property` IS an `Object`
+            // copy `property` recursively
+            destination[property] = deepExtend(source[property]);
+          }
+        }
+      }
+      return destination;
     }
   };
 
@@ -148,15 +167,12 @@ if (!Env) {
    * @attribute {Object} mediaConstraints
    * @param success Success callback. Event object will be passed to this.
    */
-  function dial(config, success) {
-    ATT.UserMediaService.startCall(config);
+  function dial(config) {
 
-    // Subscribe to event and call success callback.
-    ATT.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
-      if (success) {
-        success(event);
-      }
-    });
+    // setting up event callbacks using RTC Events
+    apiObject.RTCEvent.getInstance().setupEventCallbacks(config);
+
+    ATT.UserMediaService.startCall(config);
   }
 
   /**
