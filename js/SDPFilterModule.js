@@ -30,18 +30,19 @@ if (!ATT) {
      * @returns {*|sdp}
   */
   function fixSDP(description) {
-    var sdp = description.sdp;
-    
+    var sdp = description.sdp,
+      cryptoMatch;
+
     if (!sdp) {
       return description;
     }
-    
+
     // Remove the 'crypto' attribute because Chrome is going to remove support for SDES, and only implement DTLS-SRTP
     // We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
-    var cryptoMatch = sdp.match(/crypto.+/);
+    cryptoMatch = sdp.match(/crypto\.+/);
     while (cryptoMatch && cryptoMatch.length > 0) {
       sdp = removeSDPAttribute(cryptoMatch[0], sdp);
-      cryptoMatch = sdp.match(/crypto.+/);
+      cryptoMatch = sdp.match(/crypto\.+/);
     }
 
     // Remove the BUNDLE because it does not work with the ERelay. Media must be separated not bundle.
@@ -60,7 +61,7 @@ if (!ATT) {
 
     // set back the fixed sdp string on description
     description.sdp = sdp;
-    
+
     return description;
   }
 

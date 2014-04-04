@@ -1,9 +1,14 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true*/
+/*global ATT:true, Env: true*/
 
 if (!ATT) {
   var ATT = {};
 }( function(app) {"use strict";
+
+    var apiObject, resourceManager = Env.resourceManager.getInstance();
+
+    // configure the resource manager (add api methods to ATT namespace)
+    apiObject = resourceManager.getAPIObject();
 
     app.SignalingService = {
 
@@ -19,10 +24,10 @@ if (!ATT) {
           }
         };
 
-        console.log ("Making the call now");
-        console.log (data);
-        
-        ATT.WebRTC.startCall({
+        console.log("Making the call now");
+        console.log(data);
+
+        apiObject.startCall({
           urlParams : [ATT.WebRTC.Session.Id], // pass this to the urlFormatter
           headers : {
             'Authorization' : 'Bearer ' + ATT.WebRTC.Session.accessToken
@@ -35,10 +40,10 @@ if (!ATT) {
               xState : xState
             };
 
-            console.log ('Making call succeceded');
-            console.log (headers);
-            console.log (obj);
-            
+            console.log('Making call succeceded');
+            console.log(headers);
+            console.log(obj);
+
             ATT.event.publish('call-initiated', headers);
 
             // call success callback passed to send.
@@ -47,8 +52,8 @@ if (!ATT) {
             }
           },
           error : function(obj) {
-            console.log ('Making call failed');
-            console.log (obj);
+            console.log('Making call failed');
+            console.log(obj);
             if ( typeof config.error === 'function') {
               config.error.call(null);
             }

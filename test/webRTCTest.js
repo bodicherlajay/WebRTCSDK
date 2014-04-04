@@ -3,7 +3,7 @@
 */
 
 describe('webRTC', function () {
-    var apiNamespace = 'WebRTC',
+    var apiObj = ATT[ATT.apiNamespaceName],
         requests,
         xhr;
     
@@ -27,104 +27,7 @@ describe('webRTC', function () {
         expect(ATT.utils).to.be.an('object');
     });
 
-    describe('init', function(){
-        it('should add api method on ATT namespace', function () {
-            ATT.init({
-             apiConfigs: {
-                    foo: {
-                        method: 'get'
-                    }
-                }
-            });
-            expect(ATT[apiNamespace].foo).is.a('function');
-        });
-
-        it('should create restClient with async of true if not specified (should set defaults)', function () {
-            var attConfig = {
-                apiConfigs: {
-                    foo: {
-                        method: 'get',
-                        url: 'http://example.com'
-                    }
-                }
-            };
-          
-            ATT.init(attConfig);
-            ATT[apiNamespace].foo({});
-            
-            expect(ATT[apiNamespace].foo.restClient.config.async).to.be.true;
-        });
-
-        it('should call rest client with correct callbacks and data', function () {
-            var attConfig = {
-                apiConfigs: {
-                    foo: {
-                        method: 'get'
-                    }
-                }
-            };
-
-            ATT.init(attConfig);
-            
-            var config = {
-                data: {
-                    username: 'username',
-                    password: 'password'
-                },
-                success: function () {},
-                error: function () {}
-            };
-            
-            
-            var spy = sinon.spy(RESTClient.prototype, 'ajax'),
-              method = ATT[apiNamespace].foo;
-          
-          method(config);
-          
-            // expects
-            expect(method.restClient.config.data).eql(config.data);
-            expect(method.restClient.config.success).to.be.a('function');
-            expect(method.restClient.config.error).to.be.a('function');
-        });
-
-        it('should add api methods during init.', function () {
-            ATT.init({
-                apiConfigs: {
-                    foo: {
-                        method: 'post'
-                    },
-                    logout: {
-                        method: 'delete'
-                    }
-                }
-            });
-
-            expect(ATT[apiNamespace].foo).is.a('function');
-            expect(ATT[apiNamespace].logout).is.a('function');
-        });
-
-        it('should use APIConfigs.js if no config passed in', function() {
-            ATT.init();
-            expect(ATT[apiNamespace].authenticate).is.a('function');
-        });
-
-        // Add API methods as you add to the APIConfig.js file.
-        [
-            'authenticate',
-            'logout',
-            'getBrowserSession',
-            'createWebRTCSession',
-            'getEvents'
-        ].forEach(function(methodName){
-            describe('Function ' + methodName, function () {
-                it("should exist", function (done) {
-                    ATT.init();
-                    expect(ATT[apiNamespace][methodName]).is.a('function');
-                    done();
-                });
-            });
-        });
-    });
+    
     
     describe('utils', function () {
         it('hasWebRTC should return true if navigator.mozGetUserMedia or navigator.webkitGetUserMedia or navigator.getUserMedia is a function', function (){
@@ -148,9 +51,9 @@ describe('webRTC', function () {
             // spy on createWebRTCSession.
 
             // spy on createWebRTCSession
-            var createWebRTCSessionSpy = sinon.spy(ATT[apiNamespace], 'createWebRTCSession');
-            
-            ATT[apiNamespace].login({
+            var createWebRTCSessionSpy = sinon.spy(apiObj, 'createWebRTCSession');
+
+            apiObj.login({
                 data: {
                     un: 'un',
                     pw: 'pw',
@@ -189,9 +92,9 @@ describe('webRTC', function () {
             // spy on createWebRTCSession.
 
             // spy on createWebRTCSession
-            var createWebRTCSessionSpy = sinon.spy(ATT[apiNamespace], 'createWebRTCSession');
+            var createWebRTCSessionSpy = sinon.spy(apiObj, 'createWebRTCSession');
             
-            ATT[apiNamespace].login({
+            apiObj.login({
                 un: 'un',
                 pw: 'pw'
             });
@@ -228,7 +131,7 @@ describe('webRTC', function () {
                 expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204",
                 jsonSpy = sinon.spy();
 
-            ATT[apiNamespace].login({data : {}, success : jsonSpy});
+            apiObj.login({data : {}, success : jsonSpy});
             
             // response to authorize
             requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(responseObject1));
