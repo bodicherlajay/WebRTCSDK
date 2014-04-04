@@ -29,34 +29,45 @@ if (!ATT) {
      * @param {String} sdp
      * @returns {*|sdp}
   */
-  function fixSDP(sdp) {
-    //Remove the 'crypto' attribute because Chrome is going to remove support for SDES, and only implement DTLS-SRTP
-    //We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
-    while (sdp.indexOf('crypto:') !== -1) {
-      sdp = removeSDPAttribute(sdp.match(/crypto\.+/)[0], sdp);
+  function fixSDP(description) {
+    var sdp = description.sdp;
+    
+    if (!sdp) {
+      return description;
+    }
+    
+    // Remove the 'crypto' attribute because Chrome is going to remove support for SDES, and only implement DTLS-SRTP
+    // We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
+    var cryptoMatch = sdp.match(/crypto.+/);
+    while (cryptoMatch && cryptoMatch.length > 0) {
+      sdp = removeSDPAttribute(cryptoMatch[0], sdp);
+      cryptoMatch = sdp.match(/crypto.+/);
     }
 
-    //Remove the BUNDLE because it does not work with the ERelay. Media must be separated not bundle.
+    // Remove the BUNDLE because it does not work with the ERelay. Media must be separated not bundle.
     sdp = removeSDPAttribute("group:BUNDLE audio video", sdp);
     sdp = removeSDPAttribute("group:BUNDLE audio", sdp);
 
     sdp = sdp.replace(/a=mid:video\r\n/g, "");
     sdp = sdp.replace(/a=mid:audio\r\n/g, "");
 
-    //Remove Opus from Chrome and Leif
+    // Remove Opus from Chrome and Leif
     sdp = sdp.replace("RTP/SAVPF 111 103 104 0 ", "RTP/SAVPF 0 ");
     sdp = sdp.replace("\r\na=rtpmap:111 opus/48000/2", "");
     sdp = sdp.replace("\r\na=rtpmap:103 ISAC/16000", "");
     sdp = sdp.replace("\r\na=rtpmap:104 ISAC/32000", "");
     sdp = sdp.replace("\r\na=fmtp:111 minptime=10", "");
 
-    return sdp;
+    // set back the fixed sdp string on description
+    description.sdp = sdp;
+    
+    return description;
   }
 
   var module = {}, instance, init = function () {
     return {
-      processChromeSDPOffer : function (sdp) {
-        return fixSDP(sdp);
+      processChromeSDPOffer : function (description) {
+        return fixSDP(description);
       }
     };
   };
