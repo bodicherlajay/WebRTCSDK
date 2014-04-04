@@ -152,7 +152,7 @@ if (!Env) {
     ATT.UserMediaService.startCall(config);
 
     // Subscribe to event and call success callback.
-    ATT.event.subscribe (ATT.WebRTC.Session.Id + '.responseEvent', function (event) {
+    ATT.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
       if (success) {
         success(event);
       }
