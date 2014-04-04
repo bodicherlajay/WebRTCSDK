@@ -248,8 +248,8 @@ if (!ATT) {
   * Calls ATT.WebRTC.endCall -> BF
   */
   function hangup() {
-    var sessionId = '1964a6ef-64cd-47b8-94da-b63e7539d0bf';
-    var callId = 'a96990b1-67b6-41d4-87c5-6c758a9da243';
+    var sessionId = '1234';
+    var callId = '1111';
     var config = {
       urlParams: [sessionId, callId],
       headers: {
@@ -258,10 +258,8 @@ if (!ATT) {
       },
       success: function (response) {
         if (response.getResponseStatus === 204) {
-          // localPeerConnection.close();
-          // remotePeerConnection.close();
-          // localPeerConnection = null;
-          // remotePeerConnection = null;
+          ATT.PeerConnection.end();
+          ATT.userMediaServiceModule.endCall();
         } else {
           console.log('Call termination request failed.', response.responseText);
         }
