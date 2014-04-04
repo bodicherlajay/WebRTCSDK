@@ -162,12 +162,12 @@ if (!ATT) {
               });
 
               data.webRtcSessionId = sessionId;
-              
+
               if (successCallback) {
                 var event = {
                   type : 'READY'
                 };
-                
+              
                 event.data = data;
                 successCallback(event);
               }
@@ -248,9 +248,9 @@ if (!ATT) {
   * Calls ATT.WebRTC.endCall -> BF
   */
   function hangup() {
-    var sessionId = '1234';
-    var callId = '1111';
-    var config = {
+    var sessionId = '1234',
+      callId = '1111',
+      config = {
       urlParams: [sessionId, callId],
       headers: {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken,
@@ -259,7 +259,7 @@ if (!ATT) {
       success: function (response) {
         if (response.getResponseStatus === 204) {
           ATT.PeerConnection.end();
-          ATT.userMediaServiceModule.endCall();
+          ATT.UserMediaService.endCall();
         } else {
           console.log('Call termination request failed.', response.responseText);
         }
