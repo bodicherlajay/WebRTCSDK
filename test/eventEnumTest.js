@@ -1,9 +1,10 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT:true*/
+/*global ATT:true, describe:true,it:true,expect:true*/
 
 //TODO Add more tests
 describe('EventEnums', function () {
-    it('should contain Event Type CALLING', function (){
-        expect(ATT.Event.CALLING).equals(1);
-    });
+  "use strict";
+  it('should contain Event Type CALLING', function () {
+    expect(ATT.CallStatus.CALLING).equals(1);
+  });
 });

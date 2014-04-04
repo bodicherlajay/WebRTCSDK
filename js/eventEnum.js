@@ -10,7 +10,7 @@ if (!ATT) {
   "use strict";
   var module = {};
 
-  module.Event = {
+  module.CallStatus = {
     READY: 0,
     CALLING: 1,
     RINGING: 2,
@@ -22,6 +22,24 @@ if (!ATT) {
     ERROR: 8
   };
 
-  mainModule.Event = Object.freeze(module.Event);
+  module.RTCEvent = {
+    SESSION_OPEN: "Session Open",
+    SESSION_MODIFIED: "Session Modified",
+    SESSION_TERMINATED: "Session Terminated",
+    INVITATION_RECEIVED: "Invitation Received",
+    MODIFICATION_RECEIVED: "Modification Received",
+    MODIFICATION_TERMINATED: "Modification Terminated",
+    TRANSFER_TERMINATED: "Transfer Terminated",
+    MOVE_TERMINATED: "Move Terminated",
+    UNKNOWN: "Unknown"
+  };
+
+  module.MediaType = {
+    AUDIO_VIDEO: "audiovideo",
+    MEDIA_CONFERENCE: "media-conference",
+    MEDIACONFERENCE: "mediaconference"
+  };
+  mainModule.CallStatus = Object.freeze(module.CallStatus);
+  mainModule.RTCEvent = Object.freeze(module.RTCEvent);
 
 }(ATT || {}));

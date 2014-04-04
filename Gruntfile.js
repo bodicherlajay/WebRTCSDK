@@ -23,6 +23,7 @@ module.exports = function (grunt) {
       'js/eventEnum.js',
       'js/SDPFilterModule.js',
       'js/resourceManagerModule.js',
+      'js/RTCEventModule.js',
       'test/**/*.js'],
     logLevel: 'DEBUG',
     port: 9876,
