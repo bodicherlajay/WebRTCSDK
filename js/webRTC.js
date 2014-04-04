@@ -28,7 +28,7 @@ if (!Env) {
 
   // Set the session id, access token, event channel name to subscribe to for events.
   function setWebRTCSessionData(data) {
-    ATT.WebRTC.Session = {
+    apiObject.Session = {
       Id: data.sessionId,
       accessToken: data.accessToken,
       webRTCChannel: data.sessionId + '.responseEvent' // This is what UI will be subscribing to.
@@ -174,7 +174,7 @@ if (!Env) {
       config = {
         urlParams: [sessionId, callId],
         headers: {
-          'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken,
+          'Authorization': 'Bearer ' + apiObject.Session.accessToken,
           'x-delete-reason': 'terminate'
         },
         success: function (response) {
