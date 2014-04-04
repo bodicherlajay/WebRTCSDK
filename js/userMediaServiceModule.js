@@ -19,12 +19,15 @@ if (!ATT) {
     localStream: null,
 
     startCall: function (config) {
-
       // set local/remote vid element
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
 
       ATT.PeerConnectionService.start(config);
+    },
+
+    endCall: function() {
+      this.remoteStream = null;
     },
 
     //standard webRTC audio, video constraints

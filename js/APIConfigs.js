@@ -102,8 +102,18 @@ if (!ATT) {
           return DEFAULTS.BFResource + '/sessions/' + urlParams + '/calls';
         },
         headers: DEFAULTS.headers
+      },
+      /**
+      * End Call via BFResource
+      * @memberof WebRTC.APIConfigs
+      */
+      endCall: {
+        method: 'delete',
+        urlFormatter: function (urlParams) {
+          return DEFAULTS.BFResource + '/sessions/' + urlParams[0] + '/calls/' + urlParams[1];
+        },
+        headers: DEFAULTS.headers
       }
-
     };
 
   // place on the ATT.WebRTCAPI namespace.

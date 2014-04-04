@@ -1,12 +1,8 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150, nomen: true*/
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT,WebSocket:true*/
 /**
     WebRTC Event Channel Module
 */
-
-if (!ATT) {
-  var ATT = {};
-}
 
 (function (app) {
   'use strict';
@@ -22,8 +18,6 @@ if (!ATT) {
       wsConfig,
       // response event
       responseEvent,
-      // session id
-      sessID,
       // channel id
       channelID,
       // websocket instance
@@ -31,25 +25,27 @@ if (!ATT) {
 
     /**
     * Process Events
-    * @param {Object} response The response
+    * @param {Object} messages The messages
     **/
-    function _processMessages(response) {
+    function processMessages(messages) {
       // repoll
-      if (app.WebRTC.Session.isAlive) {
-        app.WebRTC.getEvents(lpConfig);
-      }
+      app.WebRTC.getEvents(lpConfig);
       // parse response
-      responseEvent = JSON.parse(response.responseText);
-      // dump to console
-      console.log(JSON.stringify(response.responseText));
+      responseEvent = JSON.parse(messages.responseText);
+      console.log(JSON.stringify(messages.responseText));
       // if we have events in the responseText
       if (responseEvent.events) {
-        // grab session id
-        sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4];
-        // publish event
-        app.event.publish(sessID + '.responseEvent', responseEvent.events.eventList);
-        // log the publish
-        console.log(sessID + '.responseEvent', responseEvent.events.eventList);
+        // grab session id & loop through event list
+        var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4],
+          events = responseEvent.events.eventList,
+          e;
+        // publish
+        for (e in events) {
+          if (events.hasOwnProperty(e)) {
+            app.event.publish(sessID + '.responseEvent', events[e]);
+            console.log(sessID + '.responseEvent', events[e]);
+          }
+        }
       }
     }
     /*===========================================
@@ -63,19 +59,15 @@ if (!ATT) {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
       success: function (response) {
-        _processMessages(response);
+        processMessages(response);
       },
       error: function () {
         // repoll
-        if (app.WebRTC.Session.isAlive) {
-          app.WebRTC.getEvents(lpConfig);
-        }
+        app.WebRTC.getEvents(lpConfig);
       },
       ontimeout: function () {
         // repoll
-        if (app.WebRTC.Session.isAlive) {
-          app.WebRTC.getEvents(lpConfig);
-        }
+        app.WebRTC.getEvents(lpConfig);
       }
     };
 
@@ -88,9 +80,9 @@ if (!ATT) {
       headers: {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
-      success: function (response) {
+      success: function (messages) {
         // grab the location from response headers
-        var location = response.getResponseHeader('location');
+        var location = messages.getResponseHeader('location');
         // if we have a success location
         if (location) {
           // channelID is channel query string param
@@ -100,8 +92,8 @@ if (!ATT) {
           // create new WebSocket instance
           ws = new WebSocket(location);
           // handle messages
-          ws.onmessage = function (response) {
-            _processMessages(response);
+          ws.onmessage = function (messages) {
+            processMessages(messages);
           };
         }
       },

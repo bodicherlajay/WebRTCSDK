@@ -5,14 +5,6 @@
  * PeerConnection Service
  * Dependencies:  adapter.js
  */
-//if (!ATT) {
-//  var ATT = {};
-//}
-//if (typeof ATT === 'undefined') {
-//  var ATT = {};
-//}
-//
-//var ATT = ATT || {};
 
 (function (app, UserMediaService, SignalingService) {
   "use strict";
@@ -73,6 +65,15 @@
         // send any ice candidates to the other peer
         // get a local stream, show it in a self-view and add it to be sent
         getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), this.onLocalStreamCreateError);
+      },
+
+      /**
+      * End Call
+      **/
+      end: function() {
+        this.peerConnection.close();
+        this.peerConnection = null;
+        this.calledParty = null;
       },
 
       getUserMediaSuccess: function (stream) {
