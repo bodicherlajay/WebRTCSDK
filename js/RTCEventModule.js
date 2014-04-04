@@ -10,11 +10,13 @@ if (!ATT) {
   "use strict";
   var module = {};
 
+/*
   //todo setup event subscription for all RTC events
   function onSessionOpen(evt) {
   }
   function onSessionClose(evt) {
   }
+*/
   //todo implement other events
   mainModule.RTCEvent = module;
 }(ATT || {}));
