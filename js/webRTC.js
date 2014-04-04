@@ -245,8 +245,7 @@ if (!ATT) {
 
   /**
   * Hangup the call
-  * @param {Object} config The config for the end call request
-  * @param {Function} success The success callback
+  * Calls ATT.WebRTC.endCall -> BF
   */
   function hangup() {
     var sessionId = '1964a6ef-64cd-47b8-94da-b63e7539d0bf';
@@ -258,19 +257,20 @@ if (!ATT) {
         'x-delete-reason': 'terminate'
       },
       success: function (response) {
-        console.log(response);
-        //ATT.PeerConectionService.endCall();
+        if (response.getResponseStatus === 204) {
+          // localPeerConnection.close();
+          // remotePeerConnection.close();
+          // localPeerConnection = null;
+          // remotePeerConnection = null;
+        } else {
+          console.log('Call termination request failed.', response.responseText);
+        }
       },
       error: function (e) {
         console.log('ERROR', e);
       }
     };
     ATT[apiNamespace].endCall(config);
-
-    // localPeerConnection.close();
-    // remotePeerConnection.close();
-    // localPeerConnection = null;
-    // remotePeerConnection = null;
   }
 
   // sub-namespaces on ATT.
