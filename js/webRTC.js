@@ -184,7 +184,7 @@ if (!ATT) {
                  * @param {Boolean} true/false Use Long Polling?
                  * @returns Event Channel
                  **/
-                ATT.WebRTC.eventChannel(false);
+                ATT.WebRTC.eventChannel(true);
               }
             },
             error: function () {

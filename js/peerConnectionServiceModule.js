@@ -11,14 +11,14 @@
 
   // STUN Server configuration
   var stun = { url: 'stun:stun.l.google.com:19302' },
-
+  
     // TURN server configuration
     turn = { url: 'turn:homeo@turn.bistri.com:80', credential: 'homeo' },
 
     module = {
 
       createPeerConnection: function () {
-        return new RTCPeerConnection(this.iceServers, this.pcConstraints);
+        return new RTCPeerConnection(this.iceServers);//, this.pcConstraints);
       },
 
       mediaConstrains: {},
@@ -36,6 +36,8 @@
       TURN: turn,
 
       iceServers: { iceServers: [stun] },
+      
+      localDescription: null,
 
       localStream: null,
 
@@ -56,6 +58,9 @@
         this.mediaConstrains = config.mediaConstraints;
 
         this.peerConnection = this.createPeerConnection();
+
+        // add eventing to peer connection.
+        this.setUpICETrickling(this.peerConnection);
 
         // send any ice candidates to the other peer
         // get a local stream, show it in a self-view and add it to be sent
@@ -82,11 +87,8 @@
         //add the local stream to peer connection
         this.peerConnection.addStream(stream);
 
-        // add eventing to peer connection.
-        this.setUpICETrickling(this.peerConnection);
-
         // create the offer.
-        this.createOffer(this.peerConnection);
+        this.createOffer.call(this, this.peerConnection);
       },
 
       onLocalStreamCreateError: function () {
@@ -97,11 +99,9 @@
       createOffer: function (pc) {
         var self = this,
           arg1 = function (description) {
-            pc.setLocalDescription(description);
-            SignalingService.send({
-              calledParty: self.calledParty,
-              sdp: description
-            });
+            ATT.sdpFilter.getInstance().processChromeSDPOffer(description); // fix SDP first time
+            self.localDescription = description;
+            pc.setLocalDescription(self.localDescription);
           },
           arg2,
           arg3;
@@ -110,7 +110,7 @@
           arg2 = function (err) {
             console.error(err);
           };
-          arg3 = this.mediaConstrains;
+          arg3 = self.mediaConstrains;
           pc.createOffer(arg1, arg2, arg3);
         } else {
           pc.createOffer(arg1);
@@ -118,16 +118,26 @@
       },
 
       setUpICETrickling: function (pc) {
-//            pc.onicecandidate = function (evt) {
-//                if (evt.candidate) {
-//                    SignalingService.send(JSON.stringify({ "candidate": evt.candidate }));
-//                }
-//            };
+        var self = this;
+        pc.onicecandidate = function(evt) {
+          if (evt.candidate) {
+            console.log ('recieving ice candidate ' + evt.candidate);
+            // SignalingService.send(JSON.stringify({
+              // "candidate" : evt.candidate
+            // }));
+          } else {
+            self.localDescription = pc.localDescription;
+            SignalingService.send({
+              calledParty : self.calledParty,
+              sdp : self.localDescription
+            }); 
+          }
+        };
 
         // let the "negotiationneeded" event trigger offer generation
-//            pc.onnegotiationneeded = function () {
-//                pc.createOffer(this.cbk_localSDPOffer, this.cbk_streamError);
-//            };
+        // pc.onnegotiationneeded = function() {
+        // pc.createOffer(this.cbk_localSDPOffer, this.cbk_streamError);
+        // }; 
 
         // once remote stream arrives, show it in the remote video element
         pc.onaddstream = function (evt) {
