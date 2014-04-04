@@ -90,6 +90,9 @@
 
         // create the offer. jslint complains when all are self or all are this.
         self.createOffer.call(this, self.peerConnection);
+
+        // create the answer.
+        this.createAnswer.call(this, self.peerConnection);
       },
 
       onLocalStreamCreateError: function () {
@@ -117,6 +120,21 @@
           pc.createOffer(arg1);
         }
       },
+      
+      createAnswer: function (pc) {
+
+        ATT.event.subscribe(ATT.WebRTC.Session.Id + '.responseEvent', function(event) {
+          if (event.type === 'calls' && event.state === 'session-open') {
+            console.log('Received answer...');
+            console.log(event.sdp);
+            pc.setRemoteDescription(new RTCSessionDescription({
+              sdp : event.sdp,
+              type : 'answer'
+            }));
+          }
+        });
+      },
+
 
       setUpICETrickling: function (pc) {
         var self = this;
