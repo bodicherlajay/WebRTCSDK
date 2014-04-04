@@ -27,13 +27,9 @@
        * @param {Object} messages The messages
        **/
       function processMessages(messages) {
-        console.log (messages);
         // parse response
         responseEvent = JSON.parse (messages.data);
         
-        //responseEvent = JSON.parse ('{"events":{"eventList":[{"eventObject":{"from":"sip:14250000010@icmn.api.att.net","resourceURL":"/RTC/v1/sessions/00cd399e-6b65-4030-91e9-1d089ae483d2/calls/de503f79-456c-41d8-8ecd-fee7b5227c16","state":"session-open","type":"calls"}}]}}');
-        
-        // console.log(JSON.stringify(messages));
         // if we have events in the responseText
         if (responseEvent.events) {
           // grab session id & loop through event list
@@ -41,7 +37,6 @@
           // publish
           for (e in events) {
             if (events.hasOwnProperty(e)) {
-              //sessID = ATT.WebRTC.Session.Id;
               app.event.publish(sessID + '.responseEvent', events[e].eventObject);
               console.log(sessID + '.responseEvent', events[e].eventObject);
             }

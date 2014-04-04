@@ -1,9 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, RESTClient, Env */
 /**
- *  The WebRTC SDK.
- *  API Method namespace is set on the apiNamespace variable.
- *  @namespace WebRTC
+ *  The WebRTC SDK. 
  */
 
 if (!ATT) {
@@ -175,13 +173,6 @@ if (!Env) {
     apiObject.RTCEvent.getInstance().setupEventCallbacks(config);
 
     ATT.UserMediaService.startCall(config);
-
-    // Subscribe to event and call success callback.
-    ATT.event.subscribe (ATT.WebRTC.Session.Id + '.responseEvent', function (event) {
-      if (config.onSessionOpen) {
-        config.onSessionOpen(event);
-      }
-    });
   }
 
   /**
