@@ -243,15 +243,48 @@ if (!ATT) {
     });
   }
 
+  /**
+  * Hangup the call
+  * @param {Object} config The config for the end call request
+  * @param {Function} success The success callback
+  */
+  function hangup() {
+    var sessionId = '1964a6ef-64cd-47b8-94da-b63e7539d0bf';
+    var callId = 'a96990b1-67b6-41d4-87c5-6c758a9da243';
+    var config = {
+      urlParams: [sessionId, callId],
+      headers: {
+        'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken,
+        'x-delete-reason': 'terminate'
+      },
+      success: function (response) {
+        console.log(response);
+        //ATT.PeerConectionService.endCall();
+      },
+      error: function (e) {
+        console.log('ERROR', e);
+      }
+    };
+    ATT[apiNamespace].endCall(config);
+
+    // localPeerConnection.close();
+    // remotePeerConnection.close();
+    // localPeerConnection = null;
+    // remotePeerConnection = null;
+  }
+
   // sub-namespaces on ATT.
   app.utils = utils;
   app.init = init;
   app.RESTClient = RESTClient;
 
   // The SDK public API.
+  // Exposed methods.
+
   // Authenticates and creates WebRTC session
   apiObject.login = loginAndCreateWebRTCSession;
-
-  // Create call.
+  // Create call
   apiObject.dial = dial;
+  // Hangup
+  apiObject.hangup = hangup;
 }(ATT || {}));
