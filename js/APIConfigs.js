@@ -116,8 +116,10 @@ if (!ATT) {
       }
     };
 
-  // place on the ATT.WebRTCAPI namespace.
+  // place on ATT.
   app.APIConfigs = APIConfigs;
+
+  // Set the API namespace name.
   app.apiNamespaceName = 'WebRTC';
 
 }(ATT || {}));
