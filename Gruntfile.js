@@ -13,8 +13,9 @@ module.exports = function (grunt) {
       },
       'js/adapter.js',
       'js-shared/js/restClient.js',
-      'js/webRTC.js',
       'js/APIConfigs.js',
+      'js/resourceManagerModule.js',
+      'js/webRTC.js',
       'js-shared/js/eventEmitter.js',
       'js/eventChannel.js',
       'js/signalingServiceModule.js',
@@ -27,7 +28,7 @@ module.exports = function (grunt) {
       'test/**/*.js'],
     logLevel: 'DEBUG',
     port: 9876,
-    browsers: ['Firefox', 'Chrome'],
+    browsers: ['Chrome', 'Firefox'],
     captureTimeout: 60000
   },
     karmaConfigUnit = {

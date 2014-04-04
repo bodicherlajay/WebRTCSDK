@@ -7,12 +7,11 @@
 
 describe('SignalingService', function () {
 
-    var apiNamespace = 'WebRTC',
-        requests,
+    var requests,
         xhr;
 
     before(function () {
-        ATT.init();
+        //ATT.init();
     });
 
     beforeEach(function () {

@@ -1,16 +1,11 @@
-/**
- Tests for top-level ATT WebRTC.
- */
 
 describe('SignalingService', function () {
-    
-    var apiNamespace = 'WebRTC',
+
+    var apiObj = ATT[ATT.apiNamespaceName],
         requests,
         xhr;
-    
-    before(function () {
-        ATT.init(); 
-    });
+
+    before(function () {});
 
     beforeEach(function () {
 
@@ -41,7 +36,20 @@ describe('SignalingService', function () {
         };
 
         // spy on ATT.WebRTC.startCall
-        var startCallSpy = sinon.spy(ATT[apiNamespace], 'startCall');
+        //var startCallSpy = sinon.spy(ATT[apiNamespace], 'startCall');
+        var startCallSpy = sinon.spy(apiObj, 'startCall'),
+          sdpFilterFuncStub = sinon.stub(ATT.sdpFilter, "getInstance", function () {
+            return {
+              processChromeSDPOffer: function (sdp) {
+                return {
+                  sdp: 'sdp'
+                };
+              }
+            };
+          });
+      
+        // stub out ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp)
+        //var stub = sinon.stub(object, "method", func)
         
         ATT.SignalingService.send({
             phoneNumber: '123',

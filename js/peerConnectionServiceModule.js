@@ -11,7 +11,7 @@
 
   // STUN Server configuration
   var stun = { url: 'stun:stun.l.google.com:19302' },
-  
+
     // TURN server configuration
     turn = { url: 'turn:homeo@turn.bistri.com:80', credential: 'homeo' },
 
@@ -36,7 +36,7 @@
       TURN: turn,
 
       iceServers: { iceServers: [stun] },
-      
+
       localDescription: null,
 
       localStream: null,
@@ -70,13 +70,14 @@
       /**
       * End Call
       **/
-      end: function() {
+      end: function () {
         this.peerConnection.close();
         this.peerConnection = null;
         this.calledParty = null;
       },
 
       getUserMediaSuccess: function (stream) {
+        var self = this;
 
         // set local stream
         this.localStream = stream;
@@ -87,8 +88,8 @@
         //add the local stream to peer connection
         this.peerConnection.addStream(stream);
 
-        // create the offer.
-        this.createOffer.call(this, this.peerConnection);
+        // create the offer. jslint complains when all are self or all are this.
+        self.createOffer.call(this, self.peerConnection);
       },
 
       onLocalStreamCreateError: function () {
@@ -119,9 +120,9 @@
 
       setUpICETrickling: function (pc) {
         var self = this;
-        pc.onicecandidate = function(evt) {
+        pc.onicecandidate = function (evt) {
           if (evt.candidate) {
-            console.log ('recieving ice candidate ' + evt.candidate);
+            console.log('receiving ice candidate ' + evt.candidate);
             // SignalingService.send(JSON.stringify({
               // "candidate" : evt.candidate
             // }));
@@ -130,7 +131,7 @@
             SignalingService.send({
               calledParty : self.calledParty,
               sdp : self.localDescription
-            }); 
+            });
           }
         };
 

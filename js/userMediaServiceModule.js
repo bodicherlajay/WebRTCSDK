@@ -26,7 +26,7 @@ if (!ATT) {
       ATT.PeerConnectionService.start(config);
     },
 
-    endCall: function() {
+    endCall: function () {
       this.remoteStream = null;
     },
 
