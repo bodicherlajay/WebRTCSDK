@@ -170,7 +170,7 @@ if (!Env) {
   function dial(config) {
 
     // setting up event callbacks using RTC Events
-    apiObject.RTCEvent.getInstance().setupEventCallbacks(config);
+    ATT.RTCEvent.getInstance().setupEventCallbacks(config);
 
     ATT.UserMediaService.startCall(config);
   }

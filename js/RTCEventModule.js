@@ -24,12 +24,12 @@ if (!ATT) {
 
   subscribeEvents = function () {
     mainModule.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
-      if (event.state === apiObject.RTCEvents.SESSION_OPEN) {
-        onSessionOpen({ type: apiObject.CallStatus.INPROGRESS });
+      if (event.state === mainModule.RTCEvents.SESSION_OPEN) {
+        onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
       }
 
-      if (event.state === apiObject.RTCEvents.SESSION_TERMINATED) {
-        onSessionClose({ type: apiObject.CallStatus.ENDED });
+      if (event.state === mainModule.RTCEvents.SESSION_TERMINATED) {
+        onSessionClose({ type: mainModule.CallStatus.ENDED });
       }
     });
   };
