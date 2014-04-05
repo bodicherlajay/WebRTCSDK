@@ -24,12 +24,15 @@ if (!ATT) {
 
   module.RTCEvents = {
     SESSION_OPEN: "session-open",
-    SESSION_MODIFIED: "Session Modified",
+    SESSION_MODIFIED: "session-modified",
     SESSION_TERMINATED: "session-terminated",
-    INVITATION_RECEIVED: "Invitation Received",
-    MODIFICATION_RECEIVED: "Modification Received",
-    MODIFICATION_TERMINATED: "Modification Terminated",
-    TRANSFER_TERMINATED: "Transfer Terminated",
+    INVITATION_RECEIVED: "invitation-received",
+    MODIFICATION_RECEIVED: "mod-received",
+    MODIFICATION_TERMINATED: "mod-terminated",
+    TRANSFER_INITIATED: "transfer-initiated",
+    TRANSFER_TERMINATED: "transfer-terminated",
+    ADD_FAILED: "add-failed",
+    REMOVE_FAILED: "remove-failed",
     MOVE_TERMINATED: "Move Terminated",
     UNKNOWN: "Unknown"
   };
