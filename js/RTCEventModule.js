@@ -13,7 +13,7 @@ if (!ATT) {
     instance,
     setup,
     subscribeEvents,
-    //onSessionOpen,
+    onRinging,
     onSessionClose,
     init = function () {
       return {
@@ -23,27 +23,27 @@ if (!ATT) {
 
   subscribeEvents = function () {
     mainModule.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
-      // if (event.state === mainModule.RTCEvents.SESSION_OPEN) {
-      //   onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
-      // }
       if (event.state === mainModule.RTCEvents.SESSION_TERMINATED) {
         onSessionClose({ type: mainModule.CallStatus.ENDED });
+      }
+      if (event.state === mainModule.RTCEvents.INVITATION_RECEIVED) {
+        onRinging({ type: mainModule.CallStatus.RINGING });
       }
     });
   };
 
-  setup = function (config) {
+  setup = function(config) {
     config = mainModule.utils.deepExtend(config);
     apiObject.actionConfig = config;
   };
 
-  // onSessionOpen = function (evt) {
-  //   if (config.onSessionOpen) {
-  //     config.onSessionOpen(evt);
-  //   }
-  // };
+  onRinging = function(evt) {
+    if (apiObject.actionConfig.onRinging) {
+      apiObject.actionConfig.onRinging(evt.type);
+    }
+  };
 
-  onSessionClose = function (evt) {
+  onSessionClose = function(evt) {
     if (apiObject.actionConfig.onSessionClose) {
       apiObject.actionConfig.onSessionClose(evt.type);
     }
