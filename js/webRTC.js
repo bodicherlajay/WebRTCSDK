@@ -100,7 +100,7 @@ if (!Env) {
                  * @param {Boolean} true/false Use Long Polling?
                  * @returns Event Channel
                  **/
-                apiObject.eventChannel(false);
+                apiObject.eventChannel(true);
               }
             },
             error: function () {
