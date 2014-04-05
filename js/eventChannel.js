@@ -30,16 +30,19 @@ if (!ATT) {
     /**
      * Process Events
      * @param {Object} messages The messages
+     * @param {Boolean} lp T/F for Long Polling
      **/
-    function processMessages(messages) {
-      // parse response
-      responseEvent = JSON.parse(messages.data);
-
-      // if we have events in the responseText
+    function processMessages(messages, lp) {
+      // Using Long Polling
+      if (lp) {
+        responseEvent = JSON.parse(messages.responseText);
+      } else {
+        responseEvent = JSON.parse(messages.data);
+      }
       if (responseEvent.events) {
-        // grab session id & loop through event list
+        console.log(responseEvent.events);
         var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4], events = responseEvent.events.eventList, e;
-        // publish
+        // publish individually
         for (e in events) {
           if (events.hasOwnProperty(e)) {
             app.event.publish(sessID + '.responseEvent', events[e].eventObject);
@@ -60,16 +63,13 @@ if (!ATT) {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
       success: function (response) {
-        processMessages(response);
-        // repoll
+        processMessages(response, true);
         app.WebRTC.getEvents(lpConfig);
       },
       error: function () {
-        // repoll
         app.WebRTC.getEvents(lpConfig);
       },
       ontimeout: function () {
-        // repoll
         app.WebRTC.getEvents(lpConfig);
       }
     };
@@ -84,19 +84,13 @@ if (!ATT) {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
       success: function (messages) {
-        // grab the location from response headers
         var location = messages.getResponseHeader('location');
-        // if we have a success location
         if (location) {
-          // channelID is channel query string param
           channelID = location.split('=')[1];
-          // dump to console
           console.log('CONNECTION CREATED. CHANNEL ID = ' + channelID);
-          // create new WebSocket instance
           ws = new WebSocket(location);
-          // handle messages
           ws.onmessage = function (messages) {
-            processMessages(messages);
+            processMessages(messages, false);
           };
         }
       },
