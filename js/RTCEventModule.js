@@ -14,8 +14,8 @@ if (!ATT) {
     instance,
     setup,
     subscribeEvents,
+    onSessionOpen,
     onSessionClose,
-    //onSessionOpen,
     init = function () {
       return {
         setupEventCallbacks : setup
@@ -24,10 +24,12 @@ if (!ATT) {
 
   subscribeEvents = function () {
     mainModule.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
+      if (event.state === apiObject.RTCEvents.SESSION_OPEN) {
+        onSessionOpen({ type: apiObject.CallStatus.INPROGRESS });
+      }
+
       if (event.state === apiObject.RTCEvents.SESSION_TERMINATED) {
-        onSessionClose({
-          type : apiObject.CallStatus.ENDED
-        });
+        onSessionClose({ type: apiObject.CallStatus.ENDED });
       }
     });
   };
@@ -36,16 +38,15 @@ if (!ATT) {
     config = mainModule.utils.deepExtend(config);
   };
 
-  //todo setup event subscription for all RTC events
-//  function onSessionOpen(evt) {
-//    if (config.onSessionOpen) {
-//      config.onSessionOpen(evt);
-//    }
-//  }
-
-  onSessionClose = function (evt) {
+  onSessionOpen = function (evt) {
     if (config.onSessionOpen) {
       config.onSessionOpen(evt);
+    }
+  };
+
+  onSessionClose = function (evt) {
+    if (config.onSessionClose) {
+      config.onSessionClose(evt);
     }
   };
 
