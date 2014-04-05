@@ -9,25 +9,23 @@ if (!ATT) {
   "use strict";
 
   var apiObject = Env.resourceManager.getInstance().getAPIObject(),
-    config = {},
     module = {},
     instance,
     setup,
     subscribeEvents,
-    onSessionOpen,
+    //onSessionOpen,
     onSessionClose,
     init = function () {
       return {
-        setupEventCallbacks : setup
+        setupEventCallbacks: setup
       };
     };
 
   subscribeEvents = function () {
     mainModule.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
-      if (event.state === mainModule.RTCEvents.SESSION_OPEN) {
-        onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
-      }
-
+      // if (event.state === mainModule.RTCEvents.SESSION_OPEN) {
+      //   onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
+      // }
       if (event.state === mainModule.RTCEvents.SESSION_TERMINATED) {
         onSessionClose({ type: mainModule.CallStatus.ENDED });
       }
@@ -36,17 +34,18 @@ if (!ATT) {
 
   setup = function (config) {
     config = mainModule.utils.deepExtend(config);
+    apiObject.actionConfig = config;
   };
 
-  onSessionOpen = function (evt) {
-    if (config.onSessionOpen) {
-      config.onSessionOpen(evt);
-    }
-  };
+  // onSessionOpen = function (evt) {
+  //   if (config.onSessionOpen) {
+  //     config.onSessionOpen(evt);
+  //   }
+  // };
 
   onSessionClose = function (evt) {
-    if (config.onSessionClose) {
-      config.onSessionClose(evt);
+    if (apiObject.actionConfig.onSessionClose) {
+      apiObject.actionConfig.onSessionClose(evt.type);
     }
   };
 
