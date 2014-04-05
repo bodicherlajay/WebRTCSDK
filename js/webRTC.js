@@ -94,13 +94,13 @@ if (!Env) {
 
               if (sessionId) {
                 // setting up event callbacks using RTC Events
-                apiObject.RTCEvent.getInstance().setupEventCallbacks(config);
+                ATT.RTCEvent.getInstance().setupEventCallbacks(config);
                 /**
                  * Call BF to create event channel
                  * @param {Boolean} true/false Use Long Polling?
                  * @returns Event Channel
                  **/
-                ATT.WebRTC.eventChannel(false);
+                apiObject.eventChannel(false);
               }
             },
             error: function () {
@@ -109,11 +109,11 @@ if (!Env) {
 
         // if no access token return user data to UI, without webrtc session id
         if (!accessToken) {
-            event = {
-              type : 'READY'
-            };
+          event = {
+            type : 'READY'
+          };
 
-            event.data = data; 
+          event.data = data;
           return successCallback(event);
         }
 
@@ -138,7 +138,7 @@ if (!Env) {
         typeof navigator.webkitGetUserMedia === 'function' ||
         typeof navigator.getUserMedia === 'function';
     },
-    
+
     deepExtend: function (destination, source) {
       var property;
       for (property in source) {
@@ -150,7 +150,7 @@ if (!Env) {
             destination[property] = source[property];
           } else {// `property` IS an `Object`
             // copy `property` recursively
-            destination[property] = deepExtend(source[property]);
+            destination[property] = this.deepExtend(source[property]);
           }
         }
       }

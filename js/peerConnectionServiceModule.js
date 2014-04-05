@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RTCPeerConnection, getUserMedia */
+/*global ATT:true, RTCPeerConnection, RTCSessionDescription, getUserMedia, Env */
 
 /**
  * PeerConnection Service
@@ -92,7 +92,7 @@
         self.createOffer.call(this, self.peerConnection);
 
         // create the answer.
-        this.createAnswer.call(this, self.peerConnection);
+        this.createAnswer.call(self, self.peerConnection);
       },
 
       onLocalStreamCreateError: function () {
@@ -120,10 +120,12 @@
           pc.createOffer(arg1);
         }
       },
-      
-      createAnswer: function (pc) {
 
-        ATT.event.subscribe(ATT.WebRTC.Session.Id + '.responseEvent', function(event) {
+      createAnswer: function (pc) {
+        var resourceManager = Env.resourceManager.getInstance(),
+          apiObject = resourceManager.getAPIObject();
+
+        ATT.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
           if (event.type === 'calls' && event.state === 'session-open') {
             console.log('Received answer...');
             console.log(event.sdp);

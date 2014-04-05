@@ -1,6 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT:true*/
-
+/*global ATT:true, Env: true*/
 
 if (!ATT) {
   var ATT = {};
@@ -9,45 +8,54 @@ if (!ATT) {
 (function (mainModule) {
   "use strict";
 
-  var apiObject = Env.resourceManager.getInstance().getAPIObject(), config;
-  
-  function subscribeEvents () {
-    apiObject.event.subscribe(apiObject.Session.Id + '.responseEvent', function(event) {
+  var apiObject = Env.resourceManager.getInstance().getAPIObject(),
+    config = {},
+    module = {},
+    instance,
+    setup,
+    subscribeEvents,
+    onSessionClose,
+    //onSessionOpen,
+    init = function () {
+      return {
+        setupEventCallbacks : setup
+      };
+    };
+
+  subscribeEvents = function () {
+    mainModule.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
       if (event.state === apiObject.RTCEvents.SESSION_TERMINATED) {
-        this.onSessionClose ({ type : apiObject.CallStatus.ENDED });
+        onSessionClose({
+          type : apiObject.CallStatus.ENDED
+        });
       }
     });
-  }
-  
-  function setup (config) {
-    this.config = apiObject.utils.deepExtend (config);
-  }
-  
-  var module = {}, instance, init = function () {
-    return {
-      setupEventCallbacks : setup
-    }; 
+  };
+
+  setup = function (config) {
+    config = mainModule.utils.deepExtend(config);
   };
 
   //todo setup event subscription for all RTC events
-  function onSessionOpen(evt) {
-    if (this.config.onSessionOpen) {
-      this.config.onSessionOpen (evt);
-    }
-  }
+//  function onSessionOpen(evt) {
+//    if (config.onSessionOpen) {
+//      config.onSessionOpen(evt);
+//    }
+//  }
 
-  function onSessionClose(evt) {
-    if (this.config.onSessionOpen) {
-      this.config.onSessionOpen (evt);
+  onSessionClose = function (evt) {
+    if (config.onSessionOpen) {
+      config.onSessionOpen(evt);
     }
-  }
+  };
 
-  mainModule.RTCEvent = module;
   module.getInstance = function () {
     if (!instance) {
       instance = init();
-      instance.subscribeEvents();
+      subscribeEvents();
     }
     return instance;
   };
+
+  mainModule.RTCEvent = module;
 }(ATT || {}));
