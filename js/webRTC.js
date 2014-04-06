@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RESTClient, Env */
+/*global ATT:true, RESTClient, Env, cmgmt */
 /**
  *  The WebRTC SDK. 
  */
@@ -17,7 +17,8 @@ if (!Env) {
 
   var apiObject,
     utils,
-    resourceManager = Env.resourceManager.getInstance();
+    resourceManager = Env.resourceManager.getInstance(),
+    callManager = cmgmt.CallManager.getInstance();
 
   // configure the resource manager (add api methods to ATT namespace)
   resourceManager.configure();
@@ -25,6 +26,7 @@ if (!Env) {
   apiObject = resourceManager.getAPIObject();
 
   // Set the session id, access token, event channel name to subscribe to for events.
+/*
   function setWebRTCSessionData(data) {
     apiObject.Session = {
       Id: data.sessionId,
@@ -32,6 +34,7 @@ if (!Env) {
       webRTCChannel: data.sessionId + '.responseEvent' // This is what UI will be subscribing to.
     };
   }
+*/
 
   /**
    * This method will be hit by the login button on the sample app.
@@ -76,10 +79,13 @@ if (!Env) {
                   responseObject.getResponseHeader('location').split('/')[4] : null;
 
               // Set WebRTC.Session data object that will be needed downstream.
+              callManager.CreateSession(accessToken, e911Id, sessionId);
+/*
               setWebRTCSessionData({
                 sessionId: sessionId,
                 accessToken: accessToken
               });
+*/
 
               data.webRtcSessionId = sessionId;
 
@@ -178,8 +184,9 @@ if (!Env) {
    */
   function dial(config) {
     // setting up event callbacks using RTC Events
-    app.RTCEvent.getInstance().setupEventCallbacks(config);
+    //app.RTCEvent.getInstance().setupEventCallbacks(config);
     // invoke user media service
+    app.event.subscribe(callManager.getSessionContext().getSessionId() + ".responseEvent", config.callback);
     app.UserMediaService.startCall(config);
   }
 
@@ -205,7 +212,7 @@ if (!Env) {
       var config = {
         urlParams: [apiObject.Session.Id, apiObject.Calls.Id],
         headers: {
-          'Authorization': 'Bearer ' + apiObject.Session.accessToken,
+          'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken(),
           'x-delete-reason': 'terminate'
         },
         success: function (response) {
@@ -218,7 +225,7 @@ if (!Env) {
         error: function () {
           console.log();
         },
-        ontimeout: function() {
+        ontimeout: function () {
           console.log();
         }
       };

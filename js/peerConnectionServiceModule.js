@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RTCPeerConnection, RTCSessionDescription, getUserMedia, Env */
+/*global ATT:true, RTCPeerConnection, RTCSessionDescription, getUserMedia, Env, cmgmt */
 
 /**
  * PeerConnection Service
@@ -113,10 +113,9 @@
       },
 
       createAnswer: function (pc) {
-        var resourceManager = Env.resourceManager.getInstance(),
-          apiObject = resourceManager.getAPIObject();
+        var sessionId = cmgmt.getInstance().getSessionContext().getAccessToken();
 
-        ATT.event.subscribe(apiObject.Session.Id + '.responseEvent', function (event) {
+        ATT.event.subscribe(sessionId + '.responseEvent', function (event) {
           if (event.type === 'calls' && event.state === 'session-open') {
             console.log('Received answer...');
             console.log(event.sdp);

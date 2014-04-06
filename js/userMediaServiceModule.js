@@ -54,4 +54,4 @@ if (!ATT) {
   };
 
   app.UserMediaService = module;
-}(ATT || {}, ATT.PeerConnectionService || {}));
+}(ATT || {}));
