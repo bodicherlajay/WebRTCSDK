@@ -26,10 +26,6 @@ if (!ATT) {
       ATT.PeerConnectionService.start(config);
     },
 
-    endCall: function () {
-      this.remoteStream = null;
-    },
-
     //standard webRTC audio, video constraints
     mediaConstraints: {
       "audio": true,

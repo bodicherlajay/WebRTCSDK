@@ -67,15 +67,6 @@
         getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), this.onLocalStreamCreateError);
       },
 
-      /**
-      * End Call
-      **/
-      end: function () {
-        this.peerConnection.close();
-        this.peerConnection = null;
-        this.calledParty = null;
-      },
-
       getUserMediaSuccess: function (stream) {
         var self = this;
 

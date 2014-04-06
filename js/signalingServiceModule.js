@@ -18,7 +18,7 @@ if (!ATT) {
 
     send : function (config) {
 
-        // fix description just before sending
+      // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
         // call data
         data = {
@@ -41,7 +41,9 @@ if (!ATT) {
             xState : xState
           };
 
-          ATT.event.publish('call-initiated', headers);
+          // move later. used for hangup()
+          apiObject.Calls = {};
+          apiObject.Calls.Id = location.split('/')[8];
 
           // call success callback passed to send.
           if (typeof config.success === 'function') {
