@@ -62,7 +62,7 @@ if (!ATT) {
       url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/events',
       timeout: 30000,
       headers: {
-        'Authorization': 'Bearer ' + apiObject.Session.accessToken
+        'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
       },
       success: function (response) {
         processMessages(response, true);
@@ -83,7 +83,7 @@ if (!ATT) {
       method: 'post',
       url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/websocket',
       headers: {
-        'Authorization': 'Bearer ' + apiObject.Session.accessToken
+        'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
       },
       success: function (messages) {
         var location = messages.getResponseHeader('location');
