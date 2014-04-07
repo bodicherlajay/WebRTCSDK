@@ -2,8 +2,6 @@
 /*global ATT:true, RESTClient, Env */
 /**
  *  The WebRTC SDK.
- *  API Method namespace is set on the apiNamespace variable.
- *  @namespace WebRTC
  */
 
 if (!ATT) {
@@ -19,21 +17,13 @@ if (!Env) {
 
   var apiObject,
     utils,
-    resourceManager = Env.resourceManager.getInstance();
+    resourceManager = Env.resourceManager.getInstance(),
+    callManager = cmgmt.CallManager.getInstance();
 
   // configure the resource manager (add api methods to ATT namespace)
   resourceManager.configure();
 
   apiObject = resourceManager.getAPIObject();
-
-  // Set the session id, access token, event channel name to subscribe to for events.
-  function setWebRTCSessionData(data) {
-    apiObject.Session = {
-      Id: data.sessionId,
-      accessToken: data.accessToken,
-      webRTCChannel: data.sessionId + '.responseEvent' // This is what UI will be subscribing to.
-    };
-  }
 
   /**
    * This method will be hit by the login button on the sample app.
@@ -78,13 +68,7 @@ if (!Env) {
                   responseObject.getResponseHeader('location').split('/')[4] : null;
 
               // Set WebRTC.Session data object that will be needed downstream.
-              setWebRTCSessionData({
-                sessionId: sessionId,
-                accessToken: accessToken
-              });
-
-              data.webRtcSessionId = sessionId;
-
+              callManager.CreateSession(accessToken, e911Id, sessionId);
               if (successCallback) {
                 event = {
                   type : 'READY'
@@ -93,40 +77,50 @@ if (!Env) {
                 event.data = data;
                 successCallback(event);
               }
-              // ATT.event.subscribe (sessionId + '.responseEvent', function (event) {
-                // if (successCallback) {
-                  // event.data = data;
-                  // successCallback(event);
-                // }
-              // });
 
               if (sessionId) {
+                // setting up event callbacks using RTC Events
+                app.RTCEvent.getInstance().setupEventCallbacks(config);
                 /**
                  * Call BF to create event channel
                  * @param {Boolean} true/false Use Long Polling?
-                 * @returns Event Channel
-                 **/
-                ATT.WebRTC.eventChannel(true);
+                 */
+                apiObject.eventChannel(true, sessionId);
               }
             },
-            error: function () {
+            error: function (e) {
+              console.log('CREATE SESSION ERROR', e);
             }
           };
 
         // if no access token return user data to UI, without webrtc session id
         if (!accessToken) {
-          return successCallback(data);
+          event = {
+            type : 'READY'
+          };
+
+          event.data = data;
+          return successCallback(event);
         }
 
         // Call BF to create WebRTC Session.
         apiObject.createWebRTCSession(dataForCreateWebRTCSession);
       },
-      error: function () {
+      error: function (e) {
+        console.log('CREATE SESSION ERROR', e);
       }
     };
 
     // Call DHS to authenticate, associate user to session.
     apiObject.authenticate(authenticateConfig);
+  }
+
+  // Stop user media
+  function stopUserMedia() {
+    if (app.UserMediaService.localStream) {
+      app.UserMediaService.localStream.stop();
+      app.UserMediaService.localVideoElement.src = null;
+    }
   }
 
   utils = {
@@ -139,6 +133,7 @@ if (!Env) {
         typeof navigator.webkitGetUserMedia === 'function' ||
         typeof navigator.getUserMedia === 'function';
     }
+
   };
 
   /**
@@ -150,46 +145,52 @@ if (!Env) {
    * @attribute {Object} mediaConstraints
    * @param success Success callback. Event object will be passed to this.
    */
-  function dial(config, success) {
-    ATT.UserMediaService.startCall(config);
-
-    // Subscribe to event and call success callback.
-    // ATT.event.subscribe(ATT.WebRTC.Session.webRTCChannel, function (event) {
-    // success.call(null, event);
-    // });
-
-    // Subscribe to event and call success callback.
-    ATT.event.subscribe('call-initiated', function (event) {
-      success.call(null, event);
-    });
+  function dial(config) {
+    callManager.getInstance().CreateOutgoingCall(config);
   }
 
   /**
   * Hangup the call
-  * Calls ATT.WebRTC.endCall -> BF
   */
   function hangup() {
-    var sessionId = '1234',
-      callId = '1111',
-      config = {
-        urlParams: [sessionId, callId],
-        headers: {
-          'Authorization': 'Bearer ' + apiObject.Session.accessToken,
-          'x-delete-reason': 'terminate'
-        },
-        success: function (response) {
-          if (response.getResponseStatus === 204) {
-            ATT.PeerConnection.end();
-            ATT.UserMediaService.endCall();
-          } else {
-            console.log('Call termination request failed.', response.responseText);
+    if (app.PeerConnectionService.peerConnection) {
+      console.log('Hanging up...');
+      app.PeerConnectionService.peerConnection.close();
+      app.PeerConnectionService.peerConnection = null;
+      if (app.UserMediaService.localStream) {
+        app.UserMediaService.localStream.stop();
           }
-        },
-        error: function (e) {
-          console.log('ERROR', e);
+      if (app.UserMediaService.remoteStream) {
+        app.UserMediaService.remoteStream.stop();
         }
-      };
-    apiObject.endCall(config);
+      //remotePeerConnection = null ?
+      //remotePeerConnection.close() ?
+      app.UserMediaService.remoteVideoElement.src = null;
+      app.UserMediaService.localVideoElement.src = null;
+
+      var config = {
+        urlParams: [apiObject.Session.Id, apiObject.Calls.Id],
+             headers: {
+          'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken(),
+          'x-delete-reason': 'terminate'
+             },
+             success: function (response) {
+                if (response.getResponseStatus === 204) {
+            console.log('Call termination request success.');
+                } else {
+            console.log();
+                }
+             },
+        error: function () {
+          console.log();
+             },
+        ontimeout: function () {
+          console.log();
+                }
+          };
+      // HTTP request to terminate call
+      apiObject.endCall(config);
+   }
   }
 
   // sub-namespaces on ATT.
@@ -199,6 +200,8 @@ if (!Env) {
   // The SDK public API.
   // Authenticates and creates WebRTC session
   apiObject.login = loginAndCreateWebRTCSession;
+  // stop user media
+  apiObject.stopUserMedia = stopUserMedia;
   // Create call
   apiObject.dial = dial;
   // Hangup
