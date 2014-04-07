@@ -39,10 +39,7 @@ Env = (function (app) {
     },
 
     getAPIObject = function () {
-      //var nsArray = app.apiNamespaceName.split('.');
       return apiObject;
-
-      //return app[app.apiNamespaceName];
     },
 
     configure,
