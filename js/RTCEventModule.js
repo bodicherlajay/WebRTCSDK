@@ -43,13 +43,13 @@ if (!ATT) {
     mainModule.event.subscribe(sessionId + '.responseEvent', InterceptingEventChannelCallback.call(null, event));
   };
 
-  onSessionOpen = function(evt) {
-    if (callbacks.onSesionOpen) {
-      callbacks.onSesionOpen(evt.type);
+  onSessionOpen = function (evt) {
+    if (callbacks.onSessionOpen) {
+      callbacks.onSessionOpen(evt.type);
     }
   };
 
-  onIncomingCall = function(evt) {
+  onIncomingCall = function (evt) {
     if (callbacks.onIncomingCall) {
       callbacks.onIncomingCall(evt.type);
     }
