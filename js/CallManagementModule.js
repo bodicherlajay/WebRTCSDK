@@ -142,14 +142,22 @@ cmgmt = (function () {
   Call.sendDTMF = function () {
   };
   Call.onAddStream = function (stream, event) {
+    console.log(stream);
+    console.log(event);
   };
   Call.onConnected = function (event) {
+    console.log(event);
   };
   Call.onDisconnected = function (event) {
+    console.log(event);
   };
   Call.onError = function (error, event) {
+    console.log(error);
+    console.log(event);
   };
   Call.onStatus = function (status, event) {
+    console.log(status);
+    console.log(event);
   };
 
   module.getInstance = function () {
