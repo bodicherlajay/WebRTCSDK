@@ -12,8 +12,10 @@ if (!ATT) {
     module = {},
     instance,
     setup,
+    InterceptingEventChannelCallback,
     subscribeEvents,
-    onRinging,
+    onIncomingCall,
+    onSessionOpen,
     onSessionClose,
     init = function () {
       return {
@@ -21,40 +23,40 @@ if (!ATT) {
       };
     };
 
+  InterceptingEventChannelCallback = function (event) {
+    //todo capture time, debugging info for sdk
+    switch (event.state) {
+    case mainModule.RTCEvents.SESSION_OPEN:
+      onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
+      break;
+    case mainModule.RTCEvents.SESSION_TERMINATED:
+      onSessionClose({ type: mainModule.CallStatus.ENDED });
+      break;
+    case mainModule.RTCEvents.INVITATION_RECEIVED:
+      onIncomingCall({ type: mainModule.CallStatus.RINGING });
+      break;
+    }
+  };
+
   subscribeEvents = function () {
     var sessionId = callManager.getSessionContext().getSessionId();
-    //todo remove if else, use case statement
-    mainModule.event.subscribe(sessionId + '.responseEvent', function (event) {
-      if (event.state === mainModule.RTCEvents.SESSION_TERMINATED) {
-        onSessionClose({ type: mainModule.CallStatus.ENDED });
-      }
-      if (event.state === mainModule.RTCEvents.INVITATION_RECEIVED) {
-        onRinging({ type: mainModule.CallStatus.RINGING });
-      }
-    });
+    mainModule.event.subscribe(sessionId + '.responseEvent', InterceptingEventChannelCallback.call(null, event));
   };
 
-  setup = function () {
-    //config = mainModule.utils.deepExtend(config);
-    //apiObject.actionConfig = config;
+  setup = function (config) {
+    config = mainModule.utils.deepExtend(config);
   };
 
-  onRinging = function (evt) {
+  onSessionOpen = function(evt) {
     console.log(evt);
-/*
-    if (apiObject.actionConfig.onRinging) {
-      apiObject.actionConfig.onRinging(evt.type);
-    }
-*/
+  };
+
+  onIncomingCall = function(evt) {
+    console.log(evt);
   };
 
   onSessionClose = function (evt) {
     console.log(evt);
-/*
-    if (apiObject.actionConfig.onSessionClose) {
-      apiObject.actionConfig.onSessionClose(evt.type);
-    }
-*/
   };
 
   module.getInstance = function () {
