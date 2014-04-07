@@ -35,7 +35,7 @@ if (!ATT) {
   };
 
   setup = function (config) {
-    config = mainModule.utils.deepExtend(config);
+    //config = mainModule.utils.deepExtend(config);
     //apiObject.actionConfig = config;
   };
 

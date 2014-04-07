@@ -132,25 +132,8 @@ if (!Env) {
       return typeof navigator.mozGetUserMedia === 'function' ||
         typeof navigator.webkitGetUserMedia === 'function' ||
         typeof navigator.getUserMedia === 'function';
-    },
-
-    deepExtend: function (destination, source) {
-      var property;
-      for (property in source) {
-        // if the source has `property` as a `direct property`
-        if (source.hasOwnProperty(property)) {
-          // if that property is NOT an `Object`
-          if (!(source[property] instanceof Object)) {
-            // copy the value into the destination object
-            destination[property] = source[property];
-          } else {// `property` IS an `Object`
-            // copy `property` recursively
-            destination[property] = this.deepExtend(source[property]);
-          }
-        }
-      }
-      return destination;
     }
+
   };
 
   /**
