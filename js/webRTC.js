@@ -16,7 +16,6 @@ if (!Env) {
   "use strict";
 
   var apiObject,
-    utils,
     resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance();
 
@@ -123,19 +122,6 @@ if (!Env) {
     }
   }
 
-  utils = {
-    /**
-     * Check if browser has WebRTC capability.
-     * @return {Boolean}
-     */
-    hasWebRTC: function () {
-      return typeof navigator.mozGetUserMedia === 'function' ||
-        typeof navigator.webkitGetUserMedia === 'function' ||
-        typeof navigator.getUserMedia === 'function';
-    }
-
-  };
-
   /**
    *
    * @param {Object} config Dial configuration object.
@@ -194,7 +180,6 @@ if (!Env) {
   }
 
   // sub-namespaces on ATT.
-  app.utils = utils;
   app.RESTClient = RESTClient;
 
   // The SDK public API.

@@ -12,6 +12,7 @@ module.exports = function (grunt) {
         included: true
       },
       'js/adapter.js',
+      'js/utils.js',
       'js-shared/js/restClient.js',
       'js/APIConfigs.js',
       'js-shared/js/eventEmitter.js',

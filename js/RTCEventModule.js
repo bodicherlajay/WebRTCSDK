@@ -11,7 +11,7 @@ if (!ATT) {
   var callManager = cmgmt.CallManager.getInstance(),
     module = {},
     instance,
-    callbacks = cmgmt.CallManager.getInstance().getSessionContext().getUICallback(),
+    callbacks = cmgmt.CallManager.getInstance().getSessionContext(),
     InterceptingEventChannelCallback,
     subscribeEvents,
     onIncomingCall,
@@ -38,7 +38,7 @@ if (!ATT) {
     }
   };
 
-  subscribeEvents = function () {
+  subscribeEvents = function (event) {
     var sessionId = callManager.getSessionContext().getSessionId();
     mainModule.event.subscribe(sessionId + '.responseEvent', InterceptingEventChannelCallback.call(null, event));
   };
@@ -50,6 +50,18 @@ if (!ATT) {
   };
 
   onIncomingCall = function(evt) {
+    if (callbacks.onIncomingCall) {
+      callbacks.onIncomingCall(evt.type);
+    }
+  };
+
+  onSessionOpen = function (evt) {
+    if (callbacks.onIncomingCall) {
+      callbacks.onIncomingCall(evt.type);
+    }
+  };
+
+  onIncomingCall = function (evt) {
     if (callbacks.onIncomingCall) {
       callbacks.onIncomingCall(evt.type);
     }
