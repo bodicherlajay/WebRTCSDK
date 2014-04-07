@@ -25,17 +25,6 @@ if (!Env) {
 
   apiObject = resourceManager.getAPIObject();
 
-  // Set the session id, access token, event channel name to subscribe to for events.
-/*
-  function setWebRTCSessionData(data) {
-    apiObject.Session = {
-      Id: data.sessionId,
-      accessToken: data.accessToken,
-      webRTCChannel: data.sessionId + '.responseEvent' // This is what UI will be subscribing to.
-    };
-  }
-*/
-
   /**
    * This method will be hit by the login button on the sample app.
    * Hits authenticate, then createWebRTCSession.  Simply logs the location header
@@ -80,15 +69,6 @@ if (!Env) {
 
               // Set WebRTC.Session data object that will be needed downstream.
               callManager.CreateSession(accessToken, e911Id, sessionId);
-/*
-              setWebRTCSessionData({
-                sessionId: sessionId,
-                accessToken: accessToken
-              });
-*/
-
-              data.webRtcSessionId = sessionId;
-
               if (successCallback) {
                 event = {
                   type : 'READY'
@@ -183,11 +163,7 @@ if (!Env) {
    * @param success Success callback. Event object will be passed to this.
    */
   function dial(config) {
-    // setting up event callbacks using RTC Events
-    //app.RTCEvent.getInstance().setupEventCallbacks(config);
-    // invoke user media service
-    app.event.subscribe(callManager.getSessionContext().getSessionId() + ".responseEvent", config.callback);
-    app.UserMediaService.startCall(config);
+    callManager.getInstance().CreateOutgoingCall(config);
   }
 
   /**

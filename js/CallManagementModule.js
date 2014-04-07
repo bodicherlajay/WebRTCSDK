@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global cmgmt:true*/
+/*global cmgmt:true, ATT:true*/
 if (!cmgmt) {
   var cmgmt = {};
 }
@@ -15,7 +15,7 @@ cmgmt = (function () {
         callee: function () { return callee; },
         mediaType: function () { return mediaType; },
         start: Call.start,
-        end: Call.end
+        end: Call.hangup
       };
     },
     //Session state enumeration
@@ -28,7 +28,7 @@ cmgmt = (function () {
     },
     //Session context to hold session variables
     SessionContext = function (token, e911Id, sessionId, state) {
-      var currState = state, callObject = null, accessToken = token, e9Id = e911Id, currSessionId = sessionId;
+      var currState = state, callObject = null, accessToken = token, e9Id = e911Id, currSessionId = sessionId, UICbk = null;
       return {
         getAccessToken: function () {
           return accessToken;
@@ -50,6 +50,12 @@ cmgmt = (function () {
         },
         setCallObject: function (callObj) {
           callObject = callObj;
+        },
+        setUICallback: function (callback) {
+          UICbk = callback;
+        },
+        getUICallback: function () {
+          return UICbk;
         }
       };
     },
@@ -57,21 +63,29 @@ cmgmt = (function () {
 
     CreateSession = function (token, e911Id, sessionId) {
       session_context = new SessionContext(token, e911Id, sessionId, SessionState.READY);
-      //console.log("session," + session_context.getAccessToken());
     },
 
-    CreateOutgoingCall = function (from, to, media) {
-      var call = new Call(from, to, media);
+    //UI Callback interceptor
+    InterceptingEventChannelCallback = function (event) {
+      //todo capture time, debugging info for sdk
+      ATT.event.publish("OutgoingCall_UI_Callback", event);
+    },
+
+    CreateOutgoingCall = function (config) {
+      var call = new Call(config.from, config.calledParty, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.OUTGOING_CALL);
-      return call;
+      session_context.setUICallback(config.callback);
+      ATT.event.subscribe(session_context.getSessionId() + ".responseEvent", InterceptingEventChannelCallback);
+      ATT.event.subscribe("OutgoingCall_UI_Callback", config.callback);
+      ATT.UserMediaService.startCall(config);
+      //generate remote ringing event and call UI callback
     },
 
     CreateIncomingCall = function (from, to, media) {
       var call = new Call(from, to, media);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.INCOMING_CALL);
-      return call;
     },
 
     instance,
@@ -97,7 +111,10 @@ cmgmt = (function () {
   Call.transfer = function () {
   };
 
-  Call.end = function () {
+  Call.reject = function () {
+  };
+
+  Call.hangup = function () {
   };
 
   Call.move = function () {
@@ -116,6 +133,23 @@ cmgmt = (function () {
   };
 
   Call.transferTo = function () {
+  };
+
+  Call.mute = function () {
+  };
+  Call.unmute = function () {
+  };
+  Call.sendDTMF = function () {
+  };
+  Call.onAddStream = function (stream, event) {
+  };
+  Call.onConnected = function (event) {
+  };
+  Call.onDisconnected = function (event) {
+  };
+  Call.onError = function (error, event) {
+  };
+  Call.onStatus = function (status, event) {
   };
 
   module.getInstance = function () {

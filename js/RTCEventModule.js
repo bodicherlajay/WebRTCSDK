@@ -23,6 +23,7 @@ if (!ATT) {
 
   subscribeEvents = function () {
     var sessionId = callManager.getSessionContext().getSessionId();
+    //todo remove if else, use case statement
     mainModule.event.subscribe(sessionId + '.responseEvent', function (event) {
       if (event.state === mainModule.RTCEvents.SESSION_TERMINATED) {
         onSessionClose({ type: mainModule.CallStatus.ENDED });
