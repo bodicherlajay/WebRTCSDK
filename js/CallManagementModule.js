@@ -65,21 +65,12 @@ cmgmt = (function () {
       session_context = new SessionContext(token, e911Id, sessionId, SessionState.READY);
     },
 
-    //UI Callback interceptor
-    InterceptingEventChannelCallback = function (event) {
-      //todo capture time, debugging info for sdk
-      ATT.event.publish("OutgoingCall_UI_Callback", event);
-    },
-
     CreateOutgoingCall = function (config) {
       var call = new Call(config.from, config.calledParty, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.OUTGOING_CALL);
       session_context.setUICallback(config.callback);
-      ATT.event.subscribe(session_context.getSessionId() + ".responseEvent", InterceptingEventChannelCallback);
-      ATT.event.subscribe("OutgoingCall_UI_Callback", config.callback);
       ATT.UserMediaService.startCall(config);
-      //generate remote ringing event and call UI callback
     },
 
     CreateIncomingCall = function (from, to, media) {
