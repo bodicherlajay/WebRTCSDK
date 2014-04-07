@@ -11,7 +11,7 @@ if (!ATT) {
   var callManager = cmgmt.CallManager.getInstance(),
     module = {},
     instance,
-    setup,
+    callbacks = cmgmt.CallManager.getInstance().getSessionContext().getUICallback(),
     InterceptingEventChannelCallback,
     subscribeEvents,
     onIncomingCall,
@@ -19,13 +19,13 @@ if (!ATT) {
     onSessionClose,
     init = function () {
       return {
-        setupEventCallbacks: setup
+        setupEventCallbacks: subscribeEvents
       };
     };
 
   InterceptingEventChannelCallback = function (event) {
     //todo capture time, debugging info for sdk
-    switch (event.state) {
+    switch (event) {
     case mainModule.RTCEvents.SESSION_OPEN:
       onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
       break;
@@ -43,20 +43,22 @@ if (!ATT) {
     mainModule.event.subscribe(sessionId + '.responseEvent', InterceptingEventChannelCallback.call(null, event));
   };
 
-  setup = function (config) {
-    config = mainModule.utils.deepExtend(config);
-  };
-
   onSessionOpen = function(evt) {
-    console.log(evt);
+    if (callbacks.onSesionOpen) {
+      callbacks.onSesionOpen(evt.type);
+    }
   };
 
   onIncomingCall = function(evt) {
-    console.log(evt);
+    if (callbacks.onIncomingCall) {
+      callbacks.onIncomingCall(evt.type);
+    }
   };
 
   onSessionClose = function (evt) {
-    console.log(evt);
+    if (callbacks.onIncomingCall) {
+      callbacks.onIncomingCall(evt.type);
+    }
   };
 
   module.getInstance = function () {
