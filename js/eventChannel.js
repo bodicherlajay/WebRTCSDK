@@ -15,7 +15,7 @@ if (!ATT) {
    * Get Event Channel
    * @param {Boolean} useLongPolling Use Long Polling
    */
-  function getEventChannel(useLongPolling) {
+  function getEventChannel(useLongPolling, sessionId) {
     // to appease the JSLint gods
     var lpConfig,
     // websocket config
@@ -26,7 +26,6 @@ if (!ATT) {
       channelID,
     // websocket instance
       ws;
-
     /**
      * Process Events
      * @param {Object} messages The messages
@@ -57,7 +56,7 @@ if (!ATT) {
      ===========================================*/
     lpConfig = {
       method: 'get',
-      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/events',
+      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/events',
       timeout: 30000,
       headers: {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
@@ -79,7 +78,7 @@ if (!ATT) {
      ===========================================*/
     wsConfig = {
       method: 'post',
-      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/websocket',
+      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/websocket',
       headers: {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },

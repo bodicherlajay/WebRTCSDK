@@ -105,7 +105,7 @@ if (!Env) {
                  * Call BF to create event channel
                  * @param {Boolean} true/false Use Long Polling?
                  */
-                apiObject.eventChannel(true);
+                apiObject.eventChannel(true, sessionId);
               }
             },
             error: function (e) {

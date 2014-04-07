@@ -24,7 +24,6 @@ module.exports = function (grunt) {
       'js/signalingServiceModule.js',
       'js/eventEnum.js',
       'js/SDPFilterModule.js',
-      'js/resourceManagerModule.js',
       'js/RTCEventModule.js',
       'test/**/*.js'],
     logLevel: 'DEBUG',
