@@ -9,8 +9,8 @@ if (!ATT) {
   "use strict";
 
   var apiObject,
-    resourceManager = Env.resourceManager.getInstance(),
-    callManager = cmgmt.CallManager.getInstance();
+  resourceManager = Env.resourceManager.getInstance(),
+  callManager = cmgmt.CallManager.getInstance();
   apiObject = resourceManager.getAPIObject();
   app.SignalingService = {
 
@@ -25,6 +25,9 @@ if (!ATT) {
             sdp : description.sdp
           }
         };
+
+      //todo change the configure resource manager 
+      apiObject = resourceManager.getAPIObject();
 
       apiObject.startCall({
         urlParams : [callManager.getSessionContext().getSessionId()], // pass this to the urlFormatter

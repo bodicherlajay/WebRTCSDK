@@ -136,7 +136,7 @@ if (!Env) {
    * @param success Success callback. Event object will be passed to this.
    */
   function dial(config) {
-    callManager.getInstance().CreateOutgoingCall(config);
+    cmgmt.CallManager.getInstance().CreateOutgoingCall(config);
   }
 
   /**

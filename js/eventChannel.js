@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT,WebSocket:true, Env: true*/
+/*global ATT,cmgmt, WebSocket:true, Env: true*/
 /**
  WebRTC Event Channel Module
  */
