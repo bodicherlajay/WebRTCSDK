@@ -68,11 +68,11 @@ if (!Env) {
 
               // Set WebRTC.Session data object that will be needed downstream.
               callManager.CreateSession(accessToken, e911Id, sessionId);
-              
+
               if (successCallback) {
                 // setting web rtc session id for displaying on UI only
                 data.webRtcSessionId = sessionId;
-                
+
                 event = {
                   type : 'READY'
                 };

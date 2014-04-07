@@ -9,8 +9,9 @@ if (!ATT) {
   "use strict";
 
   var apiObject,
-  resourceManager = Env.resourceManager.getInstance(),
-  callManager = cmgmt.CallManager.getInstance();
+    resourceManager = Env.resourceManager.getInstance(),
+    callManager = cmgmt.CallManager.getInstance();
+
   apiObject = resourceManager.getAPIObject();
   app.SignalingService = {
 
