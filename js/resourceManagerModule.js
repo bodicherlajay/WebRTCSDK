@@ -18,17 +18,34 @@ Env = (function (app) {
     addOperation,
     getConfiguredRESTMethod,
     apiObject,
-    configure = function (config) {
-      config = (config && config.apiConfigs) || app.APIConfigs;
 
-      app[app.apiNamespaceName] = {};
-      apiObject = app[app.apiNamespaceName];
+    /**
+     * Create api namespace.  Namespace name can be a dot-separated string.
+     * @param {Object} app The app global namespace object.
+     * @param {String} apiNamespaceName Namespace string, e.g. 'rtc.Phone'
+     */
+    createAPINamespace = function (app, apiNamespaceName) {
+      var namesArray = apiNamespaceName.split('.'),
+        currentNamespace = namesArray.shift();
 
-      initOperations(config); // add operations to ATT.rtc namespace.
+      app[currentNamespace] = {};
+
+      apiObject = app[currentNamespace];
+
+      if (namesArray.length !== 0) {
+        app[currentNamespace] = {};
+        createAPINamespace(app[currentNamespace], namesArray.join('.'));
+      }
     },
+
     getAPIObject = function () {
-      return app[app.apiNamespaceName];
+      //var nsArray = app.apiNamespaceName.split('.');
+      return apiObject;
+
+      //return app[app.apiNamespaceName];
     },
+
+    configure,
 
     init = function () {
       return {
@@ -36,6 +53,18 @@ Env = (function (app) {
         getAPIObject: getAPIObject
       };
     };
+
+  configure = function (config) {
+    config = (config && config.apiConfigs) || app.APIConfigs;
+
+    // set the api namespace object. should support nested namespace.
+    createAPINamespace(app, app.apiNamespaceName);
+    //app[app.apiNamespaceName] = {};
+    apiObject = getAPIObject();
+    //apiObject = app[app.apiNamespaceName];
+
+    initOperations(config); // add operations to ATT.rtc namespace.
+  };
 
   apiObject = app[app.apiNamespaceName];
   if (apiObject === undefined) {

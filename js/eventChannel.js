@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT,WebSocket:true*/
+/*global ATT,WebSocket:true, Env: true*/
 /**
  WebRTC Event Channel Module
  */
@@ -10,6 +10,9 @@ if (!ATT) {
 
 (function (app) {
   'use strict';
+
+  var resourceManager = Env.resourceManager.getInstance(),
+    apiObject = resourceManager.getAPIObject();
 
   /**
    * Get Event Channel
@@ -59,17 +62,17 @@ if (!ATT) {
       url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/events',
       timeout: 30000,
       headers: {
-        'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
+        'Authorization': 'Bearer ' + apiObject.Session.accessToken
       },
       success: function (response) {
         processMessages(response, true);
-        app.WebRTC.getEvents(lpConfig);
+        apiObject.getEvents(lpConfig);
       },
       error: function () {
-        app.WebRTC.getEvents(lpConfig);
+        apiObject.getEvents(lpConfig);
       },
       ontimeout: function () {
-        app.WebRTC.getEvents(lpConfig);
+        apiObject.getEvents(lpConfig);
       }
     };
 
@@ -80,7 +83,7 @@ if (!ATT) {
       method: 'post',
       url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/websocket',
       headers: {
-        'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
+        'Authorization': 'Bearer ' + apiObject.Session.accessToken
       },
       success: function (messages) {
         var location = messages.getResponseHeader('location');
@@ -102,14 +105,14 @@ if (!ATT) {
     // @TODO: invalid session bug
     if (useLongPolling) {
       console.log("Using long polling");
-      app.WebRTC.getEvents(lpConfig);
+      apiObject.getEvents(lpConfig);
     } else {
       console.log("Using web sockets");
-      app.WebRTC.getEvents(wsConfig);
+      apiObject.getEvents(wsConfig);
     }
   }
 
   // place on ATT namespace
-  app.WebRTC.eventChannel = getEventChannel;
+  apiObject.eventChannel = getEventChannel;
 
 }(ATT || {}));

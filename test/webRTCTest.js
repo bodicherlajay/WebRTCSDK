@@ -5,8 +5,8 @@
 
 describe('webRTC', function () {
   'use strict';
-
-  var apiObj = ATT[ATT.apiNamespaceName],
+  var resourceManager = Env.resourceManager.getInstance(),
+    apiObj = resourceManager.getAPIObject(),
     requests,
     xhr;
 

@@ -120,6 +120,6 @@ if (!ATT) {
   app.APIConfigs = APIConfigs;
 
   // Set the API namespace name.
-  app.apiNamespaceName = 'WebRTC';
+  app.apiNamespaceName = 'rtc.Phone';
 
 }(ATT || {}));
