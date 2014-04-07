@@ -38,7 +38,7 @@ if (!ATT) {
     }
   };
 
-  subscribeEvents = function () {
+  subscribeEvents = function (event) {
     var sessionId = callManager.getSessionContext().getSessionId();
     mainModule.event.subscribe(sessionId + '.responseEvent', InterceptingEventChannelCallback.call(null, event));
   };
@@ -47,11 +47,11 @@ if (!ATT) {
     config = mainModule.utils.deepExtend(config);
   };
 
-  onSessionOpen = function(evt) {
+  onSessionOpen = function (evt) {
     console.log(evt);
   };
 
-  onIncomingCall = function(evt) {
+  onIncomingCall = function (evt) {
     console.log(evt);
   };
 
