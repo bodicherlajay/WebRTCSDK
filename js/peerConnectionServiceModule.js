@@ -112,23 +112,25 @@
       },
 
       createOffer: function (pc) {
-        var self = this;
+        var self = this,
+          me = self;
 
         if (navigator.userAgent.indexOf('Chrome') < 0) {
           pc.createOffer(function (description) {
-            self.setLocalAndSendMessage.call(this, pc, description);
+            self.setLocalAndSendMessage.call(me, pc, description);
           }, function (err) {
             console.error(err);
           }, self.mediaConstrains);
         } else {
           pc.createOffer(function (description) {
-            self.setLocalAndSendMessage.call(this, pc, description);
+            self.setLocalAndSendMessage.call(me, pc, description);
           });
         }
       },
 
       createAnswer: function (pc) {
-        var self = this;
+        var self = this,
+          me = self;
 
         console.log('Received answer...');
         console.log(self.remoteDescription);
@@ -142,7 +144,7 @@
         console.log('Sending answer...');
 
         pc.createAnswer(function (description) {
-          self.setLocalAndSendMessage.call(this, pc, description);
+          self.setLocalAndSendMessage.call(me, pc, description);
         }, function (err) {
           console.error(err);
         }, self.mediaConstraints);
