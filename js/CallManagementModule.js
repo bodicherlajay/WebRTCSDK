@@ -73,7 +73,7 @@ cmgmt = (function () {
     },
 
     CreateOutgoingCall = function (config) {
-      var call = new Call(config.from, config.to, config.mediaConstraints);
+      var call = new Call(null, config.to, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.OUTGOING_CALL);
       session_context.setUICallbacks(config.callbacks);
@@ -81,7 +81,8 @@ cmgmt = (function () {
     },
 
     CreateIncomingCall = function (config) {
-      var call = new Call(config.from, config.to, config.mediaConstraints);
+      var event = session_context.getEventObject(),
+        call = new Call(event.from, null, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.INCOMING_CALL);
       session_context.setUICallbacks(config.callbacks);

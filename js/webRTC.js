@@ -92,7 +92,7 @@ if (!Env) {
                  * Call BF to create event channel
                  * @param {Boolean} true/false Use Long Polling?
                  */
-                apiObject.eventChannel(true, sessionId);
+                apiObject.eventChannel(false, sessionId);
 
                 // mock incoming call event
                 eventObject = {
@@ -103,9 +103,9 @@ if (!Env) {
                   "type" : "calls"
                 };
 
-                setTimeout(function () {
-                  app.event.publish(cmgmt.CallManager.getInstance().getSessionContext().getSessionId() + '.responseEvent', eventObject);
-                }, 5000);
+                // setTimeout(function () {
+                  // app.event.publish(cmgmt.CallManager.getInstance().getSessionContext().getSessionId() + '.responseEvent', eventObject);
+                // }, 5000);
 
               }
             },
@@ -226,6 +226,8 @@ if (!Env) {
   apiObject.stopUserMedia = stopUserMedia;
   // Create call
   apiObject.dial = dial;
+  // Answer call
+  apiObject.answer = answer;
   // Hangup
   apiObject.hangup = hangup;
 }(ATT || {}));
