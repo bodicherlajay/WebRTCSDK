@@ -35,9 +35,11 @@ Env = (function (app) {
   configure = function (config) {
     config = (config && config.apiConfigs) || app.APIConfigs;
 
-    // set the api namespace object. should support nested namespace.
+    // set the api namespace object.
     apiObject = ATT.utils.createNamespace(app, app.apiNamespaceName);
-    initOperations(config); // add operations to ATT.rtc namespace.
+
+    // add operations to ATT
+    initOperations(config);
   };
 
   module.getInstance = function () {
@@ -105,19 +107,33 @@ Env = (function (app) {
     return function (config) {
 
       var configKey,
-        restClient;
+        restClient,
+        key;
 
-      // override any ajax configuration with passed in config object
-      // data, success, error
+      // override (or extend if headers) ajax configuration with passed in config object
       for (configKey in config) {
         if (config.hasOwnProperty(configKey)) {
-          methodConfig[configKey] = config[configKey];
+
+          // if header, extend, otherwise overwrite.
+          if (configKey === 'headers') {
+            if (methodConfig[configKey]) {
+              methodConfig[configKey] = ATT.utils.extend(methodConfig[configKey], config[configKey]);
+            }
+          } else {
+            methodConfig[configKey] = config[configKey];
+          }
         }
       }
 
-      // url formatter.  urlParams should be set on method config so pass in.
-      if (typeof methodConfig.urlFormatter === 'function') {
-        methodConfig.url = methodConfig.urlFormatter(methodConfig.urlParams);
+      // create restclient parameters from the formatter functions.
+      if (methodConfig && methodConfig.formatters) {
+        if (Object.keys(methodConfig.formatters).length > 0) {
+          for (key in methodConfig.formatters) {
+            if (methodConfig.formatters.hasOwnProperty(key)) {
+              methodConfig[key] = methodConfig.formatters[key](methodConfig.apiParameters[key]);
+            }
+          }
+        }
       }
 
       restClient = new ATT.RESTClient(methodConfig);

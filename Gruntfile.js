@@ -37,7 +37,7 @@ module.exports = function (grunt) {
       reporters: ['spec'],
       colors: true,
       singleRun: false,
-      usePolling: true
+      usePolling: true  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
     },
     karmaConfigJenkins = {
       preprocessors: {

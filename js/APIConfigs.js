@@ -23,18 +23,20 @@ if (!ATT) {
     * Developer Hosted Server Resource url.
     * @memberof WebRTCAPI.DEFAULTS
     */
-    DHSEndpoint: ATT.appConfig.DHSEndpoint, //'http://localhost:9000',
+    DHSEndpoint: ATT.appConfig.DHSEndpoint,
     /**
     * Black Flag Resource url.
     * @memberof WebRTCAPI.DEFAULTS
     */
-    BFEndpoint: ATT.appConfig.BFEndpoint, //'http://wdev.code-api-att.com:8080/RTC/v1',
+    BFEndpoint: ATT.appConfig.BFEndpoint,
     /**
     * Default headers.
     * @memberof WebRTCAPI.DEFAULTS
     */
-    headers: {'Content-Type': 'application/json',
-              'Accept' : 'application/json'}
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept' : 'application/json'
+    }
   },
     /**
      *  Property defaults.
@@ -98,8 +100,10 @@ if (!ATT) {
       */
       startCall: {
         method: 'post',
-        urlFormatter: function (urlParams) {
-          return DEFAULTS.BFEndpoint + '/sessions/' + urlParams + '/calls';
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
+          }
         },
         headers: DEFAULTS.headers
       },
@@ -109,10 +113,14 @@ if (!ATT) {
       */
       endCall: {
         method: 'delete',
-        urlFormatter: function (urlParams) {
-          return DEFAULTS.BFEndpoint + '/sessions/' + urlParams[0] + '/calls/' + urlParams[1];
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          }
         },
-        headers: DEFAULTS.headers
+        headers: ATT.utils.extend({
+          'x-delete-reason': 'terminate'
+        }, DEFAULTS.headers)
       }
     };
 
