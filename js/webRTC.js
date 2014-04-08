@@ -19,9 +19,6 @@ if (!Env) {
     resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance();
 
-  // configure the resource manager (add api methods to ATT namespace)
-  resourceManager.configure();
-
   apiObject = resourceManager.getAPIObject();
 
   /**
