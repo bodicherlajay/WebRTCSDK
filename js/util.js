@@ -14,7 +14,6 @@ if (!ATT) {
    * Check if browser has WebRTC capability.
    * @return {Boolean}
    */
-
   var hasWebRTC =  function () {
     return typeof navigator.mozGetUserMedia === 'function' ||
       typeof navigator.webkitGetUserMedia === 'function' ||
@@ -49,17 +48,19 @@ if (!ATT) {
       });
     },
 
+    /**
+      Places namespaces on root object.  s is dot separated string of names adding to root.
+      The namespace created is returned.
+    */
     createNamespace = function (root, s) {
       var names = s.split('.'),
-        parent = root,
-        apiObj = parent;
+        parent = root;
 
       names.forEach(function (name) {
         parent[name] = {};
-        apiObj = parent;
         parent = parent[name];
       });
-      return apiObj;
+      return parent;
     };
 
   app.utils = {
