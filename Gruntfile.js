@@ -12,6 +12,7 @@ module.exports = function (grunt) {
         included: true
       },
       'js/adapter.js',
+      'js/appConfigModule.js',
       'js-shared/js/util.js',
       'js-shared/js/restClient.js',
       'js/APIConfigs.js',
