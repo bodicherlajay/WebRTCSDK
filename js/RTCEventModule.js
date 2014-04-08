@@ -11,50 +11,62 @@ if (!ATT) {
   var callManager = cmgmt.CallManager.getInstance(),
     module = {},
     instance,
-    setup,
+    callbacks,
+    interceptingEventChannelCallback,
     subscribeEvents,
-    onRinging,
+    onIncomingCall,
+    onSessionOpen,
     onSessionClose,
     init = function () {
       return {
-        setupEventCallbacks: setup
+        setupEventCallbacks: subscribeEvents
       };
     };
 
-  subscribeEvents = function () {
-    var sessionId = callManager.getSessionContext().getSessionId();
-    //todo remove if else, use case statement
-    mainModule.event.subscribe(sessionId + '.responseEvent', function (event) {
-      if (event.state === mainModule.RTCEvents.SESSION_TERMINATED) {
-        onSessionClose({ type: mainModule.CallStatus.ENDED });
-      }
-      if (event.state === mainModule.RTCEvents.INVITATION_RECEIVED) {
-        onRinging({ type: mainModule.CallStatus.RINGING });
-      }
-    });
-  };
-
-  setup = function (config) {
-    //config = mainModule.utils.deepExtend(config);
-    //apiObject.actionConfig = config;
-  };
-
-  onRinging = function (evt) {
-    console.log(evt);
-/*
-    if (apiObject.actionConfig.onRinging) {
-      apiObject.actionConfig.onRinging(evt.type);
+  interceptingEventChannelCallback = function (event) {
+    if (!event) {
+      return;
     }
-*/
+
+    //todo capture time, debugging info for sdk
+    switch (event.state) {
+    case mainModule.RTCEvents.SESSION_OPEN:
+      onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
+      break;
+    case mainModule.RTCEvents.SESSION_TERMINATED:
+      onSessionClose({ type: mainModule.CallStatus.ENDED });
+      break;
+    case mainModule.RTCEvents.INVITATION_RECEIVED:
+      onIncomingCall({ type: mainModule.CallStatus.RINGING, from: event.from });
+      break;
+    }
+  };
+
+  subscribeEvents = function () {
+    // set callbacks after session is created and we are ready to subscribe to events
+    callbacks = callManager.getSessionContext().getUICallbacks();
+
+    // subscribe to events
+    var sessionId = callManager.getSessionContext().getSessionId();
+    mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
+  };
+
+  onSessionOpen = function (evt) {
+    if (callbacks.onSessionOpen) {
+      callbacks.onSessionOpen(evt);
+    }
+  };
+
+  onIncomingCall = function (evt) {
+    if (callbacks.onIncomingCall) {
+      callbacks.onIncomingCall(evt);
+    }
   };
 
   onSessionClose = function (evt) {
-    console.log(evt);
-/*
-    if (apiObject.actionConfig.onSessionClose) {
-      apiObject.actionConfig.onSessionClose(evt.type);
+    if (callbacks.onSessionClose) {
+      callbacks.onSessionClose(evt);
     }
-*/
   };
 
   module.getInstance = function () {

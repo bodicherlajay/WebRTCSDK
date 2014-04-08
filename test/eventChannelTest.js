@@ -7,7 +7,10 @@
 describe('Event Channel', function () {
   'use strict';
 
+  var resourceManager = Env.resourceManager.getInstance(),
+    apiObject = resourceManager.getAPIObject();
+
   it('should contain eventChannel function (on ATT.WebRTC).', function () {
-    ATT.WebRTC.eventChannel.should.be.a('function');
+    apiObject.eventChannel.should.be.a('function');
   });
 });

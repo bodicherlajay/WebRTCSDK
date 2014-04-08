@@ -4,7 +4,8 @@
 describe('SignalingService', function () {
   "use strict";
 
-  var apiObj = ATT[ATT.apiNamespaceName],
+  var resourceManager = Env.resourceManager.getInstance(),
+    apiObj = resourceManager.getAPIObject(),
     requests,
     xhr;
 
@@ -34,7 +35,7 @@ describe('SignalingService', function () {
 
     // setup
 
-    ATT.WebRTC.Session = {
+    apiObj.Session = {
       accessToken: 'access_token',
       Id: 'webrtc_sessionid'
     };
@@ -77,7 +78,7 @@ describe('SignalingService', function () {
 
   it('should receive 201 and Location url and x-state: invitation-sent in header', function () {
     // setup
-    ATT.WebRTC.Session = {
+    apiObj.Session = {
       accessToken: 'access_token',
       Id: 'webrtc_sessionid'
     };

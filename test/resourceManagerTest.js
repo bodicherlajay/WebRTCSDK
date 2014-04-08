@@ -4,6 +4,9 @@
 describe('ResourceManager', function () {
   'use strict';
 
+  var resourceManager = Env.resourceManager.getInstance(),
+    apiObject = resourceManager.getAPIObject();
+
   it('should be a singleton', function () {
     var instance1 = Env.resourceManager.getInstance(),
       instance2 = Env.resourceManager.getInstance();
@@ -11,20 +14,18 @@ describe('ResourceManager', function () {
   });
 
   it('configure method should add api methods on ATT namespace', function () {
-    expect(Object.keys(ATT.WebRTC).length).is.greaterThan(0);
+    expect(Object.keys(apiObject).length).is.greaterThan(0);
   });
 
   describe('initialization', function () {
 
-    var apiConfig = ATT[ATT.apiNamespaceName];
-
     it('should add api methods during initialization', function () {
-      expect(apiConfig.login).is.a('function');
-      expect(apiConfig.logout).is.a('function');
+      expect(apiObject.login).is.a('function');
+      expect(apiObject.logout).is.a('function');
     });
 
     it('should use APIConfigs.js if no config passed in', function () {
-      expect(apiConfig.authenticate).is.a('function');
+      expect(apiObject.authenticate).is.a('function');
     });
 
     // Add API methods as you add to the APIConfig.js file.
@@ -38,7 +39,7 @@ describe('ResourceManager', function () {
     ].forEach(function (methodName) {
       describe('Function ' + methodName, function () {
         it("should exist", function (done) {
-          expect(apiConfig[methodName]).is.a('function');
+          expect(apiObject[methodName]).is.a('function');
           done();
         });
       });

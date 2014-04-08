@@ -113,7 +113,7 @@
       },
 
       createAnswer: function (pc) {
-        var sessionId = cmgmt.getInstance().getSessionContext().getAccessToken();
+        var sessionId = cmgmt.CallManager.getInstance().getSessionContext().getSessionId();
 
         ATT.event.subscribe(sessionId + '.responseEvent', function (event) {
           if (event.type === 'calls' && event.state === 'session-open') {

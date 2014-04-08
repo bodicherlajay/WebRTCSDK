@@ -23,18 +23,20 @@ if (!ATT) {
     * Developer Hosted Server Resource url.
     * @memberof WebRTCAPI.DEFAULTS
     */
-	DHSResource:	'http://localhost:9001',
+    DHSEndpoint: ATT.appConfig.DHSEndpoint,
     /**
     * Black Flag Resource url.
     * @memberof WebRTCAPI.DEFAULTS
     */
-    BFResource: 'http://wdev.code-api-att.com:8080/RTC/v1',
+    BFEndpoint: ATT.appConfig.BFEndpoint,
     /**
     * Default headers.
     * @memberof WebRTCAPI.DEFAULTS
     */
-    headers: {'Content-Type': 'application/json',
-              'Accept' : 'application/json'}
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept' : 'application/json'
+    }
   },
     /**
      *  Property defaults.
@@ -43,81 +45,89 @@ if (!ATT) {
      */
     APIConfigs = {
       /**
-      * Authentication to DHSResource
+      * Authentication to DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       authenticate: {
         method: 'post',
-        url: DEFAULTS.DHSResource + '/user/authenticate',
+        url: DEFAULTS.DHSEndpoint + '/user/authenticate',
         headers: DEFAULTS.headers
       },
       /**
-      * Get access token from DHSResource
+      * Get access token from DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       getAccessToken: {
         method: 'get',
-        url: DEFAULTS.DHSResource + '/user/token',
+        url: DEFAULTS.DHSEndpoint + '/user/token',
         headers: DEFAULTS.headers
       },
       /**
-      * Logout from DHSResource
+      * Logout from DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       logout: {
         method: 'delete',
-        url: DEFAULTS.DHSResource + '/user/logout',
+        url: DEFAULTS.DHSEndpoint + '/user/logout',
         headers: DEFAULTS.headers
       },
       /**
-      * Get browser session from DHSResource
+      * Get browser session from DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       getBrowserSession: {
         method: 'get',
-        url: DEFAULTS.DHSResource + '/user/session',
+        url: DEFAULTS.DHSEndpoint + '/user/session',
         headers: DEFAULTS.headers
       },
       /**
-      * Create WebRTC session from BFResource
+      * Create WebRTC session from BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       createWebRTCSession: {
         method: 'post',
-        url: DEFAULTS.BFResource + '/sessions',
+        url: DEFAULTS.BFEndpoint + '/sessions',
         headers: DEFAULTS.headers
       },
       /**
-      * Get WebRTC events from BFResource
+      * Get WebRTC events from BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       getEvents: { },
       /**
-      * Start Call via BFResource
+      * Start Call via BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       startCall: {
         method: 'post',
-        urlFormatter: function (urlParams) {
-          return DEFAULTS.BFResource + '/sessions/' + urlParams + '/calls';
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
+          }
         },
         headers: DEFAULTS.headers
       },
       /**
-      * End Call via BFResource
+      * End Call via BFEndpoint
       * @memberof WebRTC.APIConfigs
       */
       endCall: {
         method: 'delete',
-        urlFormatter: function (urlParams) {
-          return DEFAULTS.BFResource + '/sessions/' + urlParams[0] + '/calls/' + urlParams[1];
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          }
         },
-        headers: DEFAULTS.headers
+        headers: ATT.utils.extend({
+          'x-delete-reason': 'terminate'
+        }, DEFAULTS.headers)
       }
     };
 
-  // place on the ATT.WebRTCAPI namespace.
+  // place on ATT.
   app.APIConfigs = APIConfigs;
-  app.apiNamespaceName = 'WebRTC';
+
+  // Set the API namespace name.
+  app.apiNamespaceName = 'rtc.Phone';
 
 }(ATT || {}));
