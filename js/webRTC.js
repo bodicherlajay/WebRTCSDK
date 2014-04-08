@@ -180,10 +180,11 @@ if (!Env) {
       app.UserMediaService.localVideoElement.src = null;
 
       var config = {
-        urlParams: [apiObject.Session.Id, apiObject.Calls.Id],
+        apiParameters: {
+          url: [apiObject.Session.Id, apiObject.Calls.Id]
+        },
         headers: {
-          'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken(),
-          'x-delete-reason': 'terminate'
+          'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
         },
         success: function (response) {
           if (response.getResponseStatus === 204) {

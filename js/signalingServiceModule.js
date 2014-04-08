@@ -28,7 +28,9 @@ if (!ATT) {
         };
 
       apiObject.startCall({
-        urlParams : [callManager.getSessionContext().getSessionId()], // pass this to the urlFormatter
+        apiParameters: {
+          url: [callManager.getSessionContext().getSessionId()]
+        },
         headers : {
           'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()
         },
