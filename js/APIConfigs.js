@@ -23,7 +23,7 @@ if (!ATT) {
     * Developer Hosted Server Resource url.
     * @memberof WebRTCAPI.DEFAULTS
     */
-    DHSResource: 'http://localhost:9000',
+	DHSResource:	'http://localhost:9001',
     /**
     * Black Flag Resource url.
     * @memberof WebRTCAPI.DEFAULTS

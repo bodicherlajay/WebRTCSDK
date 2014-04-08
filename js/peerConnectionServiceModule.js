@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RTCPeerConnection, getUserMedia */
+/*global ATT:true, RTCPeerConnection, RTCSessionDescription, getUserMedia, Env, cmgmt */
 
 /**
  * PeerConnection Service
@@ -67,15 +67,6 @@
         getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), this.onLocalStreamCreateError);
       },
 
-      /**
-      * End Call
-      **/
-      end: function () {
-        this.peerConnection.close();
-        this.peerConnection = null;
-        this.calledParty = null;
-      },
-
       getUserMediaSuccess: function (stream) {
         var self = this;
 
@@ -90,6 +81,9 @@
 
         // create the offer. jslint complains when all are self or all are this.
         self.createOffer.call(this, self.peerConnection);
+
+        // create the answer.
+        this.createAnswer.call(self, self.peerConnection);
       },
 
       onLocalStreamCreateError: function () {
@@ -117,6 +111,22 @@
           pc.createOffer(arg1);
         }
       },
+
+      createAnswer: function (pc) {
+        var sessionId = cmgmt.getInstance().getSessionContext().getAccessToken();
+
+        ATT.event.subscribe(sessionId + '.responseEvent', function (event) {
+          if (event.type === 'calls' && event.state === 'session-open') {
+            console.log('Received answer...');
+            console.log(event.sdp);
+            pc.setRemoteDescription(new RTCSessionDescription({
+              sdp : event.sdp,
+              type : 'answer'
+            }));
+          }
+        });
+      },
+
 
       setUpICETrickling: function (pc) {
         var self = this;

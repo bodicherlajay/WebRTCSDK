@@ -1,20 +1,19 @@
 /**
- * Created by Alex on 3/26/2014.
- */
-
-/**
  * Adapter.js.
  * From: https://code.google.com/p/webrtc/source/browse/stable/samples/js/base/adapter.js
  */
-/*global navigator, console, mozRTCPeerConnection, mozRTCSessionDescription, mozRTCIceCandidate, RTCSessionDescription, MediaStream*/
+
 "use strict";
 
 var RTCPeerConnection = null;
+var RTCSessionDescription = null;
+var RTCIceCandidate = null;
 var getUserMedia = null;
 var attachMediaStream = null;
 var reattachMediaStream = null;
 var webrtcDetectedBrowser = null;
 var webrtcDetectedVersion = null;
+
 
 function trace(text) {
     // This function is used for logging.

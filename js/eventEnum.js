@@ -13,33 +13,36 @@ if (!ATT) {
   module.CallStatus = {
     READY: 0,
     CALLING: 1,
-    RINGING: 2,
+    RINGING: 'RINGING',
     INPROGRESS: 3,
     HOLD: 4,
     TRANSITION: 5,
     WAITING: 6,
-    ENDED: 7,
+    ENDED: 'ENDED',
     ERROR: 8
   };
 
-  module.RTCEvent = {
-    SESSION_OPEN: "Session Open",
-    SESSION_MODIFIED: "Session Modified",
-    SESSION_TERMINATED: "Session Terminated",
-    INVITATION_RECEIVED: "Invitation Received",
-    MODIFICATION_RECEIVED: "Modification Received",
-    MODIFICATION_TERMINATED: "Modification Terminated",
-    TRANSFER_TERMINATED: "Transfer Terminated",
+  module.RTCEvents = {
+    SESSION_OPEN: "session-open",
+    SESSION_MODIFIED: "session-modified",
+    SESSION_TERMINATED: "session-terminated",
+    INVITATION_RECEIVED: "invitation-received",
+    MODIFICATION_RECEIVED: "mod-received",
+    MODIFICATION_TERMINATED: "mod-terminated",
+    TRANSFER_INITIATED: "transfer-initiated",
+    TRANSFER_TERMINATED: "transfer-terminated",
+    ADD_FAILED: "add-failed",
+    REMOVE_FAILED: "remove-failed",
     MOVE_TERMINATED: "Move Terminated",
     UNKNOWN: "Unknown"
   };
 
-  module.MediaType = {
+  module.MediaTypes = {
     AUDIO_VIDEO: "audiovideo",
     MEDIA_CONFERENCE: "media-conference",
     MEDIACONFERENCE: "mediaconference"
   };
   mainModule.CallStatus = Object.freeze(module.CallStatus);
-  mainModule.RTCEvent = Object.freeze(module.RTCEvent);
+  mainModule.RTCEvents = Object.freeze(module.RTCEvents);
 
 }(ATT || {}));

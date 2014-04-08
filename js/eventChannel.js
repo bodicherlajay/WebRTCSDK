@@ -1,99 +1,95 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT,WebSocket:true*/
 /**
-    WebRTC Event Channel Module
-*/
+ WebRTC Event Channel Module
+ */
+
+if (!ATT) {
+  var ATT = {};
+}
 
 (function (app) {
   'use strict';
 
   /**
-  * Get Event Channel
-  * @param {Boolean} useLongPolling Use Long Polling
-  */
-  function getEventChannel(useLongPolling) {
+   * Get Event Channel
+   * @param {Boolean} useLongPolling Use Long Polling
+   */
+  function getEventChannel(useLongPolling, sessionId) {
     // to appease the JSLint gods
     var lpConfig,
-      // websocket config
+    // websocket config
       wsConfig,
-      // response event
+    // response event
       responseEvent,
-      // channel id
+    // channel id
       channelID,
-      // websocket instance
+    // websocket instance
       ws;
-
     /**
-    * Process Events
-    * @param {Object} messages The messages
-    **/
-    function processMessages(messages) {
-      // repoll
-      app.WebRTC.getEvents(lpConfig);
-      // parse response
-      responseEvent = JSON.parse(messages.responseText);
-      console.log(JSON.stringify(messages.responseText));
-      // if we have events in the responseText
+     * Process Events
+     * @param {Object} messages The messages
+     * @param {Boolean} lp T/F for Long Polling
+     **/
+    function processMessages(messages, lp) {
+      // Using Long Polling
+      if (lp) {
+        responseEvent = JSON.parse(messages.responseText);
+      } else {
+        responseEvent = JSON.parse(messages.data);
+      }
       if (responseEvent.events) {
-        // grab session id & loop through event list
-        var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4],
-          events = responseEvent.events.eventList,
-          e;
-        // publish
+        console.log(responseEvent.events);
+        var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4], events = responseEvent.events.eventList, e;
+        // publish individually
         for (e in events) {
           if (events.hasOwnProperty(e)) {
-            app.event.publish(sessID + '.responseEvent', events[e]);
-            console.log(sessID + '.responseEvent', events[e]);
+            app.event.publish(sessID + '.responseEvent', events[e].eventObject);
+            console.log(sessID + '.responseEvent', events[e].eventObject);
           }
         }
       }
     }
+
     /*===========================================
-    =            Long Polling Config           =
-    ===========================================*/
+     =            Long Polling Config           =
+     ===========================================*/
     lpConfig = {
       method: 'get',
-      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/events',
+      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/events',
       timeout: 30000,
       headers: {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
       success: function (response) {
-        processMessages(response);
+        processMessages(response, true);
+        app.WebRTC.getEvents(lpConfig);
       },
       error: function () {
-        // repoll
         app.WebRTC.getEvents(lpConfig);
       },
       ontimeout: function () {
-        // repoll
         app.WebRTC.getEvents(lpConfig);
       }
     };
 
     /*===========================================
-    =        Web Socket Config                 =
-    ===========================================*/
+     =        Web Socket Config                 =
+     ===========================================*/
     wsConfig = {
       method: 'post',
-      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + app.WebRTC.Session.Id + '/websocket',
+      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/websocket',
       headers: {
         'Authorization': 'Bearer ' + app.WebRTC.Session.accessToken
       },
       success: function (messages) {
-        // grab the location from response headers
         var location = messages.getResponseHeader('location');
-        // if we have a success location
         if (location) {
-          // channelID is channel query string param
           channelID = location.split('=')[1];
-          // dump to console
           console.log('CONNECTION CREATED. CHANNEL ID = ' + channelID);
-          // create new WebSocket instance
           ws = new WebSocket(location);
-          // handle messages
           ws.onmessage = function (messages) {
-            processMessages(messages);
+            processMessages(messages, false);
           };
         }
       },
@@ -105,8 +101,10 @@
     // Kickstart the event channel
     // @TODO: invalid session bug
     if (useLongPolling) {
+      console.log("Using long polling");
       app.WebRTC.getEvents(lpConfig);
     } else {
+      console.log("Using web sockets");
       app.WebRTC.getEvents(wsConfig);
     }
   }
