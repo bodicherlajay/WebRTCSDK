@@ -27,9 +27,6 @@ if (!ATT) {
           }
         };
 
-      //todo change the configure resource manager 
-      apiObject = resourceManager.getAPIObject();
-
       apiObject.startCall({
         urlParams : [callManager.getSessionContext().getSessionId()], // pass this to the urlFormatter
         headers : {

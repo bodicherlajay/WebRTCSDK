@@ -19,25 +19,6 @@ Env = (function (app) {
     getConfiguredRESTMethod,
     apiObject,
 
-    /**
-     * Create api namespace.  Namespace name can be a dot-separated string.
-     * @param {Object} app The app global namespace object.
-     * @param {String} apiNamespaceName Namespace string, e.g. 'rtc.Phone'
-     */
-    createAPINamespace = function (app, apiNamespaceName) {
-      var namesArray = apiNamespaceName.split('.'),
-        currentNamespace = namesArray.shift();
-
-      app[currentNamespace] = {};
-
-      apiObject = app[currentNamespace];
-
-      if (namesArray.length !== 0) {
-        app[currentNamespace] = {};
-        createAPINamespace(app[currentNamespace], namesArray.join('.'));
-      }
-    },
-
     getAPIObject = function () {
       return apiObject;
     },
@@ -46,7 +27,7 @@ Env = (function (app) {
 
     init = function () {
       return {
-        configure: configure,
+        //configure: configure,
         getAPIObject: getAPIObject
       };
     };
@@ -55,18 +36,9 @@ Env = (function (app) {
     config = (config && config.apiConfigs) || app.APIConfigs;
 
     // set the api namespace object. should support nested namespace.
-    createAPINamespace(app, app.apiNamespaceName);
-    //app[app.apiNamespaceName] = {};
-    apiObject = getAPIObject();
-    //apiObject = app[app.apiNamespaceName];
-
+    apiObject = ATT.utils.createNamespace(app, app.apiNamespaceName);
     initOperations(config); // add operations to ATT.rtc namespace.
   };
-
-  apiObject = app[app.apiNamespaceName];
-  if (apiObject === undefined) {
-    apiObject = {};
-  }
 
   module.getInstance = function () {
 
@@ -158,6 +130,8 @@ Env = (function (app) {
       restClient.ajax();
     };
   };
+
+  configure();
 
   return {
     resourceManager : module

@@ -12,7 +12,7 @@ module.exports = function (grunt) {
         included: true
       },
       'js/adapter.js',
-      'js/utils.js',
+      'js-shared/js/util.js',
       'js-shared/js/restClient.js',
       'js/APIConfigs.js',
       'js-shared/js/eventEmitter.js',
@@ -35,7 +35,8 @@ module.exports = function (grunt) {
     karmaConfigUnit = {
       reporters: ['spec'],
       colors: true,
-      singleRun: false
+      singleRun: false,
+      usePolling: true
     },
     karmaConfigJenkins = {
       preprocessors: {
@@ -68,7 +69,6 @@ module.exports = function (grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-
     // you can run `grunt karma` to execute the config file specified
     // equivalent to `karma start <config file>
     karma: {
