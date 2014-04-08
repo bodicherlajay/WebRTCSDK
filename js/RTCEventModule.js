@@ -45,7 +45,7 @@ if (!ATT) {
   subscribeEvents = function () {
     // set callbacks after session is created and we are ready to subscribe to events
     callbacks = callManager.getSessionContext().getUICallbacks();
-    
+
     // subscribe to events
     var sessionId = callManager.getSessionContext().getSessionId();
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);

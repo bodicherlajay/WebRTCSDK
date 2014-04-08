@@ -52,7 +52,7 @@ cmgmt = (function () {
           callObject = callObj;
         },
         setUICallbacks: function (callbacks) {
-          UICbks = ATT.utils.deepExtend (UICbks, callbacks);
+          UICbks = ATT.utils.extend(UICbks, callbacks);
         },
         getUICallbacks: function () {
           return UICbks;
@@ -161,5 +161,5 @@ cmgmt = (function () {
 
   return {
     CallManager : module
-  };  
+  };
 }());
