@@ -151,7 +151,7 @@ if (!Env) {
    * @attribute {HTMLElement} localVideo
    * @attribute {HTMLElement} remoteVideo
    * @attribute {Object} mediaConstraints
-   * @param success Success callback. Event object will be passed to this.
+   * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
    */
   function dial(config) {
     cmgmt.CallManager.getInstance().CreateOutgoingCall(config);
@@ -160,6 +160,17 @@ if (!Env) {
     app.RTCEvent.getInstance().setupEventCallbacks(config);
   }
 
+  /**
+   *
+   * @param {Object} config answer configuration object.
+   */
+  function answer(config) {
+    cmgmt.CallManager.getInstance().CreateIncomingCall(config);
+
+    // setting up event callbacks using RTC Events
+    app.RTCEvent.getInstance().setupEventCallbacks(config);
+  }
+  
   /**
   * Hangup the call
   */

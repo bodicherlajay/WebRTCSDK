@@ -38,12 +38,16 @@
       iceServers: { iceServers: [stun] },
 
       localDescription: null,
+      
+      remoteDescription: null,
 
       localStream: null,
 
       remoteStream: null,
 
       peerConnection: null,
+
+      callingParty: null,
 
       calledParty: null,
 
@@ -53,8 +57,8 @@
        */
       start: function (config) {
 
-        this.calledParty = config.calledParty;
-
+        this.callingParty = config.from;
+        this.calledParty = config.to;
         this.mediaConstrains = config.mediaConstraints;
 
         this.peerConnection = this.createPeerConnection();
@@ -70,20 +74,33 @@
       getUserMediaSuccess: function (stream) {
         var self = this;
 
-        // set local stream
-        this.localStream = stream;
+         // get the call state from the session
+        var callState = callManager.getSessionContext().getCallState();
 
-        // call the user media service to show stream
-        UserMediaService.showStream('local', stream);
+        if (callState === callManager.SessionState.OUTGOING_CALL) {
+          // set local stream
+          this.localStream = stream;
 
-        //add the local stream to peer connection
-        this.peerConnection.addStream(stream);
+          // call the user media service to show stream
+          UserMediaService.showStream('local', this.localStream);
 
-        // create the offer. jslint complains when all are self or all are this.
-        self.createOffer.call(this, self.peerConnection);
+          //add the local stream to peer connection
+          this.peerConnection.addStream(stream);
+  
+          // create the offer. jslint complains when all are self or all are this.
+          self.createOffer.call(this, self.peerConnection);
 
-        // create the answer.
-        this.createAnswer.call(self, self.peerConnection);
+        } else if (callState === callManager.SessionState.INCOMING_CALL) {
+          // set local stream
+          this.remoteStream = stream;
+
+          // call the user media service to show stream
+          UserMediaService.showStream('remote', this.remoteStream);
+
+          // create the offer. jslint complains when all are self or all are this.
+          self.createAnswer.call(this, self.peerConnection);
+
+        }
       },
 
       onLocalStreamCreateError: function () {
@@ -92,41 +109,42 @@
       },
 
       createOffer: function (pc) {
-        var self = this,
-          arg1 = function (description) {
-            ATT.sdpFilter.getInstance().processChromeSDPOffer(description); // fix SDP first time
-            self.localDescription = description;
-            pc.setLocalDescription(self.localDescription);
-          },
-          arg2,
-          arg3;
+        var self = this;
 
         if (navigator.userAgent.indexOf('Chrome') < 0) {
-          arg2 = function (err) {
+          pc.createOffer(self.setLocalAndSendMessage, function(err) {
             console.error(err);
-          };
-          arg3 = self.mediaConstrains;
-          pc.createOffer(arg1, arg2, arg3);
+          }, self.mediaConstrains);
         } else {
-          pc.createOffer(arg1);
+          pc.createOffer(self.setLocalAndSendMessage);
         }
       },
 
       createAnswer: function (pc) {
-        var sessionId = cmgmt.CallManager.getInstance().getSessionContext().getSessionId();
+        var self = this, sessionId = cmgmt.CallManager.getInstance().getSessionContext().getSessionId();
 
-        ATT.event.subscribe(sessionId + '.responseEvent', function (event) {
-          if (event.type === 'calls' && event.state === 'session-open') {
-            console.log('Received answer...');
-            console.log(event.sdp);
-            pc.setRemoteDescription(new RTCSessionDescription({
-              sdp : event.sdp,
-              type : 'answer'
-            }));
-          }
+        console.log('Received answer...');
+        console.log(self.remoteDescription);
+
+        pc.setRemoteDescription(new RTCSessionDescription(self.remoteDescription), function() {
+          console.log('Set Remote Description succeeded.');
+        }, function(err) {
+          console.log('Set Remote Description failed: ' + err);
         });
+
+        console.log('Sending answer...');
+
+        pc.createAnswer(self.setLocalAndSendMessage, function(err) {
+          console.error(err);
+        }, self.mediaConstraints);
       },
 
+      setLocalAndSendMessage : function (description) {
+        ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
+        // fix SDP first time
+        this.localDescription = description;
+        pc.setLocalDescription(self.localDescription);
+      },
 
       setUpICETrickling: function (pc) {
         var self = this;
@@ -137,11 +155,23 @@
               // "candidate" : evt.candidate
             // }));
           } else {
-            self.localDescription = pc.localDescription;
-            SignalingService.send({
-              calledParty : self.calledParty,
-              sdp : self.localDescription
-            });
+            // get the call state from the session
+            var callState = callManager.getSessionContext().getCallState();
+            
+            if (callState === callManager.SessionState.OUTGOING_CALL) {
+              self.localDescription = pc.localDescription;
+              SignalingService.send({
+                calledParty : self.calledParty,
+                sdp : self.localDescription
+              });
+            } else if (callState === callManager.SessionState.INCOMING_CALL) {
+              self.localDescription = pc.localDescription;
+              SignalingService.send({
+                callsMediaModifications : {
+                  sdp : self.localDescription
+                }
+              }); 
+            }
           }
         };
 
