@@ -13,7 +13,7 @@ if (!ATT) {
   module.CallStatus = {
     READY: 0,
     CALLING: 1,
-    RINGING: 'RINGING',
+    RINGING: 2,
     INPROGRESS: 3,
     HOLD: 4,
     TRANSITION: 5,

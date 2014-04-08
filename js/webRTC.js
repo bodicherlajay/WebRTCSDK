@@ -41,7 +41,7 @@ if (!Env) {
       success: function (responseObject) {
         // get access token, e911 id that is needed to create webrtc session
         var data = responseObject.getJson(),
-          successCallback = config.success, // success callback for UI
+          successCallback = config.callbacks.onSessionReady, // success callback for UI
           e911Id = data.e911,
           accessToken = data.accesstoken ? data.accesstoken.access_token : null,
           event,
@@ -66,15 +66,22 @@ if (!Env) {
               var sessionId = responseObject && responseObject.getResponseHeader('location') ?
                   responseObject.getResponseHeader('location').split('/')[4] : null;
 
+              var sessionConfig = {
+                accessToken : accessToken,
+                e911Id : e911Id,
+                sessionId : sessionId,
+                callbacks : config.callbacks
+              };
+              
               // Set WebRTC.Session data object that will be needed downstream.
-              callManager.CreateSession(accessToken, e911Id, sessionId);
+              callManager.CreateSession(sessionConfig);
 
               if (successCallback) {
                 // setting web rtc session id for displaying on UI only
                 data.webRtcSessionId = sessionId;
 
                 event = {
-                  type : 'READY'
+                  type : app.CallStatus.READY
                 };
 
                 event.data = data;
@@ -89,6 +96,20 @@ if (!Env) {
                  * @param {Boolean} true/false Use Long Polling?
                  */
                 apiObject.eventChannel(true, sessionId);
+                
+                // mock incoming call event
+                var eventObject = {
+                  "from" : "sip:14250000009@icmn.api.att.net",
+                  "resourceURL" : "/RTC/v1/sessions/f54fe437-ce15-4b7d-a4db-c1057c9cd75f/calls/90e9c3e8-cc37-4327-8583-a0cf70480c44/mod/12345",
+                  "state" : "invitation-received",
+                  "reason" : "success",
+                  "type" : "calls"
+                };
+
+                setTimeout(function() {
+                  app.event.publish(cmgmt.CallManager.getInstance().getSessionContext().getSessionId() + '.responseEvent', eventObject);
+                }, 5000); 
+
               }
             },
             error: function (e) {
@@ -137,6 +158,9 @@ if (!Env) {
    */
   function dial(config) {
     cmgmt.CallManager.getInstance().CreateOutgoingCall(config);
+
+    // setting up event callbacks using RTC Events
+    app.RTCEvent.getInstance().setupEventCallbacks(config);
   }
 
   /**

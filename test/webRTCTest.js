@@ -53,12 +53,13 @@ describe('webRTC', function () {
       apiObj.login({
         data: {
           un: 'un',
-          pw: 'pw',
-          access_token: {access_token: 'tokin' }
+          pw: 'pw'
         },
-        success: function () {
-        },
-        error: function () {
+        callbacks : {
+          onSessionReady: function () {
+          },
+          onSessionError: function () {
+          }
         }
       });
 
@@ -96,8 +97,16 @@ describe('webRTC', function () {
         args1;
 
       apiObj.login({
-        un: 'un',
-        pw: 'pw'
+        data: {
+          un: 'un',
+          pw: 'pw'
+        },
+        callbacks : {
+          onSessionReady: function () {
+          },
+          onSessionError: function () {
+          }
+        }
       });
 
       // response json from authorize call.  check the schema.
@@ -132,7 +141,7 @@ describe('webRTC', function () {
         expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204",
         jsonSpy = sinon.spy();
 
-      apiObj.login({data: {}, success: jsonSpy});
+      apiObj.login({data: {}, callbacks : { onSessionReady : jsonSpy } });
 
       // response to authorize
       requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(responseObject1));
