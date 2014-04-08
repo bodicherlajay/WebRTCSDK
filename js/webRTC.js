@@ -42,7 +42,7 @@ if (!Env) {
           e911Id = data.e911,
           accessToken = data.accesstoken ? data.accesstoken.access_token : null,
           event,
-          eventObject,
+          //eventObject,
 
           dataForCreateWebRTCSession = {
             data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
@@ -91,17 +91,19 @@ if (!Env) {
                 /**
                  * Call BF to create event channel
                  * @param {Boolean} true/false Use Long Polling?
+                 * todo: publish session ready event after event channel is created
+                 * todo: move the login callback code to the publish
                  */
                 apiObject.eventChannel(false, sessionId);
 
                 // mock incoming call event
-                eventObject = {
-                  "from" : "sip:14250000009@icmn.api.att.net",
-                  "resourceURL" : "/RTC/v1/sessions/f54fe437-ce15-4b7d-a4db-c1057c9cd75f/calls/90e9c3e8-cc37-4327-8583-a0cf70480c44/mod/12345",
-                  "state" : "invitation-received",
-                  "reason" : "success",
-                  "type" : "calls"
-                };
+                // eventObject = {
+                  // "from" : "sip:14250000009@icmn.api.att.net",
+                  // "resourceURL" : "/RTC/v1/sessions/f54fe437-ce15-4b7d-a4db-c1057c9cd75f/calls/90e9c3e8-cc37-4327-8583-a0cf70480c44/mod/12345",
+                  // "state" : "invitation-received",
+                  // "reason" : "success",
+                  // "type" : "calls"
+                // };
 
                 // setTimeout(function () {
                   // app.event.publish(cmgmt.CallManager.getInstance().getSessionContext().getSessionId() + '.responseEvent', eventObject);
@@ -117,7 +119,7 @@ if (!Env) {
         // if no access token return user data to UI, without webrtc session id
         if (!accessToken) {
           event = {
-            type : 'READY'
+            type : app.CallStatus.READY
           };
 
           event.data = data;
@@ -170,7 +172,7 @@ if (!Env) {
     // setting up event callbacks using RTC Events
     app.RTCEvent.getInstance().setupEventCallbacks(config);
   }
-  
+
   /**
   * Hangup the call
   */
