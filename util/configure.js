@@ -1,12 +1,9 @@
 var fs = require('fs');
 
-var param = 'DHSResource';
-var newValue = 'http://localhost:9001';
-var sourceFile = 'js/APIConfigs.js';
 
 var updatedData = '';
 
-(function() {
+var config = (function() {
    var util = {};
 
    util.updateConfigParameter = function(param, newValue, sourceFile) {
@@ -32,3 +29,9 @@ var updatedData = '';
 
    return util;
 }());
+
+var param = 'DHSEndpoint';
+var newValue = 'http://localhost:9001';
+var sourceFile = 'js/appConfigModule.js';
+
+config.updateConfigParameter(param, newValue, sourceFile);
