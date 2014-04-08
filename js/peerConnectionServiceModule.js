@@ -37,13 +37,17 @@
 
       iceServers: { iceServers: [stun] },
 
-      localDescription: null,
+      localDescription: {},
+
+      remoteDescription: {},
 
       localStream: null,
 
       remoteStream: null,
 
       peerConnection: null,
+
+      callingParty: null,
 
       calledParty: null,
 
@@ -53,8 +57,8 @@
        */
       start: function (config) {
 
-        this.calledParty = config.calledParty;
-
+        this.callingParty = config.from;
+        this.calledParty = config.to;
         this.mediaConstrains = config.mediaConstraints;
 
         this.peerConnection = this.createPeerConnection();
@@ -68,22 +72,38 @@
       },
 
       getUserMediaSuccess: function (stream) {
-        var self = this;
+        var self = this,
+          rm = cmgmt.CallManager.getInstance(),
+          session = rm.getSessionContext(),
+          event = session.getEventObject(),
+          callState = session.getCallState();
 
-        // set local stream
-        this.localStream = stream;
+        if (callState === rm.SessionState.OUTGOING_CALL) {
+          // set local stream
+          this.localStream = stream;
 
-        // call the user media service to show stream
-        UserMediaService.showStream('local', stream);
+          // call the user media service to show stream
+          UserMediaService.showStream('local', this.localStream);
 
-        //add the local stream to peer connection
-        this.peerConnection.addStream(stream);
+          //add the local stream to peer connection
+          this.peerConnection.addStream(stream);
 
-        // create the offer. jslint complains when all are self or all are this.
-        self.createOffer.call(this, self.peerConnection);
+          // create the offer. jslint complains when all are self or all are this.
+          self.createOffer.call(this, self.peerConnection);
 
-        // create the answer.
-        this.createAnswer.call(self, self.peerConnection);
+        } else if (callState === rm.SessionState.INCOMING_CALL) {
+          // set local stream
+          this.localStream = stream;
+
+          this.remoteDescription = event && { sdp : event.sdp, type : 'offer' };
+
+          // call the user media service to show stream
+          UserMediaService.showStream('local', this.localStream);
+
+          // create the offer. jslint complains when all are self or all are this.
+          self.createAnswer.call(this, self.peerConnection);
+
+        }
       },
 
       onLocalStreamCreateError: function () {
@@ -92,44 +112,57 @@
       },
 
       createOffer: function (pc) {
-        var self = this,
-          arg1 = function (description) {
-            ATT.sdpFilter.getInstance().processChromeSDPOffer(description); // fix SDP first time
-            self.localDescription = description;
-            pc.setLocalDescription(self.localDescription);
-          },
-          arg2,
-          arg3;
+        var self = this;
 
         if (navigator.userAgent.indexOf('Chrome') < 0) {
-          arg2 = function (err) {
+          pc.createOffer(function (description) {
+            self.setLocalAndSendMessage.call(this, pc, description);
+          }, function (err) {
             console.error(err);
-          };
-          arg3 = self.mediaConstrains;
-          pc.createOffer(arg1, arg2, arg3);
+          }, self.mediaConstrains);
         } else {
-          pc.createOffer(arg1);
+          pc.createOffer(function (description) {
+            self.setLocalAndSendMessage.call(this, pc, description);
+          });
         }
       },
 
       createAnswer: function (pc) {
-        var sessionId = cmgmt.CallManager.getInstance().getSessionContext().getSessionId();
+        var self = this;
 
-        ATT.event.subscribe(sessionId + '.responseEvent', function (event) {
-          if (event.type === 'calls' && event.state === 'session-open') {
-            console.log('Received answer...');
-            console.log(event.sdp);
-            pc.setRemoteDescription(new RTCSessionDescription({
-              sdp : event.sdp,
-              type : 'answer'
-            }));
-          }
+        console.log('Received answer...');
+        console.log(self.remoteDescription);
+
+        pc.setRemoteDescription(new RTCSessionDescription(self.remoteDescription), function () {
+          console.log('Set Remote Description succeeded.');
+        }, function (err) {
+          console.log('Set Remote Description failed: ' + err.message);
         });
+
+        console.log('Sending answer...');
+
+        pc.createAnswer(function (description) {
+          self.setLocalAndSendMessage.call(this, pc, description);
+        }, function (err) {
+          console.error(err);
+        }, self.mediaConstraints);
       },
 
+      setLocalAndSendMessage : function (pc, description) {
+        // fix SDP first time
+        ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
+
+        this.localDescription = description;
+
+        // set local description
+        pc.setLocalDescription(this.localDescription);
+      },
 
       setUpICETrickling: function (pc) {
-        var self = this;
+        var self = this,
+          rm = cmgmt.CallManager.getInstance(),
+          session = rm.getSessionContext();
+
         pc.onicecandidate = function (evt) {
           if (evt.candidate) {
             console.log('receiving ice candidate ' + evt.candidate);
@@ -137,11 +170,21 @@
               // "candidate" : evt.candidate
             // }));
           } else {
-            self.localDescription = pc.localDescription;
-            SignalingService.send({
-              calledParty : self.calledParty,
-              sdp : self.localDescription
-            });
+            // get the call state from the session
+            var callState = session.getCallState();
+
+            if (callState === rm.SessionState.OUTGOING_CALL) {
+              self.localDescription = pc.localDescription;
+              SignalingService.send({
+                calledParty : self.calledParty,
+                sdp : self.localDescription
+              });
+            } else if (callState === rm.SessionState.INCOMING_CALL) {
+              self.localDescription = pc.localDescription;
+              SignalingService.send({
+                sdp : self.localDescription
+              });
+            }
           }
         };
 

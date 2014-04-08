@@ -28,6 +28,9 @@ if (!ATT) {
       return;
     }
 
+    // set current event on the session
+    callManager.getSessionContext().setEventObject(event);
+
     //todo capture time, debugging info for sdk
     switch (event.state) {
     case mainModule.RTCEvents.SESSION_OPEN:
