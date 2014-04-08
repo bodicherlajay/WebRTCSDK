@@ -38,7 +38,7 @@
       iceServers: { iceServers: [stun] },
 
       localDescription: {},
-      
+
       remoteDescription: {},
 
       localStream: null,
@@ -75,10 +75,8 @@
         var self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
-          event = session.getEventObject();
-        
-         // get the call state from the session
-        var callState = session.getCallState();
+          event = session.getEventObject(),
+          callState = session.getCallState();
 
         if (callState === rm.SessionState.OUTGOING_CALL) {
           // set local stream
@@ -89,15 +87,15 @@
 
           //add the local stream to peer connection
           this.peerConnection.addStream(stream);
-  
+
           // create the offer. jslint complains when all are self or all are this.
           self.createOffer.call(this, self.peerConnection);
 
         } else if (callState === rm.SessionState.INCOMING_CALL) {
           // set local stream
           this.localStream = stream;
-          
-          this.remoteDescription = event && { sdp : event.sdp, type : 'answer' };
+
+          this.remoteDescription = event && { sdp : event.sdp, type : 'offer' };
 
           // call the user media service to show stream
           UserMediaService.showStream('local', this.localStream);
@@ -117,48 +115,54 @@
         var self = this;
 
         if (navigator.userAgent.indexOf('Chrome') < 0) {
-          pc.createOffer(self.setLocalAndSendMessage, function(err) {
+          pc.createOffer(function (description) {
+            self.setLocalAndSendMessage.call(this, pc, description);
+          }, function (err) {
             console.error(err);
           }, self.mediaConstrains);
         } else {
-          pc.createOffer(self.setLocalAndSendMessage);
+          pc.createOffer(function (description) {
+            self.setLocalAndSendMessage.call(this, pc, description);
+          });
         }
       },
 
       createAnswer: function (pc) {
-        var self = this,
-          rm = cmgmt.CallManager.getInstance(),
-          session = rm.getSessionContext(),
-          sessionId = session.getSessionId();
+        var self = this;
 
         console.log('Received answer...');
         console.log(self.remoteDescription);
 
-        pc.setRemoteDescription(new RTCSessionDescription(self.remoteDescription), function() {
+        pc.setRemoteDescription(new RTCSessionDescription(self.remoteDescription), function () {
           console.log('Set Remote Description succeeded.');
-        }, function(err) {
+        }, function (err) {
           console.log('Set Remote Description failed: ' + err.message);
         });
 
         console.log('Sending answer...');
 
-        pc.createAnswer(self.setLocalAndSendMessage, function(err) {
+        pc.createAnswer(function (description) {
+          self.setLocalAndSendMessage.call(this, pc, description);
+        }, function (err) {
           console.error(err);
         }, self.mediaConstraints);
       },
 
-      setLocalAndSendMessage : function (description) {
-        ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
+      setLocalAndSendMessage : function (pc, description) {
         // fix SDP first time
+        ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
+
         this.localDescription = description;
-        pc.setLocalDescription(self.localDescription);
+
+        // set local description
+        pc.setLocalDescription(this.localDescription);
       },
 
       setUpICETrickling: function (pc) {
         var self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext();
-          
+
         pc.onicecandidate = function (evt) {
           if (evt.candidate) {
             console.log('receiving ice candidate ' + evt.candidate);
@@ -168,7 +172,7 @@
           } else {
             // get the call state from the session
             var callState = session.getCallState();
-            
+
             if (callState === rm.SessionState.OUTGOING_CALL) {
               self.localDescription = pc.localDescription;
               SignalingService.send({
@@ -179,7 +183,7 @@
               self.localDescription = pc.localDescription;
               SignalingService.send({
                 sdp : self.localDescription
-              }); 
+              });
             }
           }
         };
