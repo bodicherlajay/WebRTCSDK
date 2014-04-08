@@ -10,7 +10,7 @@ describe('Call Management', function () {
   });
   it('should create Session Context', function () {
     var callmgr = cmgmt.CallManager.getInstance(), sessionContext;
-    callmgr.CreateSession("abcd", "e911id", "sessionId");
+    callmgr.CreateSession({token : "abcd", e911Id: "e911id", sessionId : "sessionId" });
     sessionContext = callmgr.getSessionContext();
     expect(sessionContext.getAccessToken()).equals("abcd");
     expect(sessionContext.getE911Id()).equals("e911id");

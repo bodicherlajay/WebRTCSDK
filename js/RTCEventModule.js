@@ -11,8 +11,8 @@ if (!ATT) {
   var callManager = cmgmt.CallManager.getInstance(),
     module = {},
     instance,
-    callbacks = cmgmt.CallManager.getInstance().getSessionContext(),
-    InterceptingEventChannelCallback,
+    callbacks,
+    interceptingEventChannelCallback,
     subscribeEvents,
     onIncomingCall,
     onSessionOpen,
@@ -23,9 +23,13 @@ if (!ATT) {
       };
     };
 
-  InterceptingEventChannelCallback = function (event) {
+  interceptingEventChannelCallback = function (event) {
+    if (!event) {
+      return;
+    }
+
     //todo capture time, debugging info for sdk
-    switch (event) {
+    switch (event.state) {
     case mainModule.RTCEvents.SESSION_OPEN:
       onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
       break;
@@ -33,43 +37,35 @@ if (!ATT) {
       onSessionClose({ type: mainModule.CallStatus.ENDED });
       break;
     case mainModule.RTCEvents.INVITATION_RECEIVED:
-      onIncomingCall({ type: mainModule.CallStatus.RINGING });
+      onIncomingCall({ type: mainModule.CallStatus.RINGING, from: event.from });
       break;
     }
   };
 
-  subscribeEvents = function (event) {
+  subscribeEvents = function () {
+    // set callbacks after session is created and we are ready to subscribe to events
+    callbacks = callManager.getSessionContext().getUICallbacks();
+
+    // subscribe to events
     var sessionId = callManager.getSessionContext().getSessionId();
-    mainModule.event.subscribe(sessionId + '.responseEvent', InterceptingEventChannelCallback.call(null, event));
+    mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
   };
 
   onSessionOpen = function (evt) {
     if (callbacks.onSessionOpen) {
-      callbacks.onSessionOpen(evt.type);
+      callbacks.onSessionOpen(evt);
     }
   };
 
   onIncomingCall = function (evt) {
     if (callbacks.onIncomingCall) {
-      callbacks.onIncomingCall(evt.type);
-    }
-  };
-
-  onSessionOpen = function (evt) {
-    if (callbacks.onIncomingCall) {
-      callbacks.onIncomingCall(evt.type);
-    }
-  };
-
-  onIncomingCall = function (evt) {
-    if (callbacks.onIncomingCall) {
-      callbacks.onIncomingCall(evt.type);
+      callbacks.onIncomingCall(evt);
     }
   };
 
   onSessionClose = function (evt) {
-    if (callbacks.onIncomingCall) {
-      callbacks.onIncomingCall(evt.type);
+    if (callbacks.onSessionClose) {
+      callbacks.onSessionClose(evt);
     }
   };
 
