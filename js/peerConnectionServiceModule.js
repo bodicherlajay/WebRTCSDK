@@ -145,10 +145,14 @@
         }, self.mediaConstraints);
       },
 
-      setRemoteDescription: function (sdp) {
+      setRemoteDescription: function (sdp, modId) {
         this.remoteDescription = sdp;
         console.log('Setting remote session description...');
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: this.remoteDescription, type: 'answer' }), function () {
+        var descObj = {
+          sdp: this.remoteDescription,
+          type: (modId ? 'offer' : 'answer')
+        };
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(descObj), function () {
           console.log('Set Remote Description succeeded.');
         }, function (err) {
           console.log('Set Remote Description failed: ' + err.message);
@@ -182,13 +186,13 @@
 
             if (callState === rm.SessionState.OUTGOING_CALL) {
               self.localDescription = pc.localDescription;
-              SignalingService.send({
+              SignalingService.sendOffer({
                 calledParty : self.calledParty,
                 sdp : self.localDescription
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
               self.localDescription = pc.localDescription;
-              SignalingService.send({
+              SignalingService.sendAnswer({
                 sdp : self.localDescription
               });
             }

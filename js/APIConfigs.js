@@ -108,6 +108,19 @@ if (!ATT) {
         headers: DEFAULTS.headers
       },
       /**
+      * Start Call via BFEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      answerCall: {
+        method: 'put',
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          }
+        },
+        headers: DEFAULTS.headers
+      },
+      /**
       * End Call via BFEndpoint
       * @memberof WebRTC.APIConfigs
       */

@@ -26,9 +26,14 @@ describe('SignalingService', function () {
     xhr.restore();
   });
 
-  it('should exist and contain send method.', function () {
+  it('should exist and contain sendOffer method.', function () {
     expect(ATT.SignalingService).to.be.an('object');
-    expect(ATT.SignalingService.send).to.be.a('function');
+    expect(ATT.SignalingService.sendOffer).to.be.a('function');
+  });
+
+  it('should exist and contain sendAnswer method.', function () {
+    expect(ATT.SignalingService).to.be.an('object');
+    expect(ATT.SignalingService.sendAnswer).to.be.a('function');
   });
 
   it('should call startCall API method with call object passed as data with SDP & calledParty.', function () {
@@ -58,8 +63,8 @@ describe('SignalingService', function () {
     // stub out ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp)
     //var stub = sinon.stub(object, "method", func)
 
-    ATT.SignalingService.send({
-      phoneNumber: '123',
+    ATT.SignalingService.sendOffer({
+      calledParty: '123',
       sdp: 'sdp'
     });
 
@@ -94,8 +99,8 @@ describe('SignalingService', function () {
       sendSuccessArguments;
 
     // call
-    ATT.SignalingService.send({
-      phoneNumber: '123',
+    ATT.SignalingService.sendOffer({
+      calledParty: '123',
       sdp: 'sdp',
       success: successSpy,
       error: errorSpy

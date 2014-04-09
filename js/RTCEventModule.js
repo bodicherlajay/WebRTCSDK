@@ -15,7 +15,7 @@ if (!ATT) {
     interceptingEventChannelCallback,
     subscribeEvents,
     onIncomingCall,
-    onSessionOpen,
+    //onSessionOpen,
     onSessionClose,
     init = function () {
       return {
@@ -39,10 +39,20 @@ if (!ATT) {
     //todo capture time, debugging info for sdk
     switch (event.state) {
     case mainModule.RTCEvents.SESSION_OPEN:
-      ATT.PeerConnectionService.setRemoteDescription(event.sdp);
+      if (event.sdp) {
+        ATT.PeerConnectionService.setRemoteDescription(event.sdp);
+      }
 
       // todo: change this to event.from later on you get the right event.from
-      onSessionOpen({ type: mainModule.CallStatus.INPROGRESS, callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee() });
+      //onSessionOpen({
+      //  type: mainModule.CallStatus.INPROGRESS,
+      //  callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee()
+      //});
+      break;
+    case mainModule.RTCEvents.MODIFICATION_RECEIVED:
+      if (event.sdp && event.modId) {
+        ATT.PeerConnectionService.setRemoteDescription(event.sdp, event.modId);
+      }
       break;
     case mainModule.RTCEvents.SESSION_TERMINATED:
       onSessionClose({ type: mainModule.CallStatus.ENDED, reason: event.reason });
@@ -62,11 +72,11 @@ if (!ATT) {
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
   };
 
-  onSessionOpen = function (evt) {
-    if (callbacks.onSessionOpen) {
-      callbacks.onSessionOpen(evt);
-    }
-  };
+  // onSessionOpen = function (evt) {
+    // if (callbacks.onSessionOpen) {
+      // callbacks.onSessionOpen(evt);
+    // }
+  // };
 
   onIncomingCall = function (evt) {
     if (callbacks.onIncomingCall) {

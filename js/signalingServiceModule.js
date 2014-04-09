@@ -15,7 +15,7 @@ if (!ATT) {
   apiObject = resourceManager.getAPIObject();
   app.SignalingService = {
 
-    send : function (config) {
+    sendOffer : function (config) {
 
       // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
@@ -36,27 +36,68 @@ if (!ATT) {
         },
         data : data,
         success : function (obj) {
+          console.log('offer sent successfully');
 
           var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
             location : location,
             xState : xState
           };
 
-          // move later. used for hangup()
-          apiObject.Calls = {};
-          apiObject.Calls.Id = location.split('/')[8];
-
-          // call success callback passed to send.
           if (typeof config.success === 'function') {
             config.success.call(null, headers);
           }
         },
-        error : function () {
+        error : function (err) {
+          console.error(err.message);
+
+          if (typeof config.error === 'function') {
+            config.error.call(null);
+          }
+        }
+      });
+    },
+
+    sendAnswer : function (config) {
+
+      // fix description just before sending
+      var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
+      // call data
+        data = {
+          callsMediaModifications : {
+            sdp : description.sdp
+          }
+        };
+
+      apiObject.answerCall({
+        apiParameters: {
+          url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]]
+        },
+        headers : {
+          'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+          'x-calls-action' : 'call-answer'
+        },
+        data : data,
+        success : function (obj) {
+          console.log('answer sent successfully');
+
+          var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
+            location : location,
+            xState : xState
+          };
+
+          if (typeof config.success === 'function') {
+            config.success.call(null, headers);
+          }
+        },
+        error : function (err) {
+          console.error(err.message);
+
           if (typeof config.error === 'function') {
             config.error.call(null);
           }
         }
       });
     }
+
   };
 }(ATT || {}));
