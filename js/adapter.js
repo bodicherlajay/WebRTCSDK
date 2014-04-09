@@ -6,7 +6,7 @@
 "use strict";
 
 var RTCPeerConnection = null;
-var RTCSessionDescription = null;
+var RTCSessionDescription;
 var RTCIceCandidate = null;
 var getUserMedia = null;
 var attachMediaStream = null;
