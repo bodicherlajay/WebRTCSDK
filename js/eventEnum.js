@@ -17,9 +17,9 @@ if (!ATT) {
     INPROGRESS: 3,
     HOLD:       4,
     TRANSITION: 5,
-    WAITING:    6,
-    ENDED:      'ENDED',
-    ERROR:      8
+    WAITING: 6,
+    ENDED: 7,
+    ERROR: 8
   };
 
   module.RTCEvents = {
