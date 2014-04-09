@@ -105,61 +105,61 @@ cmgmt = (function () {
 
   //Session Object implementations
   //Call Object implementations
-  Call.start = function () {
-    //console.log(this.from);
-  };
+  // Call.start = function () {
+  //   //console.log(this.from);
+  // };
 
-  Call.transfer = function () {
-  };
+  // Call.transfer = function () {
+  // };
 
-  Call.reject = function () {
-  };
+  // Call.reject = function () {
+  // };
 
-  Call.hangup = function () {
-  };
+  // Call.hangup = function () {
+  // };
 
-  Call.move = function () {
-  };
+  // Call.move = function () {
+  // };
 
-  Call.hold = function () {
-  };
+  // Call.hold = function () {
+  // };
 
-  Call.resume = function () {
-  };
+  // Call.resume = function () {
+  // };
 
-  Call.removeVideo = function () {
-  };
+  // Call.removeVideo = function () {
+  // };
 
-  Call.addVideo = function () {
-  };
+  // Call.addVideo = function () {
+  // };
 
-  Call.transferTo = function () {
-  };
+  // Call.transferTo = function () {
+  // };
 
-  Call.mute = function () {
-  };
-  Call.unmute = function () {
-  };
-  Call.sendDTMF = function () {
-  };
-  Call.onAddStream = function (stream, event) {
-    console.log(stream);
-    console.log(event);
-  };
-  Call.onConnected = function (event) {
-    console.log(event);
-  };
-  Call.onDisconnected = function (event) {
-    console.log(event);
-  };
-  Call.onError = function (error, event) {
-    console.log(error);
-    console.log(event);
-  };
-  Call.onStatus = function (status, event) {
-    console.log(status);
-    console.log(event);
-  };
+  // Call.mute = function () {
+  // };
+  // Call.unmute = function () {
+  // };
+  // Call.sendDTMF = function () {
+  // };
+  // Call.onAddStream = function (stream, event) {
+  //   console.log(stream);
+  //   console.log(event);
+  // };
+  // Call.onConnected = function (event) {
+  //   console.log(event);
+  // };
+  // Call.onDisconnected = function (event) {
+  //   console.log(event);
+  // };
+  // Call.onError = function (error, event) {
+  //   console.log(error);
+  //   console.log(event);
+  // };
+  // Call.onStatus = function (status, event) {
+  //   console.log(status);
+  //   console.log(event);
+  // };
 
   module.getInstance = function () {
     if (!instance) {
