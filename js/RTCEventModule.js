@@ -55,7 +55,7 @@ if (!ATT) {
       }
       break;
     case mainModule.RTCEvents.SESSION_TERMINATED:
-      onSessionClose({ type: mainModule.CallStatus.ENDED });
+      onSessionClose({ type: mainModule.CallStatus.ENDED, reason: event.reason });
       break;
     case mainModule.RTCEvents.INVITATION_RECEIVED:
       onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
