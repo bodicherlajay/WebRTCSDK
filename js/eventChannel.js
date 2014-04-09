@@ -42,13 +42,12 @@ if (!ATT) {
         responseEvent = JSON.parse(messages.data);
       }
       if (responseEvent.events) {
-        console.log(responseEvent.events);
         var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4], events = responseEvent.events.eventList, e;
         // publish individually
         for (e in events) {
           if (events.hasOwnProperty(e)) {
             app.event.publish(sessID + '.responseEvent', events[e].eventObject);
-            console.log(sessID + '.responseEvent', events[e].eventObject);
+            console.log(sessID + '.responseEvent', JSON.stringify(events[e].eventObject));
           }
         }
       }
