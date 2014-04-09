@@ -5,7 +5,10 @@ module.exports = function (grunt) {
     basePath: '.',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
-      'js/**/*.js',
+      'js/utils.js',
+      'js/restClient.js',
+      'js/util.js',
+      'js/eventEmitter.js',
       'test/**/*.js'
     ],
     logLevel: 'DEBUG',

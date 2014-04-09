@@ -1,5 +1,6 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global RESTClient:true, describe:true, beforeEach:true, afterEach:true, it:true, xit:true, sinon:true, assert:true, expect:true, done:true */
+/*global ATT:true, extend:true, RESTClient:true, describe:true, beforeEach:true,
+afterEach:true, it:true, xit:true, sinon:true, assert:true, expect:true, done:true */
 'use strict';
 
 describe('Rest Client', function () {

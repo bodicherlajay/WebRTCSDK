@@ -19,6 +19,13 @@ if (!ATT) {
       typeof navigator.webkitGetUserMedia === 'function' ||
       typeof navigator.getUserMedia === 'function';
   },
+    /**
+     * Extends an existing object using deep copy.
+     * Note: It will only deep-copy instances of Object.
+     * @param destination
+     * @param source
+     * @returns {*} destination
+     */
     extend = function (destination, source) {
       var property;
       for (property in source) {
