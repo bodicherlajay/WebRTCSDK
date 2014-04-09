@@ -28,12 +28,19 @@ if (!ATT) {
       return;
     }
 
+    //Check if invite is an announcement
+    if (event.sdp && event.sdp.indexOf("sendonly") !== -1) {
+      event.sdp = event.sdp.replace(/sendonly/g, "sendrecv");
+    }
+
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
 
     //todo capture time, debugging info for sdk
     switch (event.state) {
     case mainModule.RTCEvents.SESSION_OPEN:
+      ATT.PeerConnectionService.setRemoteDescription(event.sdp);
+
       // todo: change this to event.from later on you get the right event.from
       onSessionOpen({ type: mainModule.CallStatus.INPROGRESS, callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee() });
       break;

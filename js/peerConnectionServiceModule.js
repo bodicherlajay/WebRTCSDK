@@ -132,22 +132,27 @@
         var self = this,
           me = self;
 
-        console.log('Received answer...');
-        console.log(self.remoteDescription);
-
         pc.setRemoteDescription(new RTCSessionDescription(self.remoteDescription), function () {
           console.log('Set Remote Description succeeded.');
         }, function (err) {
           console.log('Set Remote Description failed: ' + err.message);
         });
 
-        console.log('Sending answer...');
-
         pc.createAnswer(function (description) {
           self.setLocalAndSendMessage.call(me, pc, description);
         }, function (err) {
           console.error(err);
         }, self.mediaConstraints);
+      },
+
+      setRemoteDescription: function (sdp) {
+        this.remoteDescription = sdp;
+        console.log('Setting remote session description...');
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: this.remoteDescription, type: 'answer' }), function () {
+          console.log('Set Remote Description succeeded.');
+        }, function (err) {
+          console.log('Set Remote Description failed: ' + err.message);
+        });
       },
 
       setLocalAndSendMessage : function (pc, description) {
