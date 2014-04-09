@@ -18,7 +18,7 @@ if (!ATT) {
     HOLD: 4,
     TRANSITION: 5,
     WAITING: 6,
-    ENDED: 'ENDED',
+    ENDED: 7,
     ERROR: 8
   };
 
