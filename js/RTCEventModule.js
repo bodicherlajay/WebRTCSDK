@@ -34,13 +34,14 @@ if (!ATT) {
     //todo capture time, debugging info for sdk
     switch (event.state) {
     case mainModule.RTCEvents.SESSION_OPEN:
-      onSessionOpen({ type: mainModule.CallStatus.INPROGRESS });
+      // todo: change this to event.from later on you get the right event.from
+      onSessionOpen({ type: mainModule.CallStatus.INPROGRESS, callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee() });
       break;
     case mainModule.RTCEvents.SESSION_TERMINATED:
       onSessionClose({ type: mainModule.CallStatus.ENDED });
       break;
     case mainModule.RTCEvents.INVITATION_RECEIVED:
-      onIncomingCall({ type: mainModule.CallStatus.RINGING, from: event.from });
+      onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
       break;
     }
   };
