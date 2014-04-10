@@ -19,23 +19,16 @@ describe('ResourceManager', function () {
 
   describe('initialization', function () {
 
-    it('should add api methods during initialization', function () {
-      expect(apiObject.login).is.a('function');
-      expect(apiObject.logout).is.a('function');
-    });
-
-    it('should use APIConfigs.js if no config passed in', function () {
-      expect(apiObject.authenticate).is.a('function');
-    });
-
     // Add API methods as you add to the APIConfig.js file.
     [
-      'authenticate',
-      'logout',
+      'authenticateUser',
+      'logoutUser',
       'getBrowserSession',
       'createWebRTCSession',
+      'deleteWebRTCSession',
       'getEvents',
-      'login'
+      'login',
+      'logout'
     ].forEach(function (methodName) {
       describe('Function ' + methodName, function () {
         it("should exist", function (done) {
