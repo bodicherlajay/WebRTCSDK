@@ -15,8 +15,10 @@ if (!ATT) {
     interceptingEventChannelCallback,
     subscribeEvents,
     onIncomingCall,
+    onInProgress,
     //onSessionOpen,
     onSessionClose,
+    done,
     init = function () {
       return {
         setupEventCallbacks: subscribeEvents
@@ -39,8 +41,9 @@ if (!ATT) {
     //todo capture time, debugging info for sdk
     switch (event.state) {
     case mainModule.RTCEvents.SESSION_OPEN:
-      if (event.sdp) {
-        ATT.PeerConnectionService.setRemoteDescription(event.sdp);
+      if (event.sdp && !done) {
+        done = true;
+        ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp);
       }
 
       // todo: change this to event.from later on you get the right event.from
@@ -51,7 +54,11 @@ if (!ATT) {
       break;
     case mainModule.RTCEvents.MODIFICATION_RECEIVED:
       if (event.sdp && event.modId) {
-        ATT.PeerConnectionService.setRemoteDescription(event.sdp, event.modId);
+        ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
+        onInProgress({
+          type: mainModule.CallStatus.INPROGRESS,
+          callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee()
+        });
       }
       break;
     case mainModule.RTCEvents.SESSION_TERMINATED:
@@ -81,6 +88,12 @@ if (!ATT) {
   onIncomingCall = function (evt) {
     if (callbacks.onIncomingCall) {
       callbacks.onIncomingCall(evt);
+    }
+  };
+
+  onInProgress = function (evt) {
+    if (callbacks.onInProgress) {
+      callbacks.onInProgress(evt);
     }
   };
 

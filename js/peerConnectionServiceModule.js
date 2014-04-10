@@ -95,13 +95,11 @@
           // set local stream
           this.localStream = stream;
 
-          this.remoteDescription = event && { sdp : event.sdp, type : 'offer' };
-
           // call the user media service to show stream
           UserMediaService.showStream('local', this.localStream);
 
           // create the offer. jslint complains when all are self or all are this.
-          self.createAnswer.call(this, self.peerConnection);
+          self.setRemoteAndCreateAnswer.call(this, event.sdp, true);
 
         }
       },
@@ -117,56 +115,54 @@
 
         if (navigator.userAgent.indexOf('Chrome') < 0) {
           pc.createOffer(function (description) {
-            self.setLocalAndSendMessage.call(me, pc, description);
+            self.setLocalAndSendMessage.call(me, description);
           }, function (err) {
             console.error(err);
           }, self.mediaConstrains);
         } else {
           pc.createOffer(function (description) {
-            self.setLocalAndSendMessage.call(me, pc, description);
+            self.setLocalAndSendMessage.call(me, description);
           });
         }
       },
 
-      createAnswer: function (pc) {
+      createAnswer: function (createAnswer) {
         var self = this,
           me = self;
 
-        pc.setRemoteDescription(new RTCSessionDescription(self.remoteDescription), function () {
-          console.log('Set Remote Description succeeded.');
-        }, function (err) {
-          console.log('Set Remote Description failed: ' + err.message);
-        });
-
-        pc.createAnswer(function (description) {
-          self.setLocalAndSendMessage.call(me, pc, description);
-        }, function (err) {
-          console.error(err);
-        }, self.mediaConstraints);
-      },
-
-      setRemoteDescription: function (sdp, modId) {
-        this.remoteDescription = sdp;
         console.log('Setting remote session description...');
-        var descObj = {
-          sdp: this.remoteDescription,
-          type: (modId ? 'offer' : 'answer')
-        };
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription(descObj), function () {
+
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
           console.log('Set Remote Description succeeded.');
         }, function (err) {
-          console.log('Set Remote Description failed: ' + err.message);
+          console.log('Set Remote Description failed: ' + err);
         });
+
+        if (createAnswer) {
+          this.peerConnection.createAnswer(function (description) {
+            self.setLocalAndSendMessage.call(me, description);
+          }, function (err) {
+            console.error(err);
+          }, self.mediaConstraints);
+        }
       },
 
-      setLocalAndSendMessage : function (pc, description) {
+      setRemoteAndCreateAnswer: function (sdp, isOfferOrMod) {
+        this.remoteDescription = {
+          sdp: sdp,
+          type: (isOfferOrMod ? 'offer' : 'answer')
+        };
+        this.createAnswer(isOfferOrMod);
+      },
+
+      setLocalAndSendMessage : function (description) {
         // fix SDP first time
         ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
 
         this.localDescription = description;
 
         // set local description
-        pc.setLocalDescription(this.localDescription);
+        this.peerConnection.setLocalDescription(this.localDescription);
       },
 
       setUpICETrickling: function (pc) {
