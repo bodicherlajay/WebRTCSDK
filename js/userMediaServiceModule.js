@@ -50,6 +50,18 @@ if (!ATT) {
 
       videoStreamEl.src = window.URL.createObjectURL(stream);
       videoStreamEl.play();
+    },
+
+    // endCall
+    endCall: function() {
+      if (this.localStream) {
+        this.localStream.stop();
+        this.localVideoElement.src = '';
+      }
+      if (this.remoteStream) {
+        this.remoteStream.stop();
+        this.remoteVideoElement.src = '';
+      }
     }
   };
 
