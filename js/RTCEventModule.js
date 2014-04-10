@@ -48,6 +48,9 @@ if (!ATT) {
       }
       // set callID to use for hangup()
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
+      onInProgress({
+        type: mainModule.CallStatus.INPROGRESS
+      });
       break;
 
     case mainModule.RTCEvents.MODIFICATION_RECEIVED:
