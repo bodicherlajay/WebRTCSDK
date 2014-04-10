@@ -123,14 +123,14 @@ if (!Env) {
     // Call DHS to authenticate, associate user to session.
     apiObject.authenticateUser(authenticateConfig);
   }
-  
-  function logoutAndDeleteWebRTCSession (config) {
+
+  function logoutAndDeleteWebRTCSession(config) {
     var logoutConfig = {
       success: function (response) {
         var data = response.getJson(),
           session = callManager.getSessionContext(),
           dataForDeleteWebRTCSession;
-          
+
         // dirty fix for missing cookie session
         if (!session) {
           data = {
@@ -138,14 +138,14 @@ if (!Env) {
             error : 'Unable to retrieve web rtc session'
           };
           if (typeof config.success === 'function') {
-            return config.success (data);
+            return config.success(data);
           }
           return;
         }
-        
+
         dataForDeleteWebRTCSession = {
           apiParameters: {
-            url:[session.getSessionId()]
+            url: [session.getSessionId()]
           },
 
           headers: {
@@ -162,11 +162,11 @@ if (!Env) {
             }
 
             if (typeof config.success === 'function') {
-              config.success (data);
+              config.success(data);
             }
           }
         };
-        
+
         // Call BF to delete WebRTC Session.
         apiObject.deleteWebRTCSession(dataForDeleteWebRTCSession);
       },
