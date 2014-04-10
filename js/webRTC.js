@@ -215,7 +215,7 @@ if (!Env) {
   * Hangup the call
   */
   function hangup() {
-    if (app.PeerConnectionService.peerConnection) {
+    if (app.PeerConnectionService.peerConnection && callManager.getSessionContext().getCurrentCallId()) {
       console.log('Hanging up...');
       app.SignalingService.endCall();
       app.PeerConnectionService.endCall();
