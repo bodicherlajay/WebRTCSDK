@@ -53,7 +53,7 @@ if (!ATT) {
     },
 
     // endCall
-    endCall: function() {
+    endCall: function () {
       if (this.localStream) {
         this.localStream.stop();
         this.localVideoElement.src = '';

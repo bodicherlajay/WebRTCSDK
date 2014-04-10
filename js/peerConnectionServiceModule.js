@@ -216,7 +216,7 @@
       },
 
       // end Call
-      endCall: function() {
+      endCall: function () {
         this.peerConnection.close();
         this.peerConnection = null;
       }
