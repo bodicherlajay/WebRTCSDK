@@ -116,12 +116,67 @@ if (!Env) {
         apiObject.createWebRTCSession(dataForCreateWebRTCSession);
       },
       error: function (e) {
-        console.log('CREATE SESSION ERROR', e);
+        console.log('Create session error : ', e);
       }
     };
 
     // Call DHS to authenticate, associate user to session.
-    apiObject.authenticate(authenticateConfig);
+    apiObject.authenticateUser(authenticateConfig);
+  }
+  
+  function logoutAndDeleteWebRTCSession (config) {
+    var logoutConfig = {
+      success: function (response) {
+        var data = response.getJson(),
+          session = callManager.getSessionContext(),
+          dataForDeleteWebRTCSession;
+          
+        // dirty fix for missing cookie session
+        if (!session) {
+          data = {
+            type : 'error',
+            error : 'Unable to retrieve web rtc session'
+          };
+          if (typeof config.success === 'function') {
+            return config.success (data);
+          }
+          return;
+        }
+        
+        dataForDeleteWebRTCSession = {
+          apiParameters: {
+            url:[session.getSessionId()]
+          },
+
+          headers: {
+            "Authorization": "Bearer " + session.getAccessToken(),
+            "x-e911Id": session.getE911Id()
+          },
+
+          success: function (responseObject) {
+            if (responseObject.status !== 200) {
+              data = {
+                type : 'error',
+                error : 'Failed to delete the web rtc session on blackflag'
+              };
+            }
+
+            if (typeof config.success === 'function') {
+              config.success (data);
+            }
+          }
+        };
+        
+        // Call BF to delete WebRTC Session.
+        apiObject.deleteWebRTCSession(dataForDeleteWebRTCSession);
+      },
+      error: function (e) {
+        console.log('Delete session error : ', e);
+      }
+    };
+
+    // Call DHS to logout user by deleting browser session.
+    apiObject.logoutUser(logoutConfig);
   }
 
   // Stop user media
@@ -142,7 +197,7 @@ if (!Env) {
    * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
    */
   function dial(config) {
-    cmgmt.CallManager.getInstance().CreateOutgoingCall(config);
+    callManager.CreateOutgoingCall(config);
 
     // setting up event callbacks using RTC Events
     app.RTCEvent.getInstance().setupEventCallbacks(config);
@@ -153,7 +208,7 @@ if (!Env) {
    * @param {Object} config answer configuration object.
    */
   function answer(config) {
-    cmgmt.CallManager.getInstance().CreateIncomingCall(config);
+    callManager.CreateIncomingCall(config);
 
     // setting up event callbacks using RTC Events
     app.RTCEvent.getInstance().setupEventCallbacks(config);
@@ -183,7 +238,7 @@ if (!Env) {
           url: [apiObject.Session.Id, apiObject.Calls.Id]
         },
         headers: {
-          'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
+          'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
         },
         success: function (response) {
           if (response.getResponseStatus === 204) {
@@ -210,6 +265,8 @@ if (!Env) {
   // The SDK public API.
   // Authenticates and creates WebRTC session
   apiObject.login = loginAndCreateWebRTCSession;
+  // Authenticates and creates WebRTC session
+  apiObject.logout = logoutAndDeleteWebRTCSession;
   // stop user media
   apiObject.stopUserMedia = stopUserMedia;
   // Create call

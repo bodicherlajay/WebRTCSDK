@@ -118,19 +118,19 @@ describe('SignalingService', function () {
 
   });
 
-  xit('should call error callback on any 400.', function () {
+  it('should call success callback on any 400.', function () {
     var errorSpy = sinon.spy(),
       successSpy = sinon.spy();
 
     // setup
-    ATT.WebRTC.Session = {
+    apiObj.Session = {
       accessToken: 'access_token',
       Id: 'webrtc_sessionid'
     };
 
     // call
-    ATT.SignalingService.send({
-      phoneNumber: '123',
+    ATT.SignalingService.sendOffer({
+      calledParty: '123',
       sdp: 'sdp',
       success: successSpy,
       error: errorSpy
@@ -141,6 +141,6 @@ describe('SignalingService', function () {
     requests[0].respond(400, {}, "");
 
     // send callback should be called
-    expect(errorSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(true);
   });
 });
