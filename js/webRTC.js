@@ -37,12 +37,9 @@ if (!Env) {
       data: config.data,
       success: function (responseObject) {
         // get access token, e911 id that is needed to create webrtc session
-        var data = responseObject.getJson(),
-          successCallback = config.callbacks.onSessionReady, // success callback for UI
-          e911Id = data.e911,
-          accessToken = data.accesstoken ? data.accesstoken.access_token : null,
-          event,
-          //eventObject,
+        var authenticateResponseData = responseObject.getJson(),
+          accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null,
+          e911Id = authenticateResponseData.e911,
 
           dataForCreateWebRTCSession = {
             data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
@@ -62,39 +59,42 @@ if (!Env) {
 
             success: function (responseObject) {
               var sessionId = responseObject && responseObject.getResponseHeader('location') ?
-                    responseObject.getResponseHeader('location').split('/')[4] : null,
-                sessionConfig = {
+                    responseObject.getResponseHeader('location').split('/')[4] : null;
+
+              if (sessionId) {
+
+                // Set WebRTC.Session data object that will be needed downstream.
+                // Also setup UI callbacks
+                callManager.CreateSession({
                   token : accessToken,
                   e911Id : e911Id,
                   sessionId : sessionId,
-                  callbacks : config.callbacks
-                };
+                  success : config.success
+                });
 
-              // Set WebRTC.Session data object that will be needed downstream.
-              callManager.CreateSession(sessionConfig);
-
-              if (successCallback) {
-                // setting web rtc session id for displaying on UI only
-                data.webRtcSessionId = sessionId;
-
-                event = {
-                  type : app.CallStatus.READY
-                };
-
-                event.data = data;
-                successCallback(event);
-              }
-
-              if (sessionId) {
                 // setting up event callbacks using RTC Events
-                app.RTCEvent.getInstance().setupEventCallbacks(config);
+                app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+
                 /**
                  * Call BF to create event channel
                  * @param {Boolean} true/false Use Long Polling?
                  * todo: publish session ready event after event channel is created
                  * todo: move the login callback code to the publish
                  */
-                apiObject.eventChannel(false, sessionId);
+                apiObject.eventChannel(false, sessionId, function () {
+                  // setting web rtc session id for displaying on UI only
+                  authenticateResponseData.webRtcSessionId = sessionId;
+
+                  // publish the UI callback for ready state
+                  app.event.publish(sessionId + '.responseEvent', {
+                    state : app.SessionEvents.RTC_SESSION_CREATED,
+                    data : authenticateResponseData
+                  });
+                });
+              } else { // if no session id, call the UI error callback
+                if (typeof config.error === 'function') {
+                  config.error(authenticateResponseData);
+                }
               }
             },
             error: function (e) {
@@ -104,16 +104,13 @@ if (!Env) {
 
         // if no access token return user data to UI, without webrtc session id
         if (!accessToken) {
-          event = {
-            type : app.CallStatus.READY
-          };
-
-          event.data = data;
-          return successCallback(event);
+          if (typeof config.error === 'function') {
+            config.error(authenticateResponseData);
+          }
+        } else {
+          // Call BF to create WebRTC Session.
+          apiObject.createWebRTCSession(dataForCreateWebRTCSession);
         }
-
-        // Call BF to create WebRTC Session.
-        apiObject.createWebRTCSession(dataForCreateWebRTCSession);
       },
       error: function (e) {
         console.log('Create session error : ', e);
@@ -200,7 +197,7 @@ if (!Env) {
     callManager.CreateOutgoingCall(config);
 
     // setting up event callbacks using RTC Events
-    app.RTCEvent.getInstance().setupEventCallbacks(config);
+    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
 
   /**
@@ -211,7 +208,7 @@ if (!Env) {
     callManager.CreateIncomingCall(config);
 
     // setting up event callbacks using RTC Events
-    app.RTCEvent.getInstance().setupEventCallbacks(config);
+    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
 
   /**

@@ -10,6 +10,11 @@ if (!ATT) {
   "use strict";
   var module = {};
 
+  module.SessionEvents = {
+    RTC_SESSION_CREATED: 0,
+    RTC_SESSION_DELETED: 1
+  };
+
   module.CallStatus = {
     READY:      0,
     CALLING:    1,
@@ -22,7 +27,7 @@ if (!ATT) {
     ERROR: 8
   };
 
-  module.RTCEvents = {
+  module.RTCCallEvents = {
     SESSION_OPEN:             "session-open",
     SESSION_MODIFIED:         "session-modified",
     SESSION_TERMINATED:       "session-terminated",
@@ -42,7 +47,8 @@ if (!ATT) {
     MEDIA_CONFERENCE: "media-conference",
     MEDIACONFERENCE:  "mediaconference"
   };
+  mainModule.SessionEvents = Object.freeze(module.SessionEvents);
   mainModule.CallStatus = Object.freeze(module.CallStatus);
-  mainModule.RTCEvents = Object.freeze(module.RTCEvents);
+  mainModule.RTCCallEvents = Object.freeze(module.RTCCallEvents);
 
 }(ATT || {}));

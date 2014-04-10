@@ -14,13 +14,15 @@ if (!ATT) {
     callbacks,
     interceptingEventChannelCallback,
     subscribeEvents,
+    onSessionReady,
     onIncomingCall,
     onInProgress,
-    onSessionClose,
+    onCallEnded,
+    onCallError,
     done,
     init = function () {
       return {
-        setupEventCallbacks: subscribeEvents
+        hookupEventsToUICallbacks: subscribeEvents
       };
     };
 
@@ -40,8 +42,14 @@ if (!ATT) {
     // enumerate over RTC EVENTS
     // todo capture time, debugging info for sdk
     switch (event.state) {
+    case mainModule.SessionEvents.RTC_SESSION_CREATED:
+      onSessionReady({
+        type: mainModule.CallStatus.READY,
+        data: event.data
+      });
+      break;
 
-    case mainModule.RTCEvents.SESSION_OPEN:
+    case mainModule.RTCCallEvents.SESSION_OPEN:
       if (event.sdp && !done) {
         done = true;
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp);
@@ -50,7 +58,7 @@ if (!ATT) {
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
       break;
 
-    case mainModule.RTCEvents.MODIFICATION_RECEIVED:
+    case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
       if (event.sdp && event.modId) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
         onInProgress({
@@ -60,12 +68,20 @@ if (!ATT) {
       }
       break;
 
-    case mainModule.RTCEvents.SESSION_TERMINATED:
-      onSessionClose({ type: mainModule.CallStatus.ENDED, reason: event.reason });
+    case mainModule.RTCCallEvents.INVITATION_RECEIVED:
+      onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
       break;
 
-    case mainModule.RTCEvents.INVITATION_RECEIVED:
-      onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
+    case mainModule.RTCCallEvents.SESSION_TERMINATED:
+      if (event.reason) {
+        onCallError({ type: mainModule.CallStatus.ERROR, reason: event.reason });
+      } else {
+        onCallEnded({ type: mainModule.CallStatus.ENDED });
+      }
+      break;
+
+    case mainModule.RTCCallEvents.UNKNOWN:
+      onCallError({ type: mainModule.CallStatus.ERROR });
       break;
     }
   };
@@ -79,11 +95,11 @@ if (!ATT) {
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
   };
 
-  // onSessionOpen = function (evt) {
-    // if (callbacks.onSessionOpen) {
-      // callbacks.onSessionOpen(evt);
-    // }
-  // };
+  onSessionReady = function (evt) {
+    if (callbacks.onSessionReady) {
+      callbacks.onSessionReady(evt);
+    }
+  };
 
   onIncomingCall = function (evt) {
     if (callbacks.onIncomingCall) {
@@ -97,16 +113,21 @@ if (!ATT) {
     }
   };
 
-  onSessionClose = function (evt) {
-    if (callbacks.onSessionClose) {
-      callbacks.onSessionClose(evt);
+  onCallEnded = function (evt) {
+    if (callbacks.onCallEnded) {
+      callbacks.onCallEnded(evt);
+    }
+  };
+
+  onCallError = function (evt) {
+    if (callbacks.onCallError) {
+      callbacks.onCallError(evt);
     }
   };
 
   module.getInstance = function () {
     if (!instance) {
       instance = init();
-      subscribeEvents();
     }
     return instance;
   };

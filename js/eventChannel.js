@@ -18,9 +18,11 @@ if (!ATT) {
    * Get Event Channel
    * @param {Boolean} useLongPolling Use Long Polling
    */
-  function getEventChannel(useLongPolling, sessionId) {
+  function getEventChannel(useLongPolling, sessionId, callback) {
     // to appease the JSLint gods
-    var lpConfig,
+    var eventChannelInitiated = false,
+    // longpolling config
+      lpConfig,
     // websocket config
       wsConfig,
     // response event
@@ -64,6 +66,12 @@ if (!ATT) {
         'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
       },
       success: function (response) {
+        if (!eventChannelInitiated) {
+          eventChannelInitiated = true;
+          if (typeof callback === 'function') {
+            callback();
+          }
+        }
         processMessages(response, true);
         apiObject.getEvents(lpConfig);
       },
@@ -85,6 +93,12 @@ if (!ATT) {
         'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
       },
       success: function (messages) {
+        if (!eventChannelInitiated) {
+          eventChannelInitiated = true;
+          if (typeof callback === 'function') {
+            callback();
+          }
+        }
         var location = messages.getResponseHeader('location');
         if (location) {
           channelID = location.split('=')[1];
