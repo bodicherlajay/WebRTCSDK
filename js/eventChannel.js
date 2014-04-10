@@ -12,7 +12,8 @@ if (!ATT) {
   'use strict';
 
   var resourceManager = Env.resourceManager.getInstance(),
-    apiObject = resourceManager.getAPIObject();
+    apiObject = resourceManager.getAPIObject(),
+    callManager = cmgmt.CallManager.getInstance();
 
   /**
    * Get Event Channel
@@ -25,8 +26,6 @@ if (!ATT) {
       wsConfig,
     // response event
       responseEvent,
-    // channel id
-      channelID,
     // websocket instance
       ws;
     /**
@@ -58,10 +57,10 @@ if (!ATT) {
      ===========================================*/
     lpConfig = {
       method: 'get',
-      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/events',
+      url: app.appConfig.BFEndpoint + '/sessions/' + sessionId + '/events',
       timeout: 30000,
       headers: {
-        'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
+        'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
       },
       success: function (response) {
         processMessages(response, true);
@@ -80,15 +79,13 @@ if (!ATT) {
      ===========================================*/
     wsConfig = {
       method: 'post',
-      url: 'http://wdev.code-api-att.com:8080/RTC/v1/sessions/' + sessionId + '/websocket',
+      url: app.appConfig.BFEndpoint + '/sessions/' + sessionId + '/websocket',
       headers: {
-        'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
+        'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
       },
       success: function (messages) {
         var location = messages.getResponseHeader('location');
         if (location) {
-          channelID = location.split('=')[1];
-          console.log('CONNECTION CREATED. CHANNEL ID = ' + channelID);
           ws = new WebSocket(location);
           ws.onmessage = function (messages) {
             processMessages(messages, false);
