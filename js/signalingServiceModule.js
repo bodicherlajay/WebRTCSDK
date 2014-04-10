@@ -105,13 +105,13 @@ if (!ATT) {
       apiObject.endCall({
         apiParameters: {
           url: [ callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId ]
+            callManager.getSessionContext().getCurrentCallId() ]
         },
         headers: {
           'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
         },
         success: function (response) {
-          if (response.getResponseStatus === 204) {
+          if (response.getResponseStatus() === 204) {
             console.log('Call termination success.');
           } else {
             console.log('CALL TERMINATION ERROR');
