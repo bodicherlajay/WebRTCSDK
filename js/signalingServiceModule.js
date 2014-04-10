@@ -97,7 +97,30 @@ if (!ATT) {
           }
         }
       });
-    }
+    },
 
+    // end call
+    // HTTP request to terminate call
+    endCall: function() {
+      apiObject.endCall({
+        apiParameters: {
+          url: [ callManager.getSessionContext().getSessionId(),
+            callManager.getSesionContext().getCurrentCallId ]
+        },
+        headers: {
+          'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+        },
+        success: function (response) {
+          if (response.getResponseStatus === 204) {
+            console.log('Call termination success.');
+          } else {
+            console.log('CALL TERMINATION ERROR');
+          }
+        },
+        error: function (err) {
+          console.log('CALL TERMINATION ERROR', err);
+        }
+      });
+    }
   };
 }(ATT || {}));

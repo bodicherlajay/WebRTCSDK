@@ -165,37 +165,9 @@ if (!Env) {
   function hangup() {
     if (app.PeerConnectionService.peerConnection) {
       console.log('Hanging up...');
-      app.PeerConnectionService.peerConnection.close();
-      app.PeerConnectionService.peerConnection = null;
-      if (app.UserMediaService.localStream) {
-        app.UserMediaService.localStream.stop();
-        app.UserMediaService.localVideoElement.src = '';
-      }
-      if (app.UserMediaService.remoteStream) {
-        app.UserMediaService.remoteStream.stop();
-        app.UserMediaService.remoteVideoElement.src = '';
-      }
-      var config = {
-        apiParameters: {
-          url: [ cmgmt.CallManager.getInstance().getSessionContext().getSessionId(),
-            cmgmt.CallManager.getInstance().getSesionContext().getCurrentCallId ]
-        },
-        headers: {
-          'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
-        },
-        success: function (response) {
-          if (response.getResponseStatus === 204) {
-            console.log('Call termination request success.');
-          } else {
-            console.log();
-          }
-        },
-        error: function (err) {
-          console.log('END CALL ERROR', err);
-        }
-      };
-      // HTTP request to terminate call
-      apiObject.endCall(config);
+      app.SignalingService.endCall();
+      app.PeerConnectionService.endCall();
+      app.UserMediaService.endCall();
     }
   }
 

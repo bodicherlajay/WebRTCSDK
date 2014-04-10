@@ -213,6 +213,12 @@
         pc.onremovestream = function () {};
 
         pc.close = function () {};
+      },
+
+      // end Call
+      endCall: function() {
+        this.peerConnection.close();
+        this.peerConnection = null;
       }
     };
 
