@@ -29,7 +29,10 @@ var RESTClient = (function () {
           getResponseHeader: function (key) {
             return xhr.getResponseHeader(key);
           },
-          responseText: xhr.responseText
+          responseText: xhr.responseText,
+          getResponseStatus: function () {
+            return xhr.status;
+          }
         },
         responseCopy = ATT.utils.extend({}, responseObject);
       successCallback.call(xhr, responseCopy);
