@@ -154,7 +154,7 @@ if (!Env) {
           },
 
           success: function (responseObject) {
-            if (responseObject.status !== 200) {
+            if (responseObject.getResponseStatus() !== 200) {
               data = {
                 type : 'error',
                 error : 'Failed to delete the web rtc session on blackflag'
