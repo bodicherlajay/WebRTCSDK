@@ -99,9 +99,52 @@ if (!ATT) {
       });
     },
 
+    // accept modifications
+    sendAcceptMods : function (config) {
+
+      // fix description just before sending
+      var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
+      // call data
+        data = {
+          callsMediaModifications : {
+            sdp : description.sdp
+          }
+        };
+
+      apiObject.acceptModifications({
+        apiParameters: {
+          url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]]
+        },
+        headers : {
+          'x-calls-action' : 'accept-call-mod',
+          'x-modId' : config.modId
+        },
+        data : data,
+        success : function (obj) {
+          console.log('accepted modifications successfully');
+
+          var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
+            location : location,
+            xState : xState
+          };
+
+          if (typeof config.success === 'function') {
+            config.success.call(null, headers);
+          }
+        },
+        error : function (err) {
+          console.error(err.message);
+
+          if (typeof config.error === 'function') {
+            config.error.call(null);
+          }
+        }
+      });
+    },
+
     // end call
     // HTTP request to terminate call
-    endCall: function () {
+    sendEndCall: function () {
       apiObject.endCall({
         apiParameters: {
           url: [ callManager.getSessionContext().getSessionId(),

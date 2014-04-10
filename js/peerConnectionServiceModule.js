@@ -51,6 +51,8 @@
 
       calledParty: null,
 
+      modificationId: null,
+
       /**
        * Create a new RTCPeerConnection.  Depends on the adapter.js module that abstracts away browser differences.
        * @returns {RTCPeerConnection}
@@ -100,7 +102,6 @@
 
           // create the offer. jslint complains when all are self or all are this.
           self.setRemoteAndCreateAnswer.call(this, event.sdp, true);
-
         }
       },
 
@@ -139,20 +140,29 @@
         });
 
         if (createAnswer) {
-          this.peerConnection.createAnswer(function (description) {
-            self.setLocalAndSendMessage.call(me, description);
-          }, function (err) {
-            console.error(err);
-          }, self.mediaConstraints);
+          if (navigator.userAgent.indexOf('Chrome') < 0) {
+            this.peerConnection.createAnswer(function (description) {
+              self.setLocalAndSendMessage.call(me, description);
+            }, function (err) {
+              console.error(err);
+            }, self.mediaConstraints);
+          } else {
+            this.peerConnection.createAnswer(function (description) {
+              self.setLocalAndSendMessage.call(me, description);
+            });
+          }
         }
       },
 
-      setRemoteAndCreateAnswer: function (sdp, isOfferOrMod) {
+      setRemoteAndCreateAnswer: function (sdp, modId) {
+        if (typeof modId === 'string') {
+          this.modificationId = modId;
+        }
         this.remoteDescription = {
           sdp: sdp,
-          type: (isOfferOrMod ? 'offer' : 'answer')
+          type: (modId !== undefined ? 'offer' : 'answer')
         };
-        this.createAnswer(isOfferOrMod);
+        this.createAnswer(modId !== undefined);
       },
 
       setLocalAndSendMessage : function (description) {
@@ -163,6 +173,13 @@
 
         // set local description
         this.peerConnection.setLocalDescription(this.localDescription);
+
+        if (this.modificationId) {
+          SignalingService.sendAcceptMods({
+            sdp : this.localDescription,
+            modId: this.modificationId
+          });
+        }
       },
 
       setUpICETrickling: function (pc) {
