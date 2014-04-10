@@ -18,6 +18,7 @@ Env = (function (app) {
     addOperation,
     getConfiguredRESTMethod,
     apiObject,
+    //getOperation,
 
     getAPIObject = function () {
       return apiObject;
@@ -92,6 +93,122 @@ Env = (function (app) {
       methodName: methodName,
       methodDescription: methodDescription
     });
+  };
+
+  /**
+    This will return a configured rest operation call.
+    config = {
+      data: {data},
+      params: {
+        url: [urldata1, urldata2],
+        headers: {    // key corresponds to the header name.
+          'Accept': 'abc',
+          'Authorization': 'xyz'
+        }
+      }
+    }
+
+    // method 1
+      var startCallOperation = resourManager.getOperation('startCall', params);
+      startCallOperation(success, error);
+
+      // method 2
+      resourManager.doOperation('startCall', params, function (response) {
+
+        // handle success and error
+
+      });
+
+  */
+  module.getOperation = function (operationName, config) {
+
+    if (!operationName) {
+      throw new Error('Must specify an operation name.');
+    }
+
+    if (config && !config.success && !config.error) {
+      throw new Error('Must specify a config object with success/error callbacks.');
+    }
+
+    var apiMethods = app.APIConfigs,
+      operationConfig = apiMethods[operationName],
+      restClient,
+      restConfig = {},
+      headerType,
+      headersObjectForREST = {},
+      formatters = operationConfig.formatters,
+      formattersLength = (formatters && Object.keys(formatters).length) || 0;
+
+    if (!operationConfig) {
+      throw new Error('Operation does not exist.');
+    }
+
+    if (formatters && formattersLength > 0) {
+
+      if (!config.params) {
+        throw new Error('Params passed in must match number of formatters.');
+      }
+
+      if (!config.params || (Object.keys(config.params).length !== formattersLength)) {
+        throw new Error('Params passed in must match number of formatters.');
+      }
+    }
+
+    // check that formatters match up with passed in params.
+    if (formattersLength > 0) {
+      if (formatters.url) {
+        if (!config.params.url) {
+          throw new Error('You pass url param to for the url formatter.');
+        }
+      }
+
+      // check headers.  just check that lengths match for now.
+      if (operationConfig.formatters.headers) {
+        if (Object.keys(config.params.headers).length !== Object.keys(operationConfig.formatters.headers).length) {
+          throw new Error('Header formatters in APIConfigs do not match the header parameters being passed in.');
+        }
+      }
+    }
+
+    // data
+    if (config.data) {
+      restConfig.data = config.data;
+    }
+
+    // Override url parameter with url from url formatter.
+    if (typeof formatters.url === 'function') {
+      restConfig.url = operationConfig.formatters.url(config.params.url);
+    }
+
+    // header formatting.
+    // call formatters for each header (by key)
+    // need to concat default headers with header data passing in.
+    if (Object.keys(operationConfig.formatters.headers) > 0) {
+      headersObjectForREST = {};
+
+      for (headerType in config.params.headers) {
+        if (config.params.headers.hasOwnProperty(headerType)) {
+          headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
+        }
+      }
+
+      // add this to the restConfig.  These will be in addition to the default headers.
+      restConfig.headers = headersObjectForREST;
+    }
+
+    return function (successCB, errorCB) {
+      restConfig.success = successCB;
+      restConfig.error = errorCB;
+
+      restClient = new ATT.RESTClient(restConfig);
+
+      // attach the restclient to the method (to expose actual rest client for unit testability).
+      // probably a better way to do this..drawing a blank at the moment.
+      //apiObject[methodName].restClient = restClient;
+
+      // make request
+      restClient.ajax();
+    };
   };
 
   /**

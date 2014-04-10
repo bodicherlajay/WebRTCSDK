@@ -17,6 +17,30 @@ describe('ResourceManager', function () {
     expect(Object.keys(apiObject).length).is.greaterThan(0);
   });
 
+  describe('getOperation', function () {
+
+    var getOperation = Env.resourceManager.getOperation;
+
+    it('should exist.', function () {
+      expect(Env.resourceManager.getOperation).is.a('function');
+    });
+
+    it('should return a function.', function () {
+      var f = getOperation('testCall', {
+        params: {
+          url: ['/url'],
+          headers: {
+            Authorization: 'authorization',
+            Accept: 'accept'
+          }
+        },
+        success: function () {},
+        error:   function () {}
+      });
+      expect(f).is.a('function');
+    });
+  });
+
   describe('initialization', function () {
 
     it('should add api methods during initialization', function () {
