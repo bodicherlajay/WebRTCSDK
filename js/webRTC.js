@@ -94,7 +94,7 @@ if (!Env) {
                  * todo: publish session ready event after event channel is created
                  * todo: move the login callback code to the publish
                  */
-                apiObject.eventChannel(false, sessionId);
+                apiObject.eventChannel(true, sessionId);
               }
             },
             error: function (e) {

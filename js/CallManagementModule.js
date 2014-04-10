@@ -65,7 +65,7 @@ cmgmt = (function () {
           return UICbks;
         },
         setCurrentCallId: function(event) {
-          currentCallId = event.split('/')[6];
+          currentCallId = event.split('/')[6] || null;
         },
         getCurrentCallId: function() {
           return currentCallId;

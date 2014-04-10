@@ -105,7 +105,7 @@ if (!ATT) {
       apiObject.endCall({
         apiParameters: {
           url: [ callManager.getSessionContext().getSessionId(),
-            callManager.getSesionContext().getCurrentCallId ]
+            callManager.getSessionContext().getCurrentCallId ]
         },
         headers: {
           'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
