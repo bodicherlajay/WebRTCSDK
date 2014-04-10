@@ -67,7 +67,7 @@ cmgmt = (function () {
         setCurrentCallId: function(event) {
           currentCallId = event.split('/')[6] || null;
         },
-        getCurrentCallId: function() {
+        getCurrentCallId: function () {
           return currentCallId;
         }
       };

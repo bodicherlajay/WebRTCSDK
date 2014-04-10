@@ -101,7 +101,7 @@ if (!ATT) {
 
     // end call
     // HTTP request to terminate call
-    endCall: function() {
+    endCall: function () {
       apiObject.endCall({
         apiParameters: {
           url: [ callManager.getSessionContext().getSessionId(),
