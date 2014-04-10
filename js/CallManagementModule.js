@@ -28,7 +28,8 @@ cmgmt = (function () {
     },
     //Session context to hold session variables
     SessionContext = function (token, e911Id, sessionId, state) {
-      var currState = state, callObject = null, event = null, accessToken = token, e9Id = e911Id, currSessionId = sessionId, UICbks = {};
+      var currState = state, callObject = null, event = null, accessToken = token, e9Id = e911Id, currSessionId = sessionId,
+        currentCallId, UICbks = {};
       return {
         getAccessToken: function () {
           return accessToken;
@@ -62,6 +63,12 @@ cmgmt = (function () {
         },
         getUICallbacks: function () {
           return UICbks;
+        },
+        setCurrentCallId: function(event) {
+          currentCallId = event.split('/')[6];
+        },
+        getCurrentCallId: function() {
+          return currentCallId;
         }
       };
     },

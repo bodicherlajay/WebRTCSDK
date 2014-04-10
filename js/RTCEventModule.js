@@ -16,7 +16,6 @@ if (!ATT) {
     subscribeEvents,
     onIncomingCall,
     onInProgress,
-    //onSessionOpen,
     onSessionClose,
     done,
     init = function () {
@@ -38,20 +37,19 @@ if (!ATT) {
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
 
-    //todo capture time, debugging info for sdk
+    // enumerate over RTC EVENTS
+    // todo capture time, debugging info for sdk
     switch (event.state) {
+
     case mainModule.RTCEvents.SESSION_OPEN:
       if (event.sdp && !done) {
         done = true;
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp);
       }
-
-      // todo: change this to event.from later on you get the right event.from
-      //onSessionOpen({
-      //  type: mainModule.CallStatus.INPROGRESS,
-      //  callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee()
-      //});
+      // set callID to use for hangup()
+      callManager.getSessionContext().setCurrentCallId(event.resourceURL);
       break;
+
     case mainModule.RTCEvents.MODIFICATION_RECEIVED:
       if (event.sdp && event.modId) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
@@ -61,9 +59,11 @@ if (!ATT) {
         });
       }
       break;
+
     case mainModule.RTCEvents.SESSION_TERMINATED:
       onSessionClose({ type: mainModule.CallStatus.ENDED, reason: event.reason });
       break;
+
     case mainModule.RTCEvents.INVITATION_RECEIVED:
       onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
       break;

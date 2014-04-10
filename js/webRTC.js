@@ -169,18 +169,16 @@ if (!Env) {
       app.PeerConnectionService.peerConnection = null;
       if (app.UserMediaService.localStream) {
         app.UserMediaService.localStream.stop();
+        app.UserMediaService.localVideoElement.src = '';
       }
       if (app.UserMediaService.remoteStream) {
         app.UserMediaService.remoteStream.stop();
+        app.UserMediaService.remoteVideoElement.src = '';
       }
-      //remotePeerConnection = null ?
-      //remotePeerConnection.close() ?
-      app.UserMediaService.remoteVideoElement.src = null;
-      app.UserMediaService.localVideoElement.src = null;
-
       var config = {
         apiParameters: {
-          url: [apiObject.Session.Id, apiObject.Calls.Id]
+          url: [ cmgmt.CallManager.getInstance().getSessionContext().getSessionId(),
+            cmgmt.CallManager.getInstance().getSesionContext().getCurrentCallId ]
         },
         headers: {
           'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
@@ -192,11 +190,8 @@ if (!Env) {
             console.log();
           }
         },
-        error: function () {
-          console.log();
-        },
-        ontimeout: function () {
-          console.log();
+        error: function (err) {
+          console.log('END CALL ERROR', err);
         }
       };
       // HTTP request to terminate call
