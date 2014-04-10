@@ -59,7 +59,7 @@
 
         this.callingParty = config.from;
         this.calledParty = config.to;
-        this.mediaConstrains = config.mediaConstraints;
+        this.mediaConstraints = config.mediaConstraints;
 
         this.peerConnection = this.createPeerConnection();
 
@@ -118,7 +118,7 @@
             self.setLocalAndSendMessage.call(me, description);
           }, function (err) {
             console.error(err);
-          }, self.mediaConstrains);
+          }, self.mediaConstraints);
         } else {
           pc.createOffer(function (description) {
             self.setLocalAndSendMessage.call(me, description);
