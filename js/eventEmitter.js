@@ -46,6 +46,10 @@ if (!ATT) {
       return false;
     }
 
+    if (typeof callback !== 'function') {
+      throw new Error('Must pass in the callback you are unsubscribing');
+    }
+
     for (i = 0, len =  topics[topic].length; i < len; i = i + 1) {
       if (topics[topic][i] === callback) {
         topics[topic].splice(i, 1);

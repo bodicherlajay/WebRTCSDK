@@ -88,7 +88,6 @@ describe('Event emitter', function () {
 
     ATT.event.publish('topicABC', 123);
     assert(expect(subscribe1Spy().getCount()).to.equal(2));
-
     done();
   });
 
@@ -113,5 +112,11 @@ describe('Event emitter', function () {
     });
 
     ATT.event.subscribe('topicABC', subscribe1Spy);
+  });
+
+  it('unsubscribe should throw error if no function passed in.', function () {
+    var f = function () {};
+    ATT.event.subscribe('topicABC', f);
+    expect(ATT.event.unsubscribe.bind(ATT.event, 'topicABC', 'blah')).to.throw('Must pass in the callback you are unsubscribing');
   });
 });
