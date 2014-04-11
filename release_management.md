@@ -29,32 +29,36 @@ Our Jenkins jobs already have adopted this model.
 2. It will be integrated to the `master` automatically by Jenkins.
 
 ## Hot-fixes
-We have three options for this scenario:
 
-### Fix in `master`, Test in `master`
+Hot fixes are bugs found in the `master` branch. This means this is code that has already
+been released/demoed to the product owners.
 
-1. Create a Github issue on the repo that corresponds to the code, e.g.,
+There are at least three ways of handling these:
+
+### Always do this first
+
+* Create a Github issue on the repo that corresponds to the code, e.g.,
 	* Bugs found in `js-shared` should be created in the `js-shared` repo.
-2. Identify the commit that introduced the bug.
-3. Branch from the commit in the `master` branch in which the bug was found.
-4. Create a `hot-fix` branch under `/hotfix/<Github Issue No.>/`
-5. Fix the bug.
-6. Add the line: **Fixes #_\<Issue No.\>_** in your commit message alongside with your comments. That way you'll get a nice link to your Github Issue, e.g. 
 
-```bash
+### Fix in `master`, merge into `master`, merge into `develop` (recommended)
 
-	Commit: 0d19655a141dbcb2aa16d5cd65c65df145e9c920 [0d19655]
-	Parents: 57aeefacd6
-	Author: Pablo Padilla <pgpb.padilla@gmail.com>
-	Date: March 11, 2014 9:50:07 AM PDT
-	
-	Fixes #33: Don't use the `from` field to create the conversation ID.
-```
+1. Identify the release in the `master` branch that introduced the bug and do a `git checkout`
+2. Branch from the commit in the `master` branch in which the bug was found.
+3. Create a `hot-fix` branch under `/hotfix/<Github Issue No.>/`
+4. Fix the bug.
+5. Run integration tests on the hotfix branch before closing the Github Issue and never close an Issue you have opened. Ask somebody else to test it and then close it only if the fix is working.
+6. Merge into `master`.
+6. Merge the fix into `develop`. Jenkins will take over from here.
 
-5. Run all necessary tests before closing the Github Issue and never close an Issue you have opened. Ask somebody else to test it and then close it only if the fix is working.
-6. Merge the fix into `develop`
+### Fix in maintenance branch, don't merge
 
-### Fix in maintenance branch
-Use this if you want to fix a specifig bug without affecting the work that is currently going on in `develop` (the main integration branch).
+Use this if you want to fix a specifig bug without affecting the work that is currently going on in `develop` (the main integration branch). You can apply the same fix to the integration branch but it has to be via a patch file instead of a merge operation.
 
-### Fix in `develop`
+1. Look up the tag that corresponds to the release that you want to fix and do a `git checkout`
+2. Create a branch under `maint/<release name>`.
+3. This will be a maintenance branch for that release. 
+4. Fix the bug.
+5. Changes in this branch **will not** be merged into the main integration branch `develop`
+6. This branch will keep being updated with fixes for that specific release only.
+7. Run integration tests before closing the Github Issue and never close an Issue you have opened. Ask somebody else to test it and then close it only if the fix is working.
+
