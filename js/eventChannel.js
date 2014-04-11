@@ -18,6 +18,7 @@ if (!ATT) {
   /**
    * Get Event Channel
    * @param {Boolean} useLongPolling Use Long Polling
+   * @param {Function} callback The callback
    */
   function getEventChannel(useLongPolling, sessionId, callback) {
     // to appease the JSLint gods
@@ -113,10 +114,8 @@ if (!ATT) {
     // Kickstart the event channel
     // @TODO: invalid session bug
     if (useLongPolling) {
-      console.log("Using long polling");
       apiObject.getEvents(lpConfig);
     } else {
-      console.log("Using web sockets");
       apiObject.getEvents(wsConfig);
     }
   }
