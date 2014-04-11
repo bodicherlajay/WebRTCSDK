@@ -34,8 +34,8 @@ if (!ATT) {
 
     eventObj = event;
 
-    console.log ('Incoming Event : ' + JSON.stringify (event));
-    
+    console.log('Incoming Event : ' + JSON.stringify(event));
+
     //Check if invite is an announcement
     if (event.sdp && event.sdp.indexOf("sendonly") !== -1) {
       event.sdp = event.sdp.replace(/sendonly/g, "sendrecv");
@@ -110,7 +110,7 @@ if (!ATT) {
     mainModule.event.unsubscribe(sessionId + '.responseEvent');
     // subscribe to hook up callbacks to events
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
-    console.log ('Subscribed to events');
+    console.log('Subscribed to events');
   };
 
   onSessionReady = function (evt) {
