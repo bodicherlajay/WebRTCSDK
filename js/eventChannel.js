@@ -48,7 +48,6 @@ if (!ATT) {
         for (e in events) {
           if (events.hasOwnProperty(e)) {
             app.event.publish(sessID + '.responseEvent', events[e].eventObject);
-            console.log(sessID + '.responseEvent', JSON.stringify(events[e].eventObject));
           }
         }
       }

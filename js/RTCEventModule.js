@@ -20,7 +20,6 @@ if (!ATT) {
     onInProgress,
     onCallEnded,
     onCallError,
-    eventObj,
     init = function () {
       return {
         hookupEventsToUICallbacks: subscribeEvents
@@ -28,11 +27,9 @@ if (!ATT) {
     };
 
   interceptingEventChannelCallback = function (event) {
-    if (!event || JSON.stringify(eventObj) === JSON.stringify(event)) {
+    if (!event) {
       return;
     }
-
-    eventObj = event;
 
     console.log('Incoming Event : ' + JSON.stringify(event));
 
@@ -107,7 +104,7 @@ if (!ATT) {
     var sessionId = callManager.getSessionContext().getSessionId();
 
     // unsubscribe first, to avoid double subscription from previous actions
-    mainModule.event.unsubscribe(sessionId + '.responseEvent');
+    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     // subscribe to hook up callbacks to events
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     console.log('Subscribed to events');
