@@ -233,6 +233,7 @@
         pc.onaddstream = function (evt) {
           this.remoteStream = evt.stream;
           UserMediaService.showStream('remote', this.remoteStream);
+          console.log(this.remoteStream);
         };
 
         pc.oniceconnectionstatechange = function () {};
