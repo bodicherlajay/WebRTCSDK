@@ -18,25 +18,43 @@ Env = (function (app) {
     addOperation,
     getConfiguredRESTMethod,
     apiObject,
+    restOperationsObject,
+
     //getOperation,
 
     getAPIObject = function () {
       return apiObject;
     },
 
+    getOperationsAPI = function () {
+      return restOperationsObject;
+    },
+
     configure,
+
+    resetAPIObject,
 
     init = function () {
       return {
-        //configure: configure,
-        getAPIObject: getAPIObject
+        configure:          configure,
+        getAPIObject:       getAPIObject,
+        getOperationsAPI:   getOperationsAPI,
+        resetAPIObject:     resetAPIObject
       };
     };
 
+  resetAPIObject = function (config) {
+    configure(config);
+  };
+
   configure = function (config) {
+
     config = (config && config.apiConfigs) || app.APIConfigs;
 
-    // set the api namespace object.
+    // set the rest API object
+    restOperationsObject = ATT.utils.createNamespace(Env, 'rtc.rest');
+
+    // set the public api namespace object.
     apiObject = ATT.utils.createNamespace(app, app.apiNamespaceName);
 
     // add operations to ATT
@@ -89,7 +107,7 @@ Env = (function (app) {
       methodDescription = apiMethodConfig[methodName];
 
     // Add API operation to the ATT namespace.
-    apiObject[methodName] = getConfiguredRESTMethod({
+    restOperationsObject[methodName] = getConfiguredRESTMethod({
       methodName: methodName,
       methodDescription: methodDescription
     });
@@ -109,35 +127,52 @@ Env = (function (app) {
     }
 
     // method 1
-      var startCallOperation = resourManager.getOperation('startCall', params);
+      var startCallOperation = resourceManager.getOperation('startCall', params);
       startCallOperation(success, error);
 
       // method 2
-      resourManager.doOperation('startCall', params, function (response) {
+      resourceManager.doOperation('startCall', params, function (response) {
 
         // handle success and error
 
       });
 
   */
+  module.doOperation = function (operationName, config, cb) {
+    cb = cb || function () {};
+
+    try {
+      var operation = module.getOperation(operationName, config);
+      operation(function (obj) {
+        cb(obj);
+      }, function (obj) {
+        cb(obj);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   module.getOperation = function (operationName, config) {
 
     if (!operationName) {
       throw new Error('Must specify an operation name.');
     }
 
-    if (config && !config.success && !config.error) {
-      throw new Error('Must specify a config object with success/error callbacks.');
-    }
+    config = config || {
+      success: function () {},
+      error:   function () {}
+    };
 
     var apiMethods = app.APIConfigs,
       operationConfig = apiMethods[operationName],
       restClient,
-      restConfig = {},
+      restConfig = ATT.utils.extend({}, operationConfig),
       headerType,
       headersObjectForREST = {},
       formatters = operationConfig.formatters,
-      formattersLength = (formatters && Object.keys(formatters).length) || 0;
+      formattersLength = (formatters && Object.keys(formatters).length) || 0,
+      configuredRESTOperation;
 
     if (!operationConfig) {
       throw new Error('Operation does not exist.');
@@ -145,17 +180,12 @@ Env = (function (app) {
 
     if (formatters && formattersLength > 0) {
 
-      if (!config.params) {
-        throw new Error('Params passed in must match number of formatters.');
-      }
-
       if (!config.params || (Object.keys(config.params).length !== formattersLength)) {
         throw new Error('Params passed in must match number of formatters.');
       }
-    }
 
     // check that formatters match up with passed in params.
-    if (formattersLength > 0) {
+    //if (formattersLength > 0) {
       if (formatters.url) {
         if (!config.params.url) {
           throw new Error('You pass url param to for the url formatter.');
@@ -163,7 +193,7 @@ Env = (function (app) {
       }
 
       // check headers.  just check that lengths match for now.
-      if (operationConfig.formatters.headers) {
+      if (formatters.headers) {
         if (Object.keys(config.params.headers).length !== Object.keys(operationConfig.formatters.headers).length) {
           throw new Error('Header formatters in APIConfigs do not match the header parameters being passed in.');
         }
@@ -183,7 +213,7 @@ Env = (function (app) {
     // header formatting.
     // call formatters for each header (by key)
     // need to concat default headers with header data passing in.
-    if (Object.keys(operationConfig.formatters.headers) > 0) {
+    if (Object.keys(formatters.headers).length > 0) {
       headersObjectForREST = {};
 
       for (headerType in config.params.headers) {
@@ -193,10 +223,11 @@ Env = (function (app) {
       }
 
       // add this to the restConfig.  These will be in addition to the default headers.
-      restConfig.headers = headersObjectForREST;
+      restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
     }
 
-    return function (successCB, errorCB) {
+    // create the configured rest operation and return.
+    configuredRESTOperation = function (successCB, errorCB) {
       restConfig.success = successCB;
       restConfig.error = errorCB;
 
@@ -204,11 +235,14 @@ Env = (function (app) {
 
       // attach the restclient to the method (to expose actual rest client for unit testability).
       // probably a better way to do this..drawing a blank at the moment.
-      //apiObject[methodName].restClient = restClient;
+      //self.restClient = restClient;
 
       // make request
       restClient.ajax();
     };
+
+    configuredRESTOperation.restConfig = restConfig; // testability.
+    return configuredRESTOperation;
   };
 
   /**
