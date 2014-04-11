@@ -48,7 +48,7 @@ if (!ATT) {
       * Authentication to DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
-      authenticate: {
+      authenticateUser: {
         method: 'post',
         url: DEFAULTS.DHSEndpoint + '/user/authenticate',
         headers: DEFAULTS.headers
@@ -66,7 +66,7 @@ if (!ATT) {
       * Logout from DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
-      logout: {
+      logoutUser: {
         method: 'delete',
         url: DEFAULTS.DHSEndpoint + '/user/logout',
         headers: DEFAULTS.headers
@@ -90,6 +90,19 @@ if (!ATT) {
         headers: DEFAULTS.headers
       },
       /**
+      * Delete WebRTC session from BFEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      deleteWebRTCSession: {
+        method: 'delete',
+        formatters : {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params;
+          }
+        },
+        headers: DEFAULTS.headers
+      },
+      /**
       * Get WebRTC events from BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
@@ -108,10 +121,23 @@ if (!ATT) {
         headers: DEFAULTS.headers
       },
       /**
-      * Start Call via BFEndpoint
+      * Answer Call via BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       answerCall: {
+        method: 'put',
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          }
+        },
+        headers: DEFAULTS.headers
+      },
+      /**
+      * Accept Modifications via BFEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      acceptModifications: {
         method: 'put',
         formatters: {
           url: function (params) {

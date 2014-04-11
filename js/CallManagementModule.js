@@ -28,7 +28,8 @@ cmgmt = (function () {
     },
     //Session context to hold session variables
     SessionContext = function (token, e911Id, sessionId, state) {
-      var currState = state, callObject = null, event = null, accessToken = token, e9Id = e911Id, currSessionId = sessionId, UICbks = {};
+      var currState = state, callObject = null, event = null, accessToken = token, e9Id = e911Id, currSessionId = sessionId,
+        currentCallId, UICbks = {};
       return {
         getAccessToken: function () {
           return accessToken;
@@ -62,6 +63,12 @@ cmgmt = (function () {
         },
         getUICallbacks: function () {
           return UICbks;
+        },
+        setCurrentCallId: function (event) {
+          currentCallId = event.split('/')[6] || null;
+        },
+        getCurrentCallId: function () {
+          return currentCallId;
         }
       };
     },
@@ -69,14 +76,14 @@ cmgmt = (function () {
 
     CreateSession = function (config) {
       session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
-      session_context.setUICallbacks(config.callbacks);
+      session_context.setUICallbacks(config.success);
     },
 
     CreateOutgoingCall = function (config) {
       var call = new Call(null, config.to, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.OUTGOING_CALL);
-      session_context.setUICallbacks(config.callbacks);
+      session_context.setUICallbacks(config.success);
       ATT.UserMediaService.startCall(config);
     },
 
@@ -85,7 +92,7 @@ cmgmt = (function () {
         call = new Call(event.caller, null, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.INCOMING_CALL);
-      session_context.setUICallbacks(config.callbacks);
+      session_context.setUICallbacks(config.success);
       ATT.UserMediaService.startCall(config);
     },
 

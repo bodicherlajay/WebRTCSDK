@@ -37,12 +37,9 @@ if (!Env) {
       data: config.data,
       success: function (responseObject) {
         // get access token, e911 id that is needed to create webrtc session
-        var data = responseObject.getJson(),
-          successCallback = config.callbacks.onSessionReady, // success callback for UI
-          e911Id = data.e911,
-          accessToken = data.accesstoken ? data.accesstoken.access_token : null,
-          event,
-          //eventObject,
+        var authenticateResponseData = responseObject.getJson(),
+          accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null,
+          e911Id = authenticateResponseData.e911,
 
           dataForCreateWebRTCSession = {
             data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
@@ -62,39 +59,42 @@ if (!Env) {
 
             success: function (responseObject) {
               var sessionId = responseObject && responseObject.getResponseHeader('location') ?
-                    responseObject.getResponseHeader('location').split('/')[4] : null,
-                sessionConfig = {
+                    responseObject.getResponseHeader('location').split('/')[4] : null;
+
+              if (sessionId) {
+
+                // Set WebRTC.Session data object that will be needed downstream.
+                // Also setup UI callbacks
+                callManager.CreateSession({
                   token : accessToken,
                   e911Id : e911Id,
                   sessionId : sessionId,
-                  callbacks : config.callbacks
-                };
+                  success : config.success
+                });
 
-              // Set WebRTC.Session data object that will be needed downstream.
-              callManager.CreateSession(sessionConfig);
-
-              if (successCallback) {
-                // setting web rtc session id for displaying on UI only
-                data.webRtcSessionId = sessionId;
-
-                event = {
-                  type : app.CallStatus.READY
-                };
-
-                event.data = data;
-                successCallback(event);
-              }
-
-              if (sessionId) {
                 // setting up event callbacks using RTC Events
-                app.RTCEvent.getInstance().setupEventCallbacks(config);
+                app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+
                 /**
                  * Call BF to create event channel
                  * @param {Boolean} true/false Use Long Polling?
                  * todo: publish session ready event after event channel is created
                  * todo: move the login callback code to the publish
                  */
-                apiObject.eventChannel(false, sessionId);
+                apiObject.eventChannel(false, sessionId, function () {
+                  // setting web rtc session id for displaying on UI only
+                  authenticateResponseData.webRtcSessionId = sessionId;
+
+                  // publish the UI callback for ready state
+                  app.event.publish(sessionId + '.responseEvent', {
+                    state : app.SessionEvents.RTC_SESSION_CREATED,
+                    data : authenticateResponseData
+                  });
+                });
+              } else { // if no session id, call the UI error callback
+                if (typeof config.error === 'function') {
+                  config.error(authenticateResponseData);
+                }
               }
             },
             error: function (e) {
@@ -104,24 +104,76 @@ if (!Env) {
 
         // if no access token return user data to UI, without webrtc session id
         if (!accessToken) {
-          event = {
-            type : app.CallStatus.READY
-          };
-
-          event.data = data;
-          return successCallback(event);
+          if (typeof config.error === 'function') {
+            config.error(authenticateResponseData);
+          }
+        } else {
+          // Call BF to create WebRTC Session.
+          apiObject.createWebRTCSession(dataForCreateWebRTCSession);
         }
-
-        // Call BF to create WebRTC Session.
-        apiObject.createWebRTCSession(dataForCreateWebRTCSession);
       },
       error: function (e) {
-        console.log('CREATE SESSION ERROR', e);
+        console.log('Create session error : ', e);
       }
     };
 
     // Call DHS to authenticate, associate user to session.
-    apiObject.authenticate(authenticateConfig);
+    apiObject.authenticateUser(authenticateConfig);
+  }
+
+  function logoutAndDeleteWebRTCSession(config) {
+    var logoutConfig = {
+      success: function (response) {
+        var data = response.getJson(),
+          session = callManager.getSessionContext(),
+          dataForDeleteWebRTCSession;
+
+        // dirty fix for missing cookie session
+        if (!session) {
+          data = {
+            type : 'error',
+            error : 'Unable to retrieve web rtc session'
+          };
+          if (typeof config.success === 'function') {
+            return config.success(data);
+          }
+          return;
+        }
+
+        dataForDeleteWebRTCSession = {
+          apiParameters: {
+            url: [session.getSessionId()]
+          },
+
+          headers: {
+            "Authorization": "Bearer " + session.getAccessToken(),
+            "x-e911Id": session.getE911Id()
+          },
+
+          success: function (responseObject) {
+            if (responseObject.getResponseStatus() !== 200) {
+              data = {
+                type : 'error',
+                error : 'Failed to delete the web rtc session on blackflag'
+              };
+            }
+
+            if (typeof config.success === 'function') {
+              config.success(data);
+            }
+          }
+        };
+
+        // Call BF to delete WebRTC Session.
+        apiObject.deleteWebRTCSession(dataForDeleteWebRTCSession);
+      },
+      error: function (e) {
+        console.log('Delete session error : ', e);
+      }
+    };
+
+    // Call DHS to logout user by deleting browser session.
+    apiObject.logoutUser(logoutConfig);
   }
 
   // Stop user media
@@ -142,10 +194,10 @@ if (!Env) {
    * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
    */
   function dial(config) {
-    cmgmt.CallManager.getInstance().CreateOutgoingCall(config);
+    callManager.CreateOutgoingCall(config);
 
     // setting up event callbacks using RTC Events
-    app.RTCEvent.getInstance().setupEventCallbacks(config);
+    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
 
   /**
@@ -153,54 +205,21 @@ if (!Env) {
    * @param {Object} config answer configuration object.
    */
   function answer(config) {
-    cmgmt.CallManager.getInstance().CreateIncomingCall(config);
+    callManager.CreateIncomingCall(config);
 
     // setting up event callbacks using RTC Events
-    app.RTCEvent.getInstance().setupEventCallbacks(config);
+    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
 
   /**
   * Hangup the call
   */
   function hangup() {
-    if (app.PeerConnectionService.peerConnection) {
+    if (app.PeerConnectionService.peerConnection && callManager.getSessionContext().getCurrentCallId()) {
       console.log('Hanging up...');
-      app.PeerConnectionService.peerConnection.close();
-      app.PeerConnectionService.peerConnection = null;
-      if (app.UserMediaService.localStream) {
-        app.UserMediaService.localStream.stop();
-      }
-      if (app.UserMediaService.remoteStream) {
-        app.UserMediaService.remoteStream.stop();
-      }
-      //remotePeerConnection = null ?
-      //remotePeerConnection.close() ?
-      app.UserMediaService.remoteVideoElement.src = null;
-      app.UserMediaService.localVideoElement.src = null;
-
-      var config = {
-        apiParameters: {
-          url: [apiObject.Session.Id, apiObject.Calls.Id]
-        },
-        headers: {
-          'Authorization': 'Bearer ' + cmgmt.CallManager.getInstance().getSessionContext().getAccessToken()
-        },
-        success: function (response) {
-          if (response.getResponseStatus === 204) {
-            console.log('Call termination request success.');
-          } else {
-            console.log();
-          }
-        },
-        error: function () {
-          console.log();
-        },
-        ontimeout: function () {
-          console.log();
-        }
-      };
-      // HTTP request to terminate call
-      apiObject.endCall(config);
+      app.SignalingService.sendEndCall();
+      app.PeerConnectionService.endCall();
+      app.UserMediaService.endCall();
     }
   }
 
@@ -210,6 +229,8 @@ if (!Env) {
   // The SDK public API.
   // Authenticates and creates WebRTC session
   apiObject.login = loginAndCreateWebRTCSession;
+  // Authenticates and creates WebRTC session
+  apiObject.logout = logoutAndDeleteWebRTCSession;
   // stop user media
   apiObject.stopUserMedia = stopUserMedia;
   // Create call

@@ -51,6 +51,8 @@
 
       calledParty: null,
 
+      modificationId: null,
+
       /**
        * Create a new RTCPeerConnection.  Depends on the adapter.js module that abstracts away browser differences.
        * @returns {RTCPeerConnection}
@@ -59,7 +61,7 @@
 
         this.callingParty = config.from;
         this.calledParty = config.to;
-        this.mediaConstrains = config.mediaConstraints;
+        this.mediaConstraints = config.mediaConstraints;
 
         this.peerConnection = this.createPeerConnection();
 
@@ -100,7 +102,6 @@
 
           // create the offer. jslint complains when all are self or all are this.
           self.setRemoteAndCreateAnswer.call(this, event.sdp, true);
-
         }
       },
 
@@ -118,7 +119,7 @@
             self.setLocalAndSendMessage.call(me, description);
           }, function (err) {
             console.error(err);
-          }, self.mediaConstrains);
+          }, self.mediaConstraints);
         } else {
           pc.createOffer(function (description) {
             self.setLocalAndSendMessage.call(me, description);
@@ -135,24 +136,37 @@
         this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
           console.log('Set Remote Description succeeded.');
         }, function (err) {
+          // hack for difference between FF and Chrome
+          if (typeof err === 'object') {
+            err = err.message;
+          }
           console.log('Set Remote Description failed: ' + err);
         });
 
         if (createAnswer) {
-          this.peerConnection.createAnswer(function (description) {
-            self.setLocalAndSendMessage.call(me, description);
-          }, function (err) {
-            console.error(err);
-          }, self.mediaConstraints);
+          if (navigator.userAgent.indexOf('Chrome') < 0) {
+            this.peerConnection.createAnswer(function (description) {
+              self.setLocalAndSendMessage.call(me, description);
+            }, function (err) {
+              console.error(err);
+            }, self.mediaConstraints);
+          } else {
+            this.peerConnection.createAnswer(function (description) {
+              self.setLocalAndSendMessage.call(me, description);
+            });
+          }
         }
       },
 
-      setRemoteAndCreateAnswer: function (sdp, isOfferOrMod) {
+      setRemoteAndCreateAnswer: function (sdp, modId) {
+        if (typeof modId === 'string') {
+          this.modificationId = modId;
+        }
         this.remoteDescription = {
           sdp: sdp,
-          type: (isOfferOrMod ? 'offer' : 'answer')
+          type: (modId !== undefined ? 'offer' : 'answer')
         };
-        this.createAnswer(isOfferOrMod);
+        this.createAnswer(modId !== undefined);
       },
 
       setLocalAndSendMessage : function (description) {
@@ -163,6 +177,13 @@
 
         // set local description
         this.peerConnection.setLocalDescription(this.localDescription);
+
+        if (this.modificationId) {
+          SignalingService.sendAcceptMods({
+            sdp : this.localDescription,
+            modId: this.modificationId
+          });
+        }
       },
 
       setUpICETrickling: function (pc) {
@@ -184,7 +205,15 @@
               self.localDescription = pc.localDescription;
               SignalingService.sendOffer({
                 calledParty : self.calledParty,
-                sdp : self.localDescription
+                sdp : self.localDescription,
+                success : function (headers) {
+                  if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
+                    // publish the UI callback for invitation sent event
+                    app.event.publish(session.getSessionId() + '.responseEvent', {
+                      state : app.RTCCallEvents.INVITATION_SENT
+                    });
+                  }
+                }
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
               self.localDescription = pc.localDescription;
@@ -213,6 +242,12 @@
         pc.onremovestream = function () {};
 
         pc.close = function () {};
+      },
+
+      // end Call
+      endCall: function () {
+        this.peerConnection.close();
+        this.peerConnection = null;
       }
     };
 

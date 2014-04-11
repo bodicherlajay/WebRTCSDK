@@ -14,14 +14,15 @@ if (!ATT) {
     callbacks,
     interceptingEventChannelCallback,
     subscribeEvents,
+    onSessionReady,
     onIncomingCall,
+    onOutgoingCall,
     onInProgress,
-    //onSessionOpen,
-    onSessionClose,
-    done,
+    onCallEnded,
+    onCallError,
     init = function () {
       return {
-        setupEventCallbacks: subscribeEvents
+        hookupEventsToUICallbacks: subscribeEvents
       };
     };
 
@@ -29,6 +30,8 @@ if (!ATT) {
     if (!event) {
       return;
     }
+
+    console.log('Incoming Event : ' + JSON.stringify(event));
 
     //Check if invite is an announcement
     if (event.sdp && event.sdp.indexOf("sendonly") !== -1) {
@@ -38,34 +41,58 @@ if (!ATT) {
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
 
-    //todo capture time, debugging info for sdk
+    // enumerate over RTC EVENTS
+    // todo capture time, debugging info for sdk
     switch (event.state) {
-    case mainModule.RTCEvents.SESSION_OPEN:
-      if (event.sdp && !done) {
-        done = true;
+    case mainModule.SessionEvents.RTC_SESSION_CREATED:
+      onSessionReady({
+        type: mainModule.CallStatus.READY,
+        data: event.data
+      });
+      break;
+
+    case mainModule.RTCCallEvents.SESSION_OPEN:
+      if (event.sdp) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp);
       }
-
-      // todo: change this to event.from later on you get the right event.from
-      //onSessionOpen({
-      //  type: mainModule.CallStatus.INPROGRESS,
-      //  callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee()
-      //});
+      // set callID to use for hangup()
+      callManager.getSessionContext().setCurrentCallId(event.resourceURL);
+      onInProgress({
+        type: mainModule.CallStatus.INPROGRESS
+      });
       break;
-    case mainModule.RTCEvents.MODIFICATION_RECEIVED:
+
+    case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
       if (event.sdp && event.modId) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
         onInProgress({
           type: mainModule.CallStatus.INPROGRESS,
-          callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee()
+          callee: callManager.getSessionContext().getCallObject().callee()
         });
       }
       break;
-    case mainModule.RTCEvents.SESSION_TERMINATED:
-      onSessionClose({ type: mainModule.CallStatus.ENDED, reason: event.reason });
+
+    case mainModule.RTCCallEvents.INVITATION_SENT:
+      onOutgoingCall({
+        type: mainModule.CallStatus.CALLING,
+        callee: callManager.getSessionContext().getCallObject().callee()
+      });
       break;
-    case mainModule.RTCEvents.INVITATION_RECEIVED:
+
+    case mainModule.RTCCallEvents.INVITATION_RECEIVED:
       onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
+      break;
+
+    case mainModule.RTCCallEvents.SESSION_TERMINATED:
+      if (event.reason) {
+        onCallError({ type: mainModule.CallStatus.ERROR, reason: event.reason });
+      } else {
+        onCallEnded({ type: mainModule.CallStatus.ENDED });
+      }
+      break;
+
+    case mainModule.RTCCallEvents.UNKNOWN:
+      onCallError({ type: mainModule.CallStatus.ERROR });
       break;
     }
   };
@@ -74,20 +101,30 @@ if (!ATT) {
     // set callbacks after session is created and we are ready to subscribe to events
     callbacks = callManager.getSessionContext().getUICallbacks();
 
-    // subscribe to events
     var sessionId = callManager.getSessionContext().getSessionId();
+
+    // unsubscribe first, to avoid double subscription from previous actions
+    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
+    // subscribe to hook up callbacks to events
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
+    console.log('Subscribed to events');
   };
 
-  // onSessionOpen = function (evt) {
-    // if (callbacks.onSessionOpen) {
-      // callbacks.onSessionOpen(evt);
-    // }
-  // };
+  onSessionReady = function (evt) {
+    if (callbacks.onSessionReady) {
+      callbacks.onSessionReady(evt);
+    }
+  };
 
   onIncomingCall = function (evt) {
     if (callbacks.onIncomingCall) {
       callbacks.onIncomingCall(evt);
+    }
+  };
+
+  onOutgoingCall = function (evt) {
+    if (callbacks.onOutgoingCall) {
+      callbacks.onOutgoingCall(evt);
     }
   };
 
@@ -97,16 +134,21 @@ if (!ATT) {
     }
   };
 
-  onSessionClose = function (evt) {
-    if (callbacks.onSessionClose) {
-      callbacks.onSessionClose(evt);
+  onCallEnded = function (evt) {
+    if (callbacks.onCallEnded) {
+      callbacks.onCallEnded(evt);
+    }
+  };
+
+  onCallError = function (evt) {
+    if (callbacks.onCallError) {
+      callbacks.onCallError(evt);
     }
   };
 
   module.getInstance = function () {
     if (!instance) {
       instance = init();
-      subscribeEvents();
     }
     return instance;
   };
