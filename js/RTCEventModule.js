@@ -123,7 +123,7 @@ if (!ATT) {
       callbacks.onOutgoingCall(evt);
     }
   };
-  
+
   onInProgress = function (evt) {
     if (callbacks.onInProgress) {
       callbacks.onInProgress(evt);
