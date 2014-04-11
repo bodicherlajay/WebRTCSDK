@@ -31,6 +31,7 @@ if (!ATT) {
     SESSION_OPEN:             "session-open",
     SESSION_MODIFIED:         "session-modified",
     SESSION_TERMINATED:       "session-terminated",
+    INVITATION_SENT:          "invitation-sent", // this is not an event really
     INVITATION_RECEIVED:      "invitation-received",
     MODIFICATION_RECEIVED:    "mod-received",
     MODIFICATION_TERMINATED:  "mod-terminated",

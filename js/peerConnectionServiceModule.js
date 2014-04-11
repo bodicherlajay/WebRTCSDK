@@ -201,7 +201,15 @@
               self.localDescription = pc.localDescription;
               SignalingService.sendOffer({
                 calledParty : self.calledParty,
-                sdp : self.localDescription
+                sdp : self.localDescription,
+                success : function (headers) {
+                  if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
+                    // publish the UI callback for ready state
+                    app.event.publish(session.getSessionId() + '.responseEvent', {
+                      state : app.RTCCallEvents.INVITATION_SENT
+                    });
+                  }
+                }
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
               self.localDescription = pc.localDescription;

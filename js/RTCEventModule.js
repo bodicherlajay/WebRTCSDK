@@ -16,6 +16,7 @@ if (!ATT) {
     subscribeEvents,
     onSessionReady,
     onIncomingCall,
+    onOutgoingCall,
     onInProgress,
     onCallEnded,
     onCallError,
@@ -66,9 +67,16 @@ if (!ATT) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
         onInProgress({
           type: mainModule.CallStatus.INPROGRESS,
-          callee: cmgmt.CallManager.getInstance().getSessionContext().getCallObject().callee()
+          callee: callManager.getSessionContext().getCallObject().callee()
         });
       }
+      break;
+
+    case mainModule.RTCCallEvents.INVITATION_SENT:
+      onOutgoingCall({
+        type: mainModule.CallStatus.CALLING,
+        callee: callManager.getSessionContext().getCallObject().callee()
+      });
       break;
 
     case mainModule.RTCCallEvents.INVITATION_RECEIVED:
@@ -110,6 +118,12 @@ if (!ATT) {
     }
   };
 
+  onOutgoingCall = function (evt) {
+    if (callbacks.onOutgoingCall) {
+      callbacks.onOutgoingCall(evt);
+    }
+  };
+  
   onInProgress = function (evt) {
     if (callbacks.onInProgress) {
       callbacks.onInProgress(evt);
