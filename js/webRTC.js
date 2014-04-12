@@ -215,11 +215,15 @@ if (!Env) {
   * Hangup the call
   */
   function hangup() {
-    if (app.PeerConnectionService.peerConnection && callManager.getSessionContext().getCurrentCallId()) {
+    if (app.PeerConnectionService.peerConnection
+        && app.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
+        && callManager.getSessionContext().getCurrentCallId()) {
       console.log('Hanging up...');
       app.SignalingService.sendEndCall();
       app.PeerConnectionService.endCall();
       app.UserMediaService.endCall();
+    } else {
+      console.log('Nothing to hangup...');
     }
   }
 
