@@ -18,6 +18,7 @@ Env = (function (app) {
     addOperation,
     getConfiguredRESTMethod,
     apiObject,
+    restOperationsConfig = {},
     restOperationsObject,
 
     //getOperation,
@@ -49,8 +50,9 @@ Env = (function (app) {
 
   configure = function (config) {
 
-    config = (config && config.apiConfigs) || app.APIConfigs;
+    //config = (config && config.apiConfigs) || app.APIConfigs;
 
+    restOperationsConfig = config;
     // set the rest API object
     restOperationsObject = ATT.utils.createNamespace(Env, 'rtc.rest');
 
@@ -58,7 +60,7 @@ Env = (function (app) {
     apiObject = ATT.utils.createNamespace(app, app.apiNamespaceName);
 
     // add operations to ATT
-    initOperations(config);
+    //initOperations(config);
   };
 
   module.getInstance = function () {
@@ -164,8 +166,10 @@ Env = (function (app) {
       error:   function () {}
     };
 
-    var apiMethods = app.APIConfigs,
-      operationConfig = apiMethods[operationName],
+    //var apiMethods = app.APIConfigs,
+    // todo:  remove the configure method.
+    // remove the .apiConfig key on restOperationsConfig.
+    var operationConfig = restOperationsConfig[operationName],
       restClient,
       restConfig = ATT.utils.extend({}, operationConfig),
       headerType,

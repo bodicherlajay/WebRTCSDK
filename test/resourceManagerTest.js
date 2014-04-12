@@ -20,7 +20,7 @@ describe.only('ResourceManager', function () {
     expect(instance1).equals(instance2);
   });
 
-  it('configure method should add api methods on ATT namespace', function () {
+  xit('configure method should add api methods on ATT namespace', function () {
     var resourceManager = Env.resourceManager.getInstance(),
       apiObject = resourceManager.getOperationsAPI();
     expect(Object.keys(apiObject).length).is.greaterThan(0);
@@ -83,25 +83,25 @@ describe.only('ResourceManager', function () {
 
       // add single api method to rest api.
       resourceManager.configure({
-        apiConfigs: {
-          testCall: {
-            method: 'post',
-            formatters: {
-              url: function (params) {
-                return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
-              },
-              headers: {
-                Authorization: function (param) {
-                  return 'Bearer ' + param;
-                },
-                Accept: function (param) {
-                  return 'TestHeader ' + param;
-                }
-              }
+        //apiConfigs: {
+        testCall: {
+          method: 'post',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
             },
-            headers: DEFAULTS.headers
-          }
+            headers: {
+              Authorization: function (param) {
+                return 'Bearer ' + param;
+              },
+              Accept: function (param) {
+                return 'TestHeader ' + param;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
         }
+        //}
       });
 
       // no url arg but url formatter.
@@ -150,25 +150,25 @@ describe.only('ResourceManager', function () {
 
       // add single api method to rest api.
       resourceManager.configure({
-        apiConfigs: {
-          testCall: {
-            method: 'post',
-            formatters: {
-              url: function (param) {
-                return DEFAULTS.BFEndpoint + '/sessions/' + param + '/calls';
-              },
-              headers: {
-                Authorization: function (param) {
-                  return 'Bearer ' + param;
-                },
-                Accept: function (param) {
-                  return 'Something ' + param;
-                }
-              }
+        //apiConfigs: {
+        testCall: {
+          method: 'post',
+          formatters: {
+            url: function (param) {
+              return DEFAULTS.BFEndpoint + '/sessions/' + param + '/calls';
             },
-            headers: DEFAULTS.headers
-          }
+            headers: {
+              Authorization: function (param) {
+                return 'Bearer ' + param;
+              },
+              Accept: function (param) {
+                return 'Something ' + param;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
         }
+        //}
       });
 
       getOperationConfig = {
