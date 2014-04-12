@@ -110,19 +110,16 @@ cmgmt = (function () {
       };
     };
 
-  //Session Object implementations
-  //Call Object implementations
+  // Session Object implementations
+  // Call Object implementations
   // Call.start = function () {
   //   //console.log(this.from);
-  // };
-
-  // Call.transfer = function () {
   // };
 
   // Call.reject = function () {
   // };
 
-  // Call.hangup = function () {
+  // Call.transfer = function () {
   // };
 
   // Call.move = function () {
@@ -133,6 +130,19 @@ cmgmt = (function () {
 
   // Call.resume = function () {
   // };
+
+  Call.hangup = function () {
+    if (ATT.PeerConnectionService.peerConnection
+        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
+        && session_context.getCurrentCallId()) {
+      console.log('Hanging up...');
+      ATT.SignalingService.sendEndCall();
+      ATT.PeerConnectionService.endCall();
+      ATT.UserMediaService.endCall();
+    } else {
+      console.log('No current call...');
+    }
+  };
 
   // Call.removeVideo = function () {
   // };
@@ -145,10 +155,13 @@ cmgmt = (function () {
 
   // Call.mute = function () {
   // };
+
   // Call.unmute = function () {
   // };
+
   // Call.sendDTMF = function () {
   // };
+
   // Call.onAddStream = function (stream, event) {
   //   console.log(stream);
   //   console.log(event);
