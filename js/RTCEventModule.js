@@ -89,6 +89,11 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
+      // null out remote peer to prevent bad hangup request
+      // after session is already terminated
+      if (ATT.PeerConnectionService.peerConnection) {
+        ATT.PeerConnectionService.peerConnection = null;
+      }
       break;
 
     case mainModule.RTCCallEvents.UNKNOWN:

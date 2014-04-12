@@ -212,19 +212,10 @@ if (!Env) {
   }
 
   /**
-  * Hangup the call
+  * Hangup existing call
   */
   function hangup() {
-    if (app.PeerConnectionService.peerConnection
-        && app.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
-        && callManager.getSessionContext().getCurrentCallId()) {
-      console.log('Hanging up...');
-      app.SignalingService.sendEndCall();
-      app.PeerConnectionService.endCall();
-      app.UserMediaService.endCall();
-    } else {
-      console.log('Nothing to hangup...');
-    }
+    callManager.getSessionContext().getCallObject().end();
   }
 
   // sub-namespaces on ATT.
@@ -233,7 +224,7 @@ if (!Env) {
   // The SDK public API.
   // Authenticates and creates WebRTC session
   apiObject.login = loginAndCreateWebRTCSession;
-  // Authenticates and creates WebRTC session
+  // logout and delete WebRTC session
   apiObject.logout = logoutAndDeleteWebRTCSession;
   // stop user media
   apiObject.stopUserMedia = stopUserMedia;
@@ -241,6 +232,6 @@ if (!Env) {
   apiObject.dial = dial;
   // Answer call
   apiObject.answer = answer;
-  // Hangup
+  // Hangup existing call
   apiObject.hangup = hangup;
 }(ATT || {}));
