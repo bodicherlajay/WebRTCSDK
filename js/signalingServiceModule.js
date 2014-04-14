@@ -176,6 +176,7 @@ if (!ATT) {
           callManager.getSessionContext().getCurrentCallId() ]
       },
       headers: {
+        'x-calls-action' : "initiate-call-hold",
         'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
       },
       success: function (response) {
@@ -200,6 +201,7 @@ if (!ATT) {
           callManager.getSessionContext().getCurrentCallId() ]
       },
       headers: {
+        'x-calls-action' : "initiate-call-resume",
         'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
       },
       success: function (response) {

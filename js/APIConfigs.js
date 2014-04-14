@@ -134,6 +134,19 @@ if (!ATT) {
         headers: DEFAULTS.headers
       },
       /**
+       * Modify Call via BFEndpoint
+       * @memberof WebRTCAPI.APIConfigs
+       */
+      modifyCall: {
+        method: 'put',
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          }
+        },
+        headers: DEFAULTS.headers
+      },
+      /**
       * Accept Modifications via BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */

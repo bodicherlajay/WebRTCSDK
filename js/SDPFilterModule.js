@@ -24,16 +24,16 @@ if (!ATT) {
     return sdp;
   }
 
-    // function modifySDPAttribute(attributeValue, newValue, sdp) {
-    // var attribute = "a=" + attributeValue + "\r\n", index = sdp.indexOf(attribute), prefix, rest;
-    //
-    // if (index > 0) {
-    // prefix = sdp.substr(0, index);
-    // rest = sdp.substr(index + attribute.length);
-    // sdp = prefix + newValue + rest;
-    // }
-    // return sdp;
-    // }
+    function modifySDPAttribute(attributeValue, newValue, sdp) {
+      var attribute = "a=" + attributeValue + "\r\n", index = sdp.indexOf(attribute), prefix, rest;
+
+      if (index > 0) {
+        prefix = sdp.substr(0, index);
+        rest = sdp.substr(index + attribute.length);
+        sdp = prefix + newValue + rest;
+      }
+      return sdp;
+    }
 
   /**
      *  Function to remove crypto & BUNDLE from the SDP.

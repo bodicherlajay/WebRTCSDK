@@ -128,11 +128,31 @@ cmgmt = (function () {
   // Call.move = function () {
   // };
 
-  // Call.hold = function () {
-  // };
+  Call.hold = function () {
+    if (ATT.PeerConnectionService.peerConnection
+      && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
+      && session_context.getCurrentCallId()) {
+      console.log('Putting call on hold...');
+      ATT.SignalingService.sendHoldCall();
+      ATT.PeerConnectionService.holdCall();
+      ATT.UserMediaService.holdCall();
+    } else {
+      console.log('No current call...');
+    }
+  };
 
-  // Call.resume = function () {
-  // };
+  Call.resume = function (config) {
+    if (ATT.PeerConnectionService.peerConnection
+      && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
+      && session_context.getCurrentCallId()) {
+      console.log('Resuming call...');
+      ATT.SignalingService.sendResumeCall();
+      ATT.PeerConnectionService.resumeCall();
+      ATT.UserMediaService.resumeCall();
+    } else {
+      console.log('No current call...');
+    }
+  };
 
   // Call.removeVideo = function () {
   // };
