@@ -107,24 +107,6 @@ if (!ATT) {
         },
         headers: DEFAULTS.headers
       },
-      // For unit testing of getOperation method.
-      testCall: {
-        method: 'post',
-        formatters: {
-          url: function (params) {
-            return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
-          },
-          headers: {
-            Authorization: function (param) {
-              return 'Bearer ' + param;
-            },
-            Accept: function (param) {
-              return 'TestHeader ' + param;
-            }
-          }
-        },
-        headers: DEFAULTS.headers
-      },
 
       /**
       * End Call via BFEndpoint
@@ -145,8 +127,5 @@ if (!ATT) {
 
   // place on ATT.
   app.APIConfigs = APIConfigs;
-
-  // Set the API namespace name.
-  app.apiNamespaceName = 'rtc.Phone';
 
 }(ATT || {}));

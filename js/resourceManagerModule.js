@@ -10,8 +10,8 @@ if (!Env) {
 Env = (function (app) {
   "use strict";
 
-
   var module = {},
+    apiNamespaceName = 'rtc.Phone',
     instance,
     initOperations,
     addOperations,
@@ -33,34 +33,47 @@ Env = (function (app) {
 
     configure,
 
-    resetAPIObject,
+    addPublicMethod,
 
     init = function () {
       return {
         configure:          configure,
         getAPIObject:       getAPIObject,
         getOperationsAPI:   getOperationsAPI,
-        resetAPIObject:     resetAPIObject
+        addPublicMethod:    addPublicMethod
       };
     };
 
-  resetAPIObject = function (config) {
-    configure(config);
-  };
+  // Configure REST operations object and public API object.
 
   configure = function (config) {
 
-    //config = (config && config.apiConfigs) || app.APIConfigs;
+    config = ((config && Object.keys(config).length > 0) && config) || app.APIConfigs;
 
     restOperationsConfig = config;
+
     // set the rest API object
-    restOperationsObject = ATT.utils.createNamespace(Env, 'rtc.rest');
+    Env.rtc = {
+      rest: {}
+    };
+    restOperationsObject = Env.rtc.rest;
 
     // set the public api namespace object.
-    apiObject = ATT.utils.createNamespace(app, app.apiNamespaceName);
+    if (!ATT.rtc) {
+      ATT.rtc = {
+        Phone: {}
+      };
+    }
+    apiObject = ATT.rtc.Phone;
 
     // add operations to ATT
     //initOperations(config);
+  };
+
+  addPublicMethod = function (name, method) {
+    var apiObj = getAPIObject();
+
+    apiObj[name] = method;
   };
 
   module.getInstance = function () {
@@ -71,49 +84,6 @@ Env = (function (app) {
     return instance;
   };
 
-  /**
-   * Add operations to ATT namespace.
-   */
-  initOperations = function (config) {
-    var apiConfig = config || {
-      apiConfigs: app.APIConfigs
-    };
-
-    if (Object.keys(apiConfig).length > 0) {
-      addOperations(apiConfig);
-    }
-  };
-
-  /**
-   * Add all API operations from config.
-   * @param {Object} methodConfigs The config for each method
-   */
-  addOperations = function (methodConfigs) {
-    var methodName,
-      o;
-    for (methodName in methodConfigs) {
-      if (methodConfigs.hasOwnProperty(methodName)) {
-        o = {};
-        o[methodName] = methodConfigs[methodName];
-        addOperation(o);
-      }
-    }
-  };
-
-  /**
-   * Add an API method to the ATT namespace
-   * @param {Object} apiMethodConfig The config for each method
-   */
-  addOperation = function (apiMethodConfig) {
-    var methodName = Object.keys(apiMethodConfig)[0],
-      methodDescription = apiMethodConfig[methodName];
-
-    // Add API operation to the ATT namespace.
-    restOperationsObject[methodName] = getConfiguredRESTMethod({
-      methodName: methodName,
-      methodDescription: methodDescription
-    });
-  };
 
   /**
     This will return a configured rest operation call.
@@ -146,9 +116,9 @@ Env = (function (app) {
     try {
       var operation = module.getOperation(operationName, config);
       operation(function (obj) {
-        cb(obj);
+        cb(obj);  //success
       }, function (obj) {
-        cb(obj);
+        cb(obj);  // error (this doesn't need to be passed in.)
       });
     } catch (e) {
       console.log(e);
@@ -166,30 +136,32 @@ Env = (function (app) {
       error:   function () {}
     };
 
-    //var apiMethods = app.APIConfigs,
     // todo:  remove the configure method.
     // remove the .apiConfig key on restOperationsConfig.
     var operationConfig = restOperationsConfig[operationName],
       restClient,
-      restConfig = ATT.utils.extend({}, operationConfig),
+      restConfig,
       headerType,
       headersObjectForREST = {},
-      formatters = operationConfig.formatters,
-      formattersLength = (formatters && Object.keys(formatters).length) || 0,
+      formatters,
+      formattersLength,
       configuredRESTOperation;
 
     if (!operationConfig) {
       throw new Error('Operation does not exist.');
     }
 
-    if (formatters && formattersLength > 0) {
+    // we have an operation config.
+    restConfig = ATT.utils.extend({}, operationConfig);
+    formatters = operationConfig.formatters || {};
+    formattersLength = (formatters && Object.keys(formatters).length) || 0;
 
+    if (formatters && formattersLength > 0) {
       if (!config.params || (Object.keys(config.params).length !== formattersLength)) {
         throw new Error('Params passed in must match number of formatters.');
       }
 
-    // check that formatters match up with passed in params.
-    //if (formattersLength > 0) {
+      // check that formatters match up with passed in params.
       if (formatters.url) {
         if (!config.params.url) {
           throw new Error('You pass url param to for the url formatter.');
@@ -202,32 +174,32 @@ Env = (function (app) {
           throw new Error('Header formatters in APIConfigs do not match the header parameters being passed in.');
         }
       }
+
+      // Override url parameter with url from url formatter.
+      if (typeof formatters.url === 'function') {
+        restConfig.url = operationConfig.formatters.url(config.params.url);
+      }
+
+      // header formatting.
+      // call formatters for each header (by key)
+      // need to concat default headers with header data passing in.
+      if (Object.keys(formatters.headers).length > 0) {
+        headersObjectForREST = {};
+
+        for (headerType in config.params.headers) {
+          if (config.params.headers.hasOwnProperty(headerType)) {
+            headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
+          }
+        }
+
+        // add this to the restConfig.  These will be in addition to the default headers.
+        restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
+      }
     }
 
     // data
     if (config.data) {
       restConfig.data = config.data;
-    }
-
-    // Override url parameter with url from url formatter.
-    if (typeof formatters.url === 'function') {
-      restConfig.url = operationConfig.formatters.url(config.params.url);
-    }
-
-    // header formatting.
-    // call formatters for each header (by key)
-    // need to concat default headers with header data passing in.
-    if (Object.keys(formatters.headers).length > 0) {
-      headersObjectForREST = {};
-
-      for (headerType in config.params.headers) {
-        if (config.params.headers.hasOwnProperty(headerType)) {
-          headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
-        }
-      }
-
-      // add this to the restConfig.  These will be in addition to the default headers.
-      restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
     }
 
     // create the configured rest operation and return.
@@ -236,10 +208,6 @@ Env = (function (app) {
       restConfig.error = errorCB;
 
       restClient = new ATT.RESTClient(restConfig);
-
-      // attach the restclient to the method (to expose actual rest client for unit testability).
-      // probably a better way to do this..drawing a blank at the moment.
-      //self.restClient = restClient;
 
       // make request
       restClient.ajax();
@@ -304,8 +272,54 @@ Env = (function (app) {
 
   configure();
 
+
   return {
     resourceManager : module
   };
+
+  /**
+   * Add operations to ATT namespace.
+   */
+//  initOperations = function (config) {
+//    var apiConfig = config || {
+//      apiConfigs: app.APIConfigs
+//    };
+//
+//    if (Object.keys(apiConfig).length > 0) {
+//      addOperations(apiConfig);
+//    }
+//  };
+//
+//  /**
+//   * Add all API operations from config.
+//   * @param {Object} methodConfigs The config for each method
+//   */
+//  addOperations = function (methodConfigs) {
+//    var methodName,
+//      o;
+//    for (methodName in methodConfigs) {
+//      if (methodConfigs.hasOwnProperty(methodName)) {
+//        o = {};
+//        o[methodName] = methodConfigs[methodName];
+//        addOperation(o);
+//      }
+//    }
+//  };
+//
+//  /**
+//   * Add an API method to the ATT namespace
+//   * @param {Object} apiMethodConfig The config for each method
+//   */
+//  addOperation = function (apiMethodConfig) {
+//    var methodName = Object.keys(apiMethodConfig)[0],
+//      methodDescription = apiMethodConfig[methodName];
+//
+//    // Add API operation to the ATT namespace.
+//    restOperationsObject[methodName] = getConfiguredRESTMethod({
+//      methodName: methodName,
+//      methodDescription: methodDescription
+//    });
+//  };
+
 
 }(ATT || {}));

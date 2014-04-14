@@ -4,7 +4,7 @@ beforeEach: true, before: true, sinon: true, expect: true, xit: true, xdescribe:
 
 'use strict';
 
-describe.only('ResourceManager', function () {
+describe('ResourceManager', function () {
   var DEFAULTS = {
     DHSEndpoint: ATT.appConfig.DHSEndpoint,
     BFEndpoint: ATT.appConfig.BFEndpoint,
@@ -20,9 +20,9 @@ describe.only('ResourceManager', function () {
     expect(instance1).equals(instance2);
   });
 
-  xit('configure method should add api methods on ATT namespace', function () {
+  it('should return public SDK methods via getAPIObject', function () {
     var resourceManager = Env.resourceManager.getInstance(),
-      apiObject = resourceManager.getOperationsAPI();
+      apiObject = resourceManager.getAPIObject();
     expect(Object.keys(apiObject).length).is.greaterThan(0);
   });
 
@@ -30,56 +30,28 @@ describe.only('ResourceManager', function () {
     it('should exist.', function () {
       expect(Env.resourceManager.doOperation).is.a('function');
     });
-  });
 
   describe('getOperation', function () {
 
-    var resourceManager = Env.resourceManager.getInstance(),
-      getOperation = Env.resourceManager.getOperation;
-
-    resourceManager.configure({
-      testCall: {
-        method: 'post',
-        formatters: {
-          url: function (params) {
-            return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
-          },
-          headers: {
-            Authorization: function (param) {
-              return 'Bearer ' + param;
-            },
-            Accept: function (param) {
-              return 'TestHeader ' + param;
-            }
-          }
-        },
-        headers: DEFAULTS.headers
-      }
+    before(function () {
     });
-
 
     it('should exist.', function () {
       expect(Env.resourceManager.getOperation).is.a('function');
     });
 
     it('should return a function.', function () {
-      var f = getOperation('testCall', {
-        params: {
-          url: ['/url'],
-          headers: {
-            Authorization: 'authorization',
-            Accept: 'accept'
-          }
-        },
-        success: function () {},
-        error:   function () {}
-      });
+      //var resourceManager = Env.resourceManager.getInstance(),
+      var  getOperation = Env.resourceManager.getOperation,
+        f = getOperation('logout');
+
       expect(f).is.a('function');
     });
 
     it('Throw exception if url param/headers dont match formatters.', function () {
-      resourceManager = Env.resourceManager.getInstance();
-      var getOperationConfig;
+      var resourceManager = Env.resourceManager.getInstance(),
+        getOperation = Env.resourceManager.getOperation,
+        getOperationConfig;
 
       // add single api method to rest api.
       resourceManager.configure({
@@ -143,9 +115,9 @@ describe.only('ResourceManager', function () {
 
     it('should pass all header & url arguments to formatters', function () {
 
-      resourceManager = Env.resourceManager.getInstance();
-
-      var getOperationConfig,
+      var resourceManager = Env.resourceManager.getInstance(),
+        getOperation = Env.resourceManager.getOperation,
+        getOperationConfig,
         operation;
 
       // add single api method to rest api.
@@ -196,39 +168,32 @@ describe.only('ResourceManager', function () {
       expect(operation.restConfig.headers.Accept).equals('Something accept');
       expect(operation.restConfig.headers['Content-Type']).equals('application/json');
     });
+
+    it('should throw exception if the operation does not exist', function () {
+
+      var resourceManager = Env.resourceManager.getInstance();
+      resourceManager.configure();
+
+      expect(Env.resourceManager.getOperation.bind(Env.resourceManager, 'abc')).to.throw('Operation does not exist.');
+    });
   });
 
-  xdescribe('initialization', function () {
+  describe('initialization', function () {
 
     var resourceManager = Env.resourceManager.getInstance(),
-      apiObject;
+      apiObject = resourceManager.getAPIObject();
 
-    //resourceManager.configure();
-    apiObject = resourceManager.getAPIObject();
-
-    it('should add api methods during initialization', function () {
-      expect(apiObject.login).is.a('function');
-      expect(apiObject.logout).is.a('function');
-    });
-
-    it('should use APIConfigs.js if no config passed in', function () {
-      expect(apiObject.authenticate).is.a('function');
-    });
-
-    // Add API methods as you add to the APIConfig.js file.
-    [
-      'authenticate',
-      'logout',
-      'getBrowserSession',
-      'createWebRTCSession',
-      'getEvents'
-      //'login'
-    ].forEach(function (methodName) {
-      describe('Function ' + methodName, function () {
-        it("should exist", function (done) {
-          expect(apiObject[methodName]).is.a('function');
-          done();
-        });
+    it('should create public sdk methods', function () {
+      // Add API methods as you add to the APIConfig.js file.
+      [
+        'answer',
+        'dial',
+        'eventChannel',
+        'login',
+        'stopUserMedia',
+        'hangup'
+      ].forEach(function (methodName) {
+        expect(apiObject[methodName]).is.a('function');
       });
     });
   });
