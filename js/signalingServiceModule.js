@@ -32,7 +32,7 @@ if (!ATT) {
         params: {
           url: [callManager.getSessionContext().getSessionId()],
           headers: {
-            'Authorization': callManager.getSessionContext().getAccessToken()
+            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()
           }
         },
         data: data,

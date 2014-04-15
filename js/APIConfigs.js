@@ -108,6 +108,14 @@ if (!ATT) {
         formatters : {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params;
+          },
+          headers: {
+            Authorization: function (param) {
+              return 'Bearer ' + param;
+            },
+            'x-e911Id': function (param) {
+              return param;
+            }
           }
         },
         headers: DEFAULTS.headers
@@ -116,7 +124,20 @@ if (!ATT) {
       * Get WebRTC events from BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
-      getEvents: { },
+      getEvents: {
+        method: 'post',
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return 'Authorization: Bearer ' + param;
+            }
+          }
+        },
+        headers: DEFAULTS.headers
+      },
       /**
       * Start Call via BFEndpoint
       * @memberof WebRTCAPI.APIConfigs

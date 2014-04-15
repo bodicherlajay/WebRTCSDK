@@ -11,9 +11,11 @@ if (!ATT) {
 (function (app) {
   'use strict';
 
-  var resourceManager = Env.resourceManager.getInstance(),
-    apiObject = resourceManager.getAPIObject(),
+  var apiObject,
+    resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance();
+
+  apiObject = resourceManager.getAPIObject();
 
   /**
    * Get Event Channel
@@ -86,10 +88,11 @@ if (!ATT) {
      =        Web Socket Config                 =
      ===========================================*/
     wsConfig = {
-      method: 'post',
-      url: app.appConfig.BFEndpoint + '/sessions/' + sessionId + '/websocket',
-      headers: {
-        'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+      params: {
+        url: [sessionId, 'websocket'],
+        headers: {
+          'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+        }
       },
       success: function (messages) {
         if (!eventChannelInitiated) {
@@ -114,9 +117,9 @@ if (!ATT) {
     // Kickstart the event channel
     // @TODO: invalid session bug
     if (useLongPolling) {
-      apiObject.getEvents(lpConfig);
+      resourceManager.doOperation('getEvents', lpConfig);
     } else {
-      apiObject.getEvents(wsConfig);
+      resourceManager.doOperation('getEvents', wsConfig);
     }
   }
 
