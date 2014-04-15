@@ -125,11 +125,27 @@ cmgmt = (function () {
   // Call.move = function () {
   // };
 
-  // Call.hold = function () {
-  // };
+  Call.hold = function () {
+    if (ATT.PeerConnectionService.peerConnection
+        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
+        && session_context.getCurrentCallId()) {
+      console.log('Putting call on hold...');
+      ATT.SignalingService.sendHoldCall();
+    } else {
+      console.log('No current call...');
+    }
+  };
 
-  // Call.resume = function () {
-  // };
+  Call.resume = function () {
+    if (ATT.PeerConnectionService.peerConnection
+        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
+        && session_context.getCurrentCallId()) {
+      console.log('Resuming call...');
+      ATT.SignalingService.sendResumeCall();
+    } else {
+      console.log('No current call...');
+    }
+  };
 
   Call.hangup = function () {
     if (ATT.PeerConnectionService.peerConnection

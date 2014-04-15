@@ -14,6 +14,7 @@ module.exports = function (grunt) {
       'js-shared/js/utils.js',
       'js/adapter.js',
       'js/appConfigModule.js',
+      'js-shared/js/utils.js',
       'js-shared/js/restClient.js',
       'js/APIConfigs.js',
       'js-shared/js/eventEmitter.js',
@@ -30,7 +31,7 @@ module.exports = function (grunt) {
       'test/**/*.js'],
     logLevel: 'DEBUG',
     port: 9876,
-    browsers: ['Chrome', 'Firefox'],
+    browsers: ['Chrome'],
     captureTimeout: 60000
   },
     karmaConfigUnit = {

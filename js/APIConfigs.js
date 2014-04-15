@@ -116,15 +116,34 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
+          },
+          headers: {
+            Authorization: function (param) {
+              return 'Authorization: ' + param;
+            }
           }
         },
         headers: DEFAULTS.headers
       },
+
       /**
       * Answer Call via BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       answerCall: {
+        method: 'put',
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          }
+        },
+        headers: DEFAULTS.headers
+      },
+      /**
+       * Modify Call via BFEndpoint
+       * @memberof WebRTCAPI.APIConfigs
+       */
+      modifyCall: {
         method: 'put',
         formatters: {
           url: function (params) {
@@ -165,8 +184,5 @@ if (!ATT) {
 
   // place on ATT.
   app.APIConfigs = APIConfigs;
-
-  // Set the API namespace name.
-  app.apiNamespaceName = 'rtc.Phone';
 
 }(ATT || {}));

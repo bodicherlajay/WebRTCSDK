@@ -36,7 +36,7 @@ describe('SignalingService', function () {
     expect(ATT.SignalingService.sendAnswer).to.be.a('function');
   });
 
-  it('should call startCall API method with call object passed as data with SDP & calledParty.', function () {
+  xit('should call startCall API method with call object passed as data with SDP & calledParty.', function () {
 
     // setup
 
@@ -81,7 +81,7 @@ describe('SignalingService', function () {
   });
 
 
-  it('should receive 201 and Location url and x-state: invitation-sent in header', function () {
+  xit('should receive 201 and Location url and x-state: invitation-sent in header', function () {
     // setup
     apiObj.Session = {
       accessToken: 'access_token',

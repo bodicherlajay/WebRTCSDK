@@ -222,16 +222,10 @@ if (!Env) {
   app.RESTClient = RESTClient;
 
   // The SDK public API.
-  // Authenticates and creates WebRTC session
-  apiObject.login = loginAndCreateWebRTCSession;
-  // logout and delete WebRTC session
-  apiObject.logout = logoutAndDeleteWebRTCSession;
-  // stop user media
-  apiObject.stopUserMedia = stopUserMedia;
-  // Create call
-  apiObject.dial = dial;
-  // Answer call
-  apiObject.answer = answer;
-  // Hangup existing call
-  apiObject.hangup = hangup;
+  resourceManager.addPublicMethod('login', loginAndCreateWebRTCSession);
+  resourceManager.addPublicMethod('logout', logoutAndDeleteWebRTCSession);
+  resourceManager.addPublicMethod('stopUserMedia', stopUserMedia);
+  resourceManager.addPublicMethod('dial', dial);
+  resourceManager.addPublicMethod('answer', answer);
+  resourceManager.addPublicMethod('hangup', hangup);
 }(ATT || {}));
