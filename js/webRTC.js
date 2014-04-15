@@ -41,6 +41,10 @@ if (!Env) {
     resourceManager.doOperation('checkDhsSession', sessionConfig);
   }
 
+  function registerUserOnDhs (config) {
+    config.success(); 
+  }
+  
   /**
    * This method will be hit by the login button on the sample app.
    * Hits authenticate, then createWebRTCSession.  Simply logs the location header
@@ -246,6 +250,7 @@ if (!Env) {
 
   // The SDK public API.
   resourceManager.addPublicMethod('session', checkBrowserSession);
+  resourceManager.addPublicMethod('register', registerUserOnDhs);
   resourceManager.addPublicMethod('login', loginAndCreateWebRTCSession);
   resourceManager.addPublicMethod('logout', logoutAndDeleteWebRTCSession);
   resourceManager.addPublicMethod('stopUserMedia', stopUserMedia);
