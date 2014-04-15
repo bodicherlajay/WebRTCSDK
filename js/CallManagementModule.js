@@ -15,6 +15,8 @@ cmgmt = (function () {
         callee: function () { return callee; },
         mediaType: function () { return mediaType; },
         start: Call.start,
+        hold: Call.hold,
+        resume: Call.resume,
         end: Call.hangup
       };
     },
@@ -23,6 +25,7 @@ cmgmt = (function () {
       OUTGOING_CALL : "Outgoing",
       INCOMING_CALL : "Incoming",
       MOVE_CALL : "Move Call",
+      HOLD_CALL : "Hold Call",
       TRANSFER_CALL : "Transfer Call",
       READY: "Ready" //Ready to accept Outgoing or Incoming call
     },
@@ -126,11 +129,11 @@ cmgmt = (function () {
   // };
 
   Call.hold = function () {
-    if (ATT.PeerConnectionService.peerConnection
+    if (true || ATT.PeerConnectionService.peerConnection
         && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()) {
       console.log('Putting call on hold...');
-      ATT.SignalingService.sendHoldCall();
+      ATT.PeerConnectionService.holdCall();
     } else {
       console.log('No current call...');
     }
@@ -141,6 +144,7 @@ cmgmt = (function () {
         && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()) {
       console.log('Resuming call...');
+      session_context.setCallState(SessionState.INCOMING_CALL);
       ATT.SignalingService.sendResumeCall();
     } else {
       console.log('No current call...');
