@@ -235,6 +235,20 @@ if (!Env) {
   }
 
   /**
+  * Hold existing call
+  */
+  function hold() {
+    callManager.getSessionContext().getCallObject().hold();
+  }
+
+  /**
+  * Resume existing call
+  */
+  function resume() {
+    callManager.getSessionContext().getCallObject().resume();
+  }
+
+  /**
   * Hangup existing call
   */
   function hangup() {
@@ -251,5 +265,7 @@ if (!Env) {
   resourceManager.addPublicMethod('stopUserMedia', stopUserMedia);
   resourceManager.addPublicMethod('dial', dial);
   resourceManager.addPublicMethod('answer', answer);
+  resourceManager.addPublicMethod('hold', hold);
+  resourceManager.addPublicMethod('resume', resume);
   resourceManager.addPublicMethod('hangup', hangup);
 }(ATT || {}));

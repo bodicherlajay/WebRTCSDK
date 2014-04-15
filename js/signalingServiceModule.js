@@ -135,21 +135,29 @@ if (!ATT) {
         }
       });
     },
-
-    // end call
-    // HTTP request to terminate call
-    sendEndCall: function () {
-      apiObject.endCall({
+    // hold call
+    // HTTP request to put a call on hold
+    sendHoldCall: function (config) {
+      // call data
+      var data = {
+        callsMediaModifications : {
+          sdp : config.sdp
+        }
+      };
+      apiObject.modifyCall({
         apiParameters: {
           url: [ callManager.getSessionContext().getSessionId(),
             callManager.getSessionContext().getCurrentCallId() ]
         },
         headers: {
+          'x-calls-action' : "initiate-call-hold",
           'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
         },
+        data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             console.log('Call termination success.');
+            callManager.setCallState(callManager.SessionState.HOLD_CALL);
           } else {
             console.log('CALL TERMINATION ERROR');
           }
@@ -159,17 +167,15 @@ if (!ATT) {
         }
       });
     },
-
-    // hold call
-    // HTTP request to put a call on hold
-    sendHoldCall: function () {
+    // end call
+    // HTTP request to terminate call
+    sendEndCall: function () {
       apiObject.endCall({
         apiParameters: {
           url: [ callManager.getSessionContext().getSessionId(),
             callManager.getSessionContext().getCurrentCallId() ]
         },
         headers: {
-          'x-calls-action' : "initiate-call-hold",
           'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
         },
         success: function (response) {
