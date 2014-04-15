@@ -129,7 +129,7 @@ cmgmt = (function () {
   // };
 
   Call.hold = function () {
-    if (ATT.PeerConnectionService.peerConnection
+    if (true || ATT.PeerConnectionService.peerConnection
         && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()) {
       console.log('Putting call on hold...');

@@ -116,7 +116,20 @@ if (!ATT) {
       * Get WebRTC events from BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
-      getEvents: { },
+      getEvents: {
+        method: 'post',
+        formatters: {
+          url: function (params) {
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return 'Authorization: Bearer ' + param;
+            }
+          }
+        },
+        headers: DEFAULTS.headers
+      },
       /**
       * Start Call via BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
