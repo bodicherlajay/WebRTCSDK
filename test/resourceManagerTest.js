@@ -43,7 +43,7 @@ describe('ResourceManager', function () {
 
     it('should return a function.', function () {
       var getOperation = Env.resourceManager.getOperation,
-        f = getOperation('getBrowserSession');
+        f = getOperation('checkDhsSession');
 
       expect(f).is.a('function');
     });
