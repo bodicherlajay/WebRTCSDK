@@ -136,6 +136,10 @@
         this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
           console.log('Set Remote Description succeeded.');
         }, function (err) {
+          // hack for difference between FF and Chrome
+          if (typeof err === 'object') {
+            err = err.message;
+          }
           console.log('Set Remote Description failed: ' + err);
         });
 
@@ -204,7 +208,7 @@
                 sdp : self.localDescription,
                 success : function (headers) {
                   if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
-                    // publish the UI callback for ready state
+                    // publish the UI callback for invitation sent event
                     app.event.publish(session.getSessionId() + '.responseEvent', {
                       state : app.RTCCallEvents.INVITATION_SENT
                     });
@@ -229,6 +233,7 @@
         pc.onaddstream = function (evt) {
           this.remoteStream = evt.stream;
           UserMediaService.showStream('remote', this.remoteStream);
+          console.log(this.remoteStream);
         };
 
         pc.oniceconnectionstatechange = function () {};

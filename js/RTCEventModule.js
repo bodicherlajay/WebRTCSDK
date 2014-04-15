@@ -20,7 +20,6 @@ if (!ATT) {
     onInProgress,
     onCallEnded,
     onCallError,
-    done,
     init = function () {
       return {
         hookupEventsToUICallbacks: subscribeEvents
@@ -31,6 +30,8 @@ if (!ATT) {
     if (!event) {
       return;
     }
+
+    console.log('Incoming Event : ' + JSON.stringify(event));
 
     //Check if invite is an announcement
     if (event.sdp && event.sdp.indexOf("sendonly") !== -1) {
@@ -51,8 +52,7 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.SESSION_OPEN:
-      if (event.sdp && !done) {
-        done = true;
+      if (event.sdp) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp);
       }
       // set callID to use for hangup()
@@ -89,6 +89,11 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
+      // null out remote peer to prevent bad hangup request
+      // after session is already terminated
+      if (ATT.PeerConnectionService.peerConnection) {
+        ATT.PeerConnectionService.peerConnection = null;
+      }
       break;
 
     case mainModule.RTCCallEvents.UNKNOWN:
@@ -101,9 +106,13 @@ if (!ATT) {
     // set callbacks after session is created and we are ready to subscribe to events
     callbacks = callManager.getSessionContext().getUICallbacks();
 
-    // subscribe to events
     var sessionId = callManager.getSessionContext().getSessionId();
+
+    // unsubscribe first, to avoid double subscription from previous actions
+    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
+    // subscribe to hook up callbacks to events
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
+    console.log('Subscribed to events');
   };
 
   onSessionReady = function (evt) {
