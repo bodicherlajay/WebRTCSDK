@@ -120,6 +120,7 @@ if (!ATT) {
         },
         headers: DEFAULTS.headers
       },
+
       /**
       * Answer Call via BFEndpoint
       * @memberof WebRTCAPI.APIConfigs
@@ -165,8 +166,5 @@ if (!ATT) {
 
   // place on ATT.
   app.APIConfigs = APIConfigs;
-
-  // Set the API namespace name.
-  app.apiNamespaceName = 'rtc.Phone';
 
 }(ATT || {}));

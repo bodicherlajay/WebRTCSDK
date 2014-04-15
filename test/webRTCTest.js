@@ -39,7 +39,7 @@ describe('webRTC', function () {
      * -d @bftest.txt http://wdev.code-api-att.com:8080/RTC/v1/sessions
      */
 
-    it('should pass access token and e911id to createWebRTCSession and set appropriate headers/data', function () {
+    xit('should pass access token and e911id to createWebRTCSession and set appropriate headers/data', function () {
 
       // plan of attack:
       // fake the authorization call response.
@@ -86,7 +86,7 @@ describe('webRTC', function () {
     });
 
 
-    it('should pass session description as data object to createWebRTCSession', function () {
+    xit('should pass session description as data object to createWebRTCSession', function () {
       // plan of attack:
       // fake the authorization call response.
       // spy on createWebRTCSession.
@@ -130,7 +130,7 @@ describe('webRTC', function () {
     });
 
 
-    it('should call success callback of createWebRTCSession, happy path', function () {
+    xit('should call success callback of createWebRTCSession, happy path', function () {
 
       // response json from authorize call.  check the schema.
       var responseObject1 = {

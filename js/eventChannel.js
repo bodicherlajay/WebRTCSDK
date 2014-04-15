@@ -121,6 +121,6 @@ if (!ATT) {
   }
 
   // place on ATT namespace
-  apiObject.eventChannel = getEventChannel;
+  resourceManager.addPublicMethod('eventChannel', getEventChannel);
 
 }(ATT || {}));
