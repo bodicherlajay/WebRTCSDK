@@ -11,7 +11,7 @@ if (!ATT) {
 (function (app) {
   'use strict';
 
- var apiObject,
+  var apiObject,
     resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance();
 
