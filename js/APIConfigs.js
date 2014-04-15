@@ -116,6 +116,11 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
+          },
+          headers: {
+            Authorization: function (param) {
+              return 'Authorization: ' + param;
+            }
           }
         },
         headers: DEFAULTS.headers

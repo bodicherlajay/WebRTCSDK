@@ -13,6 +13,7 @@ if (!ATT) {
     callManager = cmgmt.CallManager.getInstance();
 
   apiObject = resourceManager.getAPIObject();
+
   app.SignalingService = {
 
     sendOffer: function (config) {
@@ -27,32 +28,24 @@ if (!ATT) {
           }
         };
 
-      apiObject.startCall({
-        apiParameters: {
-          url: [callManager.getSessionContext().getSessionId()]
-        },
-        headers : {
-          'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()
-        },
-        data : data,
-        success : function (obj) {
-          console.log('offer sent successfully');
-
-          var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
-            location : location,
-            xState : xState
-          };
-
-          if (typeof config.success === 'function') {
-            config.success.call(null, headers);
+      resourceManager.doOperation('startCall', {
+        params: {
+          url: [callManager.getSessionContext().getSessionId()],
+          headers: {
+            'Authorization': callManager.getSessionContext().getAccessToken()
           }
         },
-        error : function (err) {
-          console.error(err.message);
+        data: data
+      }, function (obj) {
+        console.log('offer sent successfully');
 
-          if (typeof config.error === 'function') {
-            config.error.call(null);
-          }
+        var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
+          location : location,
+          xState : xState
+        };
+
+        if (typeof config.success === 'function') {
+          config.success.call(null, headers);
         }
       });
     },

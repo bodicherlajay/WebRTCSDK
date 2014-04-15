@@ -12,7 +12,7 @@ Env = (function (app) {
 
   var module = {},
     instance,
-    apiObject,
+    apiObject,  // the object that public methods are placed on
     restOperationsConfig = {},
     restOperationsObject,
 
@@ -33,7 +33,9 @@ Env = (function (app) {
         configure:          configure,
         getAPIObject:       getAPIObject,
         getOperationsAPI:   getOperationsAPI,
-        addPublicMethod:    addPublicMethod
+        addPublicMethod:    addPublicMethod,
+        getOperation:       module.getOperation,
+        doOperation:        module.doOperation
       };
     };
 
@@ -60,6 +62,11 @@ Env = (function (app) {
     apiObject = ATT.rtc.Phone;
   };
 
+  /**
+   * Adds public SDK methods.
+   * @param name
+   * @param method
+   */
   addPublicMethod = function (name, method) {
     var apiObj = getAPIObject();
 
@@ -100,6 +107,14 @@ Env = (function (app) {
       });
 
   */
+
+  /**
+   * Method that will perform the actual operation call on the configured
+   * rest operation.
+   * @param operationName
+   * @param config
+   * @param cb
+   */
   module.doOperation = function (operationName, config, cb) {
     cb = cb || function () {};
 
@@ -115,6 +130,13 @@ Env = (function (app) {
     }
   };
 
+  /**
+   * Method to return a configured rest operation configured in the
+   * APIConfigs.js file.
+   * @param operationName
+   * @param config
+   * @returns {Function}
+   */
   module.getOperation = function (operationName, config) {
 
     if (!operationName) {
