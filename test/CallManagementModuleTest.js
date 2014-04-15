@@ -1,7 +1,9 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global cmgmt:true, describe: true, it: true, expect:true */
+/*global ATT:true, RESTClient, Env, cmgmt:true*/
+/*global describe: true, it: true, afterEach: true, beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
 describe('Call Management', function () {
   'use strict';
+  var sdpDuplex = '', sdpSend = '';
 //  var sdpDuplex = `o=- 1862751536763812389 2 IN IP4 127.0.0.1 \
 //  s=-   \
 //    t=0 0   \
@@ -62,24 +64,24 @@ describe('Call Management', function () {
     expect(sessionContext.getSessionId()).equals("sessionId");
     expect(sessionContext.getCallState()).equals(callmgr.SessionState.READY);
   });
-  it('should modify the sdp to send only', function(){
+  it('should modify the sdp to send only', function () {
     var config = {};
-    before (function(){
-      var callmgr = cmgmt.CallManager.getInstance(), sessionContext;
+    before(function () {
+      var callmgr = cmgmt.CallManager.getInstance();
+        //sessionContext = callmgr.getSessionContext();
       callmgr.CreateSession({token: "abcd", e911Id: "e911id", sessionId: "sessionId" });
-      sessionContext = callmgr.getSessionContext();
-      config['sdp'] = sdpDuplex;
+      config.sdp = sdpDuplex;
     });
 
   });
-  it('should modify the sdp to send and recv', function(){
+  it('should modify the sdp to send and recv', function () {
     var config = {};
-    before(function(){
-      var callmgr = cmgmt.CallManager.getInstance(), sessionContext;
+    before(function () {
+      var callmgr = cmgmt.CallManager.getInstance();
+        //sessionContext = callmgr.getSessionContext();
       callmgr.CreateSession({token : "abcd", e911Id: "e911id", sessionId : "sessionId" });
-      sessionContext = callmgr.getSessionContext();
-      config['sdp'] = sdpSend;
+      config.sdp = sdpSend;
     });
   });
 
-});;
+});

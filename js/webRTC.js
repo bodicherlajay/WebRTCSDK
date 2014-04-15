@@ -21,6 +21,26 @@ if (!Env) {
 
   apiObject = resourceManager.getAPIObject();
 
+  function checkBrowserSession(config) {
+    var sessionConfig = {
+      success: function (response) {
+        var data = response.getJson(),
+          session = callManager.getSessionContext();
+
+        if (session) {
+          data.webRtcSessionId = session.getSessionId();
+        }
+
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      }
+    };
+
+    // Call DHS to check for a browser session.
+    resourceManager.doOperation('checkDhsSession', sessionConfig);
+  }
+
   /**
    * This method will be hit by the login button on the sample app.
    * Hits authenticate, then createWebRTCSession.  Simply logs the location header
@@ -52,9 +72,12 @@ if (!Env) {
                 ]
               }
             },
-            headers: {
-              "Authorization": "Bearer " + accessToken,
-              "x-e911Id": e911Id
+
+            params: {
+              headers: {
+                'Authorization': accessToken,
+                'x-e911Id': e911Id
+              }
             },
 
             success: function (responseObject) {
@@ -109,7 +132,7 @@ if (!Env) {
           }
         } else {
           // Call BF to create WebRTC Session.
-          apiObject.createWebRTCSession(dataForCreateWebRTCSession);
+          resourceManager.doOperation('createWebRTCSession', dataForCreateWebRTCSession);
         }
       },
       error: function (e) {
@@ -118,7 +141,7 @@ if (!Env) {
     };
 
     // Call DHS to authenticate, associate user to session.
-    apiObject.authenticateUser(authenticateConfig);
+    resourceManager.doOperation('authenticateUser', authenticateConfig);
   }
 
   function logoutAndDeleteWebRTCSession(config) {
@@ -173,7 +196,7 @@ if (!Env) {
     };
 
     // Call DHS to logout user by deleting browser session.
-    apiObject.logoutUser(logoutConfig);
+    resourceManager.doOperation('logoutUser', logoutConfig);
   }
 
   // Stop user media
@@ -222,6 +245,7 @@ if (!Env) {
   app.RESTClient = RESTClient;
 
   // The SDK public API.
+  resourceManager.addPublicMethod('session', checkBrowserSession);
   resourceManager.addPublicMethod('login', loginAndCreateWebRTCSession);
   resourceManager.addPublicMethod('logout', logoutAndDeleteWebRTCSession);
   resourceManager.addPublicMethod('stopUserMedia', stopUserMedia);

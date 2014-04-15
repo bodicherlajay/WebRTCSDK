@@ -115,11 +115,12 @@ Env = (function (app) {
    * @param config
    * @param cb
    */
-  module.doOperation = function (operationName, config, cb) {
-    cb = cb || function () {};
-
+  module.doOperation = function (operationName, config) {
     try {
-      var operation = module.getOperation(operationName, config);
+      var cb = config.success || function () {},// todo: rename or remove it?
+
+        operation = module.getOperation(operationName, config);
+
       operation(function (obj) {
         cb(obj);  //success
       }, function (obj) {
