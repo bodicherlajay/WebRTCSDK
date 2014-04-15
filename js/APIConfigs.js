@@ -75,7 +75,7 @@ if (!ATT) {
       * Get browser session from DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
-      getBrowserSession: {
+      checkDhsSession: {
         method: 'get',
         url: DEFAULTS.DHSEndpoint + '/user/session',
         headers: DEFAULTS.headers
@@ -87,6 +87,16 @@ if (!ATT) {
       createWebRTCSession: {
         method: 'post',
         url: DEFAULTS.BFEndpoint + '/sessions',
+        formatters: {
+          headers: {
+            Authorization: function (param) {
+              return 'Bearer ' + param;
+            },
+            'x-e911Id': function (param) {
+              return param;
+            }
+          }
+        },
         headers: DEFAULTS.headers
       },
       /**

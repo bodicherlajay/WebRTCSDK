@@ -35,17 +35,18 @@ if (!ATT) {
             'Authorization': callManager.getSessionContext().getAccessToken()
           }
         },
-        data: data
-      }, function (obj) {
-        console.log('offer sent successfully');
+        data: data,
+        success: function (obj) {
+          console.log('offer sent successfully');
 
-        var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
-          location : location,
-          xState : xState
-        };
+          var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
+            location : location,
+            xState : xState
+          };
 
-        if (typeof config.success === 'function') {
-          config.success.call(null, headers);
+          if (typeof config.success === 'function') {
+            config.success.call(null, headers);
+          }
         }
       });
     },
