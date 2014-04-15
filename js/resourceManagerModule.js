@@ -118,13 +118,10 @@ Env = (function (app) {
   module.doOperation = function (operationName, config) {
     try {
       var cb = config.success || function () {},// todo: rename or remove it?
-
         operation = module.getOperation(operationName, config);
 
       operation(function (obj) {
-        cb(obj);  //success
-      }, function (obj) {
-        cb(obj);  // error (this doesn't need to be passed in.)
+        cb(obj);
       });
     } catch (e) {
       console.log(e);
