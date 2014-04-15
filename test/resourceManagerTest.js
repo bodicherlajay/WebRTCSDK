@@ -42,9 +42,9 @@ describe('ResourceManager', function () {
     });
 
     it('should return a function.', function () {
-      //var resourceManager = Env.resourceManager.getInstance(),
-      var  getOperation = Env.resourceManager.getOperation,
-        f = getOperation('logout');
+      var resourceManager = Env.resourceManager.getInstance(),
+        getOperation = Env.resourceManager.getOperation,
+        f = getOperation('getBrowserSession');
 
       expect(f).is.a('function');
     });

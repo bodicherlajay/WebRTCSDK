@@ -15,7 +15,7 @@ if (!ATT) {
   apiObject = resourceManager.getAPIObject();
   app.SignalingService = {
 
-    sendOffer : function (config) {
+    sendOffer: function (config) {
 
       // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
@@ -57,7 +57,7 @@ if (!ATT) {
       });
     },
 
-    sendAnswer : function (config) {
+    sendAnswer: function (config) {
 
       // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
@@ -100,7 +100,7 @@ if (!ATT) {
     },
 
     // accept modifications
-    sendAcceptMods : function (config) {
+    sendAcceptMods: function (config) {
 
       // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
@@ -164,56 +164,56 @@ if (!ATT) {
           console.log('CALL TERMINATION ERROR', err);
         }
       });
-    }
-  };
+    },
 
-  // hold call
-  // HTTP request to put a call on hold
-  sendHoldCall: function () {
-    apiObject.endCall({
-      apiParameters: {
-        url: [ callManager.getSessionContext().getSessionId(),
-          callManager.getSessionContext().getCurrentCallId() ]
-      },
-      headers: {
-        'x-calls-action' : "initiate-call-hold",
-        'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
-      },
-      success: function (response) {
-        if (response.getResponseStatus() === 204) {
-          console.log('Call termination success.');
-        } else {
-          console.log('CALL TERMINATION ERROR');
+    // hold call
+    // HTTP request to put a call on hold
+    sendHoldCall: function () {
+      apiObject.endCall({
+        apiParameters: {
+          url: [ callManager.getSessionContext().getSessionId(),
+            callManager.getSessionContext().getCurrentCallId() ]
+        },
+        headers: {
+          'x-calls-action' : "initiate-call-hold",
+          'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+        },
+        success: function (response) {
+          if (response.getResponseStatus() === 204) {
+            console.log('Call termination success.');
+          } else {
+            console.log('CALL TERMINATION ERROR');
+          }
+        },
+        error: function (err) {
+          console.log('CALL TERMINATION ERROR', err);
         }
-      },
-      error: function (err) {
-        console.log('CALL TERMINATION ERROR', err);
-      }
-    });
+      });
+    }
   };
 
   // resume call
   // HTTP request to resume a call on hold
-  sendHoldCall: function () {
-    apiObject.endCall({
-      apiParameters: {
-        url: [ callManager.getSessionContext().getSessionId(),
-          callManager.getSessionContext().getCurrentCallId() ]
-      },
-      headers: {
-        'x-calls-action' : "initiate-call-resume",
-        'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
-      },
-      success: function (response) {
-        if (response.getResponseStatus() === 204) {
-          console.log('Call termination success.');
-        } else {
-          console.log('CALL TERMINATION ERROR');
-        }
-      },
-      error: function (err) {
-        console.log('CALL TERMINATION ERROR', err);
-      }
-    });
-  };
+//  sendHoldCall: function () {
+//    apiObject.endCall({
+//      apiParameters: {
+//        url: [ callManager.getSessionContext().getSessionId(),
+//          callManager.getSessionContext().getCurrentCallId() ]
+//      },
+//      headers: {
+//        'x-calls-action' : "initiate-call-resume",
+//        'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+//      },
+//      success: function (response) {
+//        if (response.getResponseStatus() === 204) {
+//          console.log('Call termination success.');
+//        } else {
+//          console.log('CALL TERMINATION ERROR');
+//        }
+//      },
+//      error: function (err) {
+//        console.log('CALL TERMINATION ERROR', err);
+//      }
+//    });
+//  };
 }(ATT || {}));
