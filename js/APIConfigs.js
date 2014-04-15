@@ -141,6 +141,7 @@ if (!ATT) {
       },
       /**
        * Modify Call via BFEndpoint
+       * Used for hold, resume
        * @memberof WebRTCAPI.APIConfigs
        */
       modifyCall: {

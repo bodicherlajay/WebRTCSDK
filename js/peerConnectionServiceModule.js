@@ -245,6 +245,17 @@
         pc.close = function () {};
       },
 
+      // hold Call
+      holdCall: function () {
+        // fix SDP first time
+        var holdSDP = ATT.sdpFilter.getInstance().modifySDPAttribute("a=sendrecv", "a=recvonly", this.localDescription);
+        // set local description
+        //this.peerConnection.setLocalDescription(this.localDescription);
+        SignalingService.sendHoldCall({
+          sdp : holdSDP
+        });
+      },
+
       // end Call
       endCall: function () {
         this.peerConnection.close();
