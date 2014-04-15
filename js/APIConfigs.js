@@ -108,6 +108,14 @@ if (!ATT) {
         formatters : {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params;
+          },
+          headers: {
+            Authorization: function (param) {
+              return 'Bearer ' + param;
+            },
+            'x-e911Id': function (param) {
+              return param;
+            }
           }
         },
         headers: DEFAULTS.headers

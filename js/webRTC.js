@@ -41,10 +41,10 @@ if (!Env) {
     resourceManager.doOperation('checkDhsSession', sessionConfig);
   }
 
-  function registerUserOnDhs (config) {
-    config.success(); 
+  function registerUserOnDhs(config) {
+    config.success();
   }
-  
+
   /**
    * This method will be hit by the login button on the sample app.
    * Hits authenticate, then createWebRTCSession.  Simply logs the location header
@@ -168,13 +168,12 @@ if (!Env) {
         }
 
         dataForDeleteWebRTCSession = {
-          apiParameters: {
-            url: [session.getSessionId()]
-          },
-
-          headers: {
-            "Authorization": "Bearer " + session.getAccessToken(),
-            "x-e911Id": session.getE911Id()
+          params: {
+            url: [session.getSessionId()],
+            headers: {
+              "Authorization": session.getAccessToken(),
+              "x-e911Id": session.getE911Id()
+            }
           },
 
           success: function (responseObject) {
@@ -192,7 +191,7 @@ if (!Env) {
         };
 
         // Call BF to delete WebRTC Session.
-        apiObject.deleteWebRTCSession(dataForDeleteWebRTCSession);
+        resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
       },
       error: function (e) {
         console.log('Delete session error : ', e);
