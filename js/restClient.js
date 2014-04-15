@@ -7,13 +7,14 @@
 
 var RESTClient = (function () {
   "use strict";
-  var RESTClient =  function (config) {
+  var defaultErrorHandler,
+    RESTClient =  function (config) {
       this.config =  ATT.utils.extend({}, config);
         // default ajax configuration
       this.config.async = this.config.async || true;
       this.config.timeout = this.config.timeout || 10000;
       this.config.success = this.config.success || function () {};
-      this.config.error = this.config.error || function () {};
+      this.config.error = this.config.error || defaultErrorHandler;
       this.config.ontimeout = this.config.ontimeout || function () {};
       this.config.headers = this.config.headers || {};
       this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
@@ -71,6 +72,13 @@ var RESTClient = (function () {
     }
 
     xhr.send(data);
+  };
+
+  /**
+   * Default ajax error handler.
+   */
+  defaultErrorHandler = function () {
+    throw new Error('RESTClient error handler triggered!');
   };
 
   function addHttpMethodsToPrototype(methods) {
