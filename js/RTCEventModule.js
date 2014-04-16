@@ -14,6 +14,7 @@ if (!ATT) {
     callbacks,
     interceptingEventChannelCallback,
     subscribeEvents,
+    onSessionReady,
     onIncomingCall,
     onOutgoingCall,
     onInProgress,
@@ -44,7 +45,7 @@ if (!ATT) {
     // todo capture time, debugging info for sdk
     switch (event.state) {
     case mainModule.SessionEvents.RTC_SESSION_CREATED:
-      mainModule.event.publish('onSessionReady', {
+      onSessionReady({
         type: mainModule.CallStatus.READY,
         data: event.data
       });
@@ -112,12 +113,12 @@ if (!ATT) {
     // subscribe to hook up callbacks to events
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     console.log('Subscribed to events');
+  };
 
-    mainModule.event.subscribe('onSessionReady', function (evt) {
-      if (callbacks.onSessionReady) {
-        callbacks.onSessionReady(evt);
-      }
-    });
+  onSessionReady = function (evt) {
+    if (callbacks.onSessionReady) {
+      callbacks.onSessionReady(evt);
+    }
   };
 
   onIncomingCall = function (evt) {
