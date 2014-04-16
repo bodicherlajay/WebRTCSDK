@@ -62,9 +62,8 @@ if (!ATT) {
       resourceManager.doOperation('answerCall', {
         params: {
           url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
-          headers : {
-            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
-            'x-calls-action' : 'call-answer'
+          headers: {
+            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()
           }
         },
         data : data,
@@ -105,7 +104,7 @@ if (!ATT) {
         params: {
           url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
           headers : {
-            'x-calls-action' : 'accept-call-mod',
+            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
             'x-modId' : config.modId
           }
         },

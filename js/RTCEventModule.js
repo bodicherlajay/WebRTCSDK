@@ -14,6 +14,7 @@ if (!ATT) {
     callbacks,
     interceptingEventChannelCallback,
     subscribeEvents,
+    onSessionReady,
     onIncomingCall,
     onOutgoingCall,
     onInProgress,
@@ -30,7 +31,7 @@ if (!ATT) {
       return;
     }
 
-    console.log('Incoming Event : ' + JSON.stringify(event));
+    console.log('New Event : ' + JSON.stringify(event));
 
     //Check if invite is an announcement
     if (event.sdp && event.sdp.indexOf("sendonly") !== -1) {
@@ -44,7 +45,7 @@ if (!ATT) {
     // todo capture time, debugging info for sdk
     switch (event.state) {
     case mainModule.SessionEvents.RTC_SESSION_CREATED:
-      mainModule.event.publish('onSessionReady', {
+      onSessionReady({
         type: mainModule.CallStatus.READY,
         data: event.data
       });
@@ -79,7 +80,10 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.INVITATION_RECEIVED:
-      onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
+      onIncomingCall({
+        type: mainModule.CallStatus.RINGING,
+        caller: event.from
+      });
       break;
 
     case mainModule.RTCCallEvents.SESSION_TERMINATED:
@@ -112,12 +116,12 @@ if (!ATT) {
     // subscribe to hook up callbacks to events
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     console.log('Subscribed to events');
+  };
 
-    mainModule.event.subscribe('onSessionReady', function (evt) {
-      if (callbacks.onSessionReady) {
-        callbacks.onSessionReady(evt);
-      }
-    });
+  onSessionReady = function (evt) {
+    if (callbacks.onSessionReady) {
+      callbacks.onSessionReady(evt);
+    }
   };
 
   onIncomingCall = function (evt) {
