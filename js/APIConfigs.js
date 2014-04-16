@@ -166,9 +166,16 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return param;
+            }
           }
         },
-        headers: DEFAULTS.headers
+        headers: ATT.utils.extend({
+          'x-calls-action' : 'call-answer'
+        }, DEFAULTS.headers)
       },
       /**
        * Modify Call via BFEndpoint
@@ -193,9 +200,19 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return param;
+            },
+            'x-modId': function (param) {
+              return param;
+            }
           }
         },
-        headers: DEFAULTS.headers
+        headers: ATT.utils.extend({
+          'x-calls-action' : 'accept-call-mod'
+        }, DEFAULTS.headers)
       },
       /**
       * End Call via BFEndpoint
@@ -206,6 +223,11 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return param;
+            }
           }
         },
         headers: ATT.utils.extend({

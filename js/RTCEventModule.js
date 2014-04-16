@@ -31,7 +31,7 @@ if (!ATT) {
       return;
     }
 
-    console.log('Incoming Event : ' + JSON.stringify(event));
+    console.log('New Event : ' + JSON.stringify(event));
 
     //Check if invite is an announcement
     if (event.sdp && event.sdp.indexOf("sendonly") !== -1) {
@@ -80,7 +80,10 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.INVITATION_RECEIVED:
-      onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
+      onIncomingCall({
+        type: mainModule.CallStatus.RINGING,
+        caller: event.from
+      });
       break;
 
     case mainModule.RTCCallEvents.SESSION_TERMINATED:
