@@ -42,7 +42,17 @@ if (!Env) {
   }
 
   function registerUserOnDhs(config) {
-    config.success();
+    var registerConfig = {
+      data: config.data,
+      success: function (response) {
+        if (typeof config.success === 'function') {
+          config.success(); 
+        }
+      }
+    }
+
+    // Call DHS to check for a browser session.
+    resourceManager.doOperation('registerUser', registerConfig);
   }
 
   /**
