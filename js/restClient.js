@@ -8,6 +8,7 @@
 var RESTClient = (function () {
   "use strict";
   var defaultErrorHandler,
+    errorHandler,
     RESTClient =  function (config) {
       this.config =  ATT.utils.extend({}, config);
         // default ajax configuration
@@ -19,6 +20,9 @@ var RESTClient = (function () {
       this.config.headers = this.config.headers || {};
       this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
       this.config.headers.Accept = this.config.headers.Accept || 'application/json';
+    },
+    error = function (errorCallback) {
+      errorCallback.call(this, this.responseText);
     },
     success = function (successCallback) {
       // private methods
@@ -36,11 +40,18 @@ var RESTClient = (function () {
           }
         },
         responseCopy = ATT.utils.extend({}, responseObject);
-      successCallback.call(xhr, responseCopy);
-    },
-    error = function (errorCallback) {
-      errorCallback.call(this, this.responseText);
+
+      if (xhr.status >= 400 && xhr.status <= 599) {
+        if (typeof errorHandler === 'function') {
+          errorHandler.call(xhr, responseCopy);
+        } else {
+          defaultErrorHandler.call(xhr, responseCopy);
+        }
+      } else {
+        successCallback.call(xhr, responseCopy);
+      }
     };
+
 
   // public methods
   RESTClient.prototype.ajax = function () {
@@ -55,8 +66,14 @@ var RESTClient = (function () {
     // success callback
     xhr.onload = success.bind(xhr, config.success);
 
+    // set up passed in error handler to be called if xhr status is in error.
+    errorHandler = config.error;
+
     // error callback
-    xhr.onerror = error.bind(xhr, config.error);
+    xhr.onerror = function () {
+      throw new Error('Network error occurred in REST client.');
+    };
+
 
     // on timeout callback
     xhr.ontimeout = config.ontimeout;
@@ -77,8 +94,9 @@ var RESTClient = (function () {
   /**
    * Default ajax error handler.
    */
-  defaultErrorHandler = function () {
-    throw new Error('RESTClient error handler triggered!');
+  defaultErrorHandler = function (obj) {
+    console.log(obj);
+    //throw new Error('RESTClient error handler triggered!');
   };
 
   function addHttpMethodsToPrototype(methods) {

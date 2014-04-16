@@ -98,16 +98,23 @@ describe('Rest Client', function () {
     sinon.assert.notCalled(errorSpy);
   });
 
-    // Not sure why this isn't working ... the sinon framework is behaving as if '500' is successful.
-  xit('should call error callback', function () {
+  it('should call error callback on 400', function () {
     //act
     rc.get(config);
-    this.requests[0].respond(500, {"Content-Type": "text/plain"}, '{"some":"data"}');
+    this.requests[0].respond(400, {"Content-Type": "text/plain"}, '{"some":"data"}');
     //assert
     sinon.assert.called(errorSpy);
-    expect(this.requests[0].status).to.equal(500);
-    var calledWith = errorSpy.getCall(0).args[0];
-    expect(calledWith.some).to.equal('data');
+    expect(this.requests[0].status).to.equal(400);
+    sinon.assert.notCalled(successSpy);
+  });
+
+  it('should call error callback on 599', function () {
+    //act
+    rc.get(config);
+    this.requests[0].respond(599, {"Content-Type": "text/plain"}, '{"some":"data"}');
+    //assert
+    sinon.assert.called(errorSpy);
+    expect(this.requests[0].status).to.equal(599);
     sinon.assert.notCalled(successSpy);
   });
 
@@ -196,5 +203,4 @@ describe('Rest Client', function () {
     expect(requests2.url).to.eql('url2');
     expect(requests2.requestHeaders['Content-Type']).to.contain('application/json', 'request from rc2 had wrong header');
   });
-
 });
