@@ -8,11 +8,8 @@ if (!ATT) {
 (function (app) {
   "use strict";
 
-  var apiObject,
-    resourceManager = Env.resourceManager.getInstance(),
+  var resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance();
-
-  apiObject = resourceManager.getAPIObject();
 
   app.SignalingService = {
 
@@ -62,13 +59,13 @@ if (!ATT) {
           }
         };
 
-      apiObject.answerCall({
-        apiParameters: {
-          url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]]
-        },
-        headers : {
-          'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
-          'x-calls-action' : 'call-answer'
+      resourceManager.doOperation('answerCall', {
+        params: {
+          url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
+          headers : {
+            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'x-calls-action' : 'call-answer'
+          }
         },
         data : data,
         success : function (obj) {
@@ -95,7 +92,6 @@ if (!ATT) {
 
     // accept modifications
     sendAcceptMods: function (config) {
-
       // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
       // call data
@@ -105,13 +101,13 @@ if (!ATT) {
           }
         };
 
-      apiObject.acceptModifications({
-        apiParameters: {
-          url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]]
-        },
-        headers : {
-          'x-calls-action' : 'accept-call-mod',
-          'x-modId' : config.modId
+      resourceManager.doOperation('acceptModifications', {
+        params: {
+          url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
+          headers : {
+            'x-calls-action' : 'accept-call-mod',
+            'x-modId' : config.modId
+          }
         },
         data : data,
         success : function (obj) {
@@ -144,14 +140,14 @@ if (!ATT) {
           sdp : config.sdp
         }
       };
-      apiObject.modifyCall({
-        apiParameters: {
+      resourceManager.doOperation('modifyCall', {
+        params: {
           url: [ callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId() ]
-        },
-        headers: {
-          'x-calls-action' : "initiate-call-hold",
-          'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            callManager.getSessionContext().getCurrentCallId() ],
+          headers: {
+            'x-calls-action' : "initiate-call-hold",
+            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+          }
         },
         data: data,
         success: function (response) {
@@ -167,16 +163,40 @@ if (!ATT) {
         }
       });
     },
+    //resume call
+    //HTTP request to resume a call on hold
+    sendResumeCall: function () {
+      resourceManager.doOperation('modifyCall', {
+        params: {
+          url: [ callManager.getSessionContext().getSessionId(),
+            callManager.getSessionContext().getCurrentCallId() ],
+          headers: {
+            'x-calls-action' : "initiate-call-resume",
+            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+          }
+        },
+        success: function (response) {
+          if (response.getResponseStatus() === 204) {
+            console.log('Call termination success.');
+          } else {
+            console.log('CALL TERMINATION ERROR');
+          }
+        },
+        error: function (err) {
+          console.log('CALL TERMINATION ERROR', err);
+        }
+      });
+    },
     // end call
     // HTTP request to terminate call
     sendEndCall: function () {
-      apiObject.endCall({
-        apiParameters: {
+      resourceManager.doOperation('endCall', {
+        params: {
           url: [ callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId() ]
-        },
-        headers: {
-          'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            callManager.getSessionContext().getCurrentCallId() ],
+          headers: {
+            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+          }
         },
         success: function (response) {
           if (response.getResponseStatus() === 204) {
@@ -191,29 +211,4 @@ if (!ATT) {
       });
     }
   };
-
-  // resume call
-  // HTTP request to resume a call on hold
-//  sendHoldCall: function () {
-//    apiObject.endCall({
-//      apiParameters: {
-//        url: [ callManager.getSessionContext().getSessionId(),
-//          callManager.getSessionContext().getCurrentCallId() ]
-//      },
-//      headers: {
-//        'x-calls-action' : "initiate-call-resume",
-//        'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
-//      },
-//      success: function (response) {
-//        if (response.getResponseStatus() === 204) {
-//          console.log('Call termination success.');
-//        } else {
-//          console.log('CALL TERMINATION ERROR');
-//        }
-//      },
-//      error: function (err) {
-//        console.log('CALL TERMINATION ERROR', err);
-//      }
-//    });
-//  };
 }(ATT || {}));
