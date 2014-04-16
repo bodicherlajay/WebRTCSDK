@@ -117,11 +117,14 @@ Env = (function (app) {
    */
   module.doOperation = function (operationName, config) {
     try {
-      var cb = config.success || function () {},// todo: rename or remove it?
+      var successcb = config.success || function () {},// todo: rename or remove it?
+        errorcb = config.error || function () {},// todo: rename or remove it?
         operation = module.getOperation(operationName, config);
 
       operation(function (obj) {
-        cb(obj);
+        successcb(obj);
+      }, function (obj) {
+        errorcb(obj);
       });
     } catch (e) {
       console.log(e);
