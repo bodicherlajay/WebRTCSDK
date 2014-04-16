@@ -150,7 +150,7 @@ if (!ATT) {
           },
           headers: {
             Authorization: function (param) {
-              return 'Authorization: ' + param;
+              return param;
             }
           }
         },
@@ -187,6 +187,14 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return param;
+            },
+            'x-calls-action': function (param) {
+              return param;
+            }
           }
         },
         headers: DEFAULTS.headers

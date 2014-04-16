@@ -24,13 +24,20 @@ if (!ATT) {
     return sdp;
   }
 
-  function modifySDPAttribute(attributeValue, newValue, sdp) {
-    var attribute = "a=" + attributeValue + "\r\n", index = sdp.indexOf(attribute), prefix, rest;
+  function modifySDPAttribute(originalValue, newValue, sdp) {
+    var index = 0,
+      attribute = "a=" + originalValue + "\r\n",
+      prefix,
+      rest;
 
-    if (index > 0) {
-      prefix = sdp.substr(0, index);
-      rest = sdp.substr(index + attribute.length);
-      sdp = prefix + newValue + rest;
+    while (index > -1) {
+      index = sdp.indexOf(attribute, index);
+
+      if (index > 0) {
+        prefix = sdp.substr(0, index);
+        rest = sdp.substr(index + attribute.length);
+        sdp = prefix + 'a=' + newValue + '\n' + rest;
+      }
     }
     return sdp;
   }

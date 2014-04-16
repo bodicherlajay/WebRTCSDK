@@ -144,17 +144,17 @@ if (!ATT) {
           url: [ callManager.getSessionContext().getSessionId(),
             callManager.getSessionContext().getCurrentCallId() ],
           headers: {
-            'x-calls-action' : "initiate-call-hold",
-            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'x-calls-action' : 'initiate-call-hold'
           }
         },
         data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Call termination success.');
+            console.log('Call hold success.');
             callManager.setCallState(callManager.SessionState.HOLD_CALL);
           } else {
-            console.log('CALL TERMINATION ERROR');
+            console.log('CALL HOLD ERROR');
           }
         },
         error: function (err) {
@@ -164,21 +164,29 @@ if (!ATT) {
     },
     //resume call
     //HTTP request to resume a call on hold
-    sendResumeCall: function () {
+    sendResumeCall: function (config) {
+      // call data
+      var data = {
+        callsMediaModifications : {
+          sdp : config.sdp
+        }
+      };
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [ callManager.getSessionContext().getSessionId(),
             callManager.getSessionContext().getCurrentCallId() ],
           headers: {
-            'x-calls-action' : "initiate-call-resume",
-            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'x-calls-action' : 'initiate-call-resume'
           }
         },
+        data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Call termination success.');
+            console.log('Call resume success.');
+            //callManager.setCallState(callManager.SessionState.I);
           } else {
-            console.log('CALL TERMINATION ERROR');
+            console.log('CALL RESUME ERROR');
           }
         },
         error: function (err) {

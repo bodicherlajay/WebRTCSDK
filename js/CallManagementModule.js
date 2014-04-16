@@ -144,7 +144,6 @@ cmgmt = (function () {
         && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()) {
       console.log('Resuming call...');
-      session_context.setCallState(SessionState.INCOMING_CALL);
       ATT.SignalingService.sendResumeCall();
     } else {
       console.log('No current call...');

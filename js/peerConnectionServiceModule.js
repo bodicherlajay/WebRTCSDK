@@ -247,12 +247,23 @@
 
       // hold Call
       holdCall: function () {
-        // fix SDP first time
-        var holdSDP = ATT.sdpFilter.getInstance().modifySDPAttribute("a=sendrecv", "a=recvonly", this.localDescription);
+        // fix SDP for hold call
+        var holdSDP = this.localDescription.sdp.replace(/sendrecv/g, "recvonly");
         // set local description
         //this.peerConnection.setLocalDescription(this.localDescription);
         SignalingService.sendHoldCall({
           sdp : holdSDP
+        });
+      },
+
+      // resume Call
+      resumeCall: function () {
+        // fix SDP for hold call
+        var resumeSDP = this.localDescription.sdp.replace(/recvonly/g, "sendrecv");
+        // set local description
+        //this.peerConnection.setLocalDescription(this.localDescription);
+        SignalingService.sendHoldCall({
+          sdp : resumeSDP
         });
       },
 
