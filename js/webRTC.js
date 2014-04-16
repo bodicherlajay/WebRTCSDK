@@ -21,28 +21,18 @@ if (!Env) {
 
   apiObject = resourceManager.getAPIObject();
 
-  function checkBrowserSession(config) {
-    var sessionConfig = {
+  function registerUserOnDhs(config) {
+    var registerConfig = {
+      data: config.data,
       success: function (response) {
-        var data = response.getJson(),
-          session = callManager.getSessionContext();
-
-        if (session) {
-          data.webRtcSessionId = session.getSessionId();
-        }
-
         if (typeof config.success === 'function') {
-          config.success(data);
+          config.success(response);
         }
       }
     };
 
     // Call DHS to check for a browser session.
-    resourceManager.doOperation('checkDhsSession', sessionConfig);
-  }
-
-  function registerUserOnDhs(config) {
-    config.success();
+    resourceManager.doOperation('registerUser', registerConfig);
   }
 
   /**
@@ -147,58 +137,35 @@ if (!Env) {
     resourceManager.doOperation('authenticateUser', authenticateConfig);
   }
 
-  function logoutAndDeleteWebRTCSession(config) {
-    var logoutConfig = {
-      success: function (response) {
-        var data = response.getJson(),
-          session = callManager.getSessionContext(),
-          dataForDeleteWebRTCSession;
+  function deleteWebRTCSession(config) {
 
-        // dirty fix for missing cookie session
-        if (!session) {
-          data = {
-            type : 'error',
-            error : 'Unable to retrieve web rtc session'
-          };
+    var session = callManager.getSessionContext(),
+      dataForDeleteWebRTCSession = {
+        params: {
+          url: [session.getSessionId()],
+          headers: {
+            "Authorization": session.getAccessToken(),
+            "x-e911Id": session.getE911Id()
+          }
+        },
+
+        success: function (responseObject) {
+          var data;
+          if (responseObject.getResponseStatus() !== 200) {
+            data = {
+              type : 'error',
+              error : 'Failed to delete the web rtc session on blackflag'
+            };
+          }
+
           if (typeof config.success === 'function') {
-            return config.success(data);
+            config.success(data);
           }
-          return;
         }
+      };
 
-        dataForDeleteWebRTCSession = {
-          params: {
-            url: [session.getSessionId()],
-            headers: {
-              "Authorization": session.getAccessToken(),
-              "x-e911Id": session.getE911Id()
-            }
-          },
-
-          success: function (responseObject) {
-            if (responseObject.getResponseStatus() !== 200) {
-              data = {
-                type : 'error',
-                error : 'Failed to delete the web rtc session on blackflag'
-              };
-            }
-
-            if (typeof config.success === 'function') {
-              config.success(data);
-            }
-          }
-        };
-
-        // Call BF to delete WebRTC Session.
-        resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
-      },
-      error: function (e) {
-        console.log('Delete session error : ', e);
-      }
-    };
-
-    // Call DHS to logout user by deleting browser session.
-    resourceManager.doOperation('logoutUser', logoutConfig);
+    // Call BF to delete WebRTC Session.
+    resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
   }
 
   // Stop user media
@@ -261,10 +228,9 @@ if (!Env) {
   app.RESTClient = RESTClient;
 
   // The SDK public API.
-  resourceManager.addPublicMethod('session', checkBrowserSession);
   resourceManager.addPublicMethod('register', registerUserOnDhs);
   resourceManager.addPublicMethod('login', loginAndCreateWebRTCSession);
-  resourceManager.addPublicMethod('logout', logoutAndDeleteWebRTCSession);
+  resourceManager.addPublicMethod('logout', deleteWebRTCSession);
   resourceManager.addPublicMethod('stopUserMedia', stopUserMedia);
   resourceManager.addPublicMethod('dial', dial);
   resourceManager.addPublicMethod('answer', answer);

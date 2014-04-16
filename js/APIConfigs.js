@@ -45,6 +45,24 @@ if (!ATT) {
      */
     APIConfigs = {
       /**
+      * Get browser session from DHSEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      checkDhsSession: {
+        method: 'get',
+        url: DEFAULTS.DHSEndpoint + '/user/session',
+        headers: DEFAULTS.headers
+      },
+      /**
+      * Create new user from DHSEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      registerUser: {
+        method: 'post',
+        url: DEFAULTS.DHSEndpoint + '/user/register',
+        headers: DEFAULTS.headers
+      },
+      /**
       * Authentication to DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
@@ -69,15 +87,6 @@ if (!ATT) {
       logoutUser: {
         method: 'delete',
         url: DEFAULTS.DHSEndpoint + '/user/logout',
-        headers: DEFAULTS.headers
-      },
-      /**
-      * Get browser session from DHSEndpoint
-      * @memberof WebRTCAPI.APIConfigs
-      */
-      checkDhsSession: {
-        method: 'get',
-        url: DEFAULTS.DHSEndpoint + '/user/session',
         headers: DEFAULTS.headers
       },
       /**
