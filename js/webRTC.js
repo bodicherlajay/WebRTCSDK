@@ -47,10 +47,9 @@ if (!Env) {
 
   /**
    * This method will be hit by the login button on the sample app.
-   * Hits authenticate, then createWebRTCSession.  Simply logs the location header
-   * if successfully creates a webrtc session.
+   * Hits authenticate, then createWebRTCSession.
    *
-   * Todo:  Handle error conditions!
+   * Todo:  Handle error conditions
    * @memberof WebRTC
    * @param {Object} data The required login form data from the UI.
    */
