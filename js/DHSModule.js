@@ -85,8 +85,38 @@ if (!Env) {
     resourceManager.doOperation('checkDhsSession', sessionConfig);
   };
 
-  login = function () {
+  // dirty fix for login
+  login = function (config) {
+    var authenticateConfig = {
+      data: config.data,
+      success: function (responseObject) {
+        // get access token, e911 id that is needed to create webrtc session
+        var authenticateResponseData = responseObject.getJson(),
+          accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null,
+          e911Id = authenticateResponseData.e911;
 
+        // if no access token return user data to UI, without webrtc session id
+        if (!accessToken) {
+          if (typeof config.error === 'function') {
+            config.error(authenticateResponseData);
+          }
+        } else {
+          if (typeof config.success.onSessionReady === 'function') {
+            config.success.onSessionReady({type: 0, data: authenticateResponseData});
+          }
+          // Call BF to create WebRTC Session.
+        }
+      },
+      error: function (responseObject) {
+        var authenticateResponseData = responseObject.getJson();
+        if (typeof config.error === 'function') {
+          config.error(authenticateResponseData);
+        }
+      }
+    };
+
+    // Call DHS to authenticate, associate user to session.
+    resourceManager.doOperation('authenticateUser', authenticateConfig);
   };
 
   logout = function (config) {
