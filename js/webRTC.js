@@ -34,6 +34,13 @@ if (!Env) {
         if (typeof config.success === 'function') {
           config.success(data);
         }
+      },
+      error: function (response) {
+        var data = response.getJson();
+
+        if (typeof config.error === 'function') {
+          config.error(data);
+        }
       }
     };
 
@@ -46,10 +53,10 @@ if (!Env) {
       data: config.data,
       success: function (response) {
         if (typeof config.success === 'function') {
-          config.success(); 
+          config.success(response);
         }
       }
-    }
+    };
 
     // Call DHS to check for a browser session.
     resourceManager.doOperation('registerUser', registerConfig);
