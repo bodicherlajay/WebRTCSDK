@@ -26,6 +26,7 @@ cmgmt = (function () {
       INCOMING_CALL : "Incoming",
       MOVE_CALL : "Move Call",
       HOLD_CALL : "Hold Call",
+      RESUME_CALL: "Resume Call",
       TRANSFER_CALL : "Transfer Call",
       READY: "Ready" //Ready to accept Outgoing or Incoming call
     },
