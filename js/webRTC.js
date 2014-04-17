@@ -79,15 +79,15 @@ if (!Env) {
           'x-e911Id': e911Id
         }
       },
-      success: createWebRTCSessionSuccess.bind (this, config),
+      success: createWebRTCSessionSuccess.bind(this, config),
       error: createWebRTCSessionError
     });
   }
 
   createWebRTCSessionSuccess = function (config, responseObject) {
     var sessionId = responseObject && responseObject.getResponseHeader('location') ?
-        responseObject.getResponseHeader('location').split('/')[4] : null,
-        session = callManager.getSessionContext();
+          responseObject.getResponseHeader('location').split('/')[4] : null,
+      session = callManager.getSessionContext();
 
     if (sessionId) {
 
@@ -200,21 +200,27 @@ if (!Env) {
   * Hold existing call
   */
   function hold() {
-    callManager.getSessionContext().getCallObject().hold();
+    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+      callManager.getSessionContext().getCallObject().hold();
+    }
   }
 
   /**
   * Resume existing call
   */
   function resume() {
-    callManager.getSessionContext().getCallObject().resume();
+    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+      callManager.getSessionContext().getCallObject().resume();
+    }
   }
 
   /**
   * Hangup existing call
   */
   function hangup() {
-    callManager.getSessionContext().getCallObject().end();
+    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+      callManager.getSessionContext().getCallObject().hangup();
+    }
   }
 
   // sub-namespaces on ATT.
