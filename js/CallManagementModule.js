@@ -27,7 +27,8 @@ cmgmt = (function () {
       MOVE_CALL : "Move Call",
       HOLD_CALL : "Hold Call",
       TRANSFER_CALL : "Transfer Call",
-      READY: "Ready" //Ready to accept Outgoing or Incoming call
+      READY: "Ready", //Ready to accept Outgoing or Incoming call
+      SDK_READY: "SDK Ready"
     },
     //Session context to hold session variables
     SessionContext = function (token, e9Id, sessionId, state) {
@@ -89,6 +90,9 @@ cmgmt = (function () {
     CreateSession = function (config) {
       session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
       session_context.setUICallbacks(config.success);
+      ATT.event.subscribe('SDK_READY', config.success);
+      session_context.setCallState(SessionState.SDK_READY);
+      ATT.event.publish('SDK_READY');
     },
 
     CreateOutgoingCall = function (config) {
