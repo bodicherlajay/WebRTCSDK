@@ -13,8 +13,11 @@ if (!ATT) {
 
   app.SignalingService = {
 
+    /**
+    * Send offer
+    * @param {Object} config the peer conn config
+    */
     sendOffer: function (config) {
-
       // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
         // call data
@@ -48,8 +51,11 @@ if (!ATT) {
       });
     },
 
+    /**
+    * Send Answer
+    * @param {Object} config the peer conn config
+    */
     sendAnswer: function (config) {
-
       // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
       // call data
@@ -89,7 +95,10 @@ if (!ATT) {
       });
     },
 
-    // accept modifications
+    /**
+    * Send Accept Modifications
+    * @param {Object} config the peer conn config
+    */
     sendAcceptMods: function (config) {
       // fix description just before sending
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
@@ -130,10 +139,13 @@ if (!ATT) {
         }
       });
     },
-    // hold call
-    // HTTP request to put a call on hold
+
+    /**
+    * Send Hold Call
+    * @param {Object} config the peer conn config
+    */
     sendHoldCall: function (config) {
-      // call data
+      // request payload
       var data = {
         callsMediaModifications : {
           sdp : config.sdp
@@ -152,8 +164,6 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             console.log('Call hold success.');
-            callManager.setCallState(callManager.SessionState.HOLD_CALL);
-            // publish event?
           } else {
             console.log('CALL HOLD ERROR');
           }
@@ -163,10 +173,13 @@ if (!ATT) {
         }
       });
     },
-    //resume call
-    //HTTP request to resume a call on hold
+
+    /**
+    * Send Resume Call
+    * @param {Object} config the peer conn config
+    */
     sendResumeCall: function (config) {
-      // call data
+      // request payload
       var data = {
         callsMediaModifications : {
           sdp : config.sdp
@@ -186,7 +199,6 @@ if (!ATT) {
           if (response.getResponseStatus() === 204) {
             console.log('Call resume success.');
             callManager.setCallState(callManager.SessionState.RESUME_CALL);
-            // publish event?
           } else {
             console.log('CALL RESUME ERROR');
           }
@@ -196,8 +208,11 @@ if (!ATT) {
         }
       });
     },
-    // end call
-    // HTTP request to terminate call
+
+    /**
+    * Send End Call
+    * @param {Object} config the peer conn config
+    */
     sendEndCall: function () {
       resourceManager.doOperation('endCall', {
         params: {
