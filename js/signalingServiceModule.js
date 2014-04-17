@@ -153,12 +153,13 @@ if (!ATT) {
           if (response.getResponseStatus() === 204) {
             console.log('Call hold success.');
             callManager.setCallState(callManager.SessionState.HOLD_CALL);
+            // publish event?
           } else {
             console.log('CALL HOLD ERROR');
           }
         },
         error: function (err) {
-          console.log('CALL TERMINATION ERROR', err);
+          console.log('CALL HOLD ERROR', err);
         }
       });
     },
@@ -185,12 +186,13 @@ if (!ATT) {
           if (response.getResponseStatus() === 204) {
             console.log('Call resume success.');
             //callManager.setCallState(callManager.SessionState.I);
+            // publish event?
           } else {
             console.log('CALL RESUME ERROR');
           }
         },
         error: function (err) {
-          console.log('CALL TERMINATION ERROR', err);
+          console.log('CALL RESUME ERROR', err);
         }
       });
     },
