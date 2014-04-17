@@ -90,17 +90,16 @@ cmgmt = (function () {
 
     CreateSession = function (config) {
       session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
-      session_context.setUICallbacks(config.success);
-      ATT.event.subscribe('SDK_READY', config.success);
-      session_context.setCallState(SessionState.SDK_READY);
-      ATT.event.publish('SDK_READY');
+      // ATT.event.subscribe('SDK_READY', config.success);
+      // session_context.setCallState(SessionState.SDK_READY);
+      // ATT.event.publish('SDK_READY');
     },
 
     CreateOutgoingCall = function (config) {
       var call = new Call(null, config.to, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.OUTGOING_CALL);
-      session_context.setUICallbacks(config.success);
+      session_context.setUICallbacks(config);
       ATT.UserMediaService.startCall(config);
     },
 
@@ -109,7 +108,7 @@ cmgmt = (function () {
         call = new Call(event.caller, null, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.INCOMING_CALL);
-      session_context.setUICallbacks(config.success);
+      session_context.setUICallbacks(config);
       ATT.UserMediaService.startCall(config);
     },
 

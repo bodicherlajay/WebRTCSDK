@@ -147,7 +147,7 @@ if (!Env) {
       // Call BF to create WebRTC Session.
       // getE911Id(config.userId);
       apiObject.initSession(accessToken, e911Id, function () {
-        config.success();
+        config.success(authenticateResponseData);
       });
     }
   };
