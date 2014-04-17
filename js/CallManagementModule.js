@@ -155,7 +155,8 @@ cmgmt = (function () {
   Call.resume = function () {
     if (ATT.PeerConnectionService.peerConnection
         && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
-        && session_context.getCurrentCallId()) {
+        && session_context.getCurrentCallId()
+        && session_context.getCallState === SessionState.HOLD_CALL) {
       console.log('Resuming call...');
       ATT.SignalingService.sendResumeCall();
     } else {
@@ -170,7 +171,7 @@ cmgmt = (function () {
       console.log('Hanging up...');
       ATT.SignalingService.sendEndCall();
       ATT.PeerConnectionService.endCall();
-      ATT.UserMediaService.endCall();
+      ATT.UserMediaService.stopStream();
     } else {
       console.log('No current call...');
     }
