@@ -52,8 +52,8 @@ if (!ATT) {
       videoStreamEl.play();
     },
 
-    // endCall
-    endCall: function () {
+    // stopStream
+    stopStream: function () {
       if (this.localStream) {
         this.localStream.stop();
         this.localVideoElement.src = '';

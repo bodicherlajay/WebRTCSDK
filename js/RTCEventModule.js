@@ -19,6 +19,7 @@ if (!ATT) {
     onOutgoingCall,
     onInProgress,
     onCallHold,
+    onCallResume,
     onCallEnded,
     onCallError,
     init = function () {
@@ -58,7 +59,7 @@ if (!ATT) {
       }
       // set callID in the call object
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
-      // call established - in progress event
+      // call established - trigger 'in progress' event
       onInProgress({
         type: mainModule.CallStatus.INPROGRESS
       });
@@ -81,10 +82,10 @@ if (!ATT) {
         }
         // resume event
         if (event.sdp.indexOf('sendrecv') !== -1) {
-          onInProgress({
-            type: mainModule.CallStatus.INPROGRESS
+          onCallResume({
+            type: mainModule.CallStatus.RESUMED
           });
-          //callManager.setCallState(callManager.SessionState.); ?
+          callManager.setCallState(callManager.SessionState.RESUMED_CALL);
         }
       }
       break;
@@ -162,6 +163,12 @@ if (!ATT) {
   onCallHold = function (evt) {
     if (callbacks.onCallHold) {
       callbacks.onCallHold(evt);
+    }
+  };
+
+  onCallResume = function (evt) {
+    if (callbacks.onCallResume) {
+      callbacks.onCallResume(evt);
     }
   };
 

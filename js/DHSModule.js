@@ -147,7 +147,7 @@ if (!Env) {
       // Call BF to create WebRTC Session.
       // getE911Id(config.userId);
       apiObject.initSession(accessToken, e911Id, function () {
-        config.success();
+        config.success(authenticateResponseData);
       });
     }
   };
@@ -177,8 +177,11 @@ if (!Env) {
    * Get the E911 ID from DHS.
    * @param userID
    */
-  getE911Id = function () {
+  getE911Id = function (userId) {
     resourceManager.doOperation('getE911Id', {
+      data: {
+        userId: userId
+      },
       success:  getE911IdSuccess,
       error:    getE911IdError
     });

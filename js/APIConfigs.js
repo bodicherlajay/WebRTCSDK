@@ -81,6 +81,15 @@ if (!ATT) {
         headers: DEFAULTS.headers
       },
       /**
+       * Get access token from DHSEndpoint
+       * @memberof WebRTCAPI.APIConfigs
+       */
+      getE911Id: {
+        method: 'get',
+        url: DEFAULTS.DHSEndpoint + '/e911',
+        headers: DEFAULTS.headers
+      },
+      /**
       * Logout from DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
