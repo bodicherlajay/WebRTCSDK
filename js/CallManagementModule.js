@@ -30,18 +30,27 @@ cmgmt = (function () {
       READY: "Ready" //Ready to accept Outgoing or Incoming call
     },
     //Session context to hold session variables
-    SessionContext = function (token, e911Id, sessionId, state) {
-      var currState = state, callObject = null, event = null, accessToken = token, e9Id = e911Id, currSessionId = sessionId,
+    SessionContext = function (token, e9Id, sessionId, state) {
+      var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
         currentCallId, UICbks = {};
       return {
         getAccessToken: function () {
           return accessToken;
         },
+        setAccessToken: function (token) {
+          accessToken = token;
+        },
         getE911Id: function () {
-          return e9Id;
+          return e911Id;
+        },
+        setE911Id: function (id) {
+          e911Id = id;
         },
         getSessionId: function () {
           return currSessionId;
+        },
+        setSessionId: function (id) {
+          currSessionId = id;
         },
         getCallState: function () {
           return currState;

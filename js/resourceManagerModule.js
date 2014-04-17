@@ -122,6 +122,8 @@ Env = (function (app) {
 
       operation(function (obj) {
         cb(obj);
+      }, function (obj) {
+        config.error(obj);
       });
     } catch (e) {
       console.log(e);
