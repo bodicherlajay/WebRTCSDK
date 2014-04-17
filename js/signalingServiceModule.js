@@ -164,7 +164,6 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             console.log('Call hold success.');
-            callManager.setCallState(callManager.SessionState.HOLD_CALL);
           } else {
             console.log('CALL HOLD ERROR');
           }
@@ -200,7 +199,6 @@ if (!ATT) {
           if (response.getResponseStatus() === 204) {
             console.log('Call resume success.');
             callManager.setCallState(callManager.SessionState.RESUME_CALL);
-            // publish event?
           } else {
             console.log('CALL RESUME ERROR');
           }

@@ -32,11 +32,11 @@ if (!ATT) {
       return;
     }
 
-    console.log('New Event : ' + JSON.stringify(event));
+    console.log('New Event: ' + JSON.stringify(event));
 
     //Check if invite is an announcement
-    if (event.sdp && event.sdp.indexOf("sendonly") !== -1) {
-      event.sdp = event.sdp.replace(/sendonly/g, "sendrecv");
+    if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
+      event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
     }
 
     // set current event on the session
@@ -58,6 +58,7 @@ if (!ATT) {
       }
       // set callID in the call object
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
+      // call established - in progress event
       onInProgress({
         type: mainModule.CallStatus.INPROGRESS
       });
@@ -66,16 +67,24 @@ if (!ATT) {
     case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
       if (event.sdp && event.modId) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
-        if (event.sdp.indexOf("sendrecv") !== -1) {
-          onInProgress({
-            type: mainModule.CallStatus.INPROGRESS,
-            callee: callManager.getSessionContext().getCallObject().callee()
-          });
-        }
-        if (event.sdp.indexOf("recvonly") !== 1) {
+      }
+      break;
+
+    case mainModule.RTCCallEvents.MODIFICATION_TERMINATED:
+      if (event.sdp && event.modId && event.reason === 'success') {
+        // hold event
+        if (event.sdp.indexOf('recvonly') !== -1) {
           onCallHold({
             type: mainModule.CallStatus.HOLD
           });
+          callManager.setCallState(callManager.SessionState.HOLD_CALL);
+        }
+        // resume event
+        if (event.sdp.indexOf('sendrecv') !== -1) {
+          onInProgress({
+            type: mainModule.CallStatus.INPROGRESS
+          });
+          //callManager.setCallState(callManager.SessionState.); ?
         }
       }
       break;
@@ -100,7 +109,7 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
-      // null out remote peer to prevent bad hangup request from callee
+      // make sure peer conn is null to prevent bad hangup request from callee
       // after session is already terminated
       if (ATT.PeerConnectionService.peerConnection) {
         ATT.PeerConnectionService.peerConnection = null;
