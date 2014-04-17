@@ -214,7 +214,6 @@ if (!Env) {
   app.RESTClient = RESTClient;
 
   // The SDK public API.
-  resourceManager.addPublicMethod('register', registerUserOnDhs);
   resourceManager.addPublicMethod('login', loginAndCreateWebRTCSession);
   resourceManager.addPublicMethod('logout', deleteWebRTCSession);
   resourceManager.addPublicMethod('stopUserMedia', stopUserMedia);

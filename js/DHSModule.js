@@ -113,8 +113,8 @@ if (!Env) {
       success: function (responseObject) {
         // get access token, e911 id that is needed to create webrtc session
         var authenticateResponseData = responseObject.getJson(),
-          accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null,
-          e911Id = authenticateResponseData.e911;
+          accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null;
+          //e911Id = authenticateResponseData.e911;
 
         // if no access token return user data to UI, without webrtc session id
         if (!accessToken) {
