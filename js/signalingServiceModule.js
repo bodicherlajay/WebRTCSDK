@@ -144,7 +144,7 @@ if (!ATT) {
           url: [ callManager.getSessionContext().getSessionId(),
             callManager.getSessionContext().getCurrentCallId() ],
           headers: {
-            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
             'x-calls-action' : 'initiate-call-hold'
           }
         },
@@ -185,7 +185,7 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             console.log('Call resume success.');
-            //callManager.setCallState(callManager.SessionState.I);
+            callManager.setCallState(callManager.SessionState.RESUME_CALL);
             // publish event?
           } else {
             console.log('CALL RESUME ERROR');
