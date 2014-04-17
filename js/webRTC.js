@@ -15,113 +15,110 @@ if (!Env) {
 (function (app) {
   "use strict";
 
-  var apiObject,
-    resourceManager = Env.resourceManager.getInstance(),
-    callManager = cmgmt.CallManager.getInstance();
-
-  apiObject = resourceManager.getAPIObject();
+  var resourceManager = Env.resourceManager.getInstance(),
+    apiObject = resourceManager.getAPIObject(),
+    callManager = cmgmt.CallManager.getInstance(),
+    initSession,
+    createWebRTCSessionSuccess,
+    createWebRTCSessionError;
 
   /**
-   * This method will be hit by the login button on the sample app.
-   * Hits authenticate, then createWebRTCSession.
-   *
-   * Todo:  Handle error conditions
+   * Initialize the SDK with Oauth accessToken and e911Id
+   * @param {String} accessToken
+   * @param {String} e911Id
+   */
+  initSession = function (accessToken, e911Id, successCb) {
+    // Set the access Token in the callManager.
+    callManager.CreateSession({
+      token: accessToken,
+      e911Id: e911Id
+    });
+
+    if (typeof successCb === 'function') {
+      successCb();
+    }
+  };
+
+  /**
+   * SDK login will just create the webRTC session.  It requires
+   * both the e911id and the oauth access token set in the call manager.
    * @memberof WebRTC
    * @param {Object} data The required login form data from the UI.
    */
+  function login() {
+    var accessToken = callManager.getContext().getAccessToken(),
+      e911id = callManager.getContext().getE911Id();
 
-  function loginAndCreateWebRTCSession(config) {
+    if (!accessToken || !e911id) {
+      throw new Error('Access token and e911id are required.');
+    }
 
-    var authenticateConfig = {
-      data: config.data,
-      success: function (responseObject) {
-        // get access token, e911 id that is needed to create webrtc session
-        var authenticateResponseData = responseObject.getJson(),
-          accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null,
-          e911Id = authenticateResponseData.e911,
-
-          dataForCreateWebRTCSession = {
-            data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
-              "session": {
-                "mediaType": "dtls-srtp",
-                "ice": "true",
-                "services": [
-                  "ip_voice_call",
-                  "ip_video_call"
-                ]
-              }
-            },
-
-            params: {
-              headers: {
-                'Authorization': accessToken,
-                'x-e911Id': e911Id
-              }
-            },
-
-            success: function (responseObject) {
-              var sessionId = responseObject && responseObject.getResponseHeader('location') ?
-                    responseObject.getResponseHeader('location').split('/')[4] : null;
-
-              if (sessionId) {
-
-                // Set WebRTC.Session data object that will be needed downstream.
-                // Also setup UI callbacks
-                callManager.CreateSession({
-                  token : accessToken,
-                  e911Id : e911Id,
-                  sessionId : sessionId,
-                  success : config.success
-                });
-
-                // setting up event callbacks using RTC Events
-                app.RTCEvent.getInstance().hookupEventsToUICallbacks();
-
-                /**
-                 * Call BF to create event channel
-                 * @param {Boolean} true/false Use Long Polling?
-                 * todo: publish session ready event after event channel is created
-                 * todo: move the login callback code to the publish
-                 */
-                apiObject.eventChannel(false, sessionId, function () {
-                  // setting web rtc session id for displaying on UI only
-                  authenticateResponseData.webRtcSessionId = sessionId;
-
-                  // publish the UI callback for ready state
-                  app.event.publish(sessionId + '.responseEvent', {
-                    state : app.SessionEvents.RTC_SESSION_CREATED,
-                    data : authenticateResponseData
-                  });
-                });
-              } else { // if no session id, call the UI error callback
-                if (typeof config.error === 'function') {
-                  config.error(authenticateResponseData);
-                }
-              }
-            },
-            error: function (e) {
-              console.log('CREATE SESSION ERROR', e);
-            }
-          };
-
-        // if no access token return user data to UI, without webrtc session id
-        if (!accessToken) {
-          if (typeof config.error === 'function') {
-            config.error(authenticateResponseData);
-          }
-        } else {
-          // Call BF to create WebRTC Session.
-          resourceManager.doOperation('createWebRTCSession', dataForCreateWebRTCSession);
+    // Call BF to create WebRTC Session.
+    resourceManager.doOperation('createWebRTCSession', {
+      data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
+        "session": {
+          "mediaType": "dtls-srtp",
+          "ice": "true",
+          "services": [
+            "ip_voice_call",
+            "ip_video_call"
+          ]
         }
       },
-      error: function (e) {
-        console.log('Create session error : ', e);
-      }
-    };
-
-    // Call DHS to authenticate, associate user to session.
-    resourceManager.doOperation('authenticateUser', authenticateConfig);
+      params: {
+        headers: {
+          'Authorization': accessToken,
+          'x-e911Id': e911id
+        }
+      },
+      success: createWebRTCSessionSuccess,
+      error: createWebRTCSessionError
+    });
   }
+
+  createWebRTCSessionSuccess = function (responseObject) {
+    var sessionId = responseObject && responseObject.getResponseHeader('location') ?
+        responseObject.getResponseHeader('location').split('/')[4] : null;
+
+    if (sessionId) {
+
+      // Set WebRTC.Session data object that will be needed downstream.
+      // Also setup UI callbacks
+      callManager.getContext().setSessionId(sessionId);
+
+      // setting up event callbacks using RTC Events
+      app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+
+      /**
+       * Call BF to create event channel
+       * @param {Boolean} true/false Use Long Polling?
+       * todo: publish session ready event after event channel is created
+       * todo: move the login callback code to the publish
+       */
+      apiObject.eventChannel(false, sessionId, function () {
+        // setting web rtc session id for displaying on UI only
+        //authenticateResponseData.webRtcSessionId = sessionId;
+
+        // publish the UI callback for ready state
+        app.event.publish(sessionId + '.responseEvent', {
+          state:  app.SessionEvents.RTC_SESSION_CREATED,
+          //data:   authenticateResponseData
+          data:   {
+            webRtcSessionId: sessionId
+          }
+        });
+      });
+    } else { // if no session id, call the UI error callback
+      throw new Error('No session id');
+//      if (typeof config.error === 'function') {
+//        config.error(authenticateResponseData);
+//      }
+    }
+  };
+
+  createWebRTCSessionError = function () {
+    console.log('createWebRTCSessionError');
+  };
 
   function deleteWebRTCSession(config) {
 
@@ -214,7 +211,7 @@ if (!Env) {
   app.RESTClient = RESTClient;
 
   // The SDK public API.
-  resourceManager.addPublicMethod('login', loginAndCreateWebRTCSession);
+  resourceManager.addPublicMethod('login', login);
   resourceManager.addPublicMethod('logout', deleteWebRTCSession);
   resourceManager.addPublicMethod('stopUserMedia', stopUserMedia);
   resourceManager.addPublicMethod('dial', dial);
@@ -222,4 +219,5 @@ if (!Env) {
   resourceManager.addPublicMethod('hold', hold);
   resourceManager.addPublicMethod('resume', resume);
   resourceManager.addPublicMethod('hangup', hangup);
+  resourceManager.addPublicMethod('initSession', initSession);
 }(ATT || {}));
