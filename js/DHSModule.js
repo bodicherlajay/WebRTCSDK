@@ -18,11 +18,15 @@ if (!Env) {
   var dhsNamespace = {},
     apiObject,
     resourceManager = Env.resourceManager.getInstance(),
+    callManager = cmgmt.CallManager.getInstance(),
 
     // private methods
     init,
 
     // public methods
+    checkSession,
+
+    register,
 
     login,
 
@@ -40,9 +44,7 @@ if (!Env) {
 
     createE911Id,
 
-    updateE911Id,
-
-    registerUserOnDHS;
+    updateE911Id;
 
   init = function () {
 
@@ -54,10 +56,11 @@ if (!Env) {
     // sub-namespaces on ATT.
     app.RESTClient = RESTClient;
 
+    dhsNamespace.checkSession = checkSession;
+    dhsNamespace.register = register;
     dhsNamespace.login = login;
     dhsNamespace.logout = logout;
     dhsNamespace.getE911Id = getE911Id;
-    dhsNamespace.registerUserOnDHS = registerUserOnDHS;
     dhsNamespace.createE911Id = createE911Id;
     dhsNamespace.updateE911Id = updateE911Id;
   };
@@ -73,6 +76,53 @@ if (!Env) {
       success:  loginSuccess.bind(this, config),
       error:    loginError.bind(this, config)
     });
+  };
+
+  checkSession = function (config) {
+    var sessionConfig = {
+      success: function (response) {
+        var data = response.getJson(),
+          session = callManager.getSessionContext();
+
+        if (session) {
+          data.webRtcSessionId = session.getSessionId();
+        }
+
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      },
+      error: function (response) {
+        var data = response.getJson();
+
+        if (typeof config.error === 'function') {
+          config.error(data);
+        }
+      }
+    };
+
+    // Call DHS to check for a browser session.
+    resourceManager.doOperation('checkDhsSession', sessionConfig);
+  };
+
+  register = function (config) {
+    var registerConfig = {
+      data: config.data,
+      success: function (response) {
+        var data = response.getJson();
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      },
+      error: function (response) {
+        var data = response.getJson();
+        if (typeof config.error === 'function') {
+          config.error(data);
+        }
+      }
+    };
+    // Call DHS to check for a browser session.
+    resourceManager.doOperation('registerUser', registerConfig);
   };
 
   loginError = function (responseObject) {
@@ -102,8 +152,25 @@ if (!Env) {
     }
   };
 
-  logout = function () {
+  logout = function (config) {
 
+    var logoutConfig = {
+      success: function (response) {
+        var data = response.getJson();
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      },
+      error: function (response) {
+        var data = response.getJson();
+        if (typeof config.error === 'function') {
+          config.error(data);
+        }
+      }
+    };
+
+    // Call DHS to logout user by deleting browser session.
+    resourceManager.doOperation('logoutUser', logoutConfig);
   };
 
   /**
@@ -129,7 +196,6 @@ if (!Env) {
     console.log('getE911IDError!');
   };
 
-
   /**
    * Create E911 ID on DHS.
    * @param {Object} address Physical address object.
@@ -145,10 +211,6 @@ if (!Env) {
    */
   updateE911Id = function (userId, address) {
     console.log(userId, address);
-  };
-
-  registerUserOnDHS = function (config) {
-    config.success();
   };
 
   init();
