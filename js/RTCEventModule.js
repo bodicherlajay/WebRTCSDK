@@ -18,6 +18,7 @@ if (!ATT) {
     onIncomingCall,
     onOutgoingCall,
     onInProgress,
+    onCallHold,
     onCallEnded,
     onCallError,
     init = function () {
@@ -31,7 +32,7 @@ if (!ATT) {
       return;
     }
 
-    console.log('Incoming Event : ' + JSON.stringify(event));
+    console.log('New Event : ' + JSON.stringify(event));
 
     //Check if invite is an announcement
     if (event.sdp && event.sdp.indexOf("sendonly") !== -1) {
@@ -55,7 +56,7 @@ if (!ATT) {
       if (event.sdp) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp);
       }
-      // set callID to use for hangup()
+      // set callID in the call object
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
       onInProgress({
         type: mainModule.CallStatus.INPROGRESS
@@ -65,10 +66,17 @@ if (!ATT) {
     case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
       if (event.sdp && event.modId) {
         ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
-        onInProgress({
-          type: mainModule.CallStatus.INPROGRESS,
-          callee: callManager.getSessionContext().getCallObject().callee()
-        });
+        if (event.sdp.indexOf("sendrecv") !== -1) {
+          onInProgress({
+            type: mainModule.CallStatus.INPROGRESS,
+            callee: callManager.getSessionContext().getCallObject().callee()
+          });
+        }
+        if (event.sdp.indexOf("recvonly") !== 1) {
+          onCallHold({
+            type: mainModule.CallStatus.HOLD
+          });
+        }
       }
       break;
 
@@ -80,7 +88,10 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.INVITATION_RECEIVED:
-      onIncomingCall({ type: mainModule.CallStatus.RINGING, caller: event.from });
+      onIncomingCall({
+        type: mainModule.CallStatus.RINGING,
+        caller: event.from
+      });
       break;
 
     case mainModule.RTCCallEvents.SESSION_TERMINATED:
@@ -89,7 +100,7 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
-      // null out remote peer to prevent bad hangup request
+      // null out remote peer to prevent bad hangup request from callee
       // after session is already terminated
       if (ATT.PeerConnectionService.peerConnection) {
         ATT.PeerConnectionService.peerConnection = null;
@@ -136,6 +147,12 @@ if (!ATT) {
   onInProgress = function (evt) {
     if (callbacks.onInProgress) {
       callbacks.onInProgress(evt);
+    }
+  };
+
+  onCallHold = function (evt) {
+    if (callbacks.onCallHold) {
+      callbacks.onCallHold(evt);
     }
   };
 

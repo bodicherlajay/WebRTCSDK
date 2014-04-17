@@ -62,9 +62,8 @@ if (!ATT) {
       resourceManager.doOperation('answerCall', {
         params: {
           url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
-          headers : {
-            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
-            'x-calls-action' : 'call-answer'
+          headers: {
+            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()
           }
         },
         data : data,
@@ -105,7 +104,7 @@ if (!ATT) {
         params: {
           url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
           headers : {
-            'x-calls-action' : 'accept-call-mod',
+            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
             'x-modId' : config.modId
           }
         },
@@ -145,45 +144,55 @@ if (!ATT) {
           url: [ callManager.getSessionContext().getSessionId(),
             callManager.getSessionContext().getCurrentCallId() ],
           headers: {
-            'x-calls-action' : "initiate-call-hold",
-            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'x-calls-action' : 'initiate-call-hold'
           }
         },
         data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Call termination success.');
+            console.log('Call hold success.');
             callManager.setCallState(callManager.SessionState.HOLD_CALL);
+            // publish event?
           } else {
-            console.log('CALL TERMINATION ERROR');
+            console.log('CALL HOLD ERROR');
           }
         },
         error: function (err) {
-          console.log('CALL TERMINATION ERROR', err);
+          console.log('CALL HOLD ERROR', err);
         }
       });
     },
     //resume call
     //HTTP request to resume a call on hold
-    sendResumeCall: function () {
+    sendResumeCall: function (config) {
+      // call data
+      var data = {
+        callsMediaModifications : {
+          sdp : config.sdp
+        }
+      };
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [ callManager.getSessionContext().getSessionId(),
             callManager.getSessionContext().getCurrentCallId() ],
           headers: {
-            'x-calls-action' : "initiate-call-resume",
-            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'x-calls-action' : 'initiate-call-resume'
           }
         },
+        data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Call termination success.');
+            console.log('Call resume success.');
+            callManager.setCallState(callManager.SessionState.RESUME_CALL);
+            // publish event?
           } else {
-            console.log('CALL TERMINATION ERROR');
+            console.log('CALL RESUME ERROR');
           }
         },
         error: function (err) {
-          console.log('CALL TERMINATION ERROR', err);
+          console.log('CALL RESUME ERROR', err);
         }
       });
     },

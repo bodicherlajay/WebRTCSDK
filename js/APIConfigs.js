@@ -45,6 +45,24 @@ if (!ATT) {
      */
     APIConfigs = {
       /**
+      * Get browser session from DHSEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      checkDhsSession: {
+        method: 'get',
+        url: DEFAULTS.DHSEndpoint + '/user/session',
+        headers: DEFAULTS.headers
+      },
+      /**
+      * Create new user from DHSEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      registerUser: {
+        method: 'post',
+        url: DEFAULTS.DHSEndpoint + '/user/register',
+        headers: DEFAULTS.headers
+      },
+      /**
       * Authentication to DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
@@ -69,15 +87,6 @@ if (!ATT) {
       logoutUser: {
         method: 'delete',
         url: DEFAULTS.DHSEndpoint + '/user/logout',
-        headers: DEFAULTS.headers
-      },
-      /**
-      * Get browser session from DHSEndpoint
-      * @memberof WebRTCAPI.APIConfigs
-      */
-      checkDhsSession: {
-        method: 'get',
-        url: DEFAULTS.DHSEndpoint + '/user/session',
         headers: DEFAULTS.headers
       },
       /**
@@ -150,7 +159,7 @@ if (!ATT) {
           },
           headers: {
             Authorization: function (param) {
-              return 'Authorization: ' + param;
+              return param;
             }
           }
         },
@@ -166,9 +175,16 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return param;
+            }
           }
         },
-        headers: DEFAULTS.headers
+        headers: ATT.utils.extend({
+          'x-calls-action' : 'call-answer'
+        }, DEFAULTS.headers)
       },
       /**
        * Modify Call via BFEndpoint
@@ -180,6 +196,14 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return param;
+            },
+            'x-calls-action': function (param) {
+              return param;
+            }
           }
         },
         headers: DEFAULTS.headers
@@ -193,9 +217,19 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return param;
+            },
+            'x-modId': function (param) {
+              return param;
+            }
           }
         },
-        headers: DEFAULTS.headers
+        headers: ATT.utils.extend({
+          'x-calls-action' : 'accept-call-mod'
+        }, DEFAULTS.headers)
       },
       /**
       * End Call via BFEndpoint
@@ -206,6 +240,11 @@ if (!ATT) {
         formatters: {
           url: function (params) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+          },
+          headers: {
+            Authorization: function (param) {
+              return param;
+            }
           }
         },
         headers: ATT.utils.extend({
