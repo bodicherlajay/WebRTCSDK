@@ -21,20 +21,6 @@ if (!Env) {
 
   apiObject = resourceManager.getAPIObject();
 
-  function registerUserOnDhs(config) {
-    var registerConfig = {
-      data: config.data,
-      success: function (response) {
-        if (typeof config.success === 'function') {
-          config.success(response);
-        }
-      }
-    };
-
-    // Call DHS to check for a browser session.
-    resourceManager.doOperation('registerUser', registerConfig);
-  }
-
   /**
    * This method will be hit by the login button on the sample app.
    * Hits authenticate, then createWebRTCSession.

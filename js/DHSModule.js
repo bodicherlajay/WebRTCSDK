@@ -26,6 +26,8 @@ if (!Env) {
     // public methods
     checkSession,
 
+    register,
+
     login,
 
     logout,
@@ -34,9 +36,7 @@ if (!Env) {
 
     createE911Id,
 
-    updateE911Id,
-
-    registerUserOnDHS;
+    updateE911Id;
 
   init = function () {
 
@@ -49,10 +49,10 @@ if (!Env) {
     app.RESTClient = RESTClient;
 
     dhsNamespace.checkSession = checkSession;
+    dhsNamespace.register = register;
     dhsNamespace.login = login;
     dhsNamespace.logout = logout;
     dhsNamespace.getE911Id = getE911Id;
-    dhsNamespace.registerUserOnDHS = registerUserOnDHS;
     dhsNamespace.createE911Id = createE911Id;
     dhsNamespace.updateE911Id = updateE911Id;
 
@@ -83,6 +83,27 @@ if (!Env) {
 
     // Call DHS to check for a browser session.
     resourceManager.doOperation('checkDhsSession', sessionConfig);
+  };
+
+  register = function (config) {
+    var registerConfig = {
+      data: config.data,
+      success: function (response) {
+        var data = response.getJson();
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      },
+      error: function (response) {
+        var data = response.getJson();
+        if (typeof config.error === 'function') {
+          config.error(data);
+        }
+      }
+    };
+
+    // Call DHS to check for a browser session.
+    resourceManager.doOperation('registerUser', registerConfig);
   };
 
   // dirty fix for login
@@ -163,10 +184,6 @@ if (!Env) {
    */
   updateE911Id = function (userId, address) {
     console.log(userId, address);
-  };
-
-  registerUserOnDHS = function () {
-
   };
 
   init();
