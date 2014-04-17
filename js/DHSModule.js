@@ -16,7 +16,7 @@ if (!Env) {
   "use strict";
 
   var dhsNamespace = {},
-    // apiObject,
+    apiObject,
     resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance(),
 
@@ -30,9 +30,17 @@ if (!Env) {
 
     login,
 
+    loginSuccess,
+
+    loginError,
+
     logout,
 
     getE911Id,
+
+    getE911IdSuccess,
+
+    getE911IdError,
 
     createE911Id,
 
@@ -43,7 +51,7 @@ if (!Env) {
     // create namespace.
     dhsNamespace = ATT.utils.createNamespace(app, 'rtc.dhs');
 
-    //apiObject = resourceManager.getAPIObject();
+    apiObject = resourceManager.getAPIObject();
 
     // sub-namespaces on ATT.
     app.RESTClient = RESTClient;
@@ -55,7 +63,19 @@ if (!Env) {
     dhsNamespace.getE911Id = getE911Id;
     dhsNamespace.createE911Id = createE911Id;
     dhsNamespace.updateE911Id = updateE911Id;
+  };
 
+  /**
+   * The login method that will be hit by UI.
+   * @param {Object} config The userId/password
+   */
+  login = function (config) {
+    // Call DHS to authenticate, associate user to session.
+    resourceManager.doOperation('authenticateUser', {
+      data:     config.data,
+      success:  loginSuccess.bind(this, config),
+      error:    loginError.bind(this, config)
+    });
   };
 
   checkSession = function (config) {
@@ -101,43 +121,35 @@ if (!Env) {
         }
       }
     };
-
     // Call DHS to check for a browser session.
     resourceManager.doOperation('registerUser', registerConfig);
   };
 
-  // dirty fix for login
-  login = function (config) {
-    var authenticateConfig = {
-      data: config.data,
-      success: function (responseObject) {
-        // get access token, e911 id that is needed to create webrtc session
-        var authenticateResponseData = responseObject.getJson(),
-          accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null;
-          //e911Id = authenticateResponseData.e911;
+  loginError = function (responseObject) {
+    console.log('Create session error : ', responseObject);
+  };
 
-        // if no access token return user data to UI, without webrtc session id
-        if (!accessToken) {
-          if (typeof config.error === 'function') {
-            config.error(authenticateResponseData);
-          }
-        } else {
-          if (typeof config.success.onSessionReady === 'function') {
-            config.success.onSessionReady({type: 0, data: authenticateResponseData});
-          }
-          // Call BF to create WebRTC Session.
-        }
-      },
-      error: function (responseObject) {
-        var authenticateResponseData = responseObject.getJson();
-        if (typeof config.error === 'function') {
-          config.error(authenticateResponseData);
-        }
+  loginSuccess = function (config, responseObject) {
+
+    // get access token, e911 id that is needed to create webrtc session
+    var authenticateResponseData = responseObject.getJson(),
+      accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null,
+      e911Id =  authenticateResponseData.e911Id;
+
+    // if no access token return user data to UI, without webrtc session id
+    if (!accessToken) {
+
+      if (typeof config.error === 'function') {
+        config.error(authenticateResponseData);
       }
-    };
 
-    // Call DHS to authenticate, associate user to session.
-    resourceManager.doOperation('authenticateUser', authenticateConfig);
+    } else {
+      // Call BF to create WebRTC Session.
+      // getE911Id(config.userId);
+      apiObject.initSession(accessToken, e911Id, function () {
+        config.success();
+      });
+    }
   };
 
   logout = function (config) {
@@ -165,8 +177,23 @@ if (!Env) {
    * Get the E911 ID from DHS.
    * @param userID
    */
-  getE911Id = function (userId) {
-    console.log(userId);
+  getE911Id = function () {
+    resourceManager.doOperation('getE911Id', {
+      success:  getE911IdSuccess,
+      error:    getE911IdError
+    });
+  };
+
+  /**
+   * Success callback to get the e911Id
+   * @param e911Id
+   */
+  getE911IdSuccess = function (e911Id) {
+    console.log(e911Id);
+  };
+
+  getE911IdError = function () {
+    console.log('getE911IDError!');
   };
 
   /**
