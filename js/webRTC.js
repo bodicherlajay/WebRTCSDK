@@ -41,16 +41,24 @@ if (!Env) {
 
   /**
    * SDK login will just create the webRTC session.  It requires
-   * both the e911id and the oauth access token set in the call manager.
+   * both the e911Id and the oauth access token set in the call manager.
    * @memberof WebRTC
    * @param {Object} data The required login form data from the UI.
    */
-  function login() {
-    var accessToken = callManager.getContext().getAccessToken(),
-      e911id = callManager.getContext().getE911Id();
+  function login(config) {
+    var session = callManager.getSessionContext(),
+      accessToken = session.getAccessToken(),
+      e911Id = session.getE911Id();
 
-    if (!accessToken || !e911id) {
-      throw new Error('Access token and e911id are required.');
+    // todo: need to decide if callbacks should be mandatory
+    if (typeof config.onSessionReady !== 'function') {
+      throw new Error('No UI success callback specified');
+    }
+    if (typeof config.onError !== 'function') {
+      throw new Error('No UI error callback specified');
+    }
+    if (!accessToken || !e911Id) {
+      throw new Error('Access token and e911Id are required.');
     }
 
     // Call BF to create WebRTC Session.
@@ -68,23 +76,25 @@ if (!Env) {
       params: {
         headers: {
           'Authorization': accessToken,
-          'x-e911Id': e911id
+          'x-e911Id': e911Id
         }
       },
-      success: createWebRTCSessionSuccess,
+      success: createWebRTCSessionSuccess.bind (this, config),
       error: createWebRTCSessionError
     });
   }
 
-  createWebRTCSessionSuccess = function (responseObject) {
+  createWebRTCSessionSuccess = function (config, responseObject) {
     var sessionId = responseObject && responseObject.getResponseHeader('location') ?
-        responseObject.getResponseHeader('location').split('/')[4] : null;
+        responseObject.getResponseHeader('location').split('/')[4] : null,
+        session = callManager.getSessionContext();
 
     if (sessionId) {
 
       // Set WebRTC.Session data object that will be needed downstream.
+      session.setSessionId(sessionId);
       // Also setup UI callbacks
-      callManager.getContext().setSessionId(sessionId);
+      session.setUICallbacks(config);
 
       // setting up event callbacks using RTC Events
       app.RTCEvent.getInstance().hookupEventsToUICallbacks();
