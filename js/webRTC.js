@@ -86,7 +86,8 @@ if (!Env) {
 
   createWebRTCSessionSuccess = function (config, responseObject) {
     var sessionId = responseObject && responseObject.getResponseHeader('location') ?
-          responseObject.getResponseHeader('location').split('/')[4] : null,
+        responseObject.getResponseHeader('location').split('/')[4] : null,
+
       session = callManager.getSessionContext();
 
     if (sessionId) {

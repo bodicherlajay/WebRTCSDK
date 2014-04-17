@@ -90,9 +90,9 @@ cmgmt = (function () {
 
     CreateSession = function (config) {
       session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
-      // ATT.event.subscribe('SDK_READY', config.success);
-      // session_context.setCallState(SessionState.SDK_READY);
-      // ATT.event.publish('SDK_READY');
+      ATT.event.subscribe('SDK_READY', config.success);
+      session_context.setCallState(SessionState.SDK_READY);
+      ATT.event.publish('SDK_READY');
     },
 
     CreateOutgoingCall = function (config) {
