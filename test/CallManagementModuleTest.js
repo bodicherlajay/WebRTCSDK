@@ -23,7 +23,7 @@ describe('Call Management', function () {
     expect(sessionContext.getAccessToken()).equals("abcd");
     expect(sessionContext.getE911Id()).equals("e911id");
     expect(sessionContext.getSessionId()).equals("sessionId");
-    expect(sessionContext.getCallState()).equals(callmgr.SessionState.READY);
+    expect(sessionContext.getCallState()).equals(callmgr.SessionState.SDK_READY);
   });
   it('should modify the sdp to send only', function () {
     var config = {};

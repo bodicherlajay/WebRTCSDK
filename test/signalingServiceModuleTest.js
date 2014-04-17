@@ -36,6 +36,26 @@ describe('SignalingService', function () {
     expect(ATT.SignalingService.sendAnswer).to.be.a('function');
   });
 
+  it('should exist and contain sendAcceptMods method.', function () {
+    expect(ATT.SignalingService).to.be.an('object');
+    expect(ATT.SignalingService.sendAcceptMods).to.be.a('function');
+  });
+
+  it('should exist and contain sendHoldCall method.', function () {
+    expect(ATT.SignalingService).to.be.an('object');
+    expect(ATT.SignalingService.sendHoldCall).to.be.a('function');
+  });
+
+  it('should exist and contain sendResumeCall method.', function () {
+    expect(ATT.SignalingService).to.be.an('object');
+    expect(ATT.SignalingService.sendResumeCall).to.be.a('function');
+  });
+
+  it('should exist and contain sendEndCall method.', function () {
+    expect(ATT.SignalingService).to.be.an('object');
+    expect(ATT.SignalingService.sendEndCall).to.be.a('function');
+  });
+
   xit('should call startCall API method with call object passed as data with SDP & calledParty.', function () {
 
     // setup
