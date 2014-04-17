@@ -64,7 +64,7 @@ if (!ATT) {
         parent = root;
 
       names.forEach(function (name) {
-        parent[name] = {};
+        if (!parent[name]) { parent[name] = {}; }
         parent = parent[name];
       });
       return parent;
