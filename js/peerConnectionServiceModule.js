@@ -248,7 +248,7 @@
       // hold call
       holdCall: function () {
         // adjust SDP for hold call
-        var holdSDP = this.localDescription.sdp.replace(/sendrecv/g, "recvonly");
+        var holdSDP = this.localDescription.sdp.replace(/sendrecv/g, 'recvonly');
         // set local description
         this.peerConnection.setLocalDescription(holdSDP);
         // signal
@@ -260,7 +260,7 @@
       // resume Call
       resumeCall: function () {
         // adjust SDP for resume call
-        var resumeSDP = this.localDescription.sdp.replace(/recvonly/g, "sendrecv");
+        var resumeSDP = this.localDescription.sdp.replace(/recvonly/g, 'sendrecv');
         // set local description
         this.peerConnection.setLocalDescription(resumeSDP);
         // signal
