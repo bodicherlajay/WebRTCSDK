@@ -113,8 +113,7 @@
       createOffer: function (pc) {
         var self = this,
           me = self;
-
-        if (navigator.userAgent.indexOf('Chrome') < 0) {
+        if (self.userAgent().indexOf('Chrome') < 0) {
           pc.createOffer(function (description) {
             self.setLocalAndSendMessage.call(me, description);
           }, function (err) {
@@ -273,6 +272,10 @@
       endCall: function () {
         this.peerConnection.close();
         this.peerConnection = null;
+      },
+
+      userAgent: function () {
+        return navigator.userAgent;
       }
     };
 
