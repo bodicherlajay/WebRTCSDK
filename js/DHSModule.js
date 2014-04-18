@@ -36,6 +36,8 @@ if (!Env) {
 
     logout,
 
+    token,
+
     getE911Id,
 
     getE911IdSuccess,
@@ -60,22 +62,10 @@ if (!Env) {
     dhsNamespace.register = register;
     dhsNamespace.login = login;
     dhsNamespace.logout = logout;
+    dhsNamespace.token = token;
     dhsNamespace.getE911Id = getE911Id;
     dhsNamespace.createE911Id = createE911Id;
     dhsNamespace.updateE911Id = updateE911Id;
-  };
-
-  /**
-   * The login method that will be hit by UI.
-   * @param {Object} config The userId/password
-   */
-  login = function (config) {
-    // Call DHS to authenticate, associate user to session.
-    resourceManager.doOperation('authenticateUser', {
-      data:     config.data,
-      success:  loginSuccess.bind(this, config),
-      error:    loginError.bind(this, config)
-    });
   };
 
   checkSession = function (config) {
@@ -125,8 +115,23 @@ if (!Env) {
     resourceManager.doOperation('registerUser', registerConfig);
   };
 
-  loginError = function (responseObject) {
-    console.log('Create session error : ', responseObject);
+  /**
+   * The login method that will be hit by UI.
+   * @param {Object} config The userId/password
+   */
+  login = function (config) {
+    // Call DHS to authenticate, associate user to session.
+    resourceManager.doOperation('authenticateUser', {
+      data:     config.data,
+      success:  loginSuccess.bind(this, config),
+      error:    loginError.bind(this, config)
+    });
+  };
+
+  loginError = function (config, responseObject) {
+    if (typeof config.error === 'function') {
+      config.error(responseObject.getJson());
+    }
   };
 
   loginSuccess = function (config, responseObject) {
@@ -138,11 +143,9 @@ if (!Env) {
 
     // if no access token return user data to UI, without webrtc session id
     if (!accessToken) {
-
       if (typeof config.error === 'function') {
         config.error(authenticateResponseData);
       }
-
     } else {
       // Call BF to create WebRTC Session.
       // getE911Id(config.userId);
@@ -172,6 +175,17 @@ if (!Env) {
     // Call DHS to logout user by deleting browser session.
     resourceManager.doOperation('logoutUser', logoutConfig);
   };
+
+  token = function (config) {
+    // Call DHS to get token for user consent flow
+    resourceManager.doOperation('getAccessToken', {
+      params: {
+        url: [config.code]
+      },
+      success:  loginSuccess.bind(this, config),
+      error:    loginError.bind(this, config)
+    });
+  }
 
   /**
    * Get the E911 ID from DHS.

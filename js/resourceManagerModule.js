@@ -196,17 +196,19 @@ Env = (function (app) {
       // header formatting.
       // call formatters for each header (by key)
       // need to concat default headers with header data passing in.
-      if (Object.keys(formatters.headers).length > 0) {
-        headersObjectForREST = {};
-
-        for (headerType in config.params.headers) {
-          if (config.params.headers.hasOwnProperty(headerType)) {
-            headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
+      if (typeof formatters.headers === 'object') {
+        if (Object.keys(formatters.headers).length > 0) {
+          headersObjectForREST = {};
+  
+          for (headerType in config.params.headers) {
+            if (config.params.headers.hasOwnProperty(headerType)) {
+              headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
+            }
           }
+  
+          // add this to the restConfig.  These will be in addition to the default headers.
+          restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
         }
-
-        // add this to the restConfig.  These will be in addition to the default headers.
-        restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
       }
     }
 

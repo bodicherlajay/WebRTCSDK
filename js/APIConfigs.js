@@ -77,7 +77,11 @@ if (!ATT) {
       */
       getAccessToken: {
         method: 'get',
-        url: DEFAULTS.DHSEndpoint + '/user/token',
+        formatters : {
+          url: function (params) {
+            return DEFAULTS.DHSEndpoint + '/user/token?code=' + params;
+          }
+        },
         headers: DEFAULTS.headers
       },
       /**
