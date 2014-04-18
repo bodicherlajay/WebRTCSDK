@@ -85,7 +85,16 @@ if (!ATT) {
         headers: DEFAULTS.headers
       },
       /**
-       * Get access token from DHSEndpoint
+      * Logout from DHSEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      logoutUser: {
+        method: 'delete',
+        url: DEFAULTS.DHSEndpoint + '/user/logout',
+        headers: DEFAULTS.headers
+      },
+      /**
+       * Get e911Id from DHSEndpoint
        * @memberof WebRTCAPI.APIConfigs
        */
       getE911Id: {
@@ -94,12 +103,12 @@ if (!ATT) {
         headers: DEFAULTS.headers
       },
       /**
-      * Logout from DHSEndpoint
-      * @memberof WebRTCAPI.APIConfigs
-      */
-      logoutUser: {
-        method: 'delete',
-        url: DEFAULTS.DHSEndpoint + '/user/logout',
+       * Create a e911Id using DHSEndpoint
+       * @memberof WebRTCAPI.APIConfigs
+       */
+      createE911Id: {
+        method: 'post',
+        url: DEFAULTS.DHSEndpoint + '/e911',
         headers: DEFAULTS.headers
       },
       /**

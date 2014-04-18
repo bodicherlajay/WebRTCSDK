@@ -216,20 +216,43 @@ if (!Env) {
   };
 
   /**
-   * Create E911 ID on DHS.
-   * @param {Object} address Physical address object.
+   * Create an the E911 ID on DHS.
+   * @param {Object} config
+   * @member {String} userId ICMN / VTN user
+   * @member {Object} address The user's physical address object.
    */
-  createE911Id = function (address) {
-    console.log(address);
+  createE911Id = function (config) {
+    var createE911IdConfig = {
+      data: {
+        userId: config.userId,
+        address: config.address,
+      },
+      success: function (response) {
+        var data = response.getJson();
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      },
+      error: function (response) {
+        var data = response.getJson();
+        if (typeof config.error === 'function') {
+          config.error(data);
+        }
+      }
+    };
+
+    // Call DHS to update and e911 id linked address for the user
+    resourceManager.doOperation('createE911Id', createE911IdConfig);
   };
 
   /**
-   * Update the E911 ID on DHS.
-   * @param {String} userId ICMN/VTN number or NoTN ID.
-   * @param {Object} address The user's physical address object.
+   * update E911 ID on DHS.
+   * @param {Object} config
+   * @member {String} userId ICMN / VTN user
+   * @member {Object} address The user's physical address object.
    */
-  updateE911Id = function (userId, address) {
-    console.log(userId, address);
+  updateE911Id = function (config) {
+    console.log(config);
   };
 
   init();
