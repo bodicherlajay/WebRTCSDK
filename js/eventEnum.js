@@ -8,6 +8,7 @@ if (!ATT) {
 
 (function (mainModule) {
   "use strict";
+
   var module = {};
 
   module.SessionEvents = {
@@ -25,6 +26,8 @@ if (!ATT) {
     WAITING: 6,
     ENDED: 7,
     RESUMED: 8,
+    MUTED: 9,
+    UNMUTED: 10,
     ERROR: 99
   };
 
@@ -41,6 +44,8 @@ if (!ATT) {
     ADD_FAILED:               "add-failed",
     REMOVE_FAILED:            "remove-failed",
     MOVE_TERMINATED:          "Move Terminated",
+    MUTED:                    "Call Muted",
+    UNMUTED:                  "Call Unmuted",
     UNKNOWN:                  "Unknown"
   };
 
@@ -49,6 +54,7 @@ if (!ATT) {
     MEDIA_CONFERENCE: "media-conference",
     MEDIACONFERENCE:  "mediaconference"
   };
+
   mainModule.SessionEvents = Object.freeze(module.SessionEvents);
   mainModule.CallStatus = Object.freeze(module.CallStatus);
   mainModule.RTCCallEvents = Object.freeze(module.RTCCallEvents);

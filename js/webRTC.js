@@ -198,6 +198,24 @@ if (!Env) {
   }
 
   /**
+  * Mute existing stream
+  */
+  function mute() {
+    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+      callManager.getSessionContext().getCallObject().mute();
+    }
+  }
+
+  /**
+  * Unmute existing stream
+  */
+  function unmute() {
+    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+      callManager.getSessionContext().getCallObject().unmute();
+    }
+  }
+
+  /**
   * Hold existing call
   */
   function hold() {
@@ -235,6 +253,8 @@ if (!Env) {
   resourceManager.addPublicMethod('answer', answer);
   resourceManager.addPublicMethod('hold', hold);
   resourceManager.addPublicMethod('resume', resume);
+  resourceManager.addPublicMethod('mute', mute);
+  resourceManager.addPublicMethod('unmute', unmute);
   resourceManager.addPublicMethod('hangup', hangup);
   resourceManager.addPublicMethod('initSession', initSession);
 }(ATT || {}));
