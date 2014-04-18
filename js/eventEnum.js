@@ -24,7 +24,8 @@ if (!ATT) {
     TRANSITION: 5,
     WAITING: 6,
     ENDED: 7,
-    ERROR: 8
+    RESUMED: 8,
+    ERROR: 99
   };
 
   module.RTCCallEvents = {

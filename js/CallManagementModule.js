@@ -26,6 +26,7 @@ cmgmt = (function () {
       INCOMING_CALL : "Incoming",
       MOVE_CALL : "Move Call",
       HOLD_CALL : "Hold Call",
+      RESUMED_CALL : "Resumed Call",
       TRANSFER_CALL : "Transfer Call",
       READY: "Ready", //Ready to accept Outgoing or Incoming call
       SDK_READY: "SDK Ready"
@@ -89,9 +90,9 @@ cmgmt = (function () {
 
     CreateSession = function (config) {
       session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
-      // ATT.event.subscribe('SDK_READY', config.success);
-      // session_context.setCallState(SessionState.SDK_READY);
-      // ATT.event.publish('SDK_READY');
+      ATT.event.subscribe('SDK_READY', config.success);
+      session_context.setCallState(SessionState.SDK_READY);
+      ATT.event.publish('SDK_READY');
     },
 
     CreateOutgoingCall = function (config) {
@@ -154,7 +155,8 @@ cmgmt = (function () {
   Call.resume = function () {
     if (ATT.PeerConnectionService.peerConnection
         && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
-        && session_context.getCurrentCallId()) {
+        && session_context.getCurrentCallId()
+        && session_context.getCallState === SessionState.HOLD_CALL) {
       console.log('Resuming call...');
       ATT.SignalingService.sendResumeCall();
     } else {
@@ -169,7 +171,7 @@ cmgmt = (function () {
       console.log('Hanging up...');
       ATT.SignalingService.sendEndCall();
       ATT.PeerConnectionService.endCall();
-      ATT.UserMediaService.endCall();
+      ATT.UserMediaService.stopStream();
     } else {
       console.log('No current call...');
     }
