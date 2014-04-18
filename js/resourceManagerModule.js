@@ -117,8 +117,8 @@ Env = (function (app) {
    */
   module.doOperation = function (operationName, config) {
     try {
-      var successcb = config.success || function () {},// todo: rename or remove it?
-        errorcb = config.error || function () {},// todo: rename or remove it?
+      var successcb = config.success || function () { console.log('Not implemented yet.'); },
+        errorcb = config.error || function () { console.log('Not implemented yet.'); },
         operation = module.getOperation(operationName, config);
 
       operation(function (obj) {
@@ -145,8 +145,8 @@ Env = (function (app) {
     }
 
     config = config || {
-      success: function () {},
-      error:   function () {}
+      success: function () { console.log('Not implemented yet.'); },
+      error:   function () { console.log('Not implemented yet.'); }
     };
 
     // todo:  remove the configure method.
@@ -196,17 +196,19 @@ Env = (function (app) {
       // header formatting.
       // call formatters for each header (by key)
       // need to concat default headers with header data passing in.
-      if (Object.keys(formatters.headers).length > 0) {
-        headersObjectForREST = {};
+      if (typeof formatters.headers === 'object') {
+        if (Object.keys(formatters.headers).length > 0) {
+          headersObjectForREST = {};
 
-        for (headerType in config.params.headers) {
-          if (config.params.headers.hasOwnProperty(headerType)) {
-            headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
+          for (headerType in config.params.headers) {
+            if (config.params.headers.hasOwnProperty(headerType)) {
+              headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
+            }
           }
-        }
 
-        // add this to the restConfig.  These will be in addition to the default headers.
-        restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
+          // add this to the restConfig.  These will be in addition to the default headers.
+          restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
+        }
       }
     }
 
