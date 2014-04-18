@@ -31,12 +31,9 @@ if (!Env) {
     // Set the access Token in the callManager.
     callManager.CreateSession({
       token: accessToken,
-      e911Id: e911Id
+      e911Id: e911Id,
+      success: successCb
     });
-
-    if (typeof successCb === 'function') {
-      successCb();
-    }
   };
 
   /**

@@ -139,7 +139,8 @@ if (!Env) {
     // get access token, e911 id that is needed to create webrtc session
     var authenticateResponseData = responseObject.getJson(),
       accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null,
-      e911Id =  authenticateResponseData.e911Id;
+      e911Id =  authenticateResponseData.e911Id,
+      successcb = function () {};
 
     // if no access token return user data to UI, without webrtc session id
     if (!accessToken) {
@@ -149,9 +150,10 @@ if (!Env) {
     } else {
       // Call BF to create WebRTC Session.
       // getE911Id(config.userId);
-      apiObject.initSession(accessToken, e911Id, function () {
-        config.success(authenticateResponseData);
-      });
+      if (typeof config.success === 'function') {
+        successcb = config.success.bind(null, authenticateResponseData);
+      }
+      apiObject.initSession(accessToken, e911Id, successcb);
     }
   };
 
