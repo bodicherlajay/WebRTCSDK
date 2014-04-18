@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150, unparam: true*/
-/*global ATT:true, describe:true, beforeEach:true, afterEach:true, it:true, sinon:true, assert:true, expect:true, done:true */
+/*global ATT:true, describe, beforeEach, afterEach, it, sinon, assert, expect, done*/
 
 /**
  * Unit tests for event emitter module.
@@ -8,9 +8,13 @@
 
 describe('Event emitter', function () {
 
-  beforeEach(function () {});
+  beforeEach(function () {
+    console.log('Executing `beforeEach`...');
+  });
 
-  afterEach(function () {});
+  afterEach(function () {
+    console.log('Executing `afterEach`...');
+  });
 
   it('should contain subscribe, unsubscribe, and publish functions (on ATT.event).', function () {
     ATT.event.subscribe.should.be.a('function');
