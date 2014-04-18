@@ -185,7 +185,7 @@ if (!Env) {
       success:  loginSuccess.bind(this, config),
       error:    loginError.bind(this, config)
     });
-  }
+  };
 
   /**
    * Get the E911 ID from DHS.

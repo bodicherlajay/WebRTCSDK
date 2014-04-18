@@ -82,7 +82,6 @@ module.exports = function (grunt) {
       // lint your project's server code
       server: {
         src: ['js/**/*.js', 'test/**/*.js'],
-        exclude: ['js/adapter.js'],
         options: {
           log: 'out/jslint/jslint.log',
           checkstyle: 'out/jslint/jslint.xml' // write a checkstyle-XML
