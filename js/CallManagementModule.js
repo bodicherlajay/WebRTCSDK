@@ -17,6 +17,8 @@ cmgmt = (function () {
         start: Call.start,
         hold: Call.hold,
         resume: Call.resume,
+        mute: Call.mute,
+        unmute: Call.unmute,
         end: Call.hangup
       };
     },
@@ -177,6 +179,14 @@ cmgmt = (function () {
     }
   };
 
+  Call.mute = function () {
+    ATT.UserMediaService.muteStream();
+  };
+
+  Call.unmute = function () {
+    ATT.UserMediaService.unmuteStream();
+  };
+
   // Call.removeVideo = function () {
   // };
 
@@ -184,12 +194,6 @@ cmgmt = (function () {
   // };
 
   // Call.transferTo = function () {
-  // };
-
-  // Call.mute = function () {
-  // };
-
-  // Call.unmute = function () {
   // };
 
   // Call.sendDTMF = function () {

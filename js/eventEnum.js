@@ -8,12 +8,13 @@ if (!ATT) {
 
 (function (mainModule) {
   "use strict";
+
   var module = {};
 
   module.SdkEvents = {
     SDK_READY: 'SDK Ready'
   };
-  
+
   module.SessionEvents = {
     RTC_SESSION_CREATED: 0,
     RTC_SESSION_DELETED: 1
@@ -29,6 +30,8 @@ if (!ATT) {
     WAITING: 6,
     ENDED: 7,
     RESUMED: 8,
+    MUTED: 9,
+    UNMUTED: 10,
     ERROR: 99
   };
 
@@ -45,6 +48,8 @@ if (!ATT) {
     ADD_FAILED:               "add-failed",
     REMOVE_FAILED:            "remove-failed",
     MOVE_TERMINATED:          "Move Terminated",
+    MUTED:                    "Call Muted",
+    UNMUTED:                  "Call Unmuted",
     UNKNOWN:                  "Unknown"
   };
 
@@ -53,6 +58,7 @@ if (!ATT) {
     MEDIA_CONFERENCE: "media-conference",
     MEDIACONFERENCE:  "mediaconference"
   };
+
   mainModule.SdkEvents = Object.freeze(module.SdkEvents);
   mainModule.SessionEvents = Object.freeze(module.SessionEvents);
   mainModule.CallStatus = Object.freeze(module.CallStatus);

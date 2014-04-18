@@ -52,7 +52,7 @@ if (!ATT) {
       videoStreamEl.play();
     },
 
-    // stopStream
+    // stop stream
     stopStream: function () {
       if (this.localStream) {
         this.localStream.stop();
@@ -61,6 +61,20 @@ if (!ATT) {
       if (this.remoteStream) {
         this.remoteStream.stop();
         this.remoteVideoElement.src = '';
+      }
+    },
+
+    // mute stream
+    muteStream: function () {
+      if (this.localVideoElement) {
+        this.localVideoElement.muted = true;
+      }
+    },
+
+    // un-mute stream
+    unmuteStream: function () {
+      if (this.localVideoElement) {
+        this.localVideoElement.muted = false;
       }
     }
   };

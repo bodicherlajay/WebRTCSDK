@@ -20,6 +20,8 @@ if (!ATT) {
     onInProgress,
     onCallHold,
     onCallResume,
+    onCallMute,
+    onCallUnmute,
     onCallEnded,
     onCallError,
     init = function () {
@@ -117,6 +119,18 @@ if (!ATT) {
       }
       break;
 
+    case mainModule.RTCCallEvents.MUTED:
+      onCallMute({
+        type: mainModule.CallStatus.MUTED
+      });
+      break;
+
+    case mainModule.RTCCallEvents.UNMUTED:
+      onCallUnmute({
+        type: mainModule.CallStatus.UNMUTED
+      });
+      break;
+
     case mainModule.RTCCallEvents.UNKNOWN:
       onCallError({ type: mainModule.CallStatus.ERROR });
       break;
@@ -169,6 +183,24 @@ if (!ATT) {
   onCallResume = function (evt) {
     if (callbacks.onCallResume) {
       callbacks.onCallResume(evt);
+    }
+  };
+
+  onCallMute = function (evt) {
+    if (callbacks.onCallMute) {
+      callbacks.onCallMute(evt);
+    }
+  };
+
+  onCallUnmute = function (evt) {
+    if (callbacks.onCallUnmute) {
+      callbacks.onCallUnmute(evt);
+    }
+  };
+
+  onCallError = function (evt) {
+    if (callbacks.onCallError) {
+      callbacks.onCallError(evt);
     }
   };
 
