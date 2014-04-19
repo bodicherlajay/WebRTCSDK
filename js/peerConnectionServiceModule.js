@@ -246,25 +246,38 @@
 
       // hold call
       holdCall: function () {
-        // adjust SDP for hold call
-        var holdSDP = this.localDescription.sdp.replace(/sendrecv/g, 'recvonly');
+
+        var sdp = ATT.sdpFilter.getInstance().incrementSDP(this.peerConnection.localDescription, 2);
+
+        // adjust for hold request
+        sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
+
         // set local description
-        //this.peerConnection.setLocalDescription(holdSDP);
+        this.peerConnection.setLocalDescription(sdp);
+
+        // another fix
+        sdp = ATT.sdpFilter.getInstance().incrementSDP(sdp, 2);
+
         // signal
         SignalingService.sendHoldCall({
-          sdp : holdSDP
+          sdp : sdp.sdp
         });
       },
 
       // resume Call
       resumeCall: function () {
-        // adjust SDP for resume call
-        var resumeSDP = this.localDescription.sdp.replace(/recvonly/g, 'sendrecv');
+
+        var sdp = this.peerConnection.localDescription;
+
+        // adjust for resume request
+        sdp.sdp = sdp.sdp.replace(/recvonly/g, 'sendrecv');
+
         // set local description
-        //this.peerConnection.setLocalDescription(resumeSDP);
+        this.peerConnection.setLocalDescription(sdp);
+
         // signal
-        SignalingService.sendHoldCall({
-          sdp : resumeSDP
+        SignalingService.sendResumeCall({
+          sdp : sdp.sdp
         });
       },
 

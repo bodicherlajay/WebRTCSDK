@@ -42,6 +42,18 @@ if (!ATT) {
     return sdp;
   }
 
+  function incrementSDP(sdp, count) {
+    var oIndex = sdp.sdp.indexOf("o="),
+      sIndex = sdp.sdp.indexOf("s=-"),
+      oLine = sdp.sdp.slice(oIndex, sIndex),
+      oLineArray = oLine.split(" "),
+      oLine2 = oLine.replace(" " + oLineArray[2].toString() + " ", " " + count.toString() + " ");
+
+    sdp.sdp = sdp.sdp.replace(oLine, oLine2);
+
+    return sdp;
+  }
+
   /**
      * Function to remove crypto & BUNDLE from the SDP.
      * @param {String} sdp
@@ -70,6 +82,8 @@ if (!ATT) {
     sdp = sdp.replace(/a=mid:video\r\n/g, "");
     sdp = sdp.replace(/a=mid:audio\r\n/g, "");
 
+    sdp = sdp.replace(/a=rtcp-mux\r\n/g, "");
+
     // Remove Opus from Chrome and Leif
     sdp = sdp.replace("RTP/SAVPF 111 103 104 0 ", "RTP/SAVPF 0 ");
     sdp = sdp.replace("\r\na=rtpmap:111 opus/48000/2", "");
@@ -90,6 +104,9 @@ if (!ATT) {
       },
       modifySDPAttribute: function (attributeValue, newValue, sdp) {
         return modifySDPAttribute(attributeValue, newValue, sdp);
+      },
+      incrementSDP: function (sdp, modCount) {
+        return incrementSDP(sdp, modCount);
       }
     };
   };
