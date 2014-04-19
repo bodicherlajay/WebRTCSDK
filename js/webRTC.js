@@ -235,7 +235,7 @@ if (!Env) {
   */
   function hangup() {
     if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-      callManager.getSessionContext().getCallObject().hangup();
+      callManager.getSessionContext().getCallObject().end();
     }
   }
 

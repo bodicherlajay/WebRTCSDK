@@ -101,7 +101,7 @@ cmgmt = (function () {
       var call = new Call(null, config.to, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.OUTGOING_CALL);
-      session_context.setUICallbacks(config);
+      session_context.setUICallbacks(config.success);
       ATT.UserMediaService.startCall(config);
     },
 
@@ -110,7 +110,7 @@ cmgmt = (function () {
         call = new Call(event.caller, null, config.mediaConstraints);
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.INCOMING_CALL);
-      session_context.setUICallbacks(config);
+      session_context.setUICallbacks(config.success);
       ATT.UserMediaService.startCall(config);
     },
 
@@ -146,7 +146,8 @@ cmgmt = (function () {
   Call.hold = function () {
     if (ATT.PeerConnectionService.peerConnection
         && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
-        && session_context.getCurrentCallId()) {
+        && session_context.getCurrentCallId()
+        && session_context.getCallState !== SessionState.HOLD_CALL) {
       console.log('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
@@ -160,9 +161,9 @@ cmgmt = (function () {
         && session_context.getCurrentCallId()
         && session_context.getCallState === SessionState.HOLD_CALL) {
       console.log('Resuming call...');
-      ATT.SignalingService.sendResumeCall();
+      ATT.PeerConnectionService.resumeCall();
     } else {
-      console.log('No current call...');
+      console.log('Conditions not met for resume');
     }
   };
 

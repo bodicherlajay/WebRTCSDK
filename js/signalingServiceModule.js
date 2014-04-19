@@ -163,7 +163,8 @@ if (!ATT) {
         data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Call hold success.');
+            callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+            callManager.getSessionContext().getCallObject().mute();
           } else {
             console.log('CALL HOLD ERROR');
           }
@@ -197,7 +198,7 @@ if (!ATT) {
         data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Call resume success.');
+            callManager.getSessionContext().getCallObject().unmute();
             callManager.setCallState(callManager.SessionState.RESUME_CALL);
           } else {
             console.log('CALL RESUME ERROR');

@@ -225,7 +225,7 @@ if (!Env) {
     var createE911IdConfig = {
       data: {
         userId: config.userId,
-        address: config.address,
+        address: config.address
       },
       success: function (response) {
         var data = response.getJson();
