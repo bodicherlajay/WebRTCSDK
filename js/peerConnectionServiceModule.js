@@ -247,7 +247,7 @@
       // hold call
       holdCall: function () {
         // adjust SDP for hold call
-        var holdSDP = this.localDescription.sdp.replace(/sendrecv/g, 'recvonly');
+        var holdSDP = this.localDescription.sdp.replace(/sendrecv/g, 'sendonly');
         // set local description
         //this.peerConnection.setLocalDescription(holdSDP);
         // signal
