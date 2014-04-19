@@ -163,7 +163,7 @@ cmgmt = (function () {
       console.log('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
-      console.log('No current call...');
+      console.log('Conditions not met for resume');
     }
   };
 

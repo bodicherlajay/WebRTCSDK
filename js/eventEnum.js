@@ -48,8 +48,8 @@ if (!ATT) {
     ADD_FAILED:               "add-failed",
     REMOVE_FAILED:            "remove-failed",
     MOVE_TERMINATED:          "Move Terminated",
-    MUTED:                    "Call Muted",
-    UNMUTED:                  "Call Unmuted",
+    MUTED:                    "call-muted",
+    UNMUTED:                  "call-unmuted",
     UNKNOWN:                  "Unknown"
   };
 
