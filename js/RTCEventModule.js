@@ -73,19 +73,14 @@ if (!ATT) {
             'OfferToReceiveVideo':true
         }});
 
-        // hold event - for hold initiatee
+        // hold event - for hold initiated party
         if (event.sdp.indexOf('recvonly') !== -1) {
           onCallHold({
             type: mainModule.CallStatus.HOLD
           });
-          callManager.setCallState(callManager.SessionState.HOLD_CALL);
-        }
-        // resume event
-        if (event.sdp.indexOf('sendrecv') !== -1) {
-          onCallResume({
-            type: mainModule.CallStatus.RESUMED
-          });
-          callManager.setCallState(callManager.SessionState.RESUMED_CALL);
+          callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+          // mute stream
+          callManager.getSessionContext().getCallObject().mute();
         }
       }
       break;
@@ -93,22 +88,24 @@ if (!ATT) {
     case mainModule.RTCCallEvents.MODIFICATION_TERMINATED:
       if (event.modId && event.reason === 'success') {
         PeerConnectionService.modificationId = event.modId;
-
-        // hold event - for hold initiator
-        if (event.sdp.indexOf('sendonly') !== -1) {
-          onCallHold({
-            type: mainModule.CallStatus.HOLD
-          });
-          callManager.setCallState(callManager.SessionState.HOLD_CALL);
-        }
-        // resume event
-        if (event.sdp.indexOf('sendrecv') !== -1) {
-          onCallResume({
-            type: mainModule.CallStatus.RESUMED
-          });
-          callManager.setCallState(callManager.SessionState.RESUMED_CALL);
-        }
       }
+
+      // hold event - for hold initiator
+      if (event.sdp && event.sdp.indexOf('recvonly') !== -1) {
+        onCallHold({
+          type: mainModule.CallStatus.HOLD
+        });
+        callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+        // mute stream
+        callManager.getSessionContext().getCallObject().mute();
+      }
+      // resume event
+      // if (event.sdp.indexOf('sendrecv') !== -1) {
+      //   onCallResume({
+      //     type: mainModule.CallStatus.RESUMED
+      //   });
+      //   callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+      // }
       break;
 
     case mainModule.RTCCallEvents.INVITATION_SENT:
