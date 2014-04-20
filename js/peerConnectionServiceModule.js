@@ -54,22 +54,21 @@
       // create a peer connection
       createPeerConnection: function () {
 
-        var pc_config = {
-          "iceServers": [
-            { "url": "STUN:74.125.133.127:19302" }
-          ]
-        };
-
-        try {
-            this.peerConnection = new RTCPeerConnection(pc_config);
-        } catch (e) {
-            console.log("Failed to create PeerConnection, exception: " + e.message);
-        }
-
-       var self = this,
+        var  self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
-          pc = this.peerConnection;
+          pc = this.peerConnection,
+          pc_config = {
+            "iceServers": [
+              { "url": "STUN:74.125.133.127:19302" }
+            ]
+          };
+
+        try {
+          this.peerConnection = new RTCPeerConnection(pc_config);
+        } catch (e) {
+          console.log("Failed to create PeerConnection, exception: " + e.message);
+        }
 
         // ICE candidate trickle
         pc.onicecandidate = function (evt) {
@@ -121,7 +120,7 @@
 
         // send any ice candidates to the other peer
         // get a local stream, show it in a self-view and add it to be sent
-        getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), function() {
+        getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), function () {
           console.log('Get User Media Fail');
         });
       },
@@ -135,7 +134,6 @@
         var self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
-          event = session.getEventObject(),
           callState = session.getCallState();
 
         self.createPeerConnection();
@@ -151,11 +149,11 @@
           self.peerConnection.addStream(stream);
 
           //todo: switch constraints to dynamic
-          this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function() {
+          this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
             console.log('Create offer failed');
           }, {'mandatory': {
-            'OfferToReceiveAudio':true, 
-            'OfferToReceiveVideo':true
+            'OfferToReceiveAudio': true,
+            'OfferToReceiveVideo': true
           }});
 
         } else if (callState === rm.SessionState.INCOMING_CALL) {
@@ -173,14 +171,13 @@
       * @param {Object} sdp SDP
       * @param {String} type 'answer' or 'offer'
       */
-      setTheRemoteDescription: function(sdp, type) {
+      setTheRemoteDescription: function (sdp, type) {
         this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: sdp, type: type }),
           function () {
             console.log('Set Remote Description Success');
-          }, function (err) { 
+          }, function (err) {
             console.log('Set Remote Description Fail', err);
-          }
-        );
+          });
       },
 
       /**
