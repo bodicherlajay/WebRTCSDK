@@ -177,8 +177,8 @@
         this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: sdp, type: type }),
           function () {
             console.log('Set Remote Description Success');
-          }, function () { 
-            console.log('Set Remote Description Fail');
+          }, function (err) { 
+            console.log('Set Remote Description Fail', err);
           }
         );
       },
@@ -233,8 +233,9 @@
 
         var sdp = this.localDescription;
 
-        // adjust for hold request
+        // adjust for resume request
         sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
+        sdp.sdp = sdp.sdp.replace(/a=sendonly/g, 'a=sendrecv');
 
         ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
 
@@ -247,7 +248,7 @@
 
         // signal
         SignalingService.sendResumeCall({
-          sdp : sdp
+          sdp : sdp.sdp
         });
       },
 

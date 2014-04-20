@@ -150,7 +150,7 @@ cmgmt = (function () {
       console.log('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
-      console.log('No current call...');
+      console.log('Hold not possible...');
     }
   };
 
@@ -161,7 +161,7 @@ cmgmt = (function () {
       console.log('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
-      console.log('Conditions not met for resume');
+      console.log('Resume not possible...');
     }
   };
 
@@ -173,7 +173,7 @@ cmgmt = (function () {
       ATT.PeerConnectionService.endCall();
       ATT.UserMediaService.stopStream();
     } else {
-      console.log('No current call...');
+      console.log('Hangup not possible...');
     }
   };
 

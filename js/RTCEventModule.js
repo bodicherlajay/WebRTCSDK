@@ -63,7 +63,11 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
-      if (event.sdp && event.modId) {
+      if (event.sdp) {
+        var sdp = event.sdp;
+      }
+
+      if (sdp && event.modId) {
         PeerConnectionService.modificationId = event.modId;
         PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
         PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function () {
@@ -74,38 +78,53 @@ if (!ATT) {
         }});
 
         // hold event - for hold initiated party
-        if (event.sdp.indexOf('recvonly') !== -1) {
+        if (sdp && sdp.indexOf('recvonly') != -1) {
           onCallHold({
             type: mainModule.CallStatus.HOLD
           });
           callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
-          // mute stream
           callManager.getSessionContext().getCallObject().mute();
+        }
+
+        // resume event - for hold initiated party
+        if (sdp && sdp.indexOf('sendrecv') != -1
+          && callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
+          onCallResume({
+            type: mainModule.CallStatus.RESUMED
+          });
+          callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+          callManager.getSessionContext().getCallObject().unmute();
         }
       }
       break;
 
     case mainModule.RTCCallEvents.MODIFICATION_TERMINATED:
+      if (event.sdp) {
+        var sdp = event.sdp;
+      }
+
       if (event.modId && event.reason === 'success') {
         PeerConnectionService.modificationId = event.modId;
       }
 
       // hold event - for hold initiator
-      if (event.sdp && event.sdp.indexOf('recvonly') !== -1) {
+      if (sdp && sdp.indexOf('recvonly') != -1 || sdp && sdp.indexOf('sendonly') != -1) {
         onCallHold({
           type: mainModule.CallStatus.HOLD
         });
         callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
-        // mute stream
         callManager.getSessionContext().getCallObject().mute();
       }
-      // resume event
-      // if (event.sdp.indexOf('sendrecv') !== -1) {
-      //   onCallResume({
-      //     type: mainModule.CallStatus.RESUMED
-      //   });
-      //   callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
-      // }
+
+      // resume event - for resume initiator
+      if (sdp && sdp.indexOf('sendrecv') != -1
+        && callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL ) {
+        onCallResume({
+          type: mainModule.CallStatus.RESUMED
+        });
+        callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+        callManager.getSessionContext().getCallObject().unmute();
+      }
       break;
 
     case mainModule.RTCCallEvents.INVITATION_SENT:
@@ -116,7 +135,7 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.INVITATION_RECEIVED:
-      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
+      if (event.sdp && event.sdp.indexOf('sendonly') != -1) {
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
@@ -141,7 +160,7 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
-      // make sure peer conn is null to prevent bad hangup request from callee
+      // this makes sure peer conn is null to prevent bad hangup request from callee
       // after session is already terminated
       if (ATT.PeerConnectionService.peerConnection) {
         ATT.PeerConnectionService.peerConnection = null;
