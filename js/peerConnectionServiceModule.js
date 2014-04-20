@@ -17,11 +17,7 @@
 
     module = {
 
-      createPeerConnection: function () {
-        return new RTCPeerConnection(this.iceServers);//, this.pcConstraints);
-      },
-
-      mediaConstrains: {},
+      mediaConstraints: {},
 
       pcConstraints: {
         "optional": [
@@ -53,149 +49,32 @@
 
       modificationId: null,
 
-      /**
-       * Create a new RTCPeerConnection.  Depends on the adapter.js module that abstracts away browser differences.
-       * @returns {RTCPeerConnection}
-       */
-      start: function (config) {
+      modificationCount: 2,
 
-        this.callingParty = config.from;
-        this.calledParty = config.to;
-        this.mediaConstraints = config.mediaConstraints;
+      // create a peer connection
+      createPeerConnection: function () {
 
-        this.peerConnection = this.createPeerConnection();
+        var pc_config = {
+          "iceServers": [
+            { "url": "STUN:74.125.133.127:19302" }
+          ]
+        };
 
-        // add eventing to peer connection.
-        this.setUpICETrickling(this.peerConnection);
+        try {
+            this.peerConnection = new RTCPeerConnection(pc_config);
+        } catch (e) {
+            console.log("Failed to create PeerConnection, exception: " + e.message);
+        }
 
-        // send any ice candidates to the other peer
-        // get a local stream, show it in a self-view and add it to be sent
-        getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), this.onLocalStreamCreateError);
-      },
-
-      getUserMediaSuccess: function (stream) {
-        var self = this,
+       var self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
-          event = session.getEventObject(),
-          callState = session.getCallState();
+          pc = this.peerConnection;
 
-        if (callState === rm.SessionState.OUTGOING_CALL) {
-          // set local stream
-          this.localStream = stream;
-
-          // call the user media service to show stream
-          UserMediaService.showStream('local', this.localStream);
-
-          //add the local stream to peer connection
-          this.peerConnection.addStream(stream);
-
-          // create the offer. jslint complains when all are self or all are this.
-          self.createOffer.call(this, self.peerConnection);
-
-        } else if (callState === rm.SessionState.INCOMING_CALL) {
-          // set local stream
-          this.localStream = stream;
-
-          // call the user media service to show stream
-          UserMediaService.showStream('local', this.localStream);
-
-          // create the offer. jslint complains when all are self or all are this.
-          self.setRemoteAndCreateAnswer.call(this, event.sdp, true);
-        }
-      },
-
-      onLocalStreamCreateError: function () {
-        //Call the UI callback to inform the user about the error
-        console.log('Failed to get User Media');
-      },
-
-      createOffer: function (pc) {
-        var self = this,
-          me = self;
-        if (self.userAgent().indexOf('Chrome') < 0) {
-          pc.createOffer(function (description) {
-            self.setLocalAndSendMessage.call(me, description);
-          }, function (err) {
-            console.error(err);
-          }, self.mediaConstraints);
-        } else {
-          pc.createOffer(function (description) {
-            self.setLocalAndSendMessage.call(me, description);
-          });
-        }
-      },
-
-      createAnswer: function (createAnswer) {
-        var self = this,
-          me = self;
-
-        console.log('Setting remote session description...');
-
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
-          console.log('Set Remote Description succeeded.');
-        }, function (err) {
-          // hack for difference between FF and Chrome
-          if (typeof err === 'object') {
-            err = err.message;
-          }
-          console.log('Set Remote Description failed: ' + err);
-        });
-
-        if (createAnswer) {
-          if (navigator.userAgent.indexOf('Chrome') < 0) {
-            this.peerConnection.createAnswer(function (description) {
-              self.setLocalAndSendMessage.call(me, description);
-            }, function (err) {
-              console.error(err);
-            }, self.mediaConstraints);
-          } else {
-            this.peerConnection.createAnswer(function (description) {
-              self.setLocalAndSendMessage.call(me, description);
-            });
-          }
-        }
-      },
-
-      setRemoteAndCreateAnswer: function (sdp, modId) {
-        if (typeof modId === 'string') {
-          this.modificationId = modId;
-        }
-        this.remoteDescription = {
-          sdp: sdp,
-          type: (modId !== undefined ? 'offer' : 'answer')
-        };
-        this.createAnswer(modId !== undefined);
-      },
-
-      setLocalAndSendMessage : function (description) {
-        // fix SDP first time
-        ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
-
-        this.localDescription = description;
-
-        // set local description
-        this.peerConnection.setLocalDescription(this.localDescription);
-
-        if (this.modificationId) {
-          SignalingService.sendAcceptMods({
-            sdp : this.localDescription,
-            modId: this.modificationId
-          });
-        }
-      },
-
-      setUpICETrickling: function (pc) {
-        var self = this,
-          rm = cmgmt.CallManager.getInstance(),
-          session = rm.getSessionContext();
-
+        // ICE candidate trickle
         pc.onicecandidate = function (evt) {
           if (evt.candidate) {
-            console.log('receiving ice candidate ' + evt.candidate);
-            // SignalingService.send(JSON.stringify({
-              // "candidate" : evt.candidate
-            // }));
+            console.log('receiving ice candidate', evt.candidate);
           } else {
             // get the call state from the session
             var callState = session.getCallState();
@@ -222,41 +101,126 @@
             }
           }
         };
-
-        // let the "negotiationneeded" event trigger offer generation
-        // pc.onnegotiationneeded = function() {
-        // pc.createOffer(this.cbk_localSDPOffer, this.cbk_streamError);
-        // }; 
-
-        // once remote stream arrives, show it in the remote video element
         pc.onaddstream = function (evt) {
           this.remoteStream = evt.stream;
           UserMediaService.showStream('remote', this.remoteStream);
           console.log(this.remoteStream);
         };
+      },
 
-        pc.oniceconnectionstatechange = function () {};
+      /**
+       * Start Call.
+       * @param {Object} config The UI config object
+       * 
+       */
+      start: function (config) {
 
-        pc.onsignalingstatechange = function () {};
+        this.callingParty = config.from;
+        this.calledParty = config.to;
+        this.mediaConstraints = config.mediaConstraints;
 
-        pc.onremovestream = function () {};
+        // send any ice candidates to the other peer
+        // get a local stream, show it in a self-view and add it to be sent
+        getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), function() {
+          console.log('Get User Media Fail');
+        });
+      },
 
-        pc.close = function () {};
+      /**
+      * getUserMediaSuccess
+      * @param {Object} stream The media stream
+      */
+      getUserMediaSuccess: function (stream) {
+
+        var self = this,
+          rm = cmgmt.CallManager.getInstance(),
+          session = rm.getSessionContext(),
+          event = session.getEventObject(),
+          callState = session.getCallState();
+
+        self.createPeerConnection();
+
+        if (callState === rm.SessionState.OUTGOING_CALL) {
+          // set local stream
+          this.localStream = stream;
+
+          // call the user media service to show stream
+          UserMediaService.showStream('local', this.localStream);
+
+          //add the local stream to peer connection
+          self.peerConnection.addStream(stream);
+
+          //todo: switch constraints to dynamic
+          this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function() {
+            console.log('Create offer failed');
+          }, {'mandatory': {
+            'OfferToReceiveAudio':true, 
+            'OfferToReceiveVideo':true
+          }});
+
+        } else if (callState === rm.SessionState.INCOMING_CALL) {
+          // set local stream
+          this.localStream = stream;
+
+          // call the user media service to show stream
+          UserMediaService.showStream('local', this.localStream);
+        }
+      },
+
+      /**
+      *
+      * Set Remote Description
+      * @param {Object} sdp SDP
+      * @param {String} type 'answer' or 'offer'
+      */
+      setTheRemoteDescription: function(sdp, type) {
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: sdp, type: type }),
+          function () {
+            console.log('Set Remote Description Success');
+          }, function () { 
+            console.log('Set Remote Description Fail');
+          }
+        );
+      },
+
+      /**
+      *
+      * Set Local And Send Message
+      * @param {Object} description SDP
+      */
+      setLocalAndSendMessage : function (description) {
+        // fix SDP first time
+        ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
+
+        this.localDescription = description;
+
+        // set local description
+        this.peerConnection.setLocalDescription(this.localDescription);
+
+        if (this.modificationId) {
+          SignalingService.sendAcceptMods({
+            sdp : this.localDescription,
+            modId: this.modificationId
+          });
+        }
       },
 
       // hold call
       holdCall: function () {
 
-        var sdp = ATT.sdpFilter.getInstance().incrementSDP(this.peerConnection.localDescription, 2);
+        var sdp = this.localDescription;
 
         // adjust for hold request
         sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
 
+        ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
+
+        this.modificationCount = this.modificationCount + 1;
+
+        ATT.sdpFilter.getInstance().incrementSDP(sdp, this.modificationCount);
+
         // set local description
         this.peerConnection.setLocalDescription(sdp);
-
-        // another fix
-        sdp = ATT.sdpFilter.getInstance().incrementSDP(sdp, 2);
 
         // signal
         SignalingService.sendHoldCall({
@@ -267,17 +231,23 @@
       // resume Call
       resumeCall: function () {
 
-        var sdp = this.peerConnection.localDescription;
+        var sdp = this.localDescription;
 
-        // adjust for resume request
-        sdp.sdp = sdp.sdp.replace(/recvonly/g, 'sendrecv');
+        // adjust for hold request
+        sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
+
+        ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
+
+        this.modificationCount = this.modificationCount + 1;
+
+        ATT.sdpFilter.getInstance().incrementSDP(sdp, this.modificationCount);
 
         // set local description
         this.peerConnection.setLocalDescription(sdp);
 
         // signal
         SignalingService.sendResumeCall({
-          sdp : sdp.sdp
+          sdp : sdp
         });
       },
 
@@ -287,6 +257,11 @@
         this.peerConnection = null;
       },
 
+      /**
+      *
+      * User Agent
+      * @return {String} user-Agent string
+      */
       userAgent: function () {
         return navigator.userAgent;
       }

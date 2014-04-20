@@ -145,7 +145,6 @@ cmgmt = (function () {
 
   Call.hold = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()
         && session_context.getCallState !== SessionState.HOLD_CALL) {
       console.log('Putting call on hold...');
@@ -157,7 +156,6 @@ cmgmt = (function () {
 
   Call.resume = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()
         && session_context.getCallState === SessionState.HOLD_CALL) {
       console.log('Resuming call...');
@@ -169,7 +167,6 @@ cmgmt = (function () {
 
   Call.hangup = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()) {
       console.log('Hanging up...');
       ATT.SignalingService.sendEndCall();

@@ -142,7 +142,7 @@ if (!ATT) {
 
     /**
     * Send Hold Call
-    * @param {Object} config the peer conn config
+    * @param {Object} config The peer conn config
     */
     sendHoldCall: function (config) {
       // request payload

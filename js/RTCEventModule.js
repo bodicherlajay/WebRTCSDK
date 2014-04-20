@@ -5,7 +5,7 @@ if (!ATT) {
   var ATT = {};
 }
 
-(function (mainModule) {
+(function (mainModule, PeerConnectionService) {
   "use strict";
 
   var callManager = cmgmt.CallManager.getInstance(),
@@ -37,11 +37,6 @@ if (!ATT) {
 
     console.log('New Event: ' + JSON.stringify(event));
 
-    //Check if invite is an announcement
-    if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
-      event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
-    }
-
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
 
@@ -57,7 +52,7 @@ if (!ATT) {
 
     case mainModule.RTCCallEvents.SESSION_OPEN:
       if (event.sdp) {
-        ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp);
+        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
       }
       // set callID in the call object
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
@@ -69,14 +64,38 @@ if (!ATT) {
 
     case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
       if (event.sdp && event.modId) {
-        ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
+        PeerConnectionService.modificationId = event.modId;
+        PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
+        PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function () {
+          console.log('Create Answer Failed...');
+        }, {'mandatory': {
+            'OfferToReceiveAudio':true, 
+            'OfferToReceiveVideo':true
+        }});
+
+        // hold event - for hold initiatee
+        if (event.sdp.indexOf('recvonly') !== -1) {
+          onCallHold({
+            type: mainModule.CallStatus.HOLD
+          });
+          callManager.setCallState(callManager.SessionState.HOLD_CALL);
+        }
+        // resume event
+        if (event.sdp.indexOf('sendrecv') !== -1) {
+          onCallResume({
+            type: mainModule.CallStatus.RESUMED
+          });
+          callManager.setCallState(callManager.SessionState.RESUMED_CALL);
+        }
       }
       break;
 
     case mainModule.RTCCallEvents.MODIFICATION_TERMINATED:
-      if (event.sdp && event.modId && event.reason === 'success') {
-        // hold event
-        if (event.sdp.indexOf('recvonly') !== -1) {
+      if (event.modId && event.reason === 'success') {
+        PeerConnectionService.modificationId = event.modId;
+
+        // hold event - for hold initiator
+        if (event.sdp.indexOf('sendonly') !== -1) {
           onCallHold({
             type: mainModule.CallStatus.HOLD
           });
@@ -100,6 +119,19 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.INVITATION_RECEIVED:
+      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
+        event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
+      }
+
+      PeerConnectionService.createPeerConnection();
+      PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
+      //todo: switch constaints to dynamic
+      PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function() {
+        console.log('Create offer failed');
+      }, {'mandatory': {
+        'OfferToReceiveAudio':true, 
+        'OfferToReceiveVideo':true
+      }});
       onIncomingCall({
         type: mainModule.CallStatus.RINGING,
         caller: event.from
@@ -224,4 +256,4 @@ if (!ATT) {
   };
 
   mainModule.RTCEvent = module;
-}(ATT || {}));
+}(ATT || {}, ATT.PeerConnectionService));
