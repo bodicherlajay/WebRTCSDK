@@ -79,7 +79,7 @@ if (!ATT) {
         }});
 
         // hold event - for hold initiated party
-        if (sdp && sdp.indexOf('recvonly') !== -1) {
+        if (sdp && sdp.indexOf('sendonly') !== -1) {
           onCallHold({
             type: mainModule.CallStatus.HOLD
           });
@@ -88,8 +88,7 @@ if (!ATT) {
         }
 
         // resume event - for hold initiated party
-        if (sdp && sdp.indexOf('sendrecv') !== -1
-            && callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
+        if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
           onCallResume({
             type: mainModule.CallStatus.RESUMED
           });
