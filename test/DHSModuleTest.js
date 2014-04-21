@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
 
-describe.only('DHSModule', function () {
+describe('DHSModule', function () {
   "use strict";
 
   var resourceManager = Env.resourceManager.getInstance(),
