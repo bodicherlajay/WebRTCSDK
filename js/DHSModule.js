@@ -40,13 +40,11 @@ if (!Env) {
 
     getE911Id,
 
+    getE911IdSuccess,
+
+    getE911IdError,
+
     createE911Id,
-
-    validateAddress,
-
-    isEmptyString,
-
-    isEmpty,
 
     updateE911Id;
 
@@ -193,93 +191,28 @@ if (!Env) {
 
   /**
    * Get the E911 ID from DHS.
-   * @param {Object} config
+   * @param userID
    */
-  getE911Id = function (config) {
-
-    if (!config.data.userId) {
-      throw new Error('userId required for getE911Id.');
-    }
-
-    var getE911IdConfig = {
+  getE911Id = function (userId) {
+    resourceManager.doOperation('getE911Id', {
       data: {
-        userId: config.userId
+        userId: userId
       },
-      success: function (response) {
-        var data = response.getJson();
-        if (typeof config.success === 'function') {
-          config.success(data);
-        }
-      },
-      error: function (response) {
-        var data = response.getJson();
-        if (typeof config.error === 'function') {
-          config.error(data);
-        }
-      }
-    };
-    resourceManager.doOperation('getE911Id', getE911IdConfig);
+      success:  getE911IdSuccess,
+      error:    getE911IdError
+    });
   };
 
   /**
-   * Simple validator for physical address object.
-   * Todo: validator module.
-   * @param addressObject
+   * Success callback to get the e911Id
+   * @param e911Id
    */
-  validateAddress = function (addressObject) {
-    var retVal = true,
-      index;
-
-    if (typeof addressObject !== 'object') {
-      return false;
-    }
-
-    if (Object.keys(addressObject).length === 0) {
-      return false;
-    }
-
-    for (index in addressObject) {
-      if (addressObject.hasOwnProperty(index)) {
-        if (index !== 'address2') { // address 2 not required
-          if (isEmptyString(addressObject[index])) {
-            retVal = false;
-          }
-        }
-      }
-    }
-    return retVal;
+  getE911IdSuccess = function (e911Id) {
+    console.log(e911Id);
   };
 
-  /**
-   * Check for empty string.
-   * Todo: validator module.
-   * @param {String} item
-   * @returns {boolean}
-   */
-  isEmptyString = function (item) {
-    return (typeof item === 'string' && isEmpty(item));
-  };
-
-  /**
-   * isEmpty validator function.
-   * Todo: validator module.
-   * @param {Any} item
-   * @returns {boolean}
-   */
-  isEmpty = function (item) {
-    if (item === null || item === undefined) {
-      return true;
-    }
-
-    if (typeof item === 'string' || Array.isArray(item)) {
-      return item.length === 0;
-    }
-
-    if (typeof item === 'object') {
-      return Object.keys(item).length === 0;
-    }
-
-    return false;
+  getE911IdError = function () {
+    console.log('getE911IDError!');
   };
 
   /**
@@ -289,15 +222,6 @@ if (!Env) {
    * @member {Object} address The user's physical address object.
    */
   createE911Id = function (config) {
-
-    if (isEmpty(config.userId)) {
-      throw new Error('userId required.');
-    }
-
-    if (!validateAddress(config.address)) {
-      throw new Error('Address did not validate.');
-    }
-
     var createE911IdConfig = {
       data: {
         userId: config.userId,
