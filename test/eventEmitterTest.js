@@ -23,22 +23,19 @@ describe('Event emitter', function () {
   });
 
   it('should call registered callbacks for a topic.', function (done) {
-    var subscribe1Spy, subscribe2Spy;
-    subscribe1Spy = sinon.spy(function (arg1, arg2) {
-      assert(expect(subscribe1Spy.calledWith(123, 'abc')).to.be.true);
+    var callbackSpy;
+
+    // defining a callback with two arguments
+    callbackSpy = sinon.spy(function (arg1, arg2) {
+      assert(expect(callbackSpy.called).to.be.true);
+      assert(expect(callbackSpy.calledWith(123, 'abc')).to.be.true);
       done();
     });
 
-    subscribe2Spy = sinon.spy(function (arg1, arg2) {
-      assert(expect(subscribe2Spy.called).to.be.true);
-      assert(expect(subscribe2Spy.calledWith(123, 'abc')).to.be.true);
-      done();
-    });
-
-    ATT.event.subscribe('topicXYZ', subscribe1Spy);
-    ATT.event.subscribe('topicXYZ', subscribe2Spy);
+    // use `callback` everytime there's an update on `topicXYZ`
+    ATT.event.subscribe('topicXYZ', callbackSpy);
+    // publishing an update on `topicXYZ` with two params
     ATT.event.publish('topicXYZ', 123, 'abc');
-    assert(expect(ATT.event.publish('topicXYZ', 123, 'abc')).to.be.true);
   });
 
   it('shouldnt call callbacks not registered on a topic', function (done) {
