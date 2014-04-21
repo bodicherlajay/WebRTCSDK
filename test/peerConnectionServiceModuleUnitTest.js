@@ -4,7 +4,7 @@ beforeEach: true, before: true, sinon: true, expect: true, xit: true, xdescribe:
 
 'use strict';
 
-describe.only('PeerConnectionServiceModule', function () {
+describe('PeerConnectionServiceModule', function () {
 
   it('is defined', function () {
     expect(ATT.PeerConnectionService).is.an('object');
