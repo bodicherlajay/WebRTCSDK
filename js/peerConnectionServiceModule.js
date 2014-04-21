@@ -57,7 +57,6 @@
         var  self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
-          pc = this.peerConnection,
           pc_config = {
             "iceServers": [
               { "url": "STUN:74.125.133.127:19302" }
@@ -71,7 +70,7 @@
         }
 
         // ICE candidate trickle
-        pc.onicecandidate = function (evt) {
+        this.peerConnection.onicecandidate = function (evt) {
           if (evt.candidate) {
             console.log('receiving ice candidate', evt.candidate);
           } else {
@@ -79,7 +78,7 @@
             var callState = session.getCallState();
 
             if (callState === rm.SessionState.OUTGOING_CALL) {
-              self.localDescription = pc.localDescription;
+              //self.localDescription = self.peerConnection.localDescription;
               SignalingService.sendOffer({
                 calledParty : self.calledParty,
                 sdp : self.localDescription,
@@ -93,14 +92,14 @@
                 }
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
-              self.localDescription = pc.localDescription;
+              //self.localDescription = this.peerConnection.localDescription;
               SignalingService.sendAnswer({
                 sdp : self.localDescription
               });
             }
           }
         };
-        pc.onaddstream = function (evt) {
+        this.peerConnection.onaddstream = function (evt) {
           this.remoteStream = evt.stream;
           UserMediaService.showStream('remote', this.remoteStream);
           console.log(this.remoteStream);

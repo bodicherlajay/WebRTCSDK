@@ -57,7 +57,11 @@ describe('DHSModule', function () {
       "accesstoken": {
         "access_token": "abcd"
       },
-      "e911Id": 'e911id'
+      "e911Id": {
+        "e911Locations": {
+          "addressIdentifier": 'e911id'
+        }
+      }
     };
 
 
@@ -66,7 +70,7 @@ describe('DHSModule', function () {
 
     // expect
     expect(spy.called).to.equal(true);
-    expect(spy.calledWith(responseObject1.accesstoken.access_token, responseObject1.e911Id)).to.equal(true);
+    expect(spy.calledWith(responseObject1.accesstoken.access_token, responseObject1.e911Id.e911Locations.addressIdentifier)).to.equal(true);
 
     // restore
     spy.restore();
