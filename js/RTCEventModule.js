@@ -5,13 +5,14 @@ if (!ATT) {
   var ATT = {};
 }
 
-(function (mainModule) {
+(function (mainModule, PeerConnectionService) {
   "use strict";
 
   var callManager = cmgmt.CallManager.getInstance(),
     module = {},
     instance,
     callbacks,
+    sdp,
     interceptingEventChannelCallback,
     subscribeEvents,
     onSessionReady,
@@ -37,11 +38,6 @@ if (!ATT) {
 
     console.log('New Event: ' + JSON.stringify(event));
 
-    //Check if invite is an announcement
-    if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
-      event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
-    }
-
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
 
@@ -57,7 +53,7 @@ if (!ATT) {
 
     case mainModule.RTCCallEvents.SESSION_OPEN:
       if (event.sdp) {
-        ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp);
+        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
       }
       // set callID in the call object
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
@@ -68,27 +64,67 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
-      if (event.sdp && event.modId) {
-        ATT.PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
+      if (event.sdp) {
+        sdp = event.sdp;
+      }
+
+      if (sdp && event.modId) {
+        PeerConnectionService.modificationId = event.modId;
+        PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
+        PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function () {
+          console.log('Create Answer Failed...');
+        }, {'mandatory': {
+          'OfferToReceiveAudio': true,
+          'OfferToReceiveVideo': true
+        }});
+
+        // hold event - for hold initiated party
+        if (sdp && sdp.indexOf('recvonly') !== -1) {
+          onCallHold({
+            type: mainModule.CallStatus.HOLD
+          });
+          callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+          callManager.getSessionContext().getCallObject().mute();
+        }
+
+        // resume event - for hold initiated party
+        if (sdp && sdp.indexOf('sendrecv') !== -1
+            && callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
+          onCallResume({
+            type: mainModule.CallStatus.RESUMED
+          });
+          callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+          callManager.getSessionContext().getCallObject().unmute();
+        }
       }
       break;
 
     case mainModule.RTCCallEvents.MODIFICATION_TERMINATED:
-      if (event.sdp && event.modId && event.reason === 'success') {
-        // hold event
-        if (event.sdp.indexOf('recvonly') !== -1) {
-          onCallHold({
-            type: mainModule.CallStatus.HOLD
-          });
-          callManager.setCallState(callManager.SessionState.HOLD_CALL);
-        }
-        // resume event
-        if (event.sdp.indexOf('sendrecv') !== -1) {
-          onCallResume({
-            type: mainModule.CallStatus.RESUMED
-          });
-          callManager.setCallState(callManager.SessionState.RESUMED_CALL);
-        }
+      if (event.sdp) {
+        sdp = event.sdp;
+      }
+
+      if (event.modId && event.reason === 'success') {
+        PeerConnectionService.modificationId = event.modId;
+      }
+
+      // hold event - for hold initiator
+      if ((sdp && sdp.indexOf('recvonly') !== -1) || (sdp && sdp.indexOf('sendonly') !== -1)) {
+        onCallHold({
+          type: mainModule.CallStatus.HOLD
+        });
+        callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+        callManager.getSessionContext().getCallObject().mute();
+      }
+
+      // resume event - for resume initiator
+      if (sdp && sdp.indexOf('sendrecv') !== -1
+          && callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
+        onCallResume({
+          type: mainModule.CallStatus.RESUMED
+        });
+        callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+        callManager.getSessionContext().getCallObject().unmute();
       }
       break;
 
@@ -100,6 +136,19 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.INVITATION_RECEIVED:
+      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
+        event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
+      }
+
+      PeerConnectionService.createPeerConnection();
+      PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
+      //todo: switch constaints to dynamic
+      PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function () {
+        console.log('Create offer failed');
+      }, {'mandatory': {
+        'OfferToReceiveAudio': true,
+        'OfferToReceiveVideo': true
+      }});
       onIncomingCall({
         type: mainModule.CallStatus.RINGING,
         caller: event.from
@@ -112,7 +161,7 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
-      // make sure peer conn is null to prevent bad hangup request from callee
+      // this makes sure peer conn is null to prevent bad hangup request from callee
       // after session is already terminated
       if (ATT.PeerConnectionService.peerConnection) {
         ATT.PeerConnectionService.peerConnection = null;
@@ -224,4 +273,4 @@ if (!ATT) {
   };
 
   mainModule.RTCEvent = module;
-}(ATT || {}));
+}(ATT || {}, ATT.PeerConnectionService));

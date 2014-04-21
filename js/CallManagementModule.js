@@ -145,38 +145,35 @@ cmgmt = (function () {
 
   Call.hold = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()
-        && session_context.getCallState !== SessionState.HOLD_CALL) {
+        && session_context.getCallState() !== SessionState.HOLD_CALL) {
       console.log('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
-      console.log('No current call...');
+      console.log('Hold not possible...');
     }
   };
 
   Call.resume = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()
-        && session_context.getCallState === SessionState.HOLD_CALL) {
+        && session_context.getCallState() === SessionState.HOLD_CALL) {
       console.log('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
-      console.log('Conditions not met for resume');
+      console.log('Resume not possible...');
     }
   };
 
   Call.hangup = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && ATT.PeerConnectionService.peerConnection.iceConnectionState !== 'disconnected'
         && session_context.getCurrentCallId()) {
       console.log('Hanging up...');
       ATT.SignalingService.sendEndCall();
       ATT.PeerConnectionService.endCall();
       ATT.UserMediaService.stopStream();
     } else {
-      console.log('No current call...');
+      console.log('Hangup not possible...');
     }
   };
 
