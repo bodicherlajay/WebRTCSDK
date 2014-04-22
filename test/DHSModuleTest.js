@@ -83,9 +83,7 @@ describe('DHSModule', function () {
       responseObject1;
 
     ATT.rtc.dhs.getE911Id({
-      data: {
-        userId: 'userId'
-      },
+      userId: 'userId',
       success:  spySuccess,
       error:    spyError
     });
@@ -109,9 +107,7 @@ describe('DHSModule', function () {
       responseObject1;
 
     ATT.rtc.dhs.getE911Id({
-      data: {
-        userId: 'userId'
-      },
+      userId: 'userId',
       success:  spySuccess,
       error:    spyError
     });
