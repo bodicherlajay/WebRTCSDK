@@ -62,8 +62,10 @@
               { "url": "STUN:74.125.133.127:19302" }
             ]
           },
-          pc = self.peerConnection = new RTCPeerConnection(pc_config);
-          
+          pc = new RTCPeerConnection(pc_config);
+
+        self.peerConnection = pc;
+
         // ICE candidate trickle
         pc.onicecandidate = function (evt) {
           if (evt.candidate) {
