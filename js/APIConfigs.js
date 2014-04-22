@@ -99,7 +99,11 @@ if (!ATT) {
        */
       getE911Id: {
         method: 'get',
-        url: DEFAULTS.DHSEndpoint + '/e911',
+        formatters : {
+          url: function (params) {
+            return DEFAULTS.DHSEndpoint + '/e911/' + params;
+          }
+        },
         headers: DEFAULTS.headers
       },
       /**
@@ -108,6 +112,15 @@ if (!ATT) {
        */
       createE911Id: {
         method: 'post',
+        url: DEFAULTS.DHSEndpoint + '/e911',
+        headers: DEFAULTS.headers
+      },
+      /**
+       * Update a e911Id using DHSEndpoint
+       * @memberof WebRTCAPI.APIConfigs
+       */
+      updateE911Id: {
+        method: 'put',
         url: DEFAULTS.DHSEndpoint + '/e911',
         headers: DEFAULTS.headers
       },

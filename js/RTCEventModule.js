@@ -77,7 +77,7 @@ if (!ATT) {
           'OfferToReceiveAudio': true,
           'OfferToReceiveVideo': true
         }});
-        
+
         // hold event
         if (sdp && sdp.indexOf('sendonly') !== -1) {
           onCallHold({

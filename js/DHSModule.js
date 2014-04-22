@@ -192,36 +192,6 @@ if (!Env) {
   };
 
   /**
-   * Get the E911 ID from DHS.
-   * @param {Object} config
-   */
-  getE911Id = function (config) {
-
-    if (!config.data.userId) {
-      throw new Error('userId required for getE911Id.');
-    }
-
-    var getE911IdConfig = {
-      data: {
-        userId: config.userId
-      },
-      success: function (response) {
-        var data = response.getJson();
-        if (typeof config.success === 'function') {
-          config.success(data);
-        }
-      },
-      error: function (response) {
-        var data = response.getJson();
-        if (typeof config.error === 'function') {
-          config.error(data);
-        }
-      }
-    };
-    resourceManager.doOperation('getE911Id', getE911IdConfig);
-  };
-
-  /**
    * Simple validator for physical address object.
    * Todo: validator module.
    * @param addressObject
@@ -283,13 +253,42 @@ if (!Env) {
   };
 
   /**
+   * Get the E911 ID from DHS.
+   * @param {Object} config
+   */
+  getE911Id = function (config) {
+
+    if (!config.userId) {
+      throw new Error('userId required for getE911Id.');
+    }
+
+    var getE911IdConfig = {
+      params: {
+        url: config.userId
+      },
+      success: function (response) {
+        var data = response.getJson();
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      },
+      error: function (response) {
+        var data = response.getJson();
+        if (typeof config.error === 'function') {
+          config.error(data);
+        }
+      }
+    };
+    resourceManager.doOperation('getE911Id', getE911IdConfig);
+  };
+
+  /**
    * Create an the E911 ID on DHS.
    * @param {Object} config
    * @member {String} userId ICMN / VTN user
    * @member {Object} address The user's physical address object.
    */
   createE911Id = function (config) {
-
     if (isEmpty(config.userId)) {
       throw new Error('userId required.');
     }
@@ -317,7 +316,7 @@ if (!Env) {
       }
     };
 
-    // Call DHS to update and e911 id linked address for the user
+    // Call DHS to create an e911 id linked address for the user
     resourceManager.doOperation('createE911Id', createE911IdConfig);
   };
 
@@ -328,7 +327,35 @@ if (!Env) {
    * @member {Object} address The user's physical address object.
    */
   updateE911Id = function (config) {
-    console.log(config);
+    if (isEmpty(config.userId)) {
+      throw new Error('userId required.');
+    }
+
+    if (!validateAddress(config.address)) {
+      throw new Error('Address did not validate.');
+    }
+
+    var updateE911IdConfig = {
+      data: {
+        userId: config.userId,
+        address: config.address
+      },
+      success: function (response) {
+        var data = response.getJson();
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      },
+      error: function (response) {
+        var data = response.getJson();
+        if (typeof config.error === 'function') {
+          config.error(data);
+        }
+      }
+    };
+
+    // Call DHS to update an e911 id linked address for the user
+    resourceManager.doOperation('updateE911Id', updateE911IdConfig);
   };
 
   init();

@@ -61,16 +61,13 @@
             "iceServers": [
               { "url": "STUN:74.125.133.127:19302" }
             ]
-          };
+          },
+          pc = new RTCPeerConnection(pc_config);
 
-        try {
-          this.peerConnection = new RTCPeerConnection(pc_config);
-        } catch (e) {
-          console.log("Failed to create PeerConnection, exception: " + e.message);
-        }
+        self.peerConnection = pc;
 
         // ICE candidate trickle
-        this.peerConnection.onicecandidate = function (evt) {
+        pc.onicecandidate = function (evt) {
           if (evt.candidate) {
             console.log('receiving ice candidate', evt.candidate);
           } else {
@@ -78,7 +75,7 @@
             var callState = session.getCallState();
 
             if (callState === rm.SessionState.OUTGOING_CALL) {
-              //self.localDescription = self.peerConnection.localDescription;
+              self.localDescription = pc.localDescription;
               SignalingService.sendOffer({
                 calledParty : self.calledParty,
                 sdp : self.localDescription,
@@ -92,14 +89,14 @@
                 }
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
-              //self.localDescription = this.peerConnection.localDescription;
+              self.localDescription = pc.localDescription;
               SignalingService.sendAnswer({
                 sdp : self.localDescription
               });
             }
           }
         };
-        this.peerConnection.onaddstream = function (evt) {
+        pc.onaddstream = function (evt) {
           this.remoteStream = evt.stream;
           UserMediaService.showStream('remote', this.remoteStream);
           console.log(this.remoteStream);
