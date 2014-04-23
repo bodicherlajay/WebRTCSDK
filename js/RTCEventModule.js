@@ -138,15 +138,6 @@ if (!ATT) {
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
-      PeerConnectionService.createPeerConnection();
-      PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
-      //todo: switch constaints to dynamic
-      PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function () {
-        console.log('Create offer failed');
-      }, {'mandatory': {
-        'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true
-      }});
       onIncomingCall({
         type: mainModule.CallStatus.RINGING,
         caller: event.from

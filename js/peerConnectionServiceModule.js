@@ -131,6 +131,7 @@
         var self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
+          event = session.getEventObject(),
           callState = session.getCallState();
 
         self.createPeerConnection();
@@ -159,6 +160,23 @@
 
           // call the user media service to show stream
           UserMediaService.showStream('local', this.localStream);
+          
+          this.remoteDescription = event.sdp;
+
+          this.setTheRemoteDescription(this.remoteDescription, 'offer');
+
+          if (this.userAgent().indexOf('Chrome') < 0) {
+            this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function() {
+              console.log('Create answer failed');
+            }, {
+              'mandatory' : {//todo: switch constaints to dynamic
+                'OfferToReceiveAudio' : true,
+                'OfferToReceiveVideo' : true
+              }
+            });
+          } else {
+            this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this));
+          }
         }
       },
 
@@ -169,12 +187,18 @@
       * @param {String} tipe 'answer' or 'offer'
       */
       setTheRemoteDescription: function (description, tipe) {
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: description, type: tipe }),
-          function () {
-            console.log('Set Remote Description Success');
-          }, function (err) {
-            console.log('Set Remote Description Fail', err);
-          });
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription({
+          sdp : description,
+          type : tipe
+        }), function() {
+          console.log('Set Remote Description Success');
+        }, function(err) {
+          // hack for difference between FF and Chrome
+          if ( typeof err === 'object') {
+            err = err.message;
+          }
+          console.log('Set Remote Description Fail', err);
+        }); 
       },
 
       /**
