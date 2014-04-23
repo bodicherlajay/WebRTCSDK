@@ -145,8 +145,7 @@ cmgmt = (function () {
 
   Call.hold = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCurrentCallId()
-        && session_context.getCallState() !== SessionState.HOLD_CALL) {
+        && session_context.getCurrentCallId()) {
       console.log('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
@@ -156,8 +155,7 @@ cmgmt = (function () {
 
   Call.resume = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCurrentCallId()
-        && session_context.getCallState() === SessionState.HOLD_CALL) {
+        && session_context.getCurrentCallId()) {
       console.log('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {

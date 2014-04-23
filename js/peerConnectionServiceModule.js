@@ -164,11 +164,11 @@
       /**
       *
       * Set Remote Description
-      * @param {Object} sdp SDP
-      * @param {String} type 'answer' or 'offer'
+      * @param {Object} sdp description
+      * @param {String} tipe 'answer' or 'offer'
       */
-      setTheRemoteDescription: function (sdp, type) {
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: sdp, type: type }),
+      setTheRemoteDescription: function (description, tipe) {
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: description, type: tipe }),
           function () {
             console.log('Set Remote Description Success');
           }, function (err) {
@@ -228,7 +228,6 @@
 
         // adjust for resume request
         sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
-        sdp.sdp = sdp.sdp.replace(/a=sendonly/g, 'a=sendrecv');
 
         ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
 
