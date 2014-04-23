@@ -170,9 +170,9 @@
       *
       * Create Answer
       */
-      createAnswer: function() {
+      createAnswer: function () {
         if (this.userAgent().indexOf('Chrome') < 0) {
-          this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function() {
+          this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function () {
             console.log('Create answer failed');
           }, {
             'mandatory' : { //todo: switch constaints to dynamic
@@ -196,15 +196,15 @@
           'sdp' : description,
           'type' : type
         };
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function() {
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
           console.log('Set Remote Description Success');
-        }, function(err) {
+        }, function (err) {
           // hack for difference between FF and Chrome
-          if ( typeof err === 'object') {
+          if (typeof err === 'object') {
             err = err.message;
           }
           console.log('Set Remote Description Fail', err);
-        }); 
+        });
       },
 
       /**
