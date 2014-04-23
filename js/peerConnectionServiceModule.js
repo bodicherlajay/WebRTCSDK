@@ -160,13 +160,13 @@
 
           // call the user media service to show stream
           UserMediaService.showStream('local', this.localStream);
-          
+
           this.remoteDescription = event.sdp;
 
           this.setTheRemoteDescription(this.remoteDescription, 'offer');
 
           if (this.userAgent().indexOf('Chrome') < 0) {
-            this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function() {
+            this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function () {
               console.log('Create answer failed');
             }, {
               'mandatory' : {//todo: switch constaints to dynamic
@@ -190,15 +190,15 @@
         this.peerConnection.setRemoteDescription(new RTCSessionDescription({
           sdp : description,
           type : tipe
-        }), function() {
+        }), function () {
           console.log('Set Remote Description Success');
-        }, function(err) {
+        }, function (err) {
           // hack for difference between FF and Chrome
-          if ( typeof err === 'object') {
+          if (typeof err === 'object') {
             err = err.message;
           }
           console.log('Set Remote Description Fail', err);
-        }); 
+        });
       },
 
       /**
