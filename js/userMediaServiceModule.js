@@ -48,8 +48,10 @@ if (!ATT) {
         videoStreamEl = this.localVideoElement;
       }
 
-      videoStreamEl.src = window.URL.createObjectURL(stream);
-      videoStreamEl.play();
+      if (videoStreamEl) {
+        videoStreamEl.src = window.URL.createObjectURL(stream);
+        videoStreamEl.play();
+      }
     },
 
     // stop stream

@@ -22,4 +22,20 @@ describe('ErrorDictionaryModule', function () {
     expect(err.errorId()).to.equal('RTC00000Create Session400SVC0002');
     expect(errorDictionary.getError(err.errorId()).reasonText).to.equal('invalidinput');
   });
+
+  it('should throw error if module id does not exist', function () {
+    try {
+      var err = errorDictionary.newError({userErrorCode: '00000',    //5 digit error code
+        operationName: 'Create Session',    //Name of the REST operation
+        httpStatusCode: '400',   //HTTP Status code
+        messageId: 'SVC0002',        //SVC or POL Error
+        helpText: 'One or more of the input parameters are not valid for this operation',         //Help text which can be displayed on UI
+        reasonText: 'invalidinput',       //High level reason text, invalid input, forbidden
+        errorDescription: 'Request payload does not conform as documented', //Error Description
+        moduleID: 'RTC2'          //one of the configured module name
+        });
+    } catch (e) {
+      expect(e.toString()).to.equal('Error: Invalid Module ID');
+    }
+  });
 });

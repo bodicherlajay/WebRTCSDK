@@ -57,14 +57,14 @@
         var  self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
+          pc,
           pc_config = {
             "iceServers": [
               { "url": "STUN:74.125.133.127:19302" }
             ]
-          },
-          pc = new RTCPeerConnection(pc_config);
-
-        self.peerConnection = pc;
+          };
+        self.peerConnection = new RTCPeerConnection(pc_config);
+        pc = self.peerConnection;
 
         // ICE candidate trickle
         pc.onicecandidate = function (evt) {
@@ -96,11 +96,12 @@
             }
           }
         };
-        pc.onaddstream = function (evt) {
+        // add remote stream
+        pc.addEventListener('addstream', function (evt) {
           this.remoteStream = evt.stream;
-          UserMediaService.showStream('remote', this.remoteStream);
-          console.log(this.remoteStream);
-        };
+          UserMediaService.showStream('remote', evt.stream);
+          console.log('Remote Stream', evt.stream);
+        }, false);
       },
 
       /**
@@ -164,11 +165,11 @@
       /**
       *
       * Set Remote Description
-      * @param {Object} sdp SDP
-      * @param {String} type 'answer' or 'offer'
+      * @param {Object} sdp description
+      * @param {String} tipe 'answer' or 'offer'
       */
-      setTheRemoteDescription: function (sdp, type) {
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: sdp, type: type }),
+      setTheRemoteDescription: function (description, tipe) {
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: description, type: tipe }),
           function () {
             console.log('Set Remote Description Success');
           }, function (err) {
@@ -228,7 +229,6 @@
 
         // adjust for resume request
         sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
-        sdp.sdp = sdp.sdp.replace(/a=sendonly/g, 'a=sendrecv');
 
         ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
 
