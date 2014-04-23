@@ -38,9 +38,6 @@ if (!ATT) {
 
     console.log('New Event: ' + JSON.stringify(event));
 
-    // set current event on the session
-    callManager.getSessionContext().setEventObject(event);
-
     // enumerate over RTC EVENTS
     // todo capture time, debugging info for sdk
     switch (event.state) {
@@ -145,8 +142,8 @@ if (!ATT) {
       }
       // this makes sure peer conn is null to prevent bad hangup request from callee
       // after session is already terminated
-      if (ATT.PeerConnectionService.peerConnection) {
-        ATT.PeerConnectionService.peerConnection = null;
+      if (PeerConnectionService.peerConnection) {
+        PeerConnectionService.peerConnection = null;
       }
       break;
 
@@ -166,6 +163,9 @@ if (!ATT) {
       onCallError({ type: mainModule.CallStatus.ERROR });
       break;
     }
+
+    // set current event on the session
+    callManager.getSessionContext().setEventObject(event);
   };
 
   subscribeEvents = function () {
