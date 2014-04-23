@@ -25,6 +25,9 @@
       }
     },
     error = function (props) {
+      if (!module.MODULES.hasOwnProperty(props.moduleID)) {
+        throw new Error("Invalid Module ID");
+      }
       var err = app.utils.extend(Object.create(errorProtoType), props);
       errorCollection[err.errorId()] = err;
       return err;
@@ -48,7 +51,8 @@
     RTC_EVENT: 'RTC-EVT',
     SIGNALING: 'SIG-SRV',
     SDP_FILTER: 'SDP-FLT',
-    CALL_MGR: 'CALL-MGR'
+    CALL_MGR: 'CALL-MGR',
+    RTC: 'RTC'
   };
   module.MODULES = Object.freeze(module.MODULES);
 
