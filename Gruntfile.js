@@ -13,6 +13,7 @@ module.exports = function (grunt) {
       },
       'js-shared/js/utils.js',
       'js/adapter.js',
+      'js/ErrorDictionaryModule.js',
       'js/appConfigModule.js',
       'js-shared/js/utils.js',
       'js-shared/js/restClient.js',
