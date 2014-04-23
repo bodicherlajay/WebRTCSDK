@@ -57,14 +57,14 @@
         var  self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
+          pc,
           pc_config = {
             "iceServers": [
               { "url": "STUN:74.125.133.127:19302" }
             ]
-          },
-          pc = new RTCPeerConnection(pc_config);
-
-        self.peerConnection = pc;
+          };
+        self.peerConnection = new RTCPeerConnection(pc_config);
+        pc = self.peerConnection;
 
         // ICE candidate trickle
         pc.onicecandidate = function (evt) {
