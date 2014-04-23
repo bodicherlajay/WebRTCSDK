@@ -69,14 +69,7 @@ if (!ATT) {
       }
 
       if (sdp && event.modId) {
-        PeerConnectionService.modificationId = event.modId;
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
-        PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function () {
-          console.log('Create Answer Failed...');
-        }, {'mandatory': {
-          'OfferToReceiveAudio': true,
-          'OfferToReceiveVideo': true
-        }});
+        PeerConnectionService.setRemoteAndCreateAnswer(sdp, event.modId);
 
         // hold event
         if (sdp && sdp.indexOf('sendonly') !== -1) {
@@ -104,7 +97,7 @@ if (!ATT) {
       }
 
       if (event.modId && event.reason === 'success') {
-        PeerConnectionService.modificationId = event.modId;
+        PeerConnectionService.setModificationId(event.modId);
       }
 
       // hold event - for hold initiator

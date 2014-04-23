@@ -160,23 +160,28 @@
 
           // call the user media service to show stream
           UserMediaService.showStream('local', this.localStream);
-          
-          this.remoteDescription = event.sdp;
 
-          this.setTheRemoteDescription(this.remoteDescription, 'offer');
+          this.setTheRemoteDescription(event.sdp, 'offer');
+          this.createAnswer();
+        }
+      },
 
-          if (this.userAgent().indexOf('Chrome') < 0) {
-            this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function() {
-              console.log('Create answer failed');
-            }, {
-              'mandatory' : {//todo: switch constaints to dynamic
-                'OfferToReceiveAudio' : true,
-                'OfferToReceiveVideo' : true
-              }
-            });
-          } else {
-            this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this));
-          }
+      /**
+      *
+      * Create Answer
+      */
+      createAnswer: function() {
+        if (this.userAgent().indexOf('Chrome') < 0) {
+          this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function() {
+            console.log('Create answer failed');
+          }, {
+            'mandatory' : { //todo: switch constaints to dynamic
+              'OfferToReceiveAudio' : true,
+              'OfferToReceiveVideo' : true
+            }
+          });
+        } else {
+          this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this));
         }
       },
 
@@ -184,13 +189,14 @@
       *
       * Set Remote Description
       * @param {Object} sdp description
-      * @param {String} tipe 'answer' or 'offer'
+      * @param {String} type 'answer' or 'offer'
       */
-      setTheRemoteDescription: function (description, tipe) {
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription({
-          sdp : description,
-          type : tipe
-        }), function() {
+      setTheRemoteDescription: function (description, type) {
+        this.remoteDescription = {
+          'sdp' : description,
+          'type' : type
+        };
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function() {
           console.log('Set Remote Description Success');
         }, function(err) {
           // hack for difference between FF and Chrome
@@ -199,6 +205,22 @@
           }
           console.log('Set Remote Description Fail', err);
         }); 
+      },
+
+      /**
+      *
+      * Set Remote Description and Create Answer
+      * @param {Object} sdp description
+      * @param {String} modId modification id
+      */
+      setRemoteAndCreateAnswer: function (sdp, modId) {
+        this.modificationId = modId;
+        this.setTheRemoteDescription(sdp, 'offer');
+        this.createAnswer();
+      },
+
+      setModificationId: function (modId) {
+        this.modificationId = modId;
       },
 
       /**
