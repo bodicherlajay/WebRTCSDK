@@ -96,11 +96,12 @@
             }
           }
         };
-        pc.onaddstream = function (evt) {
+        // add remote stream
+        pc.addEventListener('addstream', function (evt) {
           this.remoteStream = evt.stream;
-          UserMediaService.showStream('remote', this.remoteStream);
-          console.log(this.remoteStream);
-        };
+          UserMediaService.showStream('remote', evt.stream);
+          console.log('Remote Stream', evt.stream);
+        }, false);
       },
 
       /**
