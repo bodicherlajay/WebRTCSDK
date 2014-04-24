@@ -86,7 +86,7 @@
 
 // Create an Error Dictionary for ATT
 // TODO: This should be called in our `main` entry point.
-ATT.eventDictionary = ATT.createErrorDictionary({
+ATT.errorDictionary = ATT.createErrorDictionary({
   modules: {
     APP_COfNFIG: 'APP-CFG',
     DHS: 'DHS',
