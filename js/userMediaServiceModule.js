@@ -68,15 +68,25 @@ if (!ATT) {
 
     // mute stream
     muteStream: function () {
-      if (this.localVideoElement) {
-        this.localVideoElement.muted = true;
+      if (this.localStream) {
+        var audioTracks = this.localStream.getAudioTracks(),
+          i,
+          l = audioTracks.length;
+        for (i = 0; i < l; i = i + 1) {
+          audioTracks[i].enabled = false;
+        }
       }
     },
 
     // un-mute stream
     unmuteStream: function () {
-      if (this.localVideoElement) {
-        this.localVideoElement.muted = false;
+      if (this.localStream) {
+        var audioTracks = this.localStream.getAudioTracks(),
+          i,
+          l = audioTracks.length;
+        for (i = 0; i < l; i = i + 1) {
+          audioTracks[i].enabled = true;
+        }
       }
     }
   };

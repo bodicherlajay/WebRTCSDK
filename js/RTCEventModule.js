@@ -13,6 +13,7 @@ if (!ATT) {
     instance,
     callbacks,
     sdp,
+    kaller,
     interceptingEventChannelCallback,
     subscribeEvents,
     onSessionReady,
@@ -38,9 +39,6 @@ if (!ATT) {
 
     console.log('New Event: ' + JSON.stringify(event));
 
-    // set current event on the session
-    callManager.getSessionContext().setEventObject(event);
-
     // enumerate over RTC EVENTS
     // todo capture time, debugging info for sdk
     switch (event.state) {
@@ -57,9 +55,11 @@ if (!ATT) {
       }
       // set callID in the call object
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
-      // call established - trigger 'in progress' event
+      // call established
+      var time = new Date().getTime();
       onInProgress({
-        type: mainModule.CallStatus.INPROGRESS
+        type: mainModule.CallStatus.INPROGRESS,
+        timestamp: time
       });
       break;
 
@@ -69,31 +69,22 @@ if (!ATT) {
       }
 
       if (sdp && event.modId) {
-        PeerConnectionService.modificationId = event.modId;
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
-        PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function () {
-          console.log('Create Answer Failed...');
-        }, {'mandatory': {
-          'OfferToReceiveAudio': true,
-          'OfferToReceiveVideo': true
-        }});
+        PeerConnectionService.setRemoteAndCreateAnswer(sdp, event.modId);
 
-        // hold event
+        // hold request received
         if (sdp && sdp.indexOf('sendonly') !== -1) {
           onCallHold({
             type: mainModule.CallStatus.HOLD
           });
           callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
-          callManager.getSessionContext().getCallObject().mute();
         }
 
-        // resume event - for hold initiated party
+        // resume request received
         if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
           onCallResume({
             type: mainModule.CallStatus.RESUMED
           });
           callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
-          callManager.getSessionContext().getCallObject().unmute();
         }
       }
       break;
@@ -104,25 +95,23 @@ if (!ATT) {
       }
 
       if (event.modId && event.reason === 'success') {
-        PeerConnectionService.modificationId = event.modId;
+        PeerConnectionService.setModificationId(event.modId);
       }
 
-      // hold event - for hold initiator
-      if (sdp && sdp.indexOf('sendonly') !== -1) {
+      // hold request successful
+      if (sdp && sdp.indexOf('recvonly') !== -1 && sdp.indexOf('sendrecv') !== -1) {
         onCallHold({
           type: mainModule.CallStatus.HOLD
         });
         callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
-        callManager.getSessionContext().getCallObject().mute();
-      }
-
-      // resume event - for resume initiator
-      if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
-        onCallResume({
-          type: mainModule.CallStatus.RESUMED
-        });
-        callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
-        callManager.getSessionContext().getCallObject().unmute();
+      } else if (sdp && sdp.indexOf('sendrecv') !== -1) {
+        if (callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
+          // resume request successful
+          onCallResume({
+            type: mainModule.CallStatus.RESUMED
+          });
+          callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+        }
       }
       break;
 
@@ -138,18 +127,12 @@ if (!ATT) {
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
-      PeerConnectionService.createPeerConnection();
-      PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
-      //todo: switch constaints to dynamic
-      PeerConnectionService.peerConnection.createAnswer(PeerConnectionService.setLocalAndSendMessage.bind(PeerConnectionService), function () {
-        console.log('Create offer failed');
-      }, {'mandatory': {
-        'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true
-      }});
+      // parse the phone number
+      kaller = event.from.split('@')[0].split(':')[1];
+
       onIncomingCall({
         type: mainModule.CallStatus.RINGING,
-        caller: event.from
+        caller: kaller
       });
       break;
 
@@ -159,10 +142,10 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
-      // this makes sure peer conn is null to prevent bad hangup request from callee
-      // after session is already terminated
-      if (ATT.PeerConnectionService.peerConnection) {
-        ATT.PeerConnectionService.peerConnection = null;
+      callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
+      ATT.UserMediaService.stopStream();
+      if (PeerConnectionService.peerConnection) {
+        PeerConnectionService.endCall();
       }
       break;
 
@@ -182,6 +165,9 @@ if (!ATT) {
       onCallError({ type: mainModule.CallStatus.ERROR });
       break;
     }
+
+    // set current event on the session
+    callManager.getSessionContext().setEventObject(event);
   };
 
   subscribeEvents = function () {

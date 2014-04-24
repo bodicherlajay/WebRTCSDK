@@ -51,7 +51,11 @@
 
       modificationCount: 2,
 
-      // create a peer connection
+      /**
+      *
+      * Create a Peer Connection
+      *
+      */
       createPeerConnection: function () {
 
         var  self = this,
@@ -73,9 +77,9 @@
           } else {
             // get the call state from the session
             var callState = session.getCallState();
+            self.localDescription = pc.localDescription;
 
             if (callState === rm.SessionState.OUTGOING_CALL) {
-              self.localDescription = pc.localDescription;
               SignalingService.sendOffer({
                 calledParty : self.calledParty,
                 sdp : self.localDescription,
@@ -89,7 +93,6 @@
                 }
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
-              self.localDescription = pc.localDescription;
               SignalingService.sendAnswer({
                 sdp : self.localDescription
               });
@@ -131,6 +134,7 @@
         var self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
+          event = session.getEventObject(),
           callState = session.getCallState();
 
         self.createPeerConnection();
@@ -159,6 +163,28 @@
 
           // call the user media service to show stream
           UserMediaService.showStream('local', this.localStream);
+
+          this.setTheRemoteDescription(event.sdp, 'offer');
+          this.createAnswer();
+        }
+      },
+
+      /**
+      *
+      * Create Answer
+      */
+      createAnswer: function () {
+        if (this.userAgent().indexOf('Chrome') < 0) {
+          this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function () {
+            console.log('Create answer failed');
+          }, {
+            'mandatory' : { //todo: switch constaints to dynamic
+              'OfferToReceiveAudio' : true,
+              'OfferToReceiveVideo' : true
+            }
+          });
+        } else {
+          this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this));
         }
       },
 
@@ -166,15 +192,42 @@
       *
       * Set Remote Description
       * @param {Object} sdp description
-      * @param {String} tipe 'answer' or 'offer'
+      * @param {String} type 'answer' or 'offer'
       */
-      setTheRemoteDescription: function (description, tipe) {
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: description, type: tipe }),
-          function () {
-            console.log('Set Remote Description Success');
-          }, function (err) {
-            console.log('Set Remote Description Fail', err);
-          });
+      setTheRemoteDescription: function (description, type) {
+        this.remoteDescription = {
+          'sdp' : description,
+          'type' : type
+        };
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
+          console.log('Set Remote Description Success');
+        }, function (err) {
+          // hack for difference between FF and Chrome
+          if (typeof err === 'object') {
+            err = err.message;
+          }
+          console.log('Set Remote Description Fail', err);
+        });
+      },
+
+      /**
+      *
+      * Set Remote Description and Create Answer
+      * @param {Object} sdp description
+      * @param {String} modId modification id
+      */
+      setRemoteAndCreateAnswer: function (sdp, modId) {
+        this.modificationId = modId;
+        this.setTheRemoteDescription(sdp, 'offer');
+        this.createAnswer();
+      },
+
+      /**
+      * Set modification Id
+      * @param {String} modId The modification Id
+      */
+      setModificationId: function (modId) {
+        this.modificationId = modId;
       },
 
       /**
@@ -199,7 +252,11 @@
         }
       },
 
-      // hold call
+     /**
+      *
+      * Hold Call
+      *
+      */
       holdCall: function () {
 
         var sdp = this.localDescription;
@@ -222,7 +279,10 @@
         });
       },
 
-      // resume Call
+      /**
+      *
+      * Resume Call
+      */
       resumeCall: function () {
 
         var sdp = this.localDescription;
@@ -245,7 +305,10 @@
         });
       },
 
-      // end Call
+      /**
+      *
+      * End Call
+      */
       endCall: function () {
         this.peerConnection.close();
         this.peerConnection = null;

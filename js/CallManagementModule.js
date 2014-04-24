@@ -30,6 +30,7 @@ cmgmt = (function () {
       HOLD_CALL : "Hold Call",
       RESUMED_CALL : "Resumed Call",
       TRANSFER_CALL : "Transfer Call",
+      ENDED_CALL : "Ended Call",
       READY: "Ready", //Ready to accept Outgoing or Incoming call
       SDK_READY: "SDK Ready"
     },
@@ -168,8 +169,6 @@ cmgmt = (function () {
         && session_context.getCurrentCallId()) {
       console.log('Hanging up...');
       ATT.SignalingService.sendEndCall();
-      ATT.PeerConnectionService.endCall();
-      ATT.UserMediaService.stopStream();
     } else {
       console.log('Hangup not possible...');
     }
