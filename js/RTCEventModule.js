@@ -54,9 +54,11 @@ if (!ATT) {
       }
       // set callID in the call object
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
-      // call established - trigger 'in progress' event
+      // call established
+      var time = new Date().getTime();
       onInProgress({
-        type: mainModule.CallStatus.INPROGRESS
+        type: mainModule.CallStatus.INPROGRESS,
+        timestamp: time
       });
       break;
 
