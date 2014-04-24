@@ -126,9 +126,12 @@ if (!ATT) {
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
+      // parse the phone number
+      var kaller = event.from.split('@')[0].split(':')[1];
+
       onIncomingCall({
         type: mainModule.CallStatus.RINGING,
-        caller: event.from
+        caller: kaller
       });
       break;
 
