@@ -64,7 +64,6 @@
       newError = null;
 
     return { // return the error dictionary
-      modules: modules,
       createError: function (spec) {
         // only allow creation of error for modules in the list
         if (!modules.hasOwnProperty(spec.moduleID)) {
