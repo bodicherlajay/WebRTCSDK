@@ -49,15 +49,15 @@ if (!exports) {
     },
     configureLogger = function (moduleName, type, level) {
       var clogger = loggersCollection[moduleName];
-      if (!clogger) {
-        if (type === module.LOGGER_TYPE.CONSOLE) {
-          clogger = newConsoleLogger();
-          clogger.logLevel(level);
-        }
-        loggersCollection[moduleName] = clogger;
-        return true;
+      if (clogger === "undefined") {
+        throw new Error("Logger exists, Can not create the logger specified");
       }
-      return false;
+      if (type === module.LOGGER_TYPE.CONSOLE) {
+        clogger = newConsoleLogger();
+        clogger.logLevel(level);
+      }
+      loggersCollection[moduleName] = clogger;
+      return true;
     },
     getLogger = function (moduleName) {
       var clogger = loggersCollection[moduleName];

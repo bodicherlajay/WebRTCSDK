@@ -14,7 +14,7 @@ module.exports = function (grunt) {
     ],
     logLevel: 'DEBUG',
     port: 9876,
-    browsers: ['Firefox', 'Chrome'],
+    browsers: ['Chrome'],
     captureTimeout: 60000
   },
     karmaConfigUnit = {
