@@ -13,6 +13,7 @@ if (!ATT) {
     instance,
     callbacks,
     sdp,
+    kaller,
     interceptingEventChannelCallback,
     subscribeEvents,
     onSessionReady,
@@ -127,7 +128,7 @@ if (!ATT) {
       }
 
       // parse the phone number
-      var kaller = event.from.split('@')[0].split(':')[1];
+      kaller = event.from.split('@')[0].split(':')[1];
 
       onIncomingCall({
         type: mainModule.CallStatus.RINGING,
