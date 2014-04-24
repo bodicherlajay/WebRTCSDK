@@ -51,7 +51,11 @@
 
       modificationCount: 2,
 
-      // create a peer connection
+      /**
+      *
+      * Create a Peer Connection
+      *
+      */
       createPeerConnection: function () {
 
         var  self = this,
@@ -218,6 +222,10 @@
         this.createAnswer();
       },
 
+      /**
+      * Set modification Id
+      * @param {String} modId The modification Id
+      */
       setModificationId: function (modId) {
         this.modificationId = modId;
       },
@@ -244,7 +252,11 @@
         }
       },
 
-      // hold call
+     /**
+      *
+      * Hold Call
+      *
+      */
       holdCall: function () {
 
         var sdp = this.localDescription;
@@ -267,7 +279,10 @@
         });
       },
 
-      // resume Call
+      /**
+      *
+      * Resume Call
+      */
       resumeCall: function () {
 
         var sdp = this.localDescription;
@@ -290,7 +305,10 @@
         });
       },
 
-      // end Call
+      /**
+      *
+      * End Call
+      */
       endCall: function () {
         this.peerConnection.close();
         this.peerConnection = null;
