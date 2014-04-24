@@ -6,6 +6,7 @@ module.exports = function (grunt) {
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
       'js/utils.js',
+      'js/LogManagerModule.js',
       'js/restClient.js',
       'js/util.js',
       'js/eventEmitter.js',
