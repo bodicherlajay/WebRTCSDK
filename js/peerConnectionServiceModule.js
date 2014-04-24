@@ -73,9 +73,9 @@
           } else {
             // get the call state from the session
             var callState = session.getCallState();
+            self.localDescription = pc.localDescription;
 
             if (callState === rm.SessionState.OUTGOING_CALL) {
-              self.localDescription = pc.localDescription;
               SignalingService.sendOffer({
                 calledParty : self.calledParty,
                 sdp : self.localDescription,
@@ -89,7 +89,6 @@
                 }
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
-              self.localDescription = pc.localDescription;
               SignalingService.sendAnswer({
                 sdp : self.localDescription
               });
