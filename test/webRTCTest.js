@@ -196,4 +196,25 @@ describe('webRTC', function () {
       stubSessionContext.restore();
     });
   });
+  describe('hangup', function () {
+    var stubSessionContext, fakeSessionContext, instanceFunction, hangupCalled = false,
+      myCallManager = cmgmt.CallManager.getInstance();
+    it('will call hangup if callObject is defined', function () {
+      instanceFunction = function () { return { end: function () { hangupCalled = true; } }; };
+      fakeSessionContext = { getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.hangup();
+      expect(hangupCalled).equals(true);
+      stubSessionContext.restore();
+    });
+    it('will not call hangup if calledObject is null', function () {
+      instanceFunction = function () { return null; };
+      fakeSessionContext = {getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.hangup();
+      stubSessionContext.restore();
+    });
+  });
 });
