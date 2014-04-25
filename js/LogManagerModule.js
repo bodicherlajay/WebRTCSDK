@@ -50,6 +50,7 @@ if (!exports) {
     newConsoleLogger = function () {
       return app.utils.extend(Object.create(LoggerProtoType), consoleLogger);
     },
+    //todo file logger
     configureLogger = function (moduleName, type, level) {
       var clogger = loggersCollection[moduleName];
       if (clogger === "undefined") {

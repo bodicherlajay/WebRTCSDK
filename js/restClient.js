@@ -21,7 +21,7 @@ var RESTClient = (function () {
     }
     return result;
   }
-  //print response details
+  //print response details for success
   function show_response(r){
     console.log("---------Response--------------");
     console.log(r.getResponseStatus()+" "+ r.responseText);
