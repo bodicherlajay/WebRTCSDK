@@ -5,15 +5,14 @@
 describe('utils', function () {
   'use strict';
   xit('hasWebRTC should return true if navigator.mozGetUserMedia or ' +
-  'navigator.webkitGetUserMedia or navigator.getUserMedia is a function', function () {
-
-    var hasWebRTC = ATT.utils.hasWebRTC;
-    expect(hasWebRTC).to.be.a('function');
-  });
+    'navigator.webkitGetUserMedia or navigator.getUserMedia is a function', function () {
+      var hasWebRTC = ATT.utils.hasWebRTC;
+      expect(hasWebRTC).to.be.a('function');
+    });
 
   xit('hasWebRTC returns true for Mozilla', function () {
     //arange
-   var fakeNavigator, mockForNavigator, result;
+    var fakeNavigator, mockForNavigator, result;
     fakeNavigator =  'fake';
     mockForNavigator = sinon.stub(ATT.utils, 'getNavObject');
     mockForNavigator.returns(fakeNavigator);

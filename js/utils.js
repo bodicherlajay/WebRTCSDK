@@ -14,15 +14,15 @@ if (!ATT) {
     return navigator;
   },
 
-  /**
-   * Check if browser has WebRTC capability.
-   * @return {Boolean}
-   */
-  hasWebRTC =  function () {
-    return typeof getNavObject().mozGetUserMedia === 'function' ||
-      typeof getNavObject().webkitGetUserMedia === 'function' ||
-      typeof getNavObject().getUserMedia === 'function';
-  },
+    /**
+     * Check if browser has WebRTC capability.
+     * @return {Boolean}
+     */
+    hasWebRTC =  function () {
+      return typeof getNavObject().mozGetUserMedia === 'function' ||
+        typeof getNavObject().webkitGetUserMedia === 'function' ||
+        typeof getNavObject().getUserMedia === 'function';
+    },
     /**
      * Extends an existing object using deep copy.
      * Note: It will only deep-copy instances of Object.
@@ -78,7 +78,7 @@ if (!ATT) {
     createNamespace: createNamespace,
     extend: extend,
     hasWebRTC: hasWebRTC,
-    inherits: inherits,
+    inherits: inherits
     //getNavObject: getNavObject
   };
 }(ATT));
