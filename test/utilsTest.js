@@ -11,7 +11,7 @@ describe('utils', function () {
     expect(hasWebRTC).to.be.a('function');
   });
 
-  xit.only('hasWebRTC returns true for Mozilla', function () {
+  xit('hasWebRTC returns true for Mozilla', function () {
     //arange
    var fakeNavigator, mockForNavigator, result;
     fakeNavigator =  'fake';
