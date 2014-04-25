@@ -198,18 +198,14 @@ if (!Env) {
   * Mute existing stream
   */
   function mute() {
-    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-      callManager.getSessionContext().getCallObject().mute();
-    }
+    callManager.getSessionContext().getCallObject().mute();
   }
 
   /**
   * Unmute existing stream
   */
   function unmute() {
-    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-      callManager.getSessionContext().getCallObject().unmute();
-    }
+    callManager.getSessionContext().getCallObject().unmute();
   }
 
   /**
