@@ -7,6 +7,31 @@
 
 var RESTClient = (function () {
   "use strict";
+
+  function parse_headers(input){
+    var result=[];
+    var headers_list=input.split("\n");
+    for(var index in headers_list){
+      var line=headers_list[index], k, v;
+      k = line.split(":")[0];
+      v = line.split(":").slice(1).join(":").trim();
+      if(k.length>0){
+        result[k]=v;
+      }
+    }
+    return result;
+  }
+  function show_response(r){
+    console.log("---------Response--------------");
+    console.log(r.getResponseStatus()+" "+ r.responseText);
+    console.log("=========headers=======");
+    console.log(r.headers);
+    var ph = parse_headers(r.headers);
+    console.log("location = " + ph['location']);
+    console.log("=========body==========");
+    console.log(r.responseText);
+  }
+
   var defaultErrorHandler,
     errorHandler,
     RESTClient =  function (config) {
@@ -35,12 +60,15 @@ var RESTClient = (function () {
             return xhr.getResponseHeader(key);
           },
           responseText: xhr.responseText,
+          headers: xhr.getAllResponseHeaders(),
+          location: xhr.getResponseHeader("Location"),
+          statusText: xhr.statusText,
           getResponseStatus: function () {
             return xhr.status;
           }
         },
         responseCopy = ATT.utils.extend({}, responseObject);
-
+        show_response(responseCopy);
       if (xhr.status >= 400 && xhr.status <= 599) {
         if (typeof errorHandler === 'function') {
           errorHandler.call(xhr, responseCopy);
@@ -52,6 +80,30 @@ var RESTClient = (function () {
       }
     };
 
+  function showRequest(method, url, headers, body) {
+    var logMgr = ATT.logManager.getInstance(), logger, h = "", key, reqBody = JSON.stringify(body);
+    //TODO this configuration need to move outside this function
+    logMgr.configureLogger("RESTClient", logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+    logger = logMgr.getLogger("RESTClient");
+    logger.logDebug("---------Request---------------");
+    logger.logDebug(method + " " + url + " HTTP/1.1");
+
+    for (key in headers) {
+      if (headers.hasOwnProperty(key)) {
+        h = h + key + ": " + headers[key] + "\n";
+      }
+    }
+    h = h.substring(0, h.length - 1);
+    if (body === "undefined") {
+      logger.logDebug(h);
+    }
+    else {
+      if (typeof reqBody === "undefined") {
+        reqBody = "";
+      }
+      logger.logDebug(h + reqBody);
+    }
+  }
 
   // public methods
   RESTClient.prototype.ajax = function () {
@@ -87,7 +139,7 @@ var RESTClient = (function () {
         xhr.setRequestHeader(header, config.headers[header]);
       }
     }
-
+    showRequest(config.method, config.url, config.headers, data);
     xhr.send(data);
   };
 
