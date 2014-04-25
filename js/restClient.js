@@ -21,6 +21,7 @@ var RESTClient = (function () {
     }
     return result;
   }
+  //print response details
   function show_response(r){
     console.log("---------Response--------------");
     console.log(r.getResponseStatus()+" "+ r.responseText);
@@ -79,7 +80,7 @@ var RESTClient = (function () {
         successCallback.call(xhr, responseCopy);
       }
     };
-
+  //print request details
   function showRequest(method, url, headers, body) {
     var logMgr = ATT.logManager.getInstance(), logger, h = "", key, reqBody = JSON.stringify(body);
     //TODO this configuration need to move outside this function

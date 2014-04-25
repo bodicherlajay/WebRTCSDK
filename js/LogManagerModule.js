@@ -16,6 +16,7 @@ if (!exports) {
       logTrace: function (msg) {},
       logLevel: function (logLevel) {}
     },
+    //console logger implementation
     consoleLogger = {
       level : '',
       logLevel: function (logLevel) {
