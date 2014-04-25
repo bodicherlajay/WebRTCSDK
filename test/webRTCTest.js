@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
+/*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true*/
 
 
@@ -150,6 +150,28 @@ describe('webRTC', function () {
       requests[1].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
 
       expect(requests[1].getResponseHeader('location')).to.equal(expectedLocationHeader);
+    });
+  });
+
+  describe('hold', function () {
+    var stubSessionContext, fakeSessionContext, instanceFunction, holdCalled = false,
+      myCallManager = cmgmt.CallManager.getInstance();
+    it('will call hold if callObject is defined', function () {
+      instanceFunction = function () { return {hold: function () { holdCalled = true; } }; };
+      fakeSessionContext = {getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.hold();
+      expect(holdCalled).equals(true);
+      stubSessionContext.restore();
+    });
+    it('will not call hold if calledObject is null', function () {
+      instanceFunction = function () { return null; };
+      fakeSessionContext = {getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.hold();
+      stubSessionContext.restore();
     });
   });
 });
