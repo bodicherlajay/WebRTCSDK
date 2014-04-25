@@ -9,6 +9,12 @@ if (!ATT) {
 (function (mainModule) {
   "use strict";
 
+  /**
+  * Remote an attribute from SDP
+  * @param {String} attributeValue
+  * @param {Object} sdp
+  * returns {Object} sdp
+  */
   function removeSDPAttribute(attributeValue, sdp) {
     //remove attribute from the middle.
     var attribute = "a=" + attributeValue + "\r\n",
@@ -24,6 +30,14 @@ if (!ATT) {
     return sdp;
   }
 
+  /**
+  *
+  * Modify and SDP attribute
+  * @param {String} originalValue
+  * @param {String} newValue
+  * @param {Object} sdp
+  * @returns {Object} sdp
+  */
   function modifySDPAttribute(originalValue, newValue, sdp) {
     var index = 0,
       attribute = "a=" + originalValue + "\r\n",
@@ -42,6 +56,12 @@ if (!ATT) {
     return sdp;
   }
 
+  /**
+  * Function to increment SDP
+  * @param {Object} sdp The SDP
+  * @param {Number} count The increment
+  * @returns {Object} sdp
+  */
   function incrementSDP(sdp, count) {
     var oIndex = sdp.sdp.indexOf("o="),
       sIndex = sdp.sdp.indexOf("s=-"),

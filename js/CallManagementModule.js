@@ -9,11 +9,17 @@ cmgmt = (function () {
   //Call prototype
   var module = {},
     Call = function (from, to, media) {
-      var caller = from, callee = to, mediaType = media;
+      var caller = from, callee = to, mediaType = media, localSDP = null;
       return {
         caller: function () { return caller; },
         callee: function () { return callee; },
         mediaType: function () { return mediaType; },
+        setSDP: function (sdp) {
+          localSDP = sdp;
+        },
+        getSDP: function () {
+          return localSDP;
+        },
         start: Call.start,
         hold: Call.hold,
         resume: Call.resume,
@@ -37,8 +43,14 @@ cmgmt = (function () {
     //Session context to hold session variables
     SessionContext = function (token, e9Id, sessionId, state) {
       var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
-        currentCallId, UICbks = {};
+        currentCallId, UICbks = {}, currentCall = null;
       return {
+        getCurrentCall: function () {
+          return currentCall;
+        },
+        setCurrentCall: function (callObj) {
+          currentCall = callObj;
+        },
         getAccessToken: function () {
           return accessToken;
         },

@@ -13,6 +13,7 @@ if (!ATT) {
     instance,
     callbacks,
     sdp,
+    timestamp,
     kaller,
     interceptingEventChannelCallback,
     subscribeEvents,
@@ -32,15 +33,21 @@ if (!ATT) {
       };
     };
 
+  /*
+  * Subscribes to all Event Channel announcemets
+  * and triggers UI callbacks
+  * @param {Object} event The event object
+  */
   interceptingEventChannelCallback = function (event) {
     if (!event) {
       return;
     }
 
-    console.log('New Event: ' + JSON.stringify(event));
+    console.log('New Event: ', JSON.stringify(event));
 
-    // enumerate over RTC EVENTS
-    // todo capture time, debugging info for sdk
+    // capture useful information here
+    timestamp = new Date();
+
     switch (event.state) {
     case mainModule.SessionEvents.RTC_SESSION_CREATED:
       onSessionReady({
@@ -56,10 +63,9 @@ if (!ATT) {
       // set callID in the call object
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
       // call established
-      var time = new Date().getTime();
       onInProgress({
         type: mainModule.CallStatus.INPROGRESS,
-        timestamp: time
+        time: timestamp
       });
       break;
 
