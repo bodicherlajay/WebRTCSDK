@@ -231,6 +231,22 @@
       },
 
       /**
+      * Increment modification count
+      *
+      */
+      incrementModCount: function () {
+        this.modificationCount = this.modificationCount + 1;
+      },
+
+      /**
+      * Reset modification count
+      *
+      */
+      resetModCount: function () {
+        this.modificationCount = 2;
+      },
+
+      /**
       *
       * Set Local And Send Message
       * @param {Object} description SDP
