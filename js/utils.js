@@ -10,14 +10,20 @@ if (!ATT) {
 (function (app) {
   "use strict";
 
+  // var getNavObject = function () {
+  //   return navigator;
+  // },
+
   /**
    * Check if browser has WebRTC capability.
    * @return {Boolean}
    */
-  var hasWebRTC =  function () {
-    return typeof navigator.mozGetUserMedia === 'function' ||
-      typeof navigator.webkitGetUserMedia === 'function' ||
-      typeof navigator.getUserMedia === 'function';
+  hasWebRTC =  function () {
+    console.log('I can haz navigator? '+ getNavObject());
+    console.log(this);
+    return typeof getNavObject().mozGetUserMedia === 'function' ||
+      typeof getNavObject().webkitGetUserMedia === 'function' ||
+      typeof getNavObject().getUserMedia === 'function';
   },
     /**
      * Extends an existing object using deep copy.
@@ -74,6 +80,7 @@ if (!ATT) {
     createNamespace: createNamespace,
     extend: extend,
     hasWebRTC: hasWebRTC,
-    inherits: inherits
+    inherits: inherits,
+    //getNavObject: getNavObject
   };
 }(ATT));
