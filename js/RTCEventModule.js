@@ -148,7 +148,7 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
-      PeerConnectionService.resetModId();
+      PeerConnectionService.resetModCount();
       callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
       ATT.UserMediaService.stopStream();
       if (PeerConnectionService.peerConnection) {
