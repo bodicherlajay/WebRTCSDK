@@ -10,17 +10,15 @@ if (!ATT) {
 (function (app) {
   "use strict";
 
-  // var getNavObject = function () {
-  //   return navigator;
-  // },
+  var getNavObject = function () {
+    return navigator;
+  },
 
   /**
    * Check if browser has WebRTC capability.
    * @return {Boolean}
    */
   hasWebRTC =  function () {
-    console.log('I can haz navigator? '+ getNavObject());
-    console.log(this);
     return typeof getNavObject().mozGetUserMedia === 'function' ||
       typeof getNavObject().webkitGetUserMedia === 'function' ||
       typeof getNavObject().getUserMedia === 'function';
