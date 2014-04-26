@@ -1,129 +1,136 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT,cmgmt, WebSocket:true, Env: true*/
-/**
- WebRTC Event Channel Module
+/*global WebSocket*/
+
+/** WebRTC Event Channel Module: Will export method `ATT.utils.createEventChannel`
+ * Extends the global object `ATT` with a method to create Event Channels
+ * Event channel objects can be used to listen to a given `channel` continuously.
  */
 
-if (!ATT) {
-  var ATT = {};
-}
-
-(function (app) {
+(function () {
   'use strict';
-
-  var apiObject,
-    resourceManager = Env.resourceManager.getInstance(),
-    callManager = cmgmt.CallManager.getInstance();
-
-  apiObject = resourceManager.getAPIObject();
-
   /**
-   * Get Event Channel
-   * @param {Boolean} useLongPolling Use Long Polling
-   * @param {Function} callback The callback
+   * Creates an Event Channel with the given configuration:
+   * @returns The configured event channel.
+   * @channelConfig {object} An object specifier with the properties of the channel.
+   * * WebSockets:
+   *   * params {
+   *       url: {Array},
+   *       headers: {Object}
+   *     }
+   * * Long Polling:
+   *   * method: {String}
+   *   * timeout: {integer}
+   *   * headers: {Object}
    */
-  function getEventChannel(useLongPolling, sessionId, callback) {
+  function createEventChannel(channelConfig) {
     // to appease the JSLint gods
-    var eventChannelInitiated = false,
-    // longpolling config
-      lpConfig,
-    // websocket config
-      wsConfig,
-    // response event
-      responseEvent,
-    // websocket instance
-      ws;
+    var channel = {}, // the channel to be configured and returned.
+      isListenning = false,
+      ws, // socket to use in case we're using WebSockets
+      locationForSocket,
+      eventData;
+
+    if (undefined === channelConfig || 0 === Object.keys(channelConfig)
+        || undefined === channelConfig.url) {
+      throw new Error('Invalid Options. Cannot create channel.');
+    }
     /**
      * Process Events
      * @param {Object} messages The messages
-     * @param {Boolean} lp T/F for Long Polling
      **/
-    function processMessages(messages, lp) {
+    function processMessages(messages) {
       // Using Long Polling
-      if (lp) {
-        responseEvent = JSON.parse(messages.responseText);
-      } else {
-        responseEvent = JSON.parse(messages.data);
+      if (true === channelConfig.usesLongPolling) {
+        eventData = JSON.parse(messages.responseText);
+      } else { // using websockets
+        eventData = JSON.parse(messages.data);
       }
-      if (responseEvent.events) {
-        var sessID = responseEvent.events.eventList[0].eventObject.resourceURL.split('/')[4], events = responseEvent.events.eventList, e;
+      if (eventData.events) {
+        var sessID = eventData.events.eventList[0].eventObject.resourceURL.split('/')[4],
+          events = eventData.events.eventList,
+          e;
         // publish individually
         for (e in events) {
           if (events.hasOwnProperty(e)) {
-            app.event.publish(sessID + '.responseEvent', events[e].eventObject);
+            channelConfig.publisher.publish(sessID + '.responseEvent', events[e].eventObject);
           }
         }
       }
     }
 
-    /*===========================================
-     =            Long Polling Config           =
-     ===========================================*/
-    lpConfig = {
-      method: 'get',
-      url: app.appConfig.BFEndpoint + '/sessions/' + sessionId + '/events',
-      timeout: 30000,
-      headers: {
-        'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
-      },
-      success: function (response) {
-        if (!eventChannelInitiated) {
-          eventChannelInitiated = true;
-          if (typeof callback === 'function') {
-            callback();
-          }
-        }
-        processMessages(response, true);
-        apiObject.getEvents(lpConfig);
-      },
-      error: function () {
-        apiObject.getEvents(lpConfig);
-      },
-      ontimeout: function () {
-        apiObject.getEvents(lpConfig);
+    // setup success and error callbacks
+    function onSuccess(response) {
+      if (channelConfig.usesLongPolling
+          && ('function' === typeof channelConfig.callback)) {
+        channelConfig.callback(response);
+        processMessages(response);
+        // continue polling
+        channelConfig.resourceManager.getAPIObject().getEvents();
+        return;
       }
-    };
 
-    /*===========================================
-     =        Web Socket Config                 =
-     ===========================================*/
-    wsConfig = {
-      params: {
-        url: [sessionId, 'websocket'],
-        headers: {
-          'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
-        }
-      },
-      success: function (messages) {
-        if (!eventChannelInitiated) {
-          eventChannelInitiated = true;
-          if (typeof callback === 'function') {
-            callback();
-          }
-        }
-        var location = messages.getResponseHeader('location');
-        if (location) {
-          ws = new WebSocket(location);
-          ws.onmessage = function (messages) {
-            processMessages(messages, false);
-          };
-        }
-      },
-      error: function (e) {
-        console.log('ERROR', e);
+      // if the channel uses sockets
+      locationForSocket = response.getResponseHeader('location');
+      // create a new socket if this channel doesn't have one already
+      if (undefined === ws && locationForSocket) {
+        ws = new WebSocket(location);
+        ws.onmessage = function (message) {
+          processMessages(message);
+        };
       }
-    };
 
-    // Kickstart the event channel
-    // @TODO: invalid session bug
-    if (useLongPolling) {
-      resourceManager.doOperation('getEvents', lpConfig);
-    } else {
-      resourceManager.doOperation('getEvents', wsConfig);
     }
+
+    function onError(error) {
+      if (channelConfig.usesLongPolling) {
+        // try again
+        channelConfig.resourceManager.getAPIObject().getEvents();
+        return;
+      }
+      // using sockets
+      console.log('ERROR', error);
+    }
+
+    function onTimeOut() {
+      // try again
+      channelConfig.resourceManager.getAPIObject().getEvents();
+    }
+
+    // configure callbacks for this channel
+    channelConfig.success = onSuccess;
+    channelConfig.error = onError;
+    if (true === channelConfig.usesLongPolling) {
+      channelConfig.ontimeout = onTimeOut;
+    }
+
+    function startListenning() {
+      isListenning = true;
+      // TODO: Remove Note
+      // Note: This seems to be equivalent to do `ATT.resourceManager.getInstance().getAPIObject().getEvents()`
+      // Will start making HTTP requests and process the responses using this channel.
+      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, channelConfig);
+    }
+
+    // TODO: Remove Note
+    // Will create a method with name `publicMethodName` in the resource manager 
+    // that will execute the function in the second parameter.
+    // Note: Apparently this is so you can do `ATT.resourceManager.getInstance().getAPIObject().getEvents()`... too long!
+    channelConfig.resourceManager.addPublicMethod(channelConfig.publicMethodName, startListenning);
+
+    channel = {
+      isListenning: function () {
+        return isListenning;
+      },
+      startListenning: startListenning
+    };
+
+    return channel;
   }
 
-  // place on ATT namespace
-  resourceManager.addPublicMethod('eventChannel', getEventChannel);
+  // export method to ATT.createEventChannel
+  if (window.ATT === undefined) {
+    window.ATT = { utils : {}};
+  }
+  window.ATT.utils.createEventChannel = createEventChannel;
 
-}(ATT || {}));
+}());
