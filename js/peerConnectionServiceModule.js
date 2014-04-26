@@ -326,8 +326,12 @@
       * End Call
       */
       endCall: function () {
-        this.peerConnection.close();
+        if (this.peerConnection) {
+          this.peerConnection.close();
+        }
         this.peerConnection = null;
+        this.resetModCount();
+        UserMediaService.stopStream();
       },
 
       /**
