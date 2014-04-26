@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global WebSocket*/
 
-/** WebRTC Event Channel Module
+/** WebRTC Event Channel Module: Will export method `ATT.utils.createEventChannel`
  * Extends the global object `ATT` with a method to create Event Channels
  * Event channel objects can be used to listen to a given `channel` continuously.
  */
@@ -24,16 +24,19 @@
    */
   function createEventChannel(channelConfig) {
     // to appease the JSLint gods
-    var channel, // the channel to be configured and returned.
+    var channel = {}, // the channel to be configured and returned.
       isListenning = false,
       ws, // socket to use in case we're using WebSockets
       locationForSocket,
       eventData;
 
+    if (undefined === channelConfig || 0 === Object.keys(channelConfig)
+        || undefined === channelConfig.url) {
+      throw new Error('Invalid Options. Cannot create channel.');
+    }
     /**
      * Process Events
      * @param {Object} messages The messages
-     * @param {Boolean} lp T/F for Long Polling
      **/
     function processMessages(messages) {
       // Using Long Polling
@@ -104,17 +107,21 @@
       isListenning = true;
       // TODO: Remove Note
       // Note: This seems to be equivalent to do `ATT.resourceManager.getInstance().getAPIObject().getEvents()`
+      // Will start making HTTP requests and process the responses using this channel.
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, channelConfig);
     }
 
     // TODO: Remove Note
+    // Will create a method with name `publicMethodName` in the resource manager 
+    // that will execute the function in the second parameter.
     // Note: Apparently this is so you can do `ATT.resourceManager.getInstance().getAPIObject().getEvents()`... too long!
     channelConfig.resourceManager.addPublicMethod(channelConfig.publicMethodName, startListenning);
 
     channel = {
       isListenning: function () {
         return isListenning;
-      }
+      },
+      startListenning: startListenning
     };
 
     return channel;
@@ -122,8 +129,8 @@
 
   // export method to ATT.createEventChannel
   if (window.ATT === undefined) {
-    window.ATT = {};
+    window.ATT = { utils : {}};
   }
-  window.ATT.createEventChannel = createEventChannel;
+  window.ATT.utils.createEventChannel = createEventChannel;
 
 }());
