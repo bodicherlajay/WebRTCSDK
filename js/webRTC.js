@@ -159,14 +159,6 @@ if (!Env) {
     resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
   }
 
-  // Stop user media
-  function stopUserMedia() {
-    if (app.UserMediaService.localStream) {
-      app.UserMediaService.localStream.stop();
-      app.UserMediaService.localVideoElement.src = null;
-    }
-  }
-
   /**
    *
    * @param {Object} config Dial configuration object.
@@ -241,7 +233,6 @@ if (!Env) {
   // The SDK public API.
   resourceManager.addPublicMethod('login', login);
   resourceManager.addPublicMethod('logout', deleteWebRTCSession);
-  resourceManager.addPublicMethod('stopUserMedia', stopUserMedia);
   resourceManager.addPublicMethod('dial', dial);
   resourceManager.addPublicMethod('answer', answer);
   resourceManager.addPublicMethod('hold', hold);
