@@ -85,10 +85,19 @@ if (!Env) {
         }
       },
       error: function (response) {
-        var data = response.getJson();
+        var data = response.getJson(),
+          status = response.getResponseStatus(),
+          error = {
+            status: status
+          };
 
+        if (status === 401) {
+          error.error = "Please login first";
+        } else {
+          error.error = data;
+        }
         if (typeof config.error === 'function') {
-          config.error(data);
+          config.error(error);
         }
       }
     };
@@ -163,7 +172,14 @@ if (!Env) {
 
     var logoutConfig = {
       success: function (response) {
-        var data = response.getJson();
+        var data;
+        if (response.getResponseStatus() === 204) {
+          data = {
+            message: "You have been successfully logged out."
+          };
+        } else {
+          data = response.getJson();
+        }
         if (typeof config.success === 'function') {
           config.success(data);
         }

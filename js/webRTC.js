@@ -54,8 +54,8 @@ if (!Env) {
     if (typeof config.onError !== 'function') {
       throw new Error('No UI error callback specified');
     }
-    if (!accessToken || !e911Id) {
-      throw new Error('Access token and e911Id are required.');
+    if (!accessToken) {
+      throw new Error('Access token is required to login to web rtc.');
     }
 
     // Call BF to create WebRTC Session.
@@ -73,7 +73,7 @@ if (!Env) {
       params: {
         headers: {
           'Authorization': accessToken,
-          'x-e911Id': e911Id
+          'x-e911Id': e911Id || ""
         }
       },
       success: createWebRTCSessionSuccess.bind(this, config),
