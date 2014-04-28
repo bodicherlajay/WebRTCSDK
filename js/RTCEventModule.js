@@ -148,12 +148,8 @@ if (!ATT) {
       } else {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
-      PeerConnectionService.resetModCount();
       callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
-      ATT.UserMediaService.stopStream();
-      if (PeerConnectionService.peerConnection) {
-        PeerConnectionService.endCall();
-      }
+      PeerConnectionService.endCall();
       break;
 
     case mainModule.RTCCallEvents.MUTED:
