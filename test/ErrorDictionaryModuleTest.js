@@ -1,12 +1,12 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, errorDictionary, describe, it, expect, beforeEach*/
 
-describe('ErrorDictionaryModule', function () {
+describe.only('ErrorDictionaryModule', function () {
   "use strict";
 
   describe('Application Object', function () {
-    it('should have factory method', function () {
-      expect(ATT.createErrorDictionary).to.be.a('function');
+    it('should have factory method at ATT.utils', function () {
+      expect(ATT.utils.createErrorDictionary).to.be.a('function');
     });
   });
 
@@ -35,7 +35,7 @@ describe('ErrorDictionaryModule', function () {
         moduleID: 'RTC'          //one of the configured module name
       };
       // Initialize the dictionary
-      errorDictionary = ATT.createErrorDictionary(dictionarySpec);
+      errorDictionary = ATT.utils.createErrorDictionary(dictionarySpec, ATT.utils);
     });
 
     it('should return valid Error Dictionary', function () {
