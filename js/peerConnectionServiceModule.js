@@ -210,6 +210,7 @@
     */
     setRemoteAndCreateAnswer: function (sdp, modId) {
       this.modificationId = modId;
+      this.incrementModCount();
       this.setTheRemoteDescription(sdp, 'offer');
       this.createAnswer();
     },
