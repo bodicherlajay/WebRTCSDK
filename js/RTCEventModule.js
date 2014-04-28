@@ -70,38 +70,38 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
+      PeerConnectionService.setModificationId(event.modId);
+
       if (event.sdp) {
         sdp = event.sdp;
+        PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
+        PeerConnectionService.incrementModCount();
+        PeerConnectionService.createAnswer();
       }
 
-      if (sdp && event.modId) {
-        PeerConnectionService.setRemoteAndCreateAnswer(sdp, event.modId);
+      // hold request received
+      if (sdp && sdp.indexOf('sendonly') !== -1) {
+        onCallHold({
+          type: mainModule.CallStatus.HOLD
+        });
+        callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+      }
 
-        // hold request received
-        if (sdp && sdp.indexOf('sendonly') !== -1) {
-          onCallHold({
-            type: mainModule.CallStatus.HOLD
-          });
-          callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
-        }
-
-        // resume request received
-        if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
-          onCallResume({
-            type: mainModule.CallStatus.RESUMED
-          });
-          callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
-        }
+      // resume request received
+      if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
+        onCallResume({
+          type: mainModule.CallStatus.RESUMED
+        });
+        callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
       }
       break;
 
     case mainModule.RTCCallEvents.MODIFICATION_TERMINATED:
+      PeerConnectionService.setModificationId(event.modId);
+
       if (event.sdp) {
         sdp = event.sdp;
-      }
-
-      if (event.modId && event.reason === 'success') {
-        PeerConnectionService.setModificationId(event.modId);
+        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
       }
 
       // hold request successful
@@ -149,10 +149,7 @@ if (!ATT) {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
       callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
-      ATT.UserMediaService.stopStream();
-      if (PeerConnectionService.peerConnection) {
-        PeerConnectionService.endCall();
-      }
+      PeerConnectionService.endCall();
       break;
 
     case mainModule.RTCCallEvents.MUTED:

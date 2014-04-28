@@ -56,13 +56,13 @@ if (!ATT) {
 
     // stop stream
     stopStream: function () {
+      this.localVideoElement.src = '';
+      this.remoteVideoElement.src = '';
       if (this.localStream) {
         this.localStream.stop();
-        this.localVideoElement.src = '';
       }
       if (this.remoteStream) {
         this.remoteStream.stop();
-        this.remoteVideoElement.src = '';
       }
     },
 

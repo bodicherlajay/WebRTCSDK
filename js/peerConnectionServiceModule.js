@@ -67,38 +67,46 @@
               { "url": "STUN:74.125.133.127:19302" }
             ]
           };
-        self.peerConnection = new RTCPeerConnection(pc_config);
-        pc = self.peerConnection;
+        pc = new RTCPeerConnection(pc_config);
+        self.peerConnection = pc;
 
         // ICE candidate trickle
         pc.onicecandidate = function (evt) {
           if (evt.candidate) {
             console.log('receiving ice candidate', evt.candidate);
           } else {
-            // get the call state from the session
-            var callState = session.getCallState();
-            self.localDescription = pc.localDescription;
-
-            if (callState === rm.SessionState.OUTGOING_CALL) {
-              SignalingService.sendOffer({
-                calledParty : self.calledParty,
-                sdp : self.localDescription,
-                success : function (headers) {
-                  if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
-                    // publish the UI callback for invitation sent event
-                    app.event.publish(session.getSessionId() + '.responseEvent', {
-                      state : app.RTCCallEvents.INVITATION_SENT
-                    });
+            if (self.peerConnection !== null) {
+              // get the call state from the session
+              var callState = session.getCallState(),
+                sdp = pc.localDescription;
+              ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
+              self.peerConnection.setLocalDescription(sdp);
+              self.localDescription = sdp;
+              if (callState === rm.SessionState.OUTGOING_CALL) {
+                SignalingService.sendOffer({
+                  calledParty : self.calledParty,
+                  sdp : self.localDescription,
+                  success : function (headers) {
+                    if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
+                      // publish the UI callback for invitation sent event
+                      app.event.publish(session.getSessionId() + '.responseEvent', {
+                        state : app.RTCCallEvents.INVITATION_SENT
+                      });
+                    }
                   }
-                }
-              });
-            } else if (callState === rm.SessionState.INCOMING_CALL) {
-              SignalingService.sendAnswer({
-                sdp : self.localDescription
-              });
+                });
+              } else if (callState === rm.SessionState.INCOMING_CALL) {
+                SignalingService.sendAnswer({
+                  sdp : self.localDescription
+                });
+              }
             }
           }
         };
+
+        //add the local stream to peer connection
+        pc.addStream(this.localStream);
+
         // add remote stream
         pc.addEventListener('addstream', function (evt) {
           this.remoteStream = evt.stream;
@@ -131,6 +139,9 @@
       */
       getUserMediaSuccess: function (stream) {
 
+        // set local stream
+        this.localStream = stream;
+
         var self = this,
           rm = cmgmt.CallManager.getInstance(),
           session = rm.getSessionContext(),
@@ -140,14 +151,9 @@
         self.createPeerConnection();
 
         if (callState === rm.SessionState.OUTGOING_CALL) {
-          // set local stream
-          this.localStream = stream;
 
           // call the user media service to show stream
           UserMediaService.showStream('local', this.localStream);
-
-          //add the local stream to peer connection
-          self.peerConnection.addStream(stream);
 
           //todo: switch constraints to dynamic
           this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
@@ -158,8 +164,6 @@
           }});
 
         } else if (callState === rm.SessionState.INCOMING_CALL) {
-          // set local stream
-          this.localStream = stream;
 
           // call the user media service to show stream
           UserMediaService.showStream('local', this.localStream);
@@ -228,6 +232,22 @@
       */
       setModificationId: function (modId) {
         this.modificationId = modId;
+      },
+
+      /**
+      * Increment modification count
+      *
+      */
+      incrementModCount: function () {
+        this.modificationCount = this.modificationCount + 1;
+      },
+
+      /**
+      * Reset modification count
+      *
+      */
+      resetModCount: function () {
+        this.modificationCount = 2;
       },
 
       /**
@@ -310,8 +330,12 @@
       * End Call
       */
       endCall: function () {
-        this.peerConnection.close();
+        if (this.peerConnection) {
+          this.peerConnection.close();
+        }
         this.peerConnection = null;
+        this.resetModCount();
+        UserMediaService.stopStream();
       },
 
       /**
