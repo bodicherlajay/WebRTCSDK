@@ -73,7 +73,7 @@
       locationForSocket = response.getResponseHeader('location');
       // create a new socket if this channel doesn't have one already
       if (undefined === ws && locationForSocket) {
-        ws = new WebSocket(location);
+        ws = new WebSocket(locationForSocket);
         ws.onmessage = function (message) {
           processMessages(message);
         };

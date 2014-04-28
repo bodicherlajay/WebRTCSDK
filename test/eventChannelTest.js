@@ -37,7 +37,6 @@ describe('Event Channel', function () {
 
       // Mock for the resource manager
       channelConfig.resourceManager = {
-        // getInstance: function () { return this; },
         addPublicMethod: function () { return true; }
       };
     });
@@ -80,8 +79,8 @@ describe('Event Channel', function () {
         channelConfig.resourceManager.doOperation = sinon.spy();
         eventChannel = ATT.utils.createEventChannel(channelConfig);
         eventChannel.startListenning();
-        expect(true === channelConfig.resourceManager.doOperation.called);
-        expect(true === eventChannel.isListenning());
+        expect(channelConfig.resourceManager.doOperation.called).to.equal(true);
+        expect(eventChannel.isListenning()).to.equal(true);
       });
       it('should publish event given a message (long polling)', function () {
         channelConfig.usesLongPolling = true;
@@ -91,9 +90,10 @@ describe('Event Channel', function () {
         // call the success callback for this event channel
         messages.responseText = JSON.stringify(response);
         channelConfig.success(messages);
-        expect(true === channelConfig.publisher.publish.called);
+        expect(channelConfig.publisher.publish.called).to.equal(true);
       });
-      it('should publish event given a message (websockets)', function () {
+      it('should continue listening for messages on error or timeout');
+      it('should create a websockets with the given location', function () {
         channelConfig.usesLongPolling = false;
         eventChannel = ATT.utils.createEventChannel(channelConfig);
         // setup the response
@@ -107,13 +107,9 @@ describe('Event Channel', function () {
 
         // call the success callback for this event channel
         channelConfig.success(response);
-        expect(true === channelConfig.publisher.publish.called);
+        expect(WebSocket.calledWith('localhost')).to.equal(true);
       });
-      it('should continue listening for messages on error or timeout');
-      it('should call `addOperation` of the resourceManager', function () {
-        channelConfig.resourceManager.addOperation = sinon.spy();
-        expect(true === channelConfig.resourceManager.addOperation.called);
-      });
+      it('should publish an event given a message on the open socket');
     });
   });
 });
