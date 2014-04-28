@@ -14,7 +14,7 @@ if (!ATT) {
 }
 
 (function (mainModule) {
-  "use strict";
+  'use strict';
   var module = {},
     topics  =  {},
     callMethodOnTopic;

@@ -8,7 +8,7 @@ if (!ATT) {
 }
 
 (function (app) {
-  "use strict";
+  'use strict';
 
   var getNavObject = function () {
     return navigator;

@@ -6,15 +6,15 @@
  */
 
 var RESTClient = (function () {
-  "use strict";
+  'use strict';
 
   function parse_headers(input){
     var result=[];
-    var headers_list=input.split("\n");
+    var headers_list=input.split('\n');
     for(var index in headers_list){
       var line=headers_list[index], k, v;
-      k = line.split(":")[0];
-      v = line.split(":").slice(1).join(":").trim();
+      k = line.split(':')[0];
+      v = line.split(':').slice(1).join(':').trim();
       if(k.length>0){
         result[k]=v;
       }
@@ -23,13 +23,13 @@ var RESTClient = (function () {
   }
   //print response details for success
   function show_response(r){
-    console.log("---------Response--------------");
-    console.log(r.getResponseStatus()+" "+ r.responseText);
-    console.log("=========headers=======");
+    console.log('---------Response--------------');
+    console.log(r.getResponseStatus()+' '+ r.responseText);
+    console.log('=========headers=======');
     console.log(r.headers);
     var ph = parse_headers(r.headers);
-    console.log("location = " + ph['location']);
-    console.log("=========body==========");
+    console.log('location = ' + ph['location']);
+    console.log('=========body==========');
     console.log(r.responseText);
   }
 
@@ -62,7 +62,7 @@ var RESTClient = (function () {
           },
           responseText: xhr.responseText,
           headers: xhr.getAllResponseHeaders(),
-          location: xhr.getResponseHeader("Location"),
+          location: xhr.getResponseHeader('Location'),
           statusText: xhr.statusText,
           getResponseStatus: function () {
             return xhr.status;
@@ -82,25 +82,25 @@ var RESTClient = (function () {
     };
   //print request details
   function showRequest(method, url, headers, body) {
-    var logMgr = ATT.logManager.getInstance(), logger, h = "", key, reqBody = JSON.stringify(body);
+    var logMgr = ATT.logManager.getInstance(), logger, h = '', key, reqBody = JSON.stringify(body);
     //TODO this configuration need to move outside this function
-    logMgr.configureLogger("RESTClient", logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-    logger = logMgr.getLogger("RESTClient");
-    logger.logDebug("---------Request---------------");
-    logger.logDebug(method + " " + url + " HTTP/1.1");
+    logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+    logger = logMgr.getLogger('RESTClient');
+    logger.logDebug('---------Request---------------');
+    logger.logDebug(method + ' ' + url + ' HTTP/1.1');
 
     for (key in headers) {
       if (headers.hasOwnProperty(key)) {
-        h = h + key + ": " + headers[key] + "\n";
+        h = h + key + ': ' + headers[key] + '\n';
       }
     }
     h = h.substring(0, h.length - 1);
-    if (body === "undefined") {
+    if (body === 'undefined') {
       logger.logDebug(h);
     }
     else {
-      if (typeof reqBody === "undefined") {
-        reqBody = "";
+      if (typeof reqBody === 'undefined') {
+        reqBody = '';
       }
       logger.logDebug(h + reqBody);
     }

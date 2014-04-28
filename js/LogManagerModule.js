@@ -4,7 +4,7 @@ if (!exports) {
   var exports = {};
 }
 (function (app) {
-  "use strict";
+  'use strict';
   var module = {},
     instance,
     loggersCollection = [],
@@ -23,25 +23,25 @@ if (!exports) {
         this.level = logLevel;
       },
       logDebug: function (msg) {
-        if (msg === "undefined") return;
+        if (msg === 'undefined') return;
         if (this.level === module.LOG_LEVEL.DEBUG) {
           console.log('[DEBUG]' + msg);
         }
       },
       logWarning: function (msg) {
-        if (msg === "undefined") return;
+        if (msg === 'undefined') return;
         if (this.level === module.LOG_LEVEL.WARNING) {
           console.log('[WARN]' + msg);
         }
       },
       logError: function (msg) {
-        if (msg === "undefined") return;
+        if (msg === 'undefined') return;
         if (this.level === module.LOG_LEVEL.ERROR) {
           console.log('[ERROR]' + msg);
         }
       },
       logTrace: function (msg) {
-        if (msg === "undefined") return;
+        if (msg === 'undefined') return;
         if (this.level === module.LOG_LEVEL.TRACE) {
           console.log('[TRACE]' + msg);
         }
@@ -53,8 +53,8 @@ if (!exports) {
     //todo file logger
     configureLogger = function (moduleName, type, level) {
       var clogger = loggersCollection[moduleName];
-      if (clogger === "undefined") {
-        throw new Error("Logger exists, Can not create the logger specified");
+      if (clogger === 'undefined') {
+        throw new Error('Logger exists, Can not create the logger specified');
       }
       if (type === module.LOGGER_TYPE.CONSOLE) {
         clogger = newConsoleLogger();
@@ -66,7 +66,7 @@ if (!exports) {
     getLogger = function (moduleName) {
       var clogger = loggersCollection[moduleName];
       if (!clogger) {
-        throw new Error("Logger not found");
+        throw new Error('Logger not found');
       }
       return clogger;
     },
