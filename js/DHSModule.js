@@ -85,17 +85,11 @@ if (!Env) {
         }
       },
       error: function (response) {
-        var data = response.getJson(),
-          status = response.getResponseStatus(),
-          error = {
-            status: status
-          };
+        var error = {
+          status: response.getResponseStatus(),
+          error: "Please login first"
+        };
 
-        if (status === 401) {
-          error.error = "Please login first";
-        } else {
-          error.error = data;
-        }
         if (typeof config.error === 'function') {
           config.error(error);
         }
