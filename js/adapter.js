@@ -7,7 +7,7 @@ URL*/
  * From: https://code.google.com/p/webrtc/source/browse/stable/samples/js/base/adapter.js
  */
 
-"use strict";
+'use strict';
 
 var RTCPeerConnection = null,
   RTCSessionDescription,
@@ -25,13 +25,13 @@ function trace(text) {
   if (text[text.length - 1] === '\n') {
     text = text.substring(0, text.length - 1);
   }
-  console.log((performance.now() / 1000).toFixed(3) + ": " + text);
+  console.log((performance.now() / 1000).toFixed(3) + ': ' + text);
 }
 
 if (navigator.mozGetUserMedia) {
-  console.log("This appears to be Firefox");
+  console.log('This appears to be Firefox');
 
-  webrtcDetectedBrowser = "firefox";
+  webrtcDetectedBrowser = 'firefox';
 
   webrtcDetectedVersion = parseInt(navigator.userAgent.match(/Firefox\/([0-9]+)\./)[1], 10);
 
@@ -77,7 +77,7 @@ if (navigator.mozGetUserMedia) {
       }
 
       // Ignore the transport parameter from TURN url for FF version <27.
-      turn_url_parts = url.split("?");
+      turn_url_parts = url.split('?');
 
       if (turn_url_parts[1].indexOf('transport=udp') === 0) {
         iceServer = {
@@ -95,13 +95,13 @@ if (navigator.mozGetUserMedia) {
 
   // Attach a media stream to an element.
   attachMediaStream = function (element, stream) {
-    console.log("Attaching media stream");
+    console.log('Attaching media stream');
     element.mozSrcObject = stream;
     element.play();
   };
 
   reattachMediaStream = function (to, from) {
-    console.log("Reattaching media stream");
+    console.log('Reattaching media stream');
     to.mozSrcObject = from.mozSrcObject;
     to.play();
   };
@@ -119,9 +119,9 @@ if (navigator.mozGetUserMedia) {
     };
   }
 } else if (navigator.webkitGetUserMedia) {
-  console.log("This appears to be Chrome");
+  console.log('This appears to be Chrome');
 
-  webrtcDetectedBrowser = "chrome";
+  webrtcDetectedBrowser = 'chrome';
   webrtcDetectedVersion =
     parseInt(navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)[2], 10);
 
@@ -167,5 +167,5 @@ if (navigator.mozGetUserMedia) {
     to.src = from.src;
   };
 } else {
-  console.log("Browser does not appear to be WebRTC-capable");
+  console.log('Browser does not appear to be WebRTC-capable');
 }

@@ -6,7 +6,7 @@ if (!ATT) {
 }
 
 (function (app) {
-  "use strict";
+  'use strict';
 
   var module = {
 
@@ -14,22 +14,24 @@ if (!ATT) {
 
     remoteVideoElement: null,
 
-    remoteStream: null,
-
     localStream: null,
 
+    remoteStream: null,
+
+    /**
+    * Start Call
+    * @param {Object} config The configuration
+    * @attribute {String} phoneNumber
+    * @attribute {HTMLElement} localVideo
+    * @attribute {HTMLElement} remoteVideo
+    * @attribute {Object} mediaConstraints
+    * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
+    */
     startCall: function (config) {
-      // set local/remote vid element
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
 
       ATT.PeerConnectionService.start(config);
-    },
-
-    //standard webRTC audio, video constraints
-    mediaConstraints: {
-      "audio": true,
-      "video": true
     },
 
     /**
@@ -54,19 +56,25 @@ if (!ATT) {
       }
     },
 
-    // stop stream
+    /**
+    *
+    * Stop Stream
+    */
     stopStream: function () {
+      this.localVideoElement.src = '';
+      this.remoteVideoElement.src = '';
       if (this.localStream) {
         this.localStream.stop();
-        this.localVideoElement.src = '';
       }
       if (this.remoteStream) {
         this.remoteStream.stop();
-        this.remoteVideoElement.src = '';
       }
     },
 
-    // mute stream
+    /**
+    *
+    * Mute Stream
+    */
     muteStream: function () {
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
@@ -78,7 +86,10 @@ if (!ATT) {
       }
     },
 
-    // un-mute stream
+   /**
+    *
+    * Unmute Stream
+    */
     unmuteStream: function () {
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),

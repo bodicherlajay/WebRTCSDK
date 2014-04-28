@@ -13,7 +13,7 @@ if (!Env) {
 }
 
 (function (app) {
-  "use strict";
+  'use strict';
 
   var resourceManager = Env.resourceManager.getInstance(),
     apiObject = resourceManager.getAPIObject(),
@@ -61,12 +61,12 @@ if (!Env) {
     // Call BF to create WebRTC Session.
     resourceManager.doOperation('createWebRTCSession', {
       data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
-        "session": {
-          "mediaType": "dtls-srtp",
-          "ice": "true",
-          "services": [
-            "ip_voice_call",
-            "ip_video_call"
+        'session': {
+          'mediaType': 'dtls-srtp',
+          'ice': 'true',
+          'services': [
+            'ip_voice_call',
+            'ip_video_call'
           ]
         }
       },
@@ -135,8 +135,8 @@ if (!Env) {
         params: {
           url: [session.getSessionId()],
           headers: {
-            "Authorization": session.getAccessToken(),
-            "x-e911Id": session.getE911Id()
+            'Authorization': session.getAccessToken(),
+            'x-e911Id': session.getE911Id()
           }
         },
 

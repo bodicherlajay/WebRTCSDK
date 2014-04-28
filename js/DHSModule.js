@@ -13,7 +13,7 @@ if (!Env) {
 }
 
 (function (app) {
-  "use strict";
+  'use strict';
 
   var dhsNamespace = {},
     apiObject,

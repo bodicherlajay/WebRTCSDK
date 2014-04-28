@@ -12,6 +12,7 @@ module.exports = function (grunt) {
         included: true
       },
       'js-shared/js/utils.js',
+      'js-shared/js/LogManagerModule.js',
       'js/adapter.js',
       'js/ErrorDictionaryModule.js',
       'js/appConfigModule.js',
