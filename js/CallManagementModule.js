@@ -141,12 +141,6 @@ cmgmt = (function () {
       };
     };
 
-  // Session Object implementations
-  // Call Object implementations
-  // Call.start = function () {
-  //   //console.log(this.from);
-  // };
-
   // Call.reject = function () {
   // };
 

@@ -61,6 +61,7 @@ if (!ATT) {
         PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
       }
       // set callID in the call object
+      // TODO: switch to setCurrentCall
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
       // call established
       onInProgress({
@@ -70,14 +71,7 @@ if (!ATT) {
       break;
 
     case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
-      PeerConnectionService.setModificationId(event.modId);
-
-      if (event.sdp) {
-        sdp = event.sdp;
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
-        PeerConnectionService.incrementModCount();
-        PeerConnectionService.createAnswer();
-      }
+      PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
 
       // hold request received
       if (sdp && sdp.indexOf('sendonly') !== -1) {
