@@ -6,7 +6,7 @@ if (!ATT) {
 }
 
 (function (mainModule, PeerConnectionService) {
-  "use strict";
+  'use strict';
 
   var callManager = cmgmt.CallManager.getInstance(),
     module = {},

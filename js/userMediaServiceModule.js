@@ -6,7 +6,7 @@ if (!ATT) {
 }
 
 (function (app) {
-  "use strict";
+  'use strict';
 
   var module = {
 

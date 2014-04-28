@@ -5,7 +5,7 @@ if (!cmgmt) {
 }
 
 cmgmt = (function () {
-  "use strict";
+  'use strict';
   //Call prototype
   var module = {},
     Call = function (from, to, media) {
@@ -30,15 +30,15 @@ cmgmt = (function () {
     },
     //Session state enumeration
     SessionState = {
-      OUTGOING_CALL : "Outgoing",
-      INCOMING_CALL : "Incoming",
-      MOVE_CALL : "Move Call",
-      HOLD_CALL : "Hold Call",
-      RESUMED_CALL : "Resumed Call",
-      TRANSFER_CALL : "Transfer Call",
-      ENDED_CALL : "Ended Call",
-      READY: "Ready", //Ready to accept Outgoing or Incoming call
-      SDK_READY: "SDK Ready"
+      OUTGOING_CALL : 'Outgoing',
+      INCOMING_CALL : 'Incoming',
+      MOVE_CALL : 'Move Call',
+      HOLD_CALL : 'Hold Call',
+      RESUMED_CALL : 'Resumed Call',
+      TRANSFER_CALL : 'Transfer Call',
+      ENDED_CALL : 'Ended Call',
+      READY: 'Ready', //Ready to accept Outgoing or Incoming call
+      SDK_READY: 'SDK Ready'
     },
     //Session context to hold session variables
     SessionContext = function (token, e9Id, sessionId, state) {
