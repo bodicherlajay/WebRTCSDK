@@ -129,31 +129,37 @@ if (!Env) {
   };
 
   function deleteWebRTCSession(config) {
-
     var session = callManager.getSessionContext(),
-      dataForDeleteWebRTCSession = {
-        params: {
-          url: [session.getSessionId()],
-          headers: {
-            'Authorization': session.getAccessToken(),
-            'x-e911Id': session.getE911Id()
-          }
-        },
-
-        success: function (responseObject) {
-          var data;
-          if (responseObject.getResponseStatus() !== 200) {
-            data = {
-              type : 'error',
-              error : 'Failed to delete the web rtc session on blackflag'
-            };
-          }
-
-          if (typeof config.success === 'function') {
-            config.success(data);
-          }
+      dataForDeleteWebRTCSession,
+      successCallback = function (statusCode) {
+        var data = {};
+        if (statusCode !== 200) {
+          data = {
+            type : 'error',
+            error : 'Failed to delete the web rtc session on blackflag'
+          };
+        }
+        if (typeof config.success === 'function') {
+          config.success(data);
         }
       };
+
+    if (!session) {
+      successCallback();
+    }
+    
+    dataForDeleteWebRTCSession = {
+      params: {
+        url: [session.getSessionId()],
+        headers: {
+          'Authorization': session.getAccessToken(),
+          'x-e911Id': session.getE911Id()
+        }
+      },
+      success: function (responseObject) {
+        successCallback(responseObject.getResponseStatus());
+      }
+    };
 
     // Call BF to delete WebRTC Session.
     resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
