@@ -6,7 +6,7 @@ if (!ATT) {
 }
 
 (function (app) {
-  "use strict";
+  'use strict';
 
   var resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance();

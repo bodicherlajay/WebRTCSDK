@@ -7,7 +7,7 @@ if (!ATT) {
 }
 
 (function (mainModule) {
-  "use strict";
+  'use strict';
 
   var module = {};
 
@@ -36,27 +36,27 @@ if (!ATT) {
   };
 
   module.RTCCallEvents = {
-    SESSION_OPEN:             "session-open",
-    SESSION_MODIFIED:         "session-modified",
-    SESSION_TERMINATED:       "session-terminated",
-    INVITATION_SENT:          "invitation-sent", // this is not an event really
-    INVITATION_RECEIVED:      "invitation-received",
-    MODIFICATION_RECEIVED:    "mod-received",
-    MODIFICATION_TERMINATED:  "mod-terminated",
-    TRANSFER_INITIATED:       "transfer-initiated",
-    TRANSFER_TERMINATED:      "transfer-terminated",
-    ADD_FAILED:               "add-failed",
-    REMOVE_FAILED:            "remove-failed",
-    MOVE_TERMINATED:          "Move Terminated",
-    MUTED:                    "call-muted",
-    UNMUTED:                  "call-unmuted",
-    UNKNOWN:                  "Unknown"
+    SESSION_OPEN:             'session-open',
+    SESSION_MODIFIED:         'session-modified',
+    SESSION_TERMINATED:       'session-terminated',
+    INVITATION_SENT:          'invitation-sent', // this is not an event really
+    INVITATION_RECEIVED:      'invitation-received',
+    MODIFICATION_RECEIVED:    'mod-received',
+    MODIFICATION_TERMINATED:  'mod-terminated',
+    TRANSFER_INITIATED:       'transfer-initiated',
+    TRANSFER_TERMINATED:      'transfer-terminated',
+    ADD_FAILED:               'add-failed',
+    REMOVE_FAILED:            'remove-failed',
+    MOVE_TERMINATED:          'Move Terminated',
+    MUTED:                    'call-muted',
+    UNMUTED:                  'call-unmuted',
+    UNKNOWN:                  'Unknown'
   };
 
   module.MediaTypes = {
-    AUDIO_VIDEO:      "audiovideo",
-    MEDIA_CONFERENCE: "media-conference",
-    MEDIACONFERENCE:  "mediaconference"
+    AUDIO_VIDEO:      'audiovideo',
+    MEDIA_CONFERENCE: 'media-conference',
+    MEDIACONFERENCE:  'mediaconference'
   };
 
   mainModule.SdkEvents = Object.freeze(module.SdkEvents);
