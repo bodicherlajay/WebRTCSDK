@@ -5,11 +5,8 @@ module.exports = function (grunt) {
     basePath: '.',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
-      'js/utils.js',
-      'js/LogManagerModule.js',
-      'js/restClient.js',
-      'js/util.js',
-      'js/eventEmitter.js',
+      'test/init.js',
+      'js/**/*.js',
       'test/**/*.js'
     ],
     logLevel: 'DEBUG',

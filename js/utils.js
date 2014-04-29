@@ -1,28 +1,20 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150, nomen:true */
-
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RESTClient, Env, cmgmt */
-
-if (!ATT) {
-  var ATT = {};
-}
-
-(function (app) {
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
+/*global ATT*/
+/** Will export utilities, therefore nothing in here depends on anything else.
+  * Will create `ATT.utils` namespace
+*/
+(function (ATT) {
   'use strict';
 
-  var getNavObject = function () {
-    return navigator;
+  /**
+   * Check if browser has WebRTC capability.
+   * @return {Boolean}
+   */
+  var hasWebRTC =  function () {
+    return typeof navigator.mozGetUserMedia === 'function' ||
+      typeof navigator.webkitGetUserMedia === 'function' ||
+      typeof navigator.getUserMedia === 'function';
   },
-
-    /**
-     * Check if browser has WebRTC capability.
-     * @return {Boolean}
-     */
-    hasWebRTC =  function () {
-      return typeof getNavObject().mozGetUserMedia === 'function' ||
-        typeof getNavObject().webkitGetUserMedia === 'function' ||
-        typeof getNavObject().getUserMedia === 'function';
-    },
     /**
      * Extends an existing object using deep copy.
      * Note: It will only deep-copy instances of Object.
@@ -48,7 +40,7 @@ if (!ATT) {
       return destination;
     },
     inherits = function (ctor, superCtor) {
-      ctor.super_ = superCtor;
+      ctor.super = superCtor;
       ctor.prototype = Object.create(superCtor.prototype, {
         constructor: {
           value: ctor,
@@ -74,11 +66,12 @@ if (!ATT) {
       return parent;
     };
 
-  app.utils = {
+  // create `utils` namespace under `ATT`
+  ATT.utils = {
+    hasWebRTC: hasWebRTC,
     createNamespace: createNamespace,
     extend: extend,
-    hasWebRTC: hasWebRTC,
     inherits: inherits
-    //getNavObject: getNavObject
   };
+
 }(ATT));
