@@ -54,21 +54,12 @@ if (!ATT) {
         headers: DEFAULTS.headers
       },
       /**
-      * Create new user from DHSEndpoint
-      * @memberof WebRTCAPI.APIConfigs
-      */
-      registerUser: {
-        method: 'post',
-        url: DEFAULTS.DHSEndpoint + '/user/register',
-        headers: DEFAULTS.headers
-      },
-      /**
       * Authentication to DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
       authenticateUser: {
         method: 'post',
-        url: DEFAULTS.DHSEndpoint + '/user/authenticate',
+        url: DEFAULTS.DHSEndpoint + '/user/session',
         headers: DEFAULTS.headers
       },
       /**
@@ -76,10 +67,10 @@ if (!ATT) {
       * @memberof WebRTCAPI.APIConfigs
       */
       getAccessToken: {
-        method: 'get',
+        method: 'put',
         formatters : {
           url: function (params) {
-            return DEFAULTS.DHSEndpoint + '/user/token?code=' + params;
+            return DEFAULTS.DHSEndpoint + '/user/session?code=' + params;
           }
         },
         headers: DEFAULTS.headers
@@ -90,7 +81,16 @@ if (!ATT) {
       */
       logoutUser: {
         method: 'delete',
-        url: DEFAULTS.DHSEndpoint + '/user/logout',
+        url: DEFAULTS.DHSEndpoint + '/user/session',
+        headers: DEFAULTS.headers
+      },
+      /**
+      * Create new user from DHSEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      registerUser: {
+        method: 'post',
+        url: DEFAULTS.DHSEndpoint + '/users',
         headers: DEFAULTS.headers
       },
       /**
@@ -133,7 +133,7 @@ if (!ATT) {
         url: DEFAULTS.BFEndpoint + '/sessions',
         formatters: {
           headers: {
-            Authorization: function (param) {
+            'Authorization': function (param) {
               return 'Bearer ' + param;
             },
             'x-e911Id': function (param) {
@@ -154,7 +154,7 @@ if (!ATT) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params;
           },
           headers: {
-            Authorization: function (param) {
+            'Authorization': function (param) {
               return 'Bearer ' + param;
             },
             'x-e911Id': function (param) {
@@ -175,7 +175,7 @@ if (!ATT) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/' + params[1];
           },
           headers: {
-            Authorization: function (param) {
+            'Authorization': function (param) {
               return 'Authorization: Bearer ' + param;
             }
           }
@@ -193,7 +193,7 @@ if (!ATT) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
           },
           headers: {
-            Authorization: function (param) {
+            'Authorization': function (param) {
               return param;
             }
           }
@@ -212,7 +212,7 @@ if (!ATT) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
           },
           headers: {
-            Authorization: function (param) {
+            'Authorization': function (param) {
               return param;
             }
           }
@@ -233,7 +233,7 @@ if (!ATT) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
           },
           headers: {
-            Authorization: function (param) {
+            'Authorization': function (param) {
               return param;
             },
             'x-calls-action': function (param) {
@@ -254,7 +254,7 @@ if (!ATT) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
           },
           headers: {
-            Authorization: function (param) {
+            'Authorization': function (param) {
               return param;
             },
             'x-modId': function (param) {
@@ -277,7 +277,7 @@ if (!ATT) {
             return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
           },
           headers: {
-            Authorization: function (param) {
+            'Authorization': function (param) {
               return param;
             }
           }

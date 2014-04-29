@@ -54,8 +54,8 @@ if (!Env) {
     if (typeof config.onError !== 'function') {
       throw new Error('No UI error callback specified');
     }
-    if (!accessToken || !e911Id) {
-      throw new Error('Access token and e911Id are required.');
+    if (!accessToken) {
+      throw new Error('Access token is required to login to web rtc.');
     }
 
     // Call BF to create WebRTC Session.
@@ -73,7 +73,7 @@ if (!Env) {
       params: {
         headers: {
           'Authorization': accessToken,
-          'x-e911Id': e911Id
+          'x-e911Id': e911Id || ""
         }
       },
       success: createWebRTCSessionSuccess.bind(this, config),
@@ -82,11 +82,11 @@ if (!Env) {
   }
 
   createWebRTCSessionSuccess = function (config, responseObject) {
-    var sessionId = responseObject && responseObject.getResponseHeader('location') ?
-        responseObject.getResponseHeader('location').split('/')[4] : null,
+    var sessionId,
+      session = callManager.getSessionContext(),
+      channelConfig;
 
-      session = callManager.getSessionContext();
-
+    sessionId = responseObject && responseObject.getResponseHeader('location') ? responseObject.getResponseHeader('location').split('/')[4] : null;
     if (sessionId) {
 
       // Set WebRTC.Session data object that will be needed downstream.
@@ -98,12 +98,13 @@ if (!Env) {
       app.RTCEvent.getInstance().hookupEventsToUICallbacks();
 
       /**
-       * Call BF to create event channel
+       * Call BF to create event chanenel
        * @param {Boolean} true/false Use Long Polling?
        * todo: publish session ready event after event channel is created
        * todo: move the login callback code to the publish
        */
-      apiObject.eventChannel(false, sessionId, function () {
+      channelConfig = Env.resourceManager.getInstance().getChannelConfig(sessionId, session.getAccessToken());
+      channelConfig.callback = function () {
         // setting web rtc session id for displaying on UI only
         //authenticateResponseData.webRtcSessionId = sessionId;
 
@@ -115,9 +116,10 @@ if (!Env) {
             webRtcSessionId: sessionId
           }
         });
-      });
-    } else {
-      // TODO: if no session id, call the UI error callback
+      };
+      apiObject.eventChannel = ATT.util.createEventChannel(channelConfig);
+      apiObject.eventChannel.startListenning();
+    } else { // if no session id, call the UI error callback
       throw new Error('No session id');
     }
   };
@@ -127,31 +129,37 @@ if (!Env) {
   };
 
   function deleteWebRTCSession(config) {
-
     var session = callManager.getSessionContext(),
-      dataForDeleteWebRTCSession = {
-        params: {
-          url: [session.getSessionId()],
-          headers: {
-            'Authorization': session.getAccessToken(),
-            'x-e911Id': session.getE911Id()
-          }
-        },
-
-        success: function (responseObject) {
-          var data;
-          if (responseObject.getResponseStatus() !== 200) {
-            data = {
-              type : 'error',
-              error : 'Failed to delete the web rtc session on blackflag'
-            };
-          }
-
-          if (typeof config.success === 'function') {
-            config.success(data);
-          }
+      dataForDeleteWebRTCSession,
+      successCallback = function (statusCode) {
+        var data = {};
+        if (statusCode !== 200) {
+          data = {
+            type : 'error',
+            error : 'Failed to delete the web rtc session on blackflag'
+          };
+        }
+        if (typeof config.success === 'function') {
+          config.success(data);
         }
       };
+
+    if (!session) {
+      successCallback();
+    }
+
+    dataForDeleteWebRTCSession = {
+      params: {
+        url: [session.getSessionId()],
+        headers: {
+          'Authorization': session.getAccessToken(),
+          'x-e911Id': session.getE911Id()
+        }
+      },
+      success: function (responseObject) {
+        successCallback(responseObject.getResponseStatus());
+      }
+    };
 
     // Call BF to delete WebRTC Session.
     resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);

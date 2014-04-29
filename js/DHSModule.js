@@ -85,10 +85,13 @@ if (!Env) {
         }
       },
       error: function (response) {
-        var data = response.getJson();
+        var error = {
+          status: response.getResponseStatus(),
+          error: "Please login first"
+        };
 
         if (typeof config.error === 'function') {
-          config.error(data);
+          config.error(error);
         }
       }
     };
@@ -163,7 +166,14 @@ if (!Env) {
 
     var logoutConfig = {
       success: function (response) {
-        var data = response.getJson();
+        var data;
+        if (response.getResponseStatus() === 204) {
+          data = {
+            message: "You have been successfully logged out."
+          };
+        } else {
+          data = response.getJson();
+        }
         if (typeof config.success === 'function') {
           config.success(data);
         }
