@@ -2,26 +2,36 @@
 /*global ATT: true, cmgmt*/
 'use strict';
 
-// Assumptions: defined variables
-// * ATT
-// * ATT.utils
-// * ATT.utils.extend
-// * ATT.utils.createErrorDictionary
-// * ATT.utils.createEventChannel
-// * ATT.resourceManager?????
-// * ATT.WebRTC
-// * ATT.WebRTC.Session
+/** This is going to be the main entry/assembly module for the SDK 
+ * By the time this file is loaded, all other modules have already 
+ * been loaded, so we can assume the following functions and objects
+ * already exist:
+ * - ATT
+ * - ATT.utils
+ * - ATT.utils.extend
+ * - ATT.utils.createErrorDictionary
+ * - ATT.utils.createEventChannel
+ * - ATT.resourceManager?????: This file contains a lot of the initialization code.
+ *   So we either have to merge it with this file (main.js) or extract any initialization
+ *   logic so that there's only a Single Point of Entry for the SDK.
+ * - ATT.WebRTC
+ * - ATT.WebRTC.Session
+*/
 
 (function () {
   var callManager, sessionContext, eventChannelConfig;
-  // By this point every dependency should be loaded.
-  // So fail if ATT is not defined.
+
+  // Fail if ATT is not defined. Everything else depends on it.
   if (undefined === window.ATT) {
     console.log('ATT is not defined.');
     return;
   }
 
   // Create an Error Dictionary
+  if (undefined === ATT.createErrorDictionary) {
+    console.log('ATT doesn\'t have a method to create an error dictionary.');
+    return;
+  }
   ATT.errorDictionary = ATT.utils.createErrorDictionary({
     modules: {
       APP_COfNFIG: 'APP-CFG',
@@ -38,6 +48,7 @@
     }
   }, ATT.utils);
 
+  // Aparently we need to initialize the Call Management Module before....
   // Create an event channel to keep processing events from BlackFlag
   if (undefined === window.cmgmt) {
     console.log('Call Management Module not loaded.');
