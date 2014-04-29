@@ -75,9 +75,9 @@ if (!ATT) {
   }
 
   /**
-     * Function to remove crypto & BUNDLE from the SDP.
-     * @param {String} sdp
-     * @returns {*|sdp}
+   * Function to remove crypto & BUNDLE from the SDP.
+   * @param {String} sdp
+   * @returns {*|sdp}
   */
   function fixSDP(description) {
     var sdp = description.sdp,

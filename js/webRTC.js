@@ -116,11 +116,9 @@ if (!Env) {
           }
         });
       });
-    } else { // if no session id, call the UI error callback
+    } else {
+      // TODO: if no session id, call the UI error callback
       throw new Error('No session id');
-//      if (typeof config.error === 'function') {
-//        config.error(authenticateResponseData);
-//      }
     }
   };
 

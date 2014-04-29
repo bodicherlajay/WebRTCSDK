@@ -127,7 +127,7 @@ if (!ATT) {
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
-      // parse the phone number
+      // grab the phone number
       kaller = event.from.split('@')[0].split(':')[1];
 
       onIncomingCall({
@@ -143,6 +143,7 @@ if (!ATT) {
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
       callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
+      callManager.getSessionContext().setCallObject(null);
       PeerConnectionService.endCall();
       break;
 
