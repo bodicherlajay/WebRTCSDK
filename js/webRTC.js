@@ -145,7 +145,7 @@ if (!Env) {
     if (!session) {
       successCallback();
     }
-    
+
     dataForDeleteWebRTCSession = {
       params: {
         url: [session.getSessionId()],
