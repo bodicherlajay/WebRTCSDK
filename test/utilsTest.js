@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, describe, it, afterEach, beforeEach, expect, xit, sinon*/
 
-describe.only('ATT.utils namespace', function () {
+describe('ATT.utils namespace', function () {
   'use strict';
 
   it('should have method `hasWebRTC`', function () {
