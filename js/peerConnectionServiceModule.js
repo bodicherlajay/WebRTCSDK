@@ -69,17 +69,24 @@
             ATT.logManager.logTrace('callState', callState);
             // fix SDP
             ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
+            ATT.logManager.logTrace('processed Chrome offer SDP');
             // set local description
             self.peerConnection.setLocalDescription(sdp);
             self.localDescription = sdp;
+
+            ATT.logManager.logTrace('local description', sdp);
             if (callState === rm.SessionState.OUTGOING_CALL) {
               // send offer...
+              ATT.logManager.logTrace('sending offer');
               SignalingService.sendOffer({
                 calledParty : self.calledParty,
                 sdp : self.localDescription,
                 success : function (headers) {
+                  ATT.logManager.logTrace('success for offer sent, outgoing call');
+
                   if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
                     // publish the UI callback for invitation sent event
+                    ATT.logManager.logTrace('invitation sent');
                     app.event.publish(session.getSessionId() + '.responseEvent', {
                       state : app.RTCCallEvents.INVITATION_SENT
                     });
@@ -88,22 +95,26 @@
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
               // send answer...
+              ATT.logManager.logTrace('incoming call, sending answer');
               SignalingService.sendAnswer({
                 sdp : self.localDescription
               });
             }
+          } else {
+            ATT.logManager.logError('peerConnection is null!');
           }
         }
       };
 
       //add the local stream to peer connection
+      ATT.logManager.logTrace('Adding local stream to peer connection');
       pc.addStream(this.localStream);
 
       // add remote stream
       pc.addEventListener('addstream', function (evt) {
         this.remoteStream = evt.stream;
         UserMediaService.showStream('remote', evt.stream);
-        console.log('Remote Stream', evt.stream);
+        ATT.logManager.logTrace('Remote Stream', evt.stream);
       }, false);
     },
 
@@ -116,6 +127,10 @@
       this.callingParty = config.from;
       this.calledParty = config.to;
       this.mediaConstraints = config.mediaConstraints;
+      ATT.logManager.logTrace('starting call');
+      ATT.logManager.logTrace('calling party', config.from);
+      ATT.logManager.logTrace('called party', config.to);
+      ATT.logManager.logTrace('media constraints', config.mediaConstraints);
 
       // send any ice candidates to the other peer
       // get a local stream, show it in a self-view and add it to be sent
