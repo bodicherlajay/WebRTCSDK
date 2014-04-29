@@ -5,6 +5,7 @@ beforeEach: true, before: true, sinon: true, expect: true, xit: true, xdescribe:
 'use strict';
 
 describe('ResourceManager', function () {
+
   var DEFAULTS = {
     DHSEndpoint: ATT.appConfig.DHSEndpoint,
     BFEndpoint: ATT.appConfig.BFEndpoint,
@@ -12,8 +13,29 @@ describe('ResourceManager', function () {
       'Content-Type': 'application/json',
       'Accept' : 'application/json'
     }
-  };
+  }, resourceManager;
 
+  beforeEach(function () {
+    resourceManager = Env.resourceManager.getInstance();
+  });
+
+  describe.only('Event Channel Configuration', function () {
+
+    it('should have a method getChannelConfig', function () {
+      expect(resourceManager.getChannelConfig).to.be.a('function');
+    });
+    it('should throw an error if the session is not passed', function () {
+      expect(resourceManager.getChannelConfig.bind(resourceManager)).to.throw(Error);
+    });
+    it('channelConfig should have valid properties', function () {
+      var channelConfig = resourceManager.getChannelConfig('sessionId', 'accessToken');
+      expect('boolean' === typeof channelConfig.useLongPolling).to.equal(true);
+      expect('string' === typeof channelConfig.method).to.equal(true);
+      expect('string' === typeof channelConfig.url).to.equal(true);
+      expect('number' === typeof channelConfig.timeout).to.equal(true);
+      expect('string' === typeof channelConfig.headers.Authorization).to.equal(true);
+    });
+  });
   it('should be a singleton', function () {
     var instance1 = Env.resourceManager.getInstance(),
       instance2 = Env.resourceManager.getInstance();
@@ -21,8 +43,8 @@ describe('ResourceManager', function () {
   });
 
   it('should return public SDK methods via getAPIObject', function () {
-    var resourceManager = Env.resourceManager.getInstance(),
-      apiObject = resourceManager.getAPIObject();
+    resourceManager = Env.resourceManager.getInstance();
+    var  apiObject = resourceManager.getAPIObject();
     expect(Object.keys(apiObject).length).is.greaterThan(0);
   });
 
@@ -33,9 +55,6 @@ describe('ResourceManager', function () {
   });
 
   describe('getOperation', function () {
-
-    before(function () {
-    });
 
     it('should exist.', function () {
       expect(Env.resourceManager.getOperation).is.a('function');
@@ -49,8 +68,8 @@ describe('ResourceManager', function () {
     });
 
     it('Throw exception if url param/headers dont match formatters.', function () {
-      var resourceManager = Env.resourceManager.getInstance(),
-        getOperation = Env.resourceManager.getOperation,
+      resourceManager = Env.resourceManager.getInstance();
+      var  getOperation = Env.resourceManager.getOperation,
         getOperationConfig;
 
       // add single api method to rest api.
@@ -85,8 +104,8 @@ describe('ResourceManager', function () {
             Accept: 'accept'
           }
         },
-        success: function () {},
-        error:   function () {}
+        success: sinon.spy(),
+        error: sinon.spy()
       };
 
       // make call
@@ -101,8 +120,8 @@ describe('ResourceManager', function () {
             Accept: 'accept'
           }
         },
-        success: function () {},
-        error:   function () {}
+        success: sinon.spy(),
+        error: sinon.spy()
       };
 
       // make call
@@ -115,8 +134,8 @@ describe('ResourceManager', function () {
 
     it('should pass all header & url arguments to formatters', function () {
 
-      var resourceManager = Env.resourceManager.getInstance(),
-        getOperation = Env.resourceManager.getOperation,
+      resourceManager = Env.resourceManager.getInstance();
+      var getOperation = Env.resourceManager.getOperation,
         getOperationConfig,
         operation;
 
@@ -151,8 +170,8 @@ describe('ResourceManager', function () {
             Accept: 'accept'
           }
         },
-        success: function () {},
-        error:   function () {}
+        success: sinon.spy(),
+        error: sinon.spy()
       };
 
       // make call
@@ -171,7 +190,7 @@ describe('ResourceManager', function () {
 
     it('should throw exception if the operation does not exist', function () {
 
-      var resourceManager = Env.resourceManager.getInstance();
+      resourceManager = Env.resourceManager.getInstance();
       resourceManager.configure();
 
       expect(Env.resourceManager.getOperation.bind(Env.resourceManager, 'abc')).to.throw('Operation does not exist.');
@@ -180,8 +199,8 @@ describe('ResourceManager', function () {
 
   describe('initialization', function () {
 
-    var resourceManager = Env.resourceManager.getInstance(),
-      apiObject = resourceManager.getAPIObject();
+    resourceManager = Env.resourceManager.getInstance();
+    var apiObject = resourceManager.getAPIObject();
 
     it('should create public sdk methods', function () {
       // Add API methods as you add to the APIConfig.js file.

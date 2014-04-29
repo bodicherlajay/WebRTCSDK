@@ -26,19 +26,36 @@ Env = (function (app) {
 
     configure,
 
-    addPublicMethod,
+    addPublicMethod;
 
-    init = function () {
-      return {
-        configure:          configure,
-        getAPIObject:       getAPIObject,
-        getOperationsAPI:   getOperationsAPI,
-        addPublicMethod:    addPublicMethod,
-        getOperation:       module.getOperation,
-        doOperation:        module.doOperation
-      };
+  function getChannelConfig(sessionId, accessToken) {
+    if (undefined === sessionId
+        || 0 === sessionId.length) {
+      throw new Error('You need to pass a sessionId');
+    }
+
+    return {
+      useLongPolling: true, // TODO: maybe move out to a config file
+      method: 'get',
+      url:  ATT.appConfig.BFEndpoint + '/sessions/' + sessionId + '/events',
+      timeout: 30000,
+      headers: {
+        'Authorization': 'Bearer ' + accessToken
+      }
     };
+  }
 
+  function init() {
+    return {
+      configure:          configure,
+      getAPIObject:       getAPIObject,
+      getOperationsAPI:   getOperationsAPI,
+      addPublicMethod:    addPublicMethod,
+      getOperation:       module.getOperation,
+      doOperation:        module.doOperation,
+      getChannelConfig:   getChannelConfig
+    };
+  }
   // Configure REST operations object and public API object.
 
   configure = function (config) {

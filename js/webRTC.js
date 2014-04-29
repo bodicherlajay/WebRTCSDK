@@ -82,11 +82,11 @@ if (!Env) {
   }
 
   createWebRTCSessionSuccess = function (config, responseObject) {
-    var sessionId = responseObject && responseObject.getResponseHeader('location') ?
-        responseObject.getResponseHeader('location').split('/')[4] : null,
+    var sessionId,
+      session = callManager.getSessionContext(),
+      channelConfig;
 
-      session = callManager.getSessionContext();
-
+    sessionId = responseObject && responseObject.getResponseHeader('location') ? responseObject.getResponseHeader('location').split('/')[4] : null;
     if (sessionId) {
 
       // Set WebRTC.Session data object that will be needed downstream.
@@ -98,12 +98,13 @@ if (!Env) {
       app.RTCEvent.getInstance().hookupEventsToUICallbacks();
 
       /**
-       * Call BF to create event channel
+       * Call BF to create event chanenel
        * @param {Boolean} true/false Use Long Polling?
        * todo: publish session ready event after event channel is created
        * todo: move the login callback code to the publish
        */
-      apiObject.eventChannel(false, sessionId, function () {
+      channelConfig = Env.resourceManager.getInstance().getChannelConfig(sessionId, session.getAccessToken());
+      channelConfig.callback = function () {
         // setting web rtc session id for displaying on UI only
         //authenticateResponseData.webRtcSessionId = sessionId;
 
@@ -115,9 +116,10 @@ if (!Env) {
             webRtcSessionId: sessionId
           }
         });
-      });
-    } else {
-      // TODO: if no session id, call the UI error callback
+      };
+      apiObject.eventChannel = ATT.util.createEventChannel(channelConfig);
+      apiObject.eventChannel.startListenning();
+    } else { // if no session id, call the UI error callback
       throw new Error('No session id');
     }
   };

@@ -11,6 +11,7 @@ module.exports = function (grunt) {
         pattern: 'fixtures/**/*.html',
         included: true
       },
+      'js/att.js',
       'js-shared/js/utils.js',
       'js-shared/js/LogManagerModule.js',
       'js/adapter.js',
