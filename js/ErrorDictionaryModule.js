@@ -4,15 +4,18 @@
 /** ErrorDictinaryModule will add a factory method to create Error Dictionaries.
  *  @param app The application to add the method to.
  */
-(function (app) {
+(function () {
   "use strict";
+  // identify the environment
+  var typeOfWindow = typeof window,
+    rootEnv = 'undefined' === typeOfWindow ? module.exports : window;
 
   /** Will create an error object using a prototype and will append
    *  all the properties in `spec`
    *  @param spec An object specifying the properties that need to be added to 
    *  the error object.
    */
-  function createErrorWith(spec) {
+  function createErrorWith(spec, utils) {
 
     var prototypeError = {
         userErrorCode: '',    //5 digit error code
@@ -49,15 +52,14 @@
 
     newError = Object.create(prototypeError);
     // extend with the properties in the spec
-    newError = app.utils.extend(newError, spec);
+    newError = utils.extend(newError, spec);
     newError = addFormatter(newError);// add `formatMethod`
     newError = addIdGetter(newError);
 
     return newError;
   }
 
-  // will add a factory method to create an eventDictionary
-  app.createErrorDictionary = function (spec) {
+  function createErrorDictionary(spec, utils) {
     var allErrors = [], // collection of all errors in this dictionary
       // `modules` is an immutable of abbreviations for the modules of this `app`
       modules = Object.freeze(spec.modules),
@@ -70,7 +72,7 @@
           throw new Error('Invalid Module ID');
         }
         // create the error
-        newError = createErrorWith(spec);
+        newError = createErrorWith(spec, utils);
         // add it to the dictionary
         allErrors[newError.getId()] = newError;
         return newError;
@@ -79,24 +81,22 @@
         return allErrors[errorId];
       }
     };
-  };
-
-}(ATT));
-
-// Create an Error Dictionary for ATT
-// TODO: This should be called in our `main` entry point.
-ATT.errorDictionary = ATT.createErrorDictionary({
-  modules: {
-    APP_COfNFIG: 'APP-CFG',
-    DHS: 'DHS',
-    EVENT_CHANNEL: 'EVT-CHL',
-    PEER_CONNECTION: 'PCN-SRV',
-    USER_MEDIA: 'USR-SRV',
-    RESOURCE_MGR: 'RES-MGR',
-    RTC_EVENT: 'RTC-EVT',
-    SIGNALING: 'SIG-SRV',
-    SDP_FILTER: 'SDP-FLT',
-    CALL_MGR: 'CALL-MGR',
-    RTC: 'RTC'
   }
-});
+
+  // Export method to ATT.utils.createErrorDictionary
+  // will add a factory method to create an eventDictionary
+
+  // Check if the global ATT var has been created
+  if (undefined === rootEnv.ATT) { // ATT has not been defined
+    ATT = { utils: {}}; // define global ATT variable
+    console.log('Creating emtpy function ATT.utils.extend');
+    ATT.utils.extend = function (target, source) {
+      console.log(source);
+      return target;
+    };
+  }
+  ATT.utils.createErrorDictionary = createErrorDictionary;
+
+}());
+
+
