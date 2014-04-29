@@ -59,12 +59,14 @@
       // ICE candidate trickle
       pc.onicecandidate = function (evt) {
         if (evt.candidate) {
+          ATT.logManager.logTrace('ICE candidate', evt.candidate);
           console.log('ICE candidate', evt.candidate);
         } else {
           if (self.peerConnection !== null) {
             // get the call state from the session
             var callState = session.getCallState(),
               sdp = pc.localDescription;
+            ATT.logManager.logTrace('callState', callState);
             // fix SDP
             ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
             // set local description

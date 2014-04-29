@@ -1,5 +1,5 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT:true, Env: true, cmgmt: true*/
+/* jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
+/* global ATT:true, Env: true, cmgmt: true, EventDispatcher: true */
 
 if (!ATT) {
   var ATT = {};
@@ -12,26 +12,30 @@ if (!ATT) {
     module = {},
     instance,
     callbacks,
-    sdp,
-    timestamp,
-    kaller,
     interceptingEventChannelCallback,
     subscribeEvents,
-    onSessionReady,
-    onIncomingCall,
-    onOutgoingCall,
-    onInProgress,
-    onCallHold,
-    onCallResume,
-    onCallMute,
-    onCallUnmute,
-    onCallEnded,
-    onCallError,
+    eventRegistry,
     init = function () {
+      eventRegistry = new EventDispatcher({
+        mainModule: mainModule,
+        callbacks: callbacks,
+        peerConnectionSvc: PeerConnectionService,
+        callManager: callManager
+      });
       return {
         hookupEventsToUICallbacks: subscribeEvents
       };
     };
+
+  function dispatchEventToHandler(event) {
+    console.log('dispatching event: ' + event.type);
+    if (eventRegistry[event.type]) {
+      var fn = eventRegistry[event.type];
+      fn(event.payload);
+    } else {
+      console.log("No event handler defined for " + event.event);
+    }
+  }
 
   /*
   * Subscribes to all Event Channel announcemets
@@ -45,127 +49,8 @@ if (!ATT) {
 
     console.log('New Event: ', JSON.stringify(event));
 
-    // capture useful information here
-    timestamp = new Date();
-
-    switch (event.state) {
-    case mainModule.SessionEvents.RTC_SESSION_CREATED:
-      onSessionReady({
-        type: mainModule.CallStatus.READY,
-        data: event.data
-      });
-      break;
-
-    case mainModule.RTCCallEvents.SESSION_OPEN:
-      if (event.sdp) {
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
-      }
-      // set callID in the call object
-      // TODO: switch to setCurrentCall
-      callManager.getSessionContext().setCurrentCallId(event.resourceURL);
-      // call established
-      onInProgress({
-        type: mainModule.CallStatus.INPROGRESS,
-        time: timestamp
-      });
-      break;
-
-    case mainModule.RTCCallEvents.MODIFICATION_RECEIVED:
-      PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
-
-      // hold request received
-      if (sdp && sdp.indexOf('sendonly') !== -1) {
-        onCallHold({
-          type: mainModule.CallStatus.HOLD
-        });
-        callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
-      }
-
-      // resume request received
-      if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
-        onCallResume({
-          type: mainModule.CallStatus.RESUMED
-        });
-        callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
-      }
-      break;
-
-    case mainModule.RTCCallEvents.MODIFICATION_TERMINATED:
-      PeerConnectionService.setModificationId(event.modId);
-
-      if (event.sdp) {
-        sdp = event.sdp;
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
-      }
-
-      // hold request successful
-      if (sdp && sdp.indexOf('recvonly') !== -1 && sdp.indexOf('sendrecv') !== -1) {
-        onCallHold({
-          type: mainModule.CallStatus.HOLD
-        });
-        callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
-      } else if (sdp && sdp.indexOf('sendrecv') !== -1) {
-        if (callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
-          // resume request successful
-          onCallResume({
-            type: mainModule.CallStatus.RESUMED
-          });
-          callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
-        }
-      }
-      break;
-
-    case mainModule.RTCCallEvents.INVITATION_SENT:
-      onOutgoingCall({
-        type: mainModule.CallStatus.CALLING,
-        callee: callManager.getSessionContext().getCallObject().callee()
-      });
-      break;
-
-    case mainModule.RTCCallEvents.INVITATION_RECEIVED:
-      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
-        event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
-      }
-
-      // grab the phone number
-      kaller = event.from.split('@')[0].split(':')[1];
-
-      onIncomingCall({
-        type: mainModule.CallStatus.RINGING,
-        caller: kaller
-      });
-      break;
-
-    case mainModule.RTCCallEvents.SESSION_TERMINATED:
-      if (event.reason) {
-        onCallError({ type: mainModule.CallStatus.ERROR, reason: event.reason });
-      } else {
-        onCallEnded({ type: mainModule.CallStatus.ENDED });
-      }
-      callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
-      callManager.getSessionContext().setCallObject(null);
-      PeerConnectionService.endCall();
-      break;
-
-    case mainModule.RTCCallEvents.MUTED:
-      onCallMute({
-        type: mainModule.CallStatus.MUTED
-      });
-      break;
-
-    case mainModule.RTCCallEvents.UNMUTED:
-      onCallUnmute({
-        type: mainModule.CallStatus.UNMUTED
-      });
-      break;
-
-    case mainModule.RTCCallEvents.UNKNOWN:
-      onCallError({ type: mainModule.CallStatus.ERROR });
-      break;
-    }
-
-    // set current event on the session
-    callManager.getSessionContext().setEventObject(event);
+    console.log('dispatching event: ' + event.state);
+    dispatchEventToHandler(event.state);
   };
 
   subscribeEvents = function () {
@@ -179,72 +64,6 @@ if (!ATT) {
     // subscribe to hook up callbacks to events
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     console.log('Subscribed to events');
-  };
-
-  onSessionReady = function (evt) {
-    if (callbacks.onSessionReady) {
-      callbacks.onSessionReady(evt);
-    }
-  };
-
-  onIncomingCall = function (evt) {
-    if (callbacks.onIncomingCall) {
-      callbacks.onIncomingCall(evt);
-    }
-  };
-
-  onOutgoingCall = function (evt) {
-    if (callbacks.onOutgoingCall) {
-      callbacks.onOutgoingCall(evt);
-    }
-  };
-
-  onInProgress = function (evt) {
-    if (callbacks.onInProgress) {
-      callbacks.onInProgress(evt);
-    }
-  };
-
-  onCallHold = function (evt) {
-    if (callbacks.onCallHold) {
-      callbacks.onCallHold(evt);
-    }
-  };
-
-  onCallResume = function (evt) {
-    if (callbacks.onCallResume) {
-      callbacks.onCallResume(evt);
-    }
-  };
-
-  onCallMute = function (evt) {
-    if (callbacks.onCallMute) {
-      callbacks.onCallMute(evt);
-    }
-  };
-
-  onCallUnmute = function (evt) {
-    if (callbacks.onCallUnmute) {
-      callbacks.onCallUnmute(evt);
-    }
-  };
-
-  onCallError = function (evt) {
-    if (callbacks.onCallError) {
-      callbacks.onCallError(evt);
-    }
-  };
-
-  onCallEnded = function (evt) {
-    if (callbacks.onCallEnded) {
-      callbacks.onCallEnded(evt);
-    }
-  };
-
-  onCallError = function (evt) {
-    if (callbacks.onCallError) {
-      callbacks.onCallError(evt);
-    }
   };
 
   module.getInstance = function () {
