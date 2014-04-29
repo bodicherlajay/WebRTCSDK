@@ -98,5 +98,3 @@
   ATT.utils.createErrorDictionary = createErrorDictionary;
 
 }());
-
-

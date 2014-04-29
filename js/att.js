@@ -1,0 +1,3 @@
+if (!ATT) {
+  var ATT = {};
+}
