@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global WebSocket: true, ATT, describe, it, afterEach, beforeEach, before, sinon, expect*/
+/*global WebSocket: true, ATT, describe, xit, it, afterEach, beforeEach, before, sinon, expect*/
 
 /**
  * Unit tests for event channel module.
