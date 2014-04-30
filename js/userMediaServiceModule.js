@@ -5,6 +5,11 @@ if (!ATT) {
   var ATT = {};
 }
 
+var logMgr = ATT.logManager.getInstance(), logger;
+//TODO this configuration need to move outside this function
+logMgr.configureLogger('userMediaServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+logger = logMgr.getLogger('userMediaServiceModule');
+
 (function (app) {
   'use strict';
 
@@ -28,6 +33,7 @@ if (!ATT) {
     * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
     */
     startCall: function (config) {
+      logger.logTrace('start call');
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
 
@@ -42,6 +48,7 @@ if (!ATT) {
     showStream: function (localOrRemote, stream) {   // 'local' or 'remote'
       var videoStreamEl;
 
+      logger.logTrace('show stream');
       if (localOrRemote === 'remote') {
         this.remoteStream = stream;
         videoStreamEl = this.remoteVideoElement;

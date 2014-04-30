@@ -1,5 +1,10 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global cmgmt:true, ATT:true*/
+/*global cmgmt:true, Logger:true, ATT:true*/
+
+var logMgr = ATT.logManager.getInstance(), logger;
+//TODO this configuration need to move outside this function
+logMgr.configureLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+logger = logMgr.getLogger('CallManagementModule');
 
 cmgmt = (function () {
   'use strict';
@@ -7,7 +12,7 @@ cmgmt = (function () {
   var module = {},
     Call = function (from, to, media) {
       var caller = from, callee = to, mediaType = media, localSDP = null;
-      ATT.logManager.logTrace('call method started, from: ' + from + ', to: ' + to + ', media type: ' + media);
+      logger.logTrace('call method started, from: ' + from + ', to: ' + to + ', media type: ' + media);
 
       return {
         caller: function () { return caller; },
@@ -104,7 +109,7 @@ cmgmt = (function () {
 
     CreateSession = function (config) {
       session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
-      ATT.logManager.logTrace('creating session with id: ' + config.sessionId);
+      logger.logTrace('creating session with id: ' + config.sessionId);
       session_context.setCallState(SessionState.SDK_READY);
     },
 
@@ -113,7 +118,7 @@ cmgmt = (function () {
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.OUTGOING_CALL);
       session_context.setUICallbacks(config.success);
-      ATT.logManager.logTrace('creating outgoing call', 'to: ' + config.to + ', constraints: ' + config.mediaConstraints);
+      logger.logTrace('creating outgoing call', 'to: ' + config.to + ', constraints: ' + config.mediaConstraints);
       ATT.UserMediaService.startCall(config);
     },
 
@@ -123,14 +128,14 @@ cmgmt = (function () {
       session_context.setCallObject(call);
       session_context.setCallState(SessionState.INCOMING_CALL);
       session_context.setUICallbacks(config.success);
-      ATT.logManager.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
+      logger.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
       ATT.UserMediaService.startCall(config);
     },
 
     instance,
 
     init = function () {
-      ATT.logManager.logTrace('call management module init');
+      logger.logTrace('call management module init');
       return {
         getSessionContext: function () {
           return session_context;
@@ -154,40 +159,40 @@ cmgmt = (function () {
   Call.hold = function () {
     if (ATT.PeerConnectionService.peerConnection
         && session_context.getCurrentCallId()) {
-      ATT.logManager.logTrace('Putting call on hold...');
+      logger.logTrace('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
-      ATT.logManager.logWarning('Hold not possible...');
+      logger.logWarning('Hold not possible...');
     }
   };
 
   Call.resume = function () {
     if (ATT.PeerConnectionService.peerConnection
         && session_context.getCurrentCallId()) {
-      ATT.logManager.logTrace('Resuming call...');
+      logger.logTrace('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
-      ATT.logManager.logWarning('Resume not possible...');
+      logger.logWarning('Resume not possible...');
     }
   };
 
   Call.hangup = function () {
     if (ATT.PeerConnectionService.peerConnection
         && session_context.getCurrentCallId()) {
-      ATT.logManager.logTrace('Hanging up...');
+      logger.logTrace('Hanging up...');
       ATT.SignalingService.sendEndCall();
     } else {
-      ATT.logManager.logWarning('Hangup not possible...');
+      logger.logWarning('Hangup not possible...');
     }
   };
 
   Call.mute = function () {
-    ATT.logManager.logTrace('putting call on mute');
+    logger.logTrace('putting call on mute');
     ATT.UserMediaService.muteStream();
   };
 
   Call.unmute = function () {
-    ATT.logManager.logTrace('unmuting call');
+    logger.logTrace('unmuting call');
     ATT.UserMediaService.unmuteStream();
   };
 

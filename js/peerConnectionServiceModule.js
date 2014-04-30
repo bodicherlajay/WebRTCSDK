@@ -6,6 +6,12 @@
  * Dependencies:  adapter.js
  */
 
+var logMgr = ATT.logManager.getInstance(), logger;
+//TODO this configuration need to move outside this function
+logMgr.configureLogger('peerConnectionServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+logger = logMgr.getLogger('peerConnectionServiceModule');
+
+
 (function (app, UserMediaService, SignalingService) {
   'use strict';
 
@@ -59,34 +65,34 @@
       // ICE candidate trickle
       pc.onicecandidate = function (evt) {
         if (evt.candidate) {
-          ATT.logManager.logTrace('ICE candidate', evt.candidate);
+          logger.logTrace('ICE candidate', evt.candidate);
           console.log('ICE candidate', evt.candidate);
         } else {
           if (self.peerConnection !== null) {
             // get the call state from the session
             var callState = session.getCallState(),
               sdp = pc.localDescription;
-            ATT.logManager.logTrace('callState', callState);
+            logger.logTrace('callState', callState);
             // fix SDP
             ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
-            ATT.logManager.logTrace('processed Chrome offer SDP');
+            logger.logTrace('processed Chrome offer SDP');
             // set local description
             self.peerConnection.setLocalDescription(sdp);
             self.localDescription = sdp;
 
-            ATT.logManager.logTrace('local description', sdp);
+            logger.logTrace('local description', sdp);
             if (callState === rm.SessionState.OUTGOING_CALL) {
               // send offer...
-              ATT.logManager.logTrace('sending offer');
+              logger.logTrace('sending offer');
               SignalingService.sendOffer({
                 calledParty : self.calledParty,
                 sdp : self.localDescription,
                 success : function (headers) {
-                  ATT.logManager.logTrace('success for offer sent, outgoing call');
+                  logger.logTrace('success for offer sent, outgoing call');
 
                   if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
                     // publish the UI callback for invitation sent event
-                    ATT.logManager.logTrace('invitation sent');
+                    logger.logTrace('invitation sent');
                     app.event.publish(session.getSessionId() + '.responseEvent', {
                       state : app.RTCCallEvents.INVITATION_SENT
                     });
@@ -95,26 +101,26 @@
               });
             } else if (callState === rm.SessionState.INCOMING_CALL) {
               // send answer...
-              ATT.logManager.logTrace('incoming call, sending answer');
+              logger.logTrace('incoming call, sending answer');
               SignalingService.sendAnswer({
                 sdp : self.localDescription
               });
             }
           } else {
-            ATT.logManager.logError('peerConnection is null!');
+            logger.logError('peerConnection is null!');
           }
         }
       };
 
       //add the local stream to peer connection
-      ATT.logManager.logTrace('Adding local stream to peer connection');
+      logger.logTrace('Adding local stream to peer connection');
       pc.addStream(this.localStream);
 
       // add remote stream
       pc.addEventListener('addstream', function (evt) {
         this.remoteStream = evt.stream;
         UserMediaService.showStream('remote', evt.stream);
-        ATT.logManager.logTrace('Remote Stream', evt.stream);
+        logger.logTrace('Remote Stream', evt.stream);
       }, false);
     },
 
@@ -127,10 +133,10 @@
       this.callingParty = config.from;
       this.calledParty = config.to;
       this.mediaConstraints = config.mediaConstraints;
-      ATT.logManager.logTrace('starting call');
-      ATT.logManager.logTrace('calling party', config.from);
-      ATT.logManager.logTrace('called party', config.to);
-      ATT.logManager.logTrace('media constraints', config.mediaConstraints);
+      logger.logTrace('starting call');
+      logger.logTrace('calling party', config.from);
+      logger.logTrace('called party', config.to);
+      logger.logTrace('media constraints', config.mediaConstraints);
 
       // send any ice candidates to the other peer
       // get a local stream, show it in a self-view and add it to be sent
@@ -144,7 +150,7 @@
     * @param {Object} stream The media stream
     */
     getUserMediaSuccess: function (stream) {
-      ATT.logManager.logTrace('getUserMedia success');
+      logger.logTrace('getUserMedia success');
       // set local stream
       this.localStream = stream;
 
@@ -154,16 +160,16 @@
         event = session.getEventObject(),
         callState = session.getCallState();
 
-      ATT.logManager.logTrace('creating peer connection');
+      logger.logTrace('creating peer connection');
       self.createPeerConnection();
-      ATT.logManager.logTrace('session state', callState);
+      logger.logTrace('session state', callState);
 
       if (callState === rm.SessionState.OUTGOING_CALL) {
         // call the user media service to show stream
         UserMediaService.showStream('local', this.localStream);
 
         //todo: switch constraints to dynamic
-        ATT.logManager.logTrace('creating offer for outgoing call -- audio video hard-coded to true still');
+        logger.logTrace('creating offer for outgoing call -- audio video hard-coded to true still');
         this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
           console.log('Create offer failed');
         }, {'mandatory': {
@@ -172,7 +178,7 @@
         }});
 
       } else if (callState === rm.SessionState.INCOMING_CALL) {
-        ATT.logManager.logTrace('Responding to incoming call');
+        logger.logTrace('Responding to incoming call');
         // call the user media service to show stream
         UserMediaService.showStream('local', this.localStream);
 
@@ -186,10 +192,10 @@
     * Create Answer
     */
     createAnswer: function () {
-      ATT.logManager.logTrace('Creating answer');
+      logger.logTrace('Creating answer');
       if (this.userAgent().indexOf('Chrome') < 0) {
         this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function () {
-          ATT.logManager.logWarning('Create answer failed.');
+          logger.logWarning('Create answer failed.');
         }, {
           'mandatory' : { //todo: switch constraints to dynamic
             'OfferToReceiveAudio' : true,
@@ -197,7 +203,7 @@
           }
         });
       } else {
-        ATT.logManager.logTrace('Creating answer.');
+        logger.logTrace('Creating answer.');
         this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this));
       }
     },
@@ -214,13 +220,13 @@
         'type' : type
       };
       this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
-        ATT.logManager.logTrace('Set Remote Description Success');
+        logger.logTrace('Set Remote Description Success');
       }, function (err) {
         // hack for difference between FF and Chrome
         if (typeof err === 'object') {
           err = err.message;
         }
-        ATT.logManager.logWarning('Set Remote Description Fail', err);
+        logger.logWarning('Set Remote Description Fail', err);
       });
     },
 
@@ -231,8 +237,8 @@
     * @param {String} modId modification id
     */
     setRemoteAndCreateAnswer: function (sdp, modId) {
-      ATT.logManager.logTrace('Creating answer.');
-      ATT.logManager.logDebug('modId', modId);
+      logger.logTrace('Creating answer.');
+      logger.logDebug('modId', modId);
       this.modificationId = modId;
       this.incrementModCount();
       this.setTheRemoteDescription(sdp, 'offer');
@@ -270,7 +276,7 @@
     */
     setLocalAndSendMessage : function (description) {
       // fix SDP
-      ATT.logManager.logTrace('Fixing SDP for Chrome', description);
+      logger.logTrace('Fixing SDP for Chrome', description);
       ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
 
       this.localDescription = description;
@@ -280,7 +286,7 @@
 
       // send accept modifications...
       if (this.modificationId) {
-        ATT.logManager.logDebug('Accepting modification', this.modificationId);
+        logger.logDebug('Accepting modification', this.modificationId);
         SignalingService.sendAcceptMods({
           sdp : this.localDescription,
           modId: this.modificationId
@@ -296,7 +302,7 @@
     holdCall: function () {
       var sdp = this.localDescription;
 
-      ATT.logManager.logTrace('holding call', sdp);
+      logger.logTrace('holding call', sdp);
       // adjust SDP for hold request
       sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
 
@@ -306,7 +312,7 @@
 
       ATT.sdpFilter.getInstance().incrementSDP(sdp, this.modificationCount);
 
-      ATT.logManager.logTrace('sending modified sdp', sdp);
+      logger.logTrace('sending modified sdp', sdp);
       // set local description
       this.peerConnection.setLocalDescription(sdp);
 
@@ -324,7 +330,7 @@
 
       var sdp = this.localDescription;
 
-      ATT.logManager.logTrace('resuming call', sdp);
+      logger.logTrace('resuming call', sdp);
       // adjust SDP for resume request
       sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
 
@@ -337,7 +343,7 @@
       // set local description
       this.peerConnection.setLocalDescription(sdp);
 
-      ATT.logManager.logTrace('sending modified sdp', sdp);
+      logger.logTrace('sending modified sdp', sdp);
       // send resume signal...
       SignalingService.sendResumeCall({
         sdp : sdp.sdp
@@ -349,7 +355,7 @@
     * End Call
     */
     endCall: function () {
-      ATT.logManager.logTrace('Ending call.');
+      logger.logTrace('Ending call.');
       if (this.peerConnection) {
         this.peerConnection.close();
       }
