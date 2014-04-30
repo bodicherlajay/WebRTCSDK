@@ -3,7 +3,7 @@
 
 "use strict";
 
-var EventDispatcher = function (settings) {
+var EventDispatcher = function () {
   // mainModule = settings.mainModule;
   // callbacks = settings.callbacks;
   // PeerConnectionService = settings.peerConnectionSvc;
@@ -15,6 +15,7 @@ EventDispatcher.prototype = (function () {
     PeerConnectionService = ATT.PeerConnectionService,
     mainModule = ATT,
     session = callManager.getSessionContext(),
+    callbacks,
     kaller,
     timestamp,
     onSessionReady,
@@ -142,7 +143,7 @@ EventDispatcher.prototype = (function () {
     onCallError({ type: mainModule.CallStatus.ERROR });
   };
 
-  if (session && session.getUICallbacks() ) {
+  if (session && session.getUICallbacks()) {
 
     callbacks = session.getUICallbacks;
 

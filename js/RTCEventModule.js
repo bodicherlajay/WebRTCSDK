@@ -5,13 +5,12 @@ if (!ATT) {
   var ATT = {};
 }
 
-(function (mainModule, PeerConnectionService) {
+(function (mainModule) {
   'use strict';
 
   var callManager = cmgmt.CallManager.getInstance(),
     module = {},
     instance,
-    callbacks,
     interceptingEventChannelCallback,
     subscribeEvents,
     eventRegistry,
@@ -54,9 +53,6 @@ if (!ATT) {
   };
 
   subscribeEvents = function () {
-    // set callbacks after session is created and we are ready to subscribe to events
-    callbacks = callManager.getSessionContext().getUICallbacks();
-
     var sessionId = callManager.getSessionContext().getSessionId();
 
     // unsubscribe first, to avoid double subscription from previous actions
@@ -74,4 +70,4 @@ if (!ATT) {
   };
 
   mainModule.RTCEvent = module;
-}(ATT || {}, ATT.PeerConnectionService));
+}(ATT || {}));
