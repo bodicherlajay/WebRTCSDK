@@ -18,7 +18,8 @@ if (!Env) {
   var resourceManager = Env.resourceManager.getInstance(),
     apiObject = resourceManager.getAPIObject(),
     callManager = cmgmt.CallManager.getInstance(),
-    initSession,
+    logManager = ATT.logManager.getInstance(),
+    log = logManager.getLogger('webRTC'),
     createWebRTCSessionSuccess,
     createWebRTCSessionError;
 
@@ -27,14 +28,19 @@ if (!Env) {
    * @param {String} accessToken
    * @param {String} e911Id
    */
-  initSession = function (accessToken, e911Id, successCb) {
+  function initSession(accessToken, e911Id) {
+    if (!accessToken) {
+      return log.logError('Cannot init SDK session, no access token');
+    }
+    if (!e911Id) {
+      return log.logError('Cannot init SDK session, no e911 id');
+    }
     // Set the access Token in the callManager.
     callManager.CreateSession({
       token: accessToken,
-      e911Id: e911Id,
-      success: successCb
+      e911Id: e911Id
     });
-  };
+  }
 
   /**
    * SDK login will just create the webRTC session.  It requires
@@ -43,6 +49,15 @@ if (!Env) {
    * @param {Object} data The required login form data from the UI.
    */
   function login(config) {
+    if (!config) {
+      return log.logError('Cannot login to web rtc, no configuration');
+    }
+    if (!config.data) {
+      return log.logError('Cannot login to web rtc, no configuration data');
+    }
+
+    initSession(config.data.token.access_token, config.data.e911Id.e911Locations.addressIdentifier);
+
     var session = callManager.getSessionContext(),
       accessToken = session.getAccessToken(),
       e911Id = session.getE911Id();
@@ -53,9 +68,6 @@ if (!Env) {
     }
     if (typeof config.onError !== 'function') {
       throw new Error('No UI error callback specified');
-    }
-    if (!accessToken) {
-      throw new Error('Access token is required to login to web rtc.');
     }
 
     // Call BF to create WebRTC Session.
@@ -134,7 +146,7 @@ if (!Env) {
     console.log('createWebRTCSessionError');
   };
 
-  function deleteWebRTCSession(config) {
+  function logout(config) {
     var session = callManager.getSessionContext(),
       dataForDeleteWebRTCSession,
       successCallback = function (statusCode) {
@@ -244,7 +256,7 @@ if (!Env) {
 
   // The SDK public API.
   resourceManager.addPublicMethod('login', login);
-  resourceManager.addPublicMethod('logout', deleteWebRTCSession);
+  resourceManager.addPublicMethod('logout', logout);
   resourceManager.addPublicMethod('dial', dial);
   resourceManager.addPublicMethod('answer', answer);
   resourceManager.addPublicMethod('hold', hold);
@@ -252,5 +264,4 @@ if (!Env) {
   resourceManager.addPublicMethod('mute', mute);
   resourceManager.addPublicMethod('unmute', unmute);
   resourceManager.addPublicMethod('hangup', hangup);
-  resourceManager.addPublicMethod('initSession', initSession);
 }(ATT || {}));

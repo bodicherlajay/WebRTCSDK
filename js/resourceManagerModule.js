@@ -35,7 +35,7 @@ Env = (function (app) {
       getOperationsAPI:   getOperationsAPI,
       addPublicMethod:    addPublicMethod,
       getOperation:       module.getOperation,
-      doOperation:        module.doOperation    
+      doOperation:        module.doOperation
     };
   }
   // Configure REST operations object and public API object.
@@ -79,7 +79,6 @@ Env = (function (app) {
     }
     return instance;
   };
-
 
   /**
     This will return a configured rest operation call.

@@ -89,7 +89,7 @@ describe('Event Channel', function () {
         expect(channelConfig.resourceManager.doOperation.called).to.equal(true);
       });
       it('should continue listening for messages on error or timeout');
-      xit('should create a websockets with the given location', function () {
+      it('should create a websockets with the given location', function () {
         channelConfig.usesLongPolling = false;
         eventChannel = ATT.utils.createEventChannel(channelConfig);
         // setup the response

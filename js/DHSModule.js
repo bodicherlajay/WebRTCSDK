@@ -16,9 +16,10 @@ if (!Env) {
   'use strict';
 
   var dhsNamespace = {},
-    apiObject,
     resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance(),
+    logManager = ATT.logManager.getInstance(),
+    log,
 
     // private methods
     init,
@@ -28,19 +29,15 @@ if (!Env) {
 
     register,
 
-    login,
-
     loginSuccess,
 
     loginError,
 
-    logout,
+    login,
 
     token,
 
-    getE911Id,
-
-    createE911Id,
+    logout,
 
     validateAddress,
 
@@ -48,14 +45,18 @@ if (!Env) {
 
     isEmpty,
 
+    createE911Id,
+
     updateE911Id;
 
   init = function () {
 
+    logManager.configureLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
+
+    log = logManager.getLogger('DHSModule');
+
     // create namespace.
     dhsNamespace = ATT.utils.createNamespace(app, 'rtc.dhs');
-
-    apiObject = resourceManager.getAPIObject();
 
     // sub-namespaces on ATT.
     app.RESTClient = RESTClient;
@@ -63,9 +64,8 @@ if (!Env) {
     dhsNamespace.checkSession = checkSession;
     dhsNamespace.register = register;
     dhsNamespace.login = login;
-    dhsNamespace.logout = logout;
     dhsNamespace.token = token;
-    dhsNamespace.getE911Id = getE911Id;
+    dhsNamespace.logout = logout;
     dhsNamespace.createE911Id = createE911Id;
     dhsNamespace.updateE911Id = updateE911Id;
   };
@@ -120,9 +120,23 @@ if (!Env) {
     resourceManager.doOperation('registerUser', registerConfig);
   };
 
+  loginError = function (config, responseObject) {
+    log.logError(responseObject.getJson().error);
+
+    if (typeof config.error === 'function') {
+      config.error(responseObject.getJson());
+    }
+  };
+
+  loginSuccess = function (config, responseObject) {
+    if (typeof config.success === 'function') {
+      config.success(responseObject.getJson());
+    }
+  };
+
   /**
    * The login method that will be hit by UI.
-   * @param {Object} config The userId/password
+   * @param {Object} config The usertype
    */
   login = function (config) {
     // Call DHS to authenticate, associate user to session.
@@ -133,35 +147,23 @@ if (!Env) {
     });
   };
 
-  loginError = function (config, responseObject) {
-    if (typeof config.error === 'function') {
-      config.error(responseObject.getJson());
-    }
+  /**
+   * The token method that will be hit by UI.
+   * @param {Object} config The code
+   */
+  token = function (config) {
+    // Call DHS to get token for user consent flow
+    resourceManager.doOperation('getAccessToken', {
+      data: config.data,
+      success:  loginSuccess.bind(this, config),
+      error:    loginError.bind(this, config)
+    });
   };
 
-  loginSuccess = function (config, responseObject) {
-
-    // get access token, e911 id that is needed to create webrtc session
-    var authenticateResponseData = responseObject.getJson(),
-      accessToken = authenticateResponseData.accesstoken ? authenticateResponseData.accesstoken.access_token : null,
-      e911Id =  authenticateResponseData.e911Id ? authenticateResponseData.e911Id.e911Locations.addressIdentifier : null,
-      successcb = function () {};
-
-    // if no access token return user data to UI, without webrtc session id
-    if (!accessToken) {
-      if (typeof config.error === 'function') {
-        config.error(authenticateResponseData);
-      }
-    } else {
-      // Call BF to create WebRTC Session.
-      // getE911Id(config.userId);
-      if (typeof config.success === 'function') {
-        successcb = config.success.bind(null, authenticateResponseData);
-      }
-      apiObject.initSession(accessToken, e911Id, successcb);
-    }
-  };
-
+  /**
+   * The logout method that will be hit by UI.
+   * @param {Object} config The callbacks
+   */
   logout = function (config) {
 
     var logoutConfig = {
@@ -180,6 +182,7 @@ if (!Env) {
       },
       error: function (response) {
         var data = response.getJson();
+        log.logError(data.error);
         if (typeof config.error === 'function') {
           config.error(data);
         }
@@ -188,17 +191,6 @@ if (!Env) {
 
     // Call DHS to logout user by deleting browser session.
     resourceManager.doOperation('logoutUser', logoutConfig);
-  };
-
-  token = function (config) {
-    // Call DHS to get token for user consent flow
-    resourceManager.doOperation('getAccessToken', {
-      params: {
-        url: [config.code]
-      },
-      success:  loginSuccess.bind(this, config),
-      error:    loginError.bind(this, config)
-    });
   };
 
   /**
@@ -263,55 +255,24 @@ if (!Env) {
   };
 
   /**
-   * Get the E911 ID from DHS.
-   * @param {Object} config
-   */
-  getE911Id = function (config) {
-
-    if (!config.userId) {
-      throw new Error('userId required for getE911Id.');
-    }
-
-    var getE911IdConfig = {
-      params: {
-        url: config.userId
-      },
-      success: function (response) {
-        var data = response.getJson();
-        if (typeof config.success === 'function') {
-          config.success(data);
-        }
-      },
-      error: function (response) {
-        var data = response.getJson();
-        if (typeof config.error === 'function') {
-          config.error(data);
-        }
-      }
-    };
-    resourceManager.doOperation('getE911Id', getE911IdConfig);
-  };
-
-  /**
    * Create an the E911 ID on DHS.
    * @param {Object} config
    * @member {String} userId ICMN / VTN user
    * @member {Object} address The user's physical address object.
    */
   createE911Id = function (config) {
-    if (isEmpty(config.userId)) {
-      throw new Error('userId required.');
+    if (!config) {
+      return log.logError('Cannot create e911 id. Configuration is required.');
     }
-
-    if (!validateAddress(config.address)) {
-      throw new Error('Address did not validate.');
+    if (!config.data) {
+      return log.logError('Cannot create e911 id. Configuration data is required.');
+    }
+    if (!validateAddress(config.data.address)) {
+      return log.logError('Cannot create e911 id. Address did not validate.');
     }
 
     var createE911IdConfig = {
-      data: {
-        userId: config.userId,
-        address: config.address
-      },
+      data: config.data,
       success: function (response) {
         var data = response.getJson();
         if (typeof config.success === 'function') {
@@ -320,6 +281,7 @@ if (!Env) {
       },
       error: function (response) {
         var data = response.getJson();
+        log.logError(data.error);
         if (typeof config.error === 'function') {
           config.error(data);
         }
@@ -337,19 +299,18 @@ if (!Env) {
    * @member {Object} address The user's physical address object.
    */
   updateE911Id = function (config) {
-    if (isEmpty(config.userId)) {
-      throw new Error('userId required.');
+    if (!config) {
+      return log.logError('Cannot create e911 id. Configuration is required.');
     }
-
-    if (!validateAddress(config.address)) {
-      throw new Error('Address did not validate.');
+    if (!config.data) {
+      return log.logError('Cannot create e911 id. Configuration data is required.');
+    }
+    if (!validateAddress(config.data.address)) {
+      return log.logError('Cannot create e911 id. Address did not validate.');
     }
 
     var updateE911IdConfig = {
-      data: {
-        userId: config.userId,
-        address: config.address
-      },
+      data: config.data,
       success: function (response) {
         var data = response.getJson();
         if (typeof config.success === 'function') {
