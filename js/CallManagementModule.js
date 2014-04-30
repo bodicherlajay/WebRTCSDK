@@ -2,7 +2,6 @@
 /*global cmgmt:true, Logger:true, ATT:true*/
 
 var logMgr = ATT.logManager.getInstance(), logger;
-//TODO this configuration need to move outside this function
 logMgr.configureLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
 logger = logMgr.getLogger('CallManagementModule');
 

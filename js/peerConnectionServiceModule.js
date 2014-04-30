@@ -7,10 +7,8 @@
  */
 
 var logMgr = ATT.logManager.getInstance(), logger;
-//TODO this configuration need to move outside this function
 logMgr.configureLogger('peerConnectionServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
 logger = logMgr.getLogger('peerConnectionServiceModule');
-
 
 (function (app, UserMediaService, SignalingService) {
   'use strict';
@@ -59,14 +57,17 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
         session = rm.getSessionContext(),
         pc;
 
-      pc = new RTCPeerConnection(self.pcConfig);
-      self.peerConnection = pc;
+      try {
+        pc = new RTCPeerConnection(self.pcConfig);
+        self.peerConnection = pc;
+      } catch (e) {
+        logger.logError('Failed to create PeerConnection. Exception: ', e.message);
+      }
 
       // ICE candidate trickle
       pc.onicecandidate = function (evt) {
         if (evt.candidate) {
           logger.logTrace('ICE candidate', evt.candidate);
-          console.log('ICE candidate', evt.candidate);
         } else {
           if (self.peerConnection !== null) {
             // get the call state from the session
@@ -120,7 +121,7 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
       pc.addEventListener('addstream', function (evt) {
         this.remoteStream = evt.stream;
         UserMediaService.showStream('remote', evt.stream);
-        logger.logTrace('Remote Stream', evt.stream);
+        logger.logTrace('Adding Remote Stream...', evt.stream);
       }, false);
     },
 
@@ -141,7 +142,7 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
       // send any ice candidates to the other peer
       // get a local stream, show it in a self-view and add it to be sent
       getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), function () {
-        console.log('Get User Media Fail');
+        logger.logError('Get User Media Fail');
       });
     },
 
@@ -171,7 +172,7 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
         //todo: switch constraints to dynamic
         logger.logTrace('creating offer for outgoing call -- audio video hard-coded to true still');
         this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
-          console.log('Create offer failed');
+          logger.logTrace('Create offer failed');
         }, {'mandatory': {
           'OfferToReceiveAudio': true,
           'OfferToReceiveVideo': true
@@ -215,6 +216,7 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
     * @param {String} type 'answer' or 'offer'
     */
     setTheRemoteDescription: function (description, type) {
+      logger.logTrace('Setting remote description...');
       this.remoteDescription = {
         'sdp' : description,
         'type' : type
@@ -286,7 +288,7 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
 
       // send accept modifications...
       if (this.modificationId) {
-        logger.logDebug('Accepting modification', this.modificationId);
+        logger.logTrace('Accepting modification', this.modificationId);
         SignalingService.sendAcceptMods({
           sdp : this.localDescription,
           modId: this.modificationId

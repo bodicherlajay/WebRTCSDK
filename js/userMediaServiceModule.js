@@ -6,7 +6,6 @@ if (!ATT) {
 }
 
 var logMgr = ATT.logManager.getInstance(), logger;
-//TODO this configuration need to move outside this function
 logMgr.configureLogger('userMediaServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
 logger = logMgr.getLogger('userMediaServiceModule');
 
@@ -33,7 +32,7 @@ logger = logMgr.getLogger('userMediaServiceModule');
     * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
     */
     startCall: function (config) {
-      logger.logTrace('start call');
+      logger.logTrace('starting call');
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
 
@@ -48,7 +47,7 @@ logger = logMgr.getLogger('userMediaServiceModule');
     showStream: function (localOrRemote, stream) {   // 'local' or 'remote'
       var videoStreamEl;
 
-      logger.logTrace('show stream');
+      logger.logTrace('showing ' + localOrRemote + ' stream...');
       if (localOrRemote === 'remote') {
         this.remoteStream = stream;
         videoStreamEl = this.remoteVideoElement;
@@ -68,6 +67,7 @@ logger = logMgr.getLogger('userMediaServiceModule');
     * Stop Stream
     */
     stopStream: function () {
+      logger.logTrace('stopping stream...');
       this.localVideoElement.src = '';
       this.remoteVideoElement.src = '';
       if (this.localStream) {
@@ -83,6 +83,7 @@ logger = logMgr.getLogger('userMediaServiceModule');
     * Mute Stream
     */
     muteStream: function () {
+      logger.logTrace('muting stream...');
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
           i,
@@ -98,6 +99,7 @@ logger = logMgr.getLogger('userMediaServiceModule');
     * Unmute Stream
     */
     unmuteStream: function () {
+      logger.logTrace('unmuting stream...');
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
           i,

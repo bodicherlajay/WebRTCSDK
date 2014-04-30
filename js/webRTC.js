@@ -135,8 +135,10 @@ if (!Env) {
         publicMethodName: 'getEvents'
       };
       apiObject.eventChannel = ATT.utils.createEventChannel(channelConfig);
-      apiObject.eventChannel.startListening();
-    } else { // if no session id, call the UI error callback
+      if (apiObject.eventChannel) {
+        apiObject.eventChannel.startListening();
+      }
+    } else {
       throw new Error('No session id');
     }
 
