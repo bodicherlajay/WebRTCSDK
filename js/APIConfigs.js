@@ -68,11 +68,7 @@ if (!ATT) {
       */
       getAccessToken: {
         method: 'put',
-        formatters : {
-          url: function (params) {
-            return DEFAULTS.DHSEndpoint + '/user/session?code=' + params;
-          }
-        },
+        url: DEFAULTS.DHSEndpoint + '/user/session',
         headers: DEFAULTS.headers
       },
       /**

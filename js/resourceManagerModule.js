@@ -80,7 +80,6 @@ Env = (function (app) {
     return instance;
   };
 
-
   /**
     This will return a configured rest operation call.
     config = {
