@@ -23,26 +23,26 @@ if (!exports) {
         this.level = logLevel;
       },
       logDebug: function (msg) {
-        if (msg === 'undefined') { return; }
-        if (this.level === module.LOG_LEVEL.DEBUG) {
+        if (msg === 'undefined') return;
+        if (this.level >= module.LOG_LEVEL.DEBUG) {
           console.log('[DEBUG]' + msg);
         }
       },
       logWarning: function (msg) {
-        if (msg === 'undefined') { return; }
-        if (this.level === module.LOG_LEVEL.WARNING) {
+        if (msg === 'undefined') return;
+        if (this.level >= module.LOG_LEVEL.WARNING) {
           console.log('[WARN]' + msg);
         }
       },
       logError: function (msg) {
-        if (msg === 'undefined') { return; }
-        if (this.level === module.LOG_LEVEL.ERROR) {
+        if (msg === 'undefined') return;
+        if (this.level >= module.LOG_LEVEL.ERROR) {
           console.log('[ERROR]' + msg);
         }
       },
       logTrace: function (msg) {
-        if (msg === 'undefined') { return; }
-        if (this.level === module.LOG_LEVEL.TRACE) {
+        if (msg === 'undefined') return;
+        if (this.level >= module.LOG_LEVEL.TRACE) {
           console.log('[TRACE]' + msg);
         }
       }
@@ -84,11 +84,11 @@ if (!exports) {
     FILE: 'File'
   };
   module.LOG_LEVEL = {
-    INFO: 'Info',
-    ERROR: 'Error',
-    DEBUG: 'Debug',
-    WARNING: 'Warning',
-    TRACE: 'Trace'
+    ERROR: 0,
+    WARNING: 1,
+    INFO: 2,
+    DEBUG: 3,
+    TRACE: 4
   };
 
   module.getInstance = function () {
