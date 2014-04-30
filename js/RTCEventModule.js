@@ -17,10 +17,10 @@ if (!ATT) {
     eventRegistry,
     init = function () {
       eventRegistry = new EventDispatcher({
-        mainModule: mainModule,
-        callbacks: callbacks,
-        peerConnectionSvc: PeerConnectionService,
-        callManager: callManager
+        // mainModule: mainModule,
+        // callbacks: callbacks,
+        // peerConnectionSvc: PeerConnectionService,
+        // callManager: callManager
       });
       return {
         hookupEventsToUICallbacks: subscribeEvents

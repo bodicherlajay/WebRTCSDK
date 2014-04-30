@@ -4,24 +4,25 @@
 "use strict";
 
 var EventDispatcher = function (settings) {
-  this.mainModule = settings.mainModule;
-  this.callbacks = settings.callbacks;
-  this.PeerConnectionService = settings.peerConnectionSvc;
-  this.callManager = settings.callManager;
+  // mainModule = settings.mainModule;
+  // callbacks = settings.callbacks;
+  // PeerConnectionService = settings.peerConnectionSvc;
+  // callManager = settings.callManager;
 };
 
 EventDispatcher.prototype = (function () {
-  var callManager = this.CallManager.getInstance(),
-    sdp,
+  var callManager = cmgmt.CallManager.getInstance(),
+    PeerConnectionService = ATT.PeerConnectionService,
+    mainModule = ATT,
+    session = callManager.getSessionContext(),
     kaller,
+    timestamp,
     onSessionReady,
     onIncomingCall,
     onOutgoingCall,
     onInProgress,
-    onCallHold,
-    onCallResume,
-    onCallMute,
-    onCallUnmute,
+    //onCallHold,
+    //onCallResume,
     onCallEnded,
     onCallError,
     api = {};
@@ -29,255 +30,175 @@ EventDispatcher.prototype = (function () {
   api.login = function () {
   };
 
-  api[this.mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
+  api[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
     if (event.reason) {
-      onCallError({ type: this.mainModule.CallStatus.ERROR, reason: event.reason });
+      onCallError({ type: mainModule.CallStatus.ERROR, reason: event.reason });
     } else {
-      onCallEnded({ type: this.mainModule.CallStatus.ENDED });
+      onCallEnded({ type: mainModule.CallStatus.ENDED });
     }
-    // this makes sure peer conn is null to prevent bad hangup request from callee
-    // after session is already terminated
-    if (this.PeerConnectionService.peerConnection) {
-      this.PeerConnectionService.peerConnection = null;
-    }
+    callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
+    callManager.getSessionContext().setCallObject(null);
+    PeerConnectionService.endCall();
   };
 
-  api[this.mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
+  api[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
     if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
       event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
     }
-  };
-
-  api[this.mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
-    onSessionReady({
-      type: this.mainModule.CallStatus.READY,
-      data: event.data
-    });
-
-    this.PeerConnectionService.createPeerConnection();
-    this.PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
-    this.PeerConnectionService.peerConnection.createAnswer(this.PeerConnectionService.setLocalAndSendMessage.
-      bind(this.PeerConnectionService), function () {
-        console.log('Create offer failed');
-      }, {'mandatory': {
-        'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true
-      }});
+    // grab the phone number
+    kaller = event.from.split('@')[0].split(':')[1];
     onIncomingCall({
-      type: this.mainModule.CallStatus.RINGING,
-      caller: event.from
+      type: mainModule.CallStatus.RINGING,
+      caller: kaller
     });
   };
 
-  api[this.mainModule.SessionEvents.RTC_SESSION_CREATE] = function (event) {
+  // this is the DHS session, not WebRTC session!
+  api[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
     onSessionReady({
-      type: this.mainModule.CallStatus.READY,
+      type: mainModule.CallStatus.READY,
       data: event.data
     });
   };
 
-  api[this.mainModule.RTCCallEvents.SESSION_OPEN] = function (event) {
+  // WebRTC session
+  api[mainModule.RTCCallEvents.SESSION_OPEN] = function (event) {
     if (event.sdp) {
-      this.PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
+      PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
     }
     // set callID in the call object
+    // TODO: switch to setCurrentCall
     callManager.getSessionContext().setCurrentCallId(event.resourceURL);
+
     // call established
-    var time = new Date().getTime();
+    timestamp = new Date();
     onInProgress({
-      type: this.mainModule.CallStatus.INPROGRESS,
-      timestamp: time
+      type: mainModule.CallStatus.INPROGRESS,
+      time: timestamp
     });
   };
 
-  api[this.mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (event) {
-    if (event.sdp) {
-      sdp = event.sdp;
-    }
+  api[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (event) {
+    PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
+    // hold request received
+    // if (sdp && sdp.indexOf('sendonly') !== -1) {
+    //   onCallHold({
+    //     type: mainModule.CallStatus.HOLD
+    //   });
+    //   callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+    // }
 
-    if (sdp && event.modId) {
-      this.PeerConnectionService.modificationId = event.modId;
-      this.PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
-      this.PeerConnectionService.peerConnection.createAnswer(this.PeerConnectionService.setLocalAndSendMessage.
-        bind(this.PeerConnectionService), function () {
-          console.log('Create Answer Failed...');
-        }, {'mandatory': {
-          'OfferToReceiveAudio': true,
-          'OfferToReceiveVideo': true
-        }});
-
-      // hold event
-      if (sdp && sdp.indexOf('sendonly') !== -1) {
-        onCallHold({
-          type: this.mainModule.CallStatus.HOLD
-        });
-        this.callManager.getSessionContext().setCallState(this.callManager.SessionState.HOLD_CALL);
-        this.callManager.getSessionContext().getCallObject().mute();
-      }
-
-      // resume event - for resume initiator
-      if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
-        onCallResume({
-          type: this.mainModule.CallStatus.RESUMED
-        });
-        callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
-        callManager.getSessionContext().getCallObject().unmute();
-      }
-    }
+    // // resume request received
+    // if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
+    //   onCallResume({
+    //     type: mainModule.CallStatus.RESUMED
+    //   });
+    //   callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+    // }
   };
 
-  api[this.mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (event) {
+  api[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (event) {
+    PeerConnectionService.setModificationId(event.modId);
+
     if (event.sdp) {
-      sdp = event.sdp;
+      PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
     }
 
-    if (event.modId && event.reason === 'success') {
-      this.PeerConnectionService.modificationId = event.modId;
-    }
-
-    // hold event - for hold initiator
-    if (sdp && sdp.indexOf('sendonly') !== -1) {
-      onCallHold({
-        type: this.mainModule.CallStatus.HOLD
-      });
-      this.callManager.getSessionContext().setCallState(this.callManager.SessionState.HOLD_CALL);
-      this.callManager.getSessionContext().getCallObject().mute();
-    }
-
-    // resume event - for resume initiator
-    if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
-      onCallResume({
-        type: this.mainModule.CallStatus.RESUMED
-      });
-      this.callManager.getSessionContext().setCallState(this.callManager.SessionState.RESUMED_CALL);
-      this.callManager.getSessionContext().getCallObject().unmute();
-    }
-    // parse the phone number
-    kaller = event.from.split('@')[0].split(':')[1];
+  // // hold request successful
+  // if (sdp && sdp.indexOf('recvonly') !== -1 && sdp.indexOf('sendrecv') !== -1) {
+  //   onCallHold({
+  //     type: mainModule.CallStatus.HOLD
+  //   });
+  //   callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+  // } else if (sdp && sdp.indexOf('sendrecv') !== -1) {
+  //   if (callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
+  //     // resume request successful
+  //     onCallResume({
+  //       type: mainModule.CallStatus.RESUMED
+  //     });
+  //     callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+  //   }
   };
 
-  onIncomingCall({
-    type: this.mainModule.CallStatus.RINGING,
-    caller: kaller
-  });
-
-  api[this.mainModule.RTCCallEvents.INVITATION_SENT] = function () {
+  api[mainModule.RTCCallEvents.INVITATION_SENT] = function () {
     onOutgoingCall({
-      type: this.mainModule.CallStatus.CALLING,
-      callee: this.callManager.getSessionContext().getCallObject().callee()
+      type: mainModule.CallStatus.CALLING,
+      callee: callManager.getSessionContext().getCallObject().callee()
     });
   };
 
-  api[this.mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
-    if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
-      event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
-    }
-
-    this.PeerConnectionService.createPeerConnection();
-    this.PeerConnectionService.setTheRemoteDescription(event.sdp, 'offer');
-    this.PeerConnectionService.peerConnection.createAnswer(this.PeerConnectionService.setLocalAndSendMessage.
-      bind(this.PeerConnectionService), function () {
-        console.log('Create offer failed');
-      }, {'mandatory': {
-        'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true
-      }});
-  };
-
-  api[this.mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
+  api[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
     if (event.reason) {
-      onCallError({ type: this.mainModule.CallStatus.ERROR, reason: event.reason });
+      onCallError({ type: mainModule.CallStatus.ERROR, reason: event.reason });
     } else {
-      onCallEnded({ type: this.mainModule.CallStatus.ENDED });
+      onCallEnded({ type: mainModule.CallStatus.ENDED });
     }
-    // this makes sure peer conn is null to prevent bad hangup request from callee
-    // after session is already terminated
-    if (this.PeerConnectionService.peerConnection) {
-      this.PeerConnectionService.peerConnection = null;
-    }
+    callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
+    callManager.getSessionContext().setCallObject(null);
+    PeerConnectionService.endCall();
   };
 
-  api[this.mainModule.RTCCallEvents.MUTED] = function () {
-    onCallMute({
-      type: this.mainModule.CallStatus.MUTED
-    });
+  api[mainModule.RTCCallEvents.UNKNOWN] = function () {
+    onCallError({ type: mainModule.CallStatus.ERROR });
   };
 
-  api[this.mainModule.RTCCallEvents.UNMUTED] = function () {
-    onCallUnmute({
-      type: this.mainModule.CallStatus.UNMUTED
-    });
-  };
+  if (session && session.getUICallbacks() ) {
 
-  api[this.mainModule.RTCCallEvents.UNKNOWN] = function () {
-    onCallError({ type: this.mainModule.CallStatus.ERROR });
-  };
+    callbacks = session.getUICallbacks;
 
-  onSessionReady = function (evt) {
-    if (this.callbacks.onSessionReady) {
-      this.callbacks.onSessionReady(evt);
-    }
-  };
+    onSessionReady = function (evt) {
+      if (callbacks.onSessionReady) {
+        callbacks.onSessionReady(evt);
+      }
+    };
 
-  onIncomingCall = function (evt) {
-    if (this.callbacks.onIncomingCall) {
-      this.callbacks.onIncomingCall(evt);
-    }
-  };
+    onIncomingCall = function (evt) {
+      if (callbacks.onIncomingCall) {
+        callbacks.onIncomingCall(evt);
+      }
+    };
 
-  onOutgoingCall = function (evt) {
-    if (this.callbacks.onOutgoingCall) {
-      this.callbacks.onOutgoingCall(evt);
-    }
-  };
+    onOutgoingCall = function (evt) {
+      if (callbacks.onOutgoingCall) {
+        callbacks.onOutgoingCall(evt);
+      }
+    };
 
-  onInProgress = function (evt) {
-    if (this.callbacks.onInProgress) {
-      this.callbacks.onInProgress(evt);
-    }
-  };
+    onInProgress = function (evt) {
+      if (callbacks.onInProgress) {
+        callbacks.onInProgress(evt);
+      }
+    };
 
-  onCallHold = function (evt) {
-    if (this.callbacks.onCallHold) {
-      this.callbacks.onCallHold(evt);
-    }
-  };
+  // onCallHold = function (evt) {
+  //   if (callbacks.onCallHold) {
+  //     callbacks.onCallHold(evt);
+  //   }
+  // };
 
-  onCallResume = function (evt) {
-    if (this.callbacks.onCallResume) {
-      this.callbacks.onCallResume(evt);
-    }
-  };
+  // onCallResume = function (evt) {
+  //   if (callbacks.onCallResume) {
+  //     callbacks.onCallResume(evt);
+  //   }
+  // };
+    onCallError = function (evt) {
+      if (callbacks.onCallError) {
+        callbacks.onCallError(evt);
+      }
+    };
 
-  onCallMute = function (evt) {
-    if (this.callbacks.onCallMute) {
-      this.callbacks.onCallMute(evt);
-    }
-  };
+    onCallEnded = function (evt) {
+      if (callbacks.onCallEnded) {
+        callbacks.onCallEnded(evt);
+      }
+    };
 
-  onCallUnmute = function (evt) {
-    if (this.callbacks.onCallUnmute) {
-      this.callbacks.onCallUnmute(evt);
-    }
-  };
-
-  onCallError = function (evt) {
-    if (this.callbacks.onCallError) {
-      this.callbacks.onCallError(evt);
-    }
-  };
-
-  onCallEnded = function (evt) {
-    if (this.callbacks.onCallEnded) {
-      this.callbacks.onCallEnded(evt);
-    }
-  };
-
-  onCallError = function (evt) {
-    if (this.callbacks.onCallError) {
-      this.callbacks.onCallError(evt);
-    }
-  };
+    onCallError = function (evt) {
+      if (callbacks.onCallError) {
+        callbacks.onCallError(evt);
+      }
+    };
+  }
 
   return EventDispatcher;
 }());
