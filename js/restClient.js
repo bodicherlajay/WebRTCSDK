@@ -102,7 +102,7 @@ var RESTClient = (function () {
       if (typeof reqBody === 'undefined') {
         reqBody = '';
       }
-      logger.logDebug(h + reqBody);
+      logger.logDebug(h + '\n' + reqBody);
     }
   }
 
