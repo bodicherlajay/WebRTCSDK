@@ -101,9 +101,6 @@ if (!Env) {
     sessionId = responseObject && responseObject.getResponseHeader('location') ? responseObject.getResponseHeader('location').split('/')[4] : null;
 
     if (sessionId) {
-      // setting web rtc session id for displaying on UI only
-      //authenticateResponseData.webRtcSessionId = sessionId;
-
       // publish the UI callback for ready state
       app.event.publish(sessionId + '.responseEvent', {
         state:  app.SessionEvents.RTC_SESSION_CREATED,
