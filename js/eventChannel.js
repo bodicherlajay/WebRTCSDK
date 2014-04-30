@@ -25,14 +25,20 @@
   function createEventChannel(channelConfig) {
     // to appease the JSLint gods
     var channel = {}, // the channel to be configured and returned.
+      httpConfig = {},
       isListenning = false,
       ws, // socket to use in case we're using WebSockets
       locationForSocket,
       eventData;
 
     if (undefined === channelConfig || 0 === Object.keys(channelConfig)
-        || undefined === channelConfig.url) {
-      throw new Error('Invalid Options. Cannot create channel.');
+        || undefined === channelConfig.accessToken
+        || undefined === channelConfig.endpoint
+        || undefined === channelConfig.sessionId
+        || undefined === channelConfig.publicMethodName
+        || undefined === channelConfig.resourceManager
+        || undefined === channelConfig.publisher) {
+      throw new Error('Invalid Options. Cannot create channel with options:' + JSON.stringify(channelConfig));
     }
     /**
      * Process Events
@@ -60,12 +66,10 @@
 
     // setup success and error callbacks
     function onSuccess(response) {
-      if (channelConfig.usesLongPolling
-          && ('function' === typeof channelConfig.callback)) {
-        channelConfig.callback(response);
+      if ('/events' === channelConfig.endpoint) { // long-polling
         processMessages(response);
         // continue polling
-        channelConfig.resourceManager.getAPIObject().getEvents();
+        channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
         return;
       }
 
@@ -78,50 +82,47 @@
           processMessages(message);
         };
       }
-
     }
 
-    function onError(error) {
-      if (channelConfig.usesLongPolling) {
-        // try again
-        channelConfig.resourceManager.getAPIObject().getEvents();
-        return;
-      }
-      // using sockets
-      console.log('ERROR', error);
+    function onError(error) { // only used for Long Polling
+      // try again
+      console.log('ERROR: Network Error: ' + JSON.stringify(error));
+      return;
     }
 
     function onTimeOut() {
       // try again
-      channelConfig.resourceManager.getAPIObject().getEvents();
+      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
     // configure callbacks for this channel
     channelConfig.success = onSuccess;
     channelConfig.error = onError;
-    if (true === channelConfig.usesLongPolling) {
+    if ('/events' === channelConfig.endpoint) {
       channelConfig.ontimeout = onTimeOut;
     }
 
-    function startListenning() {
+    function startListening() {
       isListenning = true;
-      // TODO: Remove Note
-      // Note: This seems to be equivalent to do `ATT.resourceManager.getInstance().getAPIObject().getEvents()`
-      // Will start making HTTP requests and process the responses using this channel.
-      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, channelConfig);
-    }
+      httpConfig = {
+        params: {
+          url: [channelConfig.sessionId, channelConfig.endpoint],
+          headers: {
+            'Authorization' : 'Bearer ' + channelConfig.accessToken
+          }
+        },
+        success: onSuccess,
+        error: onError
+      };
 
-    // TODO: Remove Note
-    // Will create a method with name `publicMethodName` in the resource manager 
-    // that will execute the function in the second parameter.
-    // Note: Apparently this is so you can do `ATT.resourceManager.getInstance().getAPIObject().getEvents()`... too long!
-    channelConfig.resourceManager.addPublicMethod(channelConfig.publicMethodName, startListenning);
+      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+    }
 
     channel = {
       isListenning: function () {
         return isListenning;
       },
-      startListenning: startListenning
+      startListening: startListening
     };
 
     return channel;

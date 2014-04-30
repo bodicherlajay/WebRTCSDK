@@ -13,11 +13,11 @@ if (!ATT) {
   'use strict';
 
   app.appConfig = {
-
     BFEndpoint:   'http://wdev.code-api-att.com:8080/RTC/v1',
-
-    DHSEndpoint:  'http://localhost:9000'
-
+    DHSEndpoint:  'http://localhost:9000',
+    eventChannelConfig: {
+      endpoint: '/events'
+    }
   };
 
 }(ATT || {}));

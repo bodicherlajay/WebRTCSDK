@@ -18,24 +18,6 @@ describe('ResourceManager', function () {
   beforeEach(function () {
     resourceManager = Env.resourceManager.getInstance();
   });
-
-  describe.only('Event Channel Configuration', function () {
-
-    it('should have a method getChannelConfig', function () {
-      expect(resourceManager.getChannelConfig).to.be.a('function');
-    });
-    it('should throw an error if the session is not passed', function () {
-      expect(resourceManager.getChannelConfig.bind(resourceManager)).to.throw(Error);
-    });
-    it('channelConfig should have valid properties', function () {
-      var channelConfig = resourceManager.getChannelConfig('sessionId', 'accessToken');
-      expect('boolean' === typeof channelConfig.useLongPolling).to.equal(true);
-      expect('string' === typeof channelConfig.method).to.equal(true);
-      expect('string' === typeof channelConfig.url).to.equal(true);
-      expect('number' === typeof channelConfig.timeout).to.equal(true);
-      expect('string' === typeof channelConfig.headers.Authorization).to.equal(true);
-    });
-  });
   it('should be a singleton', function () {
     var instance1 = Env.resourceManager.getInstance(),
       instance2 = Env.resourceManager.getInstance();
@@ -204,15 +186,15 @@ describe('ResourceManager', function () {
 
     it('should create public sdk methods', function () {
       // Add API methods as you add to the APIConfig.js file.
-      [
-        'answer',
+      [ 'answer',
         'dial',
-        'eventChannel',
         'login',
         'logout',
-        'stopUserMedia',
-        'hangup'
-      ].forEach(function (methodName) {
+        'initSession',
+        'hangup',
+        'hold',
+        'resume',
+        'mute'].forEach(function (methodName) {
         expect(apiObject[methodName]).is.a('function');
       });
     });

@@ -20,19 +20,13 @@ describe('Event Channel', function () {
     beforeEach(function () {
       // template configuration object to initialize the Event Channel
       channelConfig = {
-        method: 'validMethod',
-        url: 'valid URL',
-        timeout: 30000,
-        headers: {
-          'Header 1': 'A valid header'
-        },
         accessToken: 'my token',
-        success: function () { console.log('ERROR'); },
-        error: function () { console.log('Success!!!'); },
+        endpoint: '/events',
+        sessionId: 'sessionId',
         publisher: {
           publish: sinon.spy()
         },
-        callback: sinon.spy()
+        publicMethodName: 'publicMethodName'
       };
 
       // Mock for the resource manager
@@ -43,7 +37,7 @@ describe('Event Channel', function () {
 
     it('should throw error if the config options are invalid', function () {
       channelConfig = { invalid: 'invalid options'};
-      expect(ATT.utils.createEventChannel.bind(ATT.utils, channelConfig)).to.throw('Invalid Options. Cannot create channel.');
+      expect(ATT.utils.createEventChannel.bind(ATT.utils, channelConfig)).to.throw(Error);
     });
     it('should return a valid eventChannel given config options', function () {
       eventChannel = ATT.utils.createEventChannel(channelConfig);
@@ -71,18 +65,19 @@ describe('Event Channel', function () {
         };
       });
 
-      it('should have a method: `startListenning`', function () {
+      it('should have a method: `startListening`', function () {
         eventChannel = ATT.utils.createEventChannel(channelConfig);
-        expect(eventChannel.startListenning).to.be.a('function');
+        expect(eventChannel.startListening).to.be.a('function');
       });
-      it('should call resourceManager.doOperation on `startListenning` and change `isListenning` flag to true', function () {
+      it('should call resourceManager.doOperation on `startListening` and change `isListening` flag to true', function () {
         channelConfig.resourceManager.doOperation = sinon.spy();
         eventChannel = ATT.utils.createEventChannel(channelConfig);
-        eventChannel.startListenning();
+        eventChannel.startListening();
         expect(channelConfig.resourceManager.doOperation.called).to.equal(true);
         expect(eventChannel.isListenning()).to.equal(true);
       });
-      it('should publish event given a message (long polling)', function () {
+      it('should call publisher.publish  given a event (long polling)', function () {
+        channelConfig.resourceManager.doOperation = sinon.spy();
         channelConfig.usesLongPolling = true;
         // create the event channel, after this, the event channel will have
         // a success and an error callback
@@ -91,9 +86,10 @@ describe('Event Channel', function () {
         messages.responseText = JSON.stringify(response);
         channelConfig.success(messages);
         expect(channelConfig.publisher.publish.called).to.equal(true);
+        expect(channelConfig.resourceManager.doOperation.called).to.equal(true);
       });
       it('should continue listening for messages on error or timeout');
-      it('should create a websockets with the given location', function () {
+      xit('should create a websockets with the given location', function () {
         channelConfig.usesLongPolling = false;
         eventChannel = ATT.utils.createEventChannel(channelConfig);
         // setup the response

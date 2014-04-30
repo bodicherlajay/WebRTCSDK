@@ -87,7 +87,19 @@ if (!Env) {
       channelConfig;
 
     sessionId = responseObject && responseObject.getResponseHeader('location') ? responseObject.getResponseHeader('location').split('/')[4] : null;
+
     if (sessionId) {
+      // setting web rtc session id for displaying on UI only
+      //authenticateResponseData.webRtcSessionId = sessionId;
+
+      // publish the UI callback for ready state
+      app.event.publish(sessionId + '.responseEvent', {
+        state:  app.SessionEvents.RTC_SESSION_CREATED,
+        //data:   authenticateResponseData
+        data:   {
+          webRtcSessionId: sessionId
+        }
+      });
 
       // Set WebRTC.Session data object that will be needed downstream.
       session.setSessionId(sessionId);
@@ -103,25 +115,19 @@ if (!Env) {
        * todo: publish session ready event after event channel is created
        * todo: move the login callback code to the publish
        */
-      channelConfig = Env.resourceManager.getInstance().getChannelConfig(sessionId, session.getAccessToken());
-      channelConfig.callback = function () {
-        // setting web rtc session id for displaying on UI only
-        //authenticateResponseData.webRtcSessionId = sessionId;
-
-        // publish the UI callback for ready state
-        app.event.publish(sessionId + '.responseEvent', {
-          state:  app.SessionEvents.RTC_SESSION_CREATED,
-          //data:   authenticateResponseData
-          data:   {
-            webRtcSessionId: sessionId
-          }
-        });
+      channelConfig = {
+        accessToken: session.getAccessToken(),
+        endpoint: ATT.appConfig.eventChannelConfig.endpoint,
+        sessionId: session.getSessionId(),
+        publisher: ATT.event,
+        publicMethodName: 'getEvents'
       };
-      apiObject.eventChannel = ATT.util.createEventChannel(channelConfig);
-      apiObject.eventChannel.startListenning();
+      apiObject.eventChannel = ATT.utils.createEventChannel(channelConfig);
+      apiObject.eventChannel.startListening();
     } else { // if no session id, call the UI error callback
       throw new Error('No session id');
     }
+
   };
 
   createWebRTCSessionError = function () {
