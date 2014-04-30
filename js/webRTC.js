@@ -18,10 +18,13 @@ if (!Env) {
   var resourceManager = Env.resourceManager.getInstance(),
     apiObject = resourceManager.getAPIObject(),
     callManager = cmgmt.CallManager.getInstance(),
-    logManager = ATT.logManager.getInstance(),
-    log = logManager.getLogger('webRTC'),
     createWebRTCSessionSuccess,
-    createWebRTCSessionError;
+    createWebRTCSessionError,
+    logMgr = ATT.logManager.getInstance(), logger;
+
+    logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+
+    logger = logMgr.getLogger('WebRTC');
 
   /**
    * Initialize the SDK with Oauth accessToken and e911Id
@@ -30,10 +33,10 @@ if (!Env) {
    */
   function initSession(accessToken, e911Id) {
     if (!accessToken) {
-      return log.logError('Cannot init SDK session, no access token');
+      return logger.logError('Cannot init SDK session, no access token');
     }
     if (!e911Id) {
-      return log.logError('Cannot init SDK session, no e911 id');
+      return logger.logError('Cannot init SDK session, no e911 id');
     }
     // Set the access Token in the callManager.
     callManager.CreateSession({
@@ -50,10 +53,10 @@ if (!Env) {
    */
   function login(config) {
     if (!config) {
-      return log.logError('Cannot login to web rtc, no configuration');
+      return logger.logError('Cannot login to web rtc, no configuration');
     }
     if (!config.data) {
-      return log.logError('Cannot login to web rtc, no configuration data');
+      return logger.logError('Cannot login to web rtc, no configuration data');
     }
 
     initSession(config.data.token.access_token, config.data.e911Id.e911Locations.addressIdentifier);
@@ -64,13 +67,13 @@ if (!Env) {
 
     // todo: need to decide if callbacks should be mandatory
     if (typeof config.onSessionReady !== 'function') {
-      throw new Error('No UI success callback specified');
+      logger.logError('No UI success callback specified');
     }
     if (typeof config.onError !== 'function') {
-      throw new Error('No UI error callback specified');
+      logger.logError('No UI error callback specified');
     }
 
-    // Call BF to create WebRTC Session.
+    logger.logTrace('Creating WebRTC session...');
     resourceManager.doOperation('createWebRTCSession', {
       data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
         'session': {
@@ -94,6 +97,7 @@ if (!Env) {
   }
 
   createWebRTCSessionSuccess = function (config, responseObject) {
+    logger.logTrace('WebRTC Session created');
     var sessionId,
       session = callManager.getSessionContext(),
       channelConfig;
@@ -104,7 +108,6 @@ if (!Env) {
       // publish the UI callback for ready state
       app.event.publish(sessionId + '.responseEvent', {
         state:  app.SessionEvents.RTC_SESSION_CREATED,
-        //data:   authenticateResponseData
         data:   {
           webRtcSessionId: sessionId
         }
@@ -131,21 +134,22 @@ if (!Env) {
         publisher: ATT.event,
         publicMethodName: 'getEvents'
       };
+      logger.logTrace('Creating event channel...');
       apiObject.eventChannel = ATT.utils.createEventChannel(channelConfig);
       if (apiObject.eventChannel) {
         apiObject.eventChannel.startListening();
       }
     } else {
-      throw new Error('No session id');
+      logger.logDebug('No session id');
     }
-
   };
 
   createWebRTCSessionError = function () {
-    console.log('createWebRTCSessionError');
+    logger.logError('createWebRTCSessionError');
   };
 
   function logout(config) {
+    logger.logTrace('Logging out...');
     var session = callManager.getSessionContext(),
       dataForDeleteWebRTCSession,
       successCallback = function (statusCode) {
@@ -174,6 +178,7 @@ if (!Env) {
         }
       },
       success: function (responseObject) {
+        logger.logError('Successfully deleted web rtc session on blackflag');
         successCallback(responseObject.getResponseStatus());
       }
     };
