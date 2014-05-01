@@ -40,10 +40,17 @@ module.exports = function (grunt) {
     captureTimeout: 60000
   },
     karmaConfigUnit = {
-      reporters: ['spec'],
+      preprocessors: {
+        'js/**/*.js': 'coverage'
+      },
+      reporters: ['spec', 'coverage'],
       colors: true,
       singleRun: false,
-      usePolling: true  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
+      usePolling: true,  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
+      coverageReporter : {
+        type : 'html',
+        dir : 'coverage/'
+      }
     },
     karmaConfigJenkins = {
       preprocessors: {

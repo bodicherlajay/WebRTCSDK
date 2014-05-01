@@ -1,13 +1,16 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global WebSocket*/
+/*global ATT, WebSocket*/
 
 /** WebRTC Event Channel Module: Will export method `ATT.utils.createEventChannel`
  * Extends the global object `ATT` with a method to create Event Channels
  * Event channel objects can be used to listen to a given `channel` continuously.
  */
 
-(function () {
+(function (ATT) {
   'use strict';
+
+  var utils = {};
+
   /**
    * Creates an Event Channel with the given configuration:
    * @returns The configured event channel.
@@ -128,10 +131,12 @@
     return channel;
   }
 
+  utils.createEventChannel = createEventChannel;
   // export method to ATT.createEventChannel
-  if (window.ATT === undefined) {
-    window.ATT = { utils : {}};
+  if (ATT.utils === undefined) {
+    ATT.utils = utils;
+  } else {
+    ATT.utils.createEventChannel = utils.createEventChannel;
   }
-  window.ATT.utils.createEventChannel = createEventChannel;
 
-}());
+}(ATT));
