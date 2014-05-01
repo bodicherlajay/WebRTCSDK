@@ -132,7 +132,7 @@ if (!Env) {
         endpoint: ATT.appConfig.eventChannelConfig.endpoint,
         sessionId: session.getSessionId(),
         publisher: ATT.event,
-        resourceManager: resourceManager, 
+        resourceManager: resourceManager,
         publicMethodName: 'getEvents'
       };
       logger.logTrace('Creating event channel...');

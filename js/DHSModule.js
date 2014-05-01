@@ -17,7 +17,6 @@ if (!Env) {
 
   var dhsNamespace = {},
     resourceManager = Env.resourceManager.getInstance(),
-    callManager = cmgmt.CallManager.getInstance(),
     logManager = ATT.logManager.getInstance(),
     log,
 
@@ -51,28 +50,31 @@ if (!Env) {
 
     createE911Id,
 
-    updateE911Id,
+    updateE911Id;
 
-    init = function () {
-  
-      logManager.configureLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
-  
-      log = logManager.getLogger('DHSModule');
-  
-      // create namespace.
-      dhsNamespace = ATT.utils.createNamespace(app, 'rtc.dhs');
-  
-      // sub-namespaces on ATT.
-      app.RESTClient = RESTClient;
-  
-      dhsNamespace.session = session;
-      dhsNamespace.register = register;
-      dhsNamespace.authorize = authorize;
-      dhsNamespace.token = token;
-      dhsNamespace.login = login;
-      dhsNamespace.logout = logout;
-      dhsNamespace.createE911Id = createE911Id;
-    };
+  // implementions
+  init = function () {
+
+    logManager.configureLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
+
+    log = logManager.getLogger('DHSModule');
+
+    // create namespace.
+    dhsNamespace = ATT.utils.createNamespace(app, 'rtc.dhs');
+
+    // sub-namespaces on ATT.
+    app.RESTClient = RESTClient;
+
+    dhsNamespace.session = session;
+    dhsNamespace.register = register;
+    dhsNamespace.authorize = authorize;
+    dhsNamespace.token = token;
+    dhsNamespace.login = login;
+    dhsNamespace.logout = logout;
+    dhsNamespace.getE911Id = getE911Id;
+    dhsNamespace.createE911Id = createE911Id;
+    dhsNamespace.updateE911Id = updateE911Id;
+  };
 
   handleSuccess = function (config, responseObject) {
     if (typeof config.success === 'function') {
@@ -153,7 +155,7 @@ if (!Env) {
     // Call DHS to check for a browser session.
     resourceManager.doOperation('checkDhsSession', {
       data: config.data,
-      success: handleSuccess.bind (this, config),
+      success: handleSuccess.bind(this, config),
       error: function (response) {
         var error = (response && response.getResponseStatus() !== 401 && response.getJson()) ? response.getJson() : {
           status: response.getResponseStatus(),
@@ -171,8 +173,8 @@ if (!Env) {
     // Call DHS to check for a browser session.
     resourceManager.doOperation('registerUser', {
       data:     config.data,
-      success:  handleSuccess.bind (this, config),
-      error:    handleError.bind (this, config),
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config)
     });
   };
 
