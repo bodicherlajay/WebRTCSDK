@@ -26,6 +26,11 @@
     console.log('ATT is not defined.');
     return;
   }
+  if (!ATT.configure) {
+    console.log('ATT doesn\'t have a configure method defined.');
+    return;
+  }
+  ATT.configure();
 
   // Create an Error Dictionary
   if (undefined === ATT.createErrorDictionary) {

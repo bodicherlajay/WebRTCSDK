@@ -53,12 +53,12 @@ Env = (function (app) {
     restOperationsObject = Env.rtc.rest;
 
     // set the public api namespace object.
-    if (!ATT.rtc) {
-      ATT.rtc = {
-        Phone: {}
-      };
-    }
+    ATT.utils.createNamespace(app, 'rtc.Phone');
+
     apiObject = ATT.rtc.Phone;
+
+    // configure publci apis
+    app.configurePublicAPIs();
   };
 
   /**
@@ -230,7 +230,7 @@ Env = (function (app) {
     return configuredRESTOperation;
   };
 
-  configure();
+  module.configure = configure;
 
   return {
     resourceManager : module

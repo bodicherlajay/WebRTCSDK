@@ -256,17 +256,22 @@ if (!Env) {
     }
   }
 
+  // The SDK public API.
+  function configurePublicAPIs() {
+    resourceManager.addPublicMethod('login', login);
+    resourceManager.addPublicMethod('logout', logout);
+    resourceManager.addPublicMethod('dial', dial);
+    resourceManager.addPublicMethod('answer', answer);
+    resourceManager.addPublicMethod('hold', hold);
+    resourceManager.addPublicMethod('resume', resume);
+    resourceManager.addPublicMethod('mute', mute);
+    resourceManager.addPublicMethod('unmute', unmute);
+    resourceManager.addPublicMethod('hangup', hangup);
+  }
+
   // sub-namespaces on ATT.
   app.RESTClient = RESTClient;
 
-  // The SDK public API.
-  resourceManager.addPublicMethod('login', login);
-  resourceManager.addPublicMethod('logout', logout);
-  resourceManager.addPublicMethod('dial', dial);
-  resourceManager.addPublicMethod('answer', answer);
-  resourceManager.addPublicMethod('hold', hold);
-  resourceManager.addPublicMethod('resume', resume);
-  resourceManager.addPublicMethod('mute', mute);
-  resourceManager.addPublicMethod('unmute', unmute);
-  resourceManager.addPublicMethod('hangup', hangup);
+  app.configurePublicAPIs = configurePublicAPIs;
+
 }(ATT || {}));
