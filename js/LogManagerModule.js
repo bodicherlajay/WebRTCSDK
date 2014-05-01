@@ -35,13 +35,13 @@ if (!exports) {
         }
       },
       logError: function (msg) {
-       if (msg === undefined || msg.length === 0) {return; }
+        if (msg === undefined || msg.length === 0) {return; }
         if (this.level >= module.LOG_LEVEL.ERROR) {
           console.log('[ERROR]' + msg);
         }
       },
       logTrace: function (msg) {
-       if (msg === undefined || msg.length === 0) {return; }
+        if (msg === undefined || msg.length === 0) {return; }
         if (this.level >= module.LOG_LEVEL.TRACE) {
           console.log('[TRACE]' + msg);
         }
