@@ -85,7 +85,6 @@
     }
 
     function onError(error) { // only used for Long Polling
-      // try again
       console.log('ERROR: Network Error: ' + JSON.stringify(error));
       return;
     }
@@ -112,7 +111,8 @@
           }
         },
         success: onSuccess,
-        error: onError
+        error: onError,
+        timeout: 30000
       };
 
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);

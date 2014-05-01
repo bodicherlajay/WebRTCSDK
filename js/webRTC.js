@@ -23,7 +23,6 @@ if (!Env) {
     logMgr = ATT.logManager.getInstance(), logger;
 
     logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-
     logger = logMgr.getLogger('WebRTC');
 
   /**
@@ -132,6 +131,7 @@ if (!Env) {
         endpoint: ATT.appConfig.eventChannelConfig.endpoint,
         sessionId: session.getSessionId(),
         publisher: ATT.event,
+        resourceManager: resourceManager, 
         publicMethodName: 'getEvents'
       };
       logger.logTrace('Creating event channel...');
