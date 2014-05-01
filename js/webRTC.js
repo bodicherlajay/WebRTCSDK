@@ -20,11 +20,11 @@ if (!Env) {
     callManager = cmgmt.CallManager.getInstance(),
     createWebRTCSessionSuccess,
     createWebRTCSessionError,
-    logMgr = ATT.logManager.getInstance(), logger;
+    logMgr = ATT.logManager.getInstance(),
+    logger;
 
-    logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-
-    logger = logMgr.getLogger('WebRTC');
+  logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.ERROR);
+  logger = logMgr.getLogger('WebRTC');
 
   /**
    * Initialize the SDK with Oauth accessToken and e911Id
@@ -102,7 +102,7 @@ if (!Env) {
       session = callManager.getSessionContext(),
       channelConfig;
 
-    sessionId = responseObject && responseObject.getResponseHeader('location') ? responseObject.getResponseHeader('location').split('/')[4] : null;
+    sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
 
     if (sessionId) {
       // publish the UI callback for ready state
