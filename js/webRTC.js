@@ -23,7 +23,7 @@ if (!Env) {
     logMgr = ATT.logManager.getInstance(),
     logger;
 
-  logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.ERROR);
+  logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('WebRTC');
 
   /**
