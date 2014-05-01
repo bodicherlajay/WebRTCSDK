@@ -84,27 +84,21 @@ var RESTClient = (function () {
     };
   //print request details
   function showRequest(method, url, headers, body) {
-    var logMgr = ATT.logManager.getInstance(), logger, h = '', key, reqBody = JSON.stringify(body);
+    var logMgr = ATT.logManager.getInstance(), logger, key, reqBody = JSON.stringify(body);
     //TODO this configuration need to move outside this function
     logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
     logger = logMgr.getLogger('RESTClient');
     logger.logDebug('---------Request---------------');
     logger.logDebug(method + ' ' + url + ' HTTP/1.1');
-
+    logger.logDebug('=========headers=======');
     for (key in headers) {
       if (headers.hasOwnProperty(key)) {
-        h = h + key + ': ' + headers[key] + '\n';
+        logger.logDebug(key + ': ' + headers[key]);
       }
     }
-    h = h.substring(0, h.length - 1);
-    if (body === 'undefined') {
-      logger.logDebug(h);
-    }
-    else {
-      if (typeof reqBody === 'undefined') {
-        reqBody = '';
-      }
-      logger.logDebug(h + '\n' + reqBody);
+    logger.logDebug('=========body==========');
+    if (body !== undefined) {
+      logger.logDebug(body);
     }
   }
 
