@@ -7,7 +7,7 @@
 describe('Event Channel', function () {
   'use strict';
 
-  describe('ATT library', function () {
+  describe('ATT.utils namespace', function () {
     it('should have factory method to create an eventChannel at ATT.utils.createEventChannel', function () {
       expect(ATT.utils.createEventChannel).to.be.a('function');
     });
@@ -88,8 +88,28 @@ describe('Event Channel', function () {
         expect(channelConfig.publisher.publish.called).to.equal(true);
         expect(channelConfig.resourceManager.doOperation.called).to.equal(true);
       });
+      it('should log error detail if polling fails (long polling)', function () {
+        var error = {message: 'FATAL ERROR!!!'};
+        // fake the console
+        console.log = sinon.spy();
+        channelConfig.usesLongPolling = true;
+        // create the event channel, after this, the event channel will have
+        // a success and an error callback
+        eventChannel = ATT.utils.createEventChannel(channelConfig);
+        channelConfig.error(error);
+        expect(console.log.calledWith('ERROR: Network Error: ' + JSON.stringify(error))).to.equal(true);
+      });
+      it('should retry polling on timeout (long polling)', function () {
+        channelConfig.resourceManager.doOperation = sinon.spy();
+        channelConfig.usesLongPolling = true;
+        // create the event channel, after this, the event channel will have
+        // a success and an error callback
+        eventChannel = ATT.utils.createEventChannel(channelConfig);
+        channelConfig.ontimeout();
+        expect(channelConfig.resourceManager.doOperation.called).to.equal(true);
+      });
       it('should continue listening for messages on error or timeout');
-      it('should create a websockets with the given location', function () {
+      xit('should create a websockets with the given location', function () {
         channelConfig.usesLongPolling = false;
         eventChannel = ATT.utils.createEventChannel(channelConfig);
         // setup the response
