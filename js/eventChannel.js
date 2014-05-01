@@ -93,31 +93,27 @@
     }
 
     function onTimeOut() {
-      // try again
+      // continue polling
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
-    // configure callbacks for this channel
-    channelConfig.success = onSuccess;
-    channelConfig.error = onError;
-    if ('/events' === channelConfig.endpoint) {
-      channelConfig.ontimeout = onTimeOut;
-    }
+    //configure callbacks for this channel
+    // channelConfig.success = onSuccess;
+    // channelConfig.error = onError;
+    // if ('/events' === channelConfig.endpoint) {
+    //   channelConfig.ontimeout = onTimeOut;
+    // }
 
     function startListening() {
       isListenning = true;
       httpConfig = {
         params: {
-          url: [channelConfig.sessionId, channelConfig.endpoint],
+          url: {sessionId: channelConfig.sessionId, endpoint: channelConfig.endpoint},
           headers: {
             'Authorization' : 'Bearer ' + channelConfig.accessToken
           }
-        },
-        success: onSuccess,
-        error: onError,
-        timeout: 30000
+        }
       };
-
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
