@@ -28,7 +28,9 @@ var RESTClient = (function () {
     console.log('=========headers=======');
     console.log(r.headers);
     var ph = parse_headers(r.headers);
-    console.log('location = ' + ph['location']);
+    if (ph['Location']) {
+      console.log("Location: " + ph['Location']);
+    }
     console.log('=========body==========');
     console.log(r.responseText);
   }
