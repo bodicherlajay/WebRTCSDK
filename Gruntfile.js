@@ -15,9 +15,17 @@ module.exports = function (grunt) {
     captureTimeout: 60000
   },
     karmaConfigUnit = {
-      reporters: ['spec'],
+      preprocessors: {
+        'js/**/*.js': 'coverage'
+      },
+      reporters: ['spec', 'coverage'],
       colors: true,
-      singleRun: false
+      singleRun: false,
+      usePolling: true,
+      coverageReporter : {
+        type : 'html',
+        dir : 'coverage/'
+      }
     },
     karmaConfigJenkins = {
       preprocessors: {
@@ -96,7 +104,7 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-jslint');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  // grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
   grunt.registerTask('default', ['karma:jenkins', 'jslint', 'concat', 'uglify']);
