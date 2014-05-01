@@ -97,13 +97,6 @@
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
-    // configure callbacks for this channel
-    channelConfig.success = onSuccess;
-    channelConfig.error = onError;
-    if ('/events' === channelConfig.endpoint) {
-      channelConfig.ontimeout = onTimeOut;
-    }
-
     function startListening() {
       isListenning = true;
       httpConfig = {
@@ -115,7 +108,8 @@
         },
         success: onSuccess,
         error: onError,
-        timeout: 30000
+        timeout: 30000,
+        ontimeout: onTimeOut
       };
 
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);

@@ -115,15 +115,9 @@ Env = (function (app) {
    */
   module.doOperation = function (operationName, config) {
     try {
-      var successcb = config.success || function () { console.log('Not implemented yet.'); },
-        errorcb = config.error || function () { console.log('Not implemented yet.'); },
-        operation = module.getOperation(operationName, config);
+      var operation = module.getOperation(operationName, config);
 
-      operation(function (obj) {
-        successcb(obj);
-      }, function (obj) {
-        errorcb(obj);
-      });
+      operation(config.success, config.error, config.ontimeout);
     } catch (e) {
       console.log(e);
     }
@@ -216,9 +210,10 @@ Env = (function (app) {
     }
 
     // create the configured rest operation and return.
-    configuredRESTOperation = function (successCB, errorCB) {
+    configuredRESTOperation = function (successCB, errorCB, onTimeout) {
       restConfig.success = successCB;
       restConfig.error = errorCB;
+      restConfig.ontimeout = onTimeout;
 
       restClient = new ATT.RESTClient(restConfig);
 
