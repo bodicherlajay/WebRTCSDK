@@ -108,7 +108,6 @@
         },
         success: onSuccess,
         error: onError,
-        timeout: 30000,
         ontimeout: onTimeOut
       };
 
