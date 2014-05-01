@@ -6,7 +6,7 @@ if (!ATT) {
 }
 
 var logMgr = ATT.logManager.getInstance(), logger;
-logMgr.configureLogger('userMediaServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+logMgr.configureLogger('userMediaServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 logger = logMgr.getLogger('userMediaServiceModule');
 
 (function (app) {
