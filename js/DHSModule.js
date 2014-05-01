@@ -212,7 +212,7 @@ if (!Env) {
 
     for (index in addressObject) {
       if (addressObject.hasOwnProperty(index)) {
-        if (index !== 'address2') { // address 2 not required
+        if (index !== 'unit') { // unit is not required
           if (isEmptyString(addressObject[index])) {
             retVal = false;
           }
