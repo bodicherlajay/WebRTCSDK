@@ -168,14 +168,13 @@ if (!ATT) {
         method: 'get',
         formatters: {
           url: function (params) {
-            return DEFAULTS.BFEndpoint + '/sessions/' + params.sessionId + '/' + params.endpoint;
+            return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + params[1];
           },
           headers: {
             'Authorization': function (param) {
               return 'Authorization: Bearer ' + param;
             }
-          },
-          timeout: 30000
+          }
         },
         headers: DEFAULTS.headers
       },
