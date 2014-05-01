@@ -57,17 +57,26 @@ if (!ATT) {
       * Authentication to DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
-      authenticateUser: {
+      oAuthAuthorize: {
         method: 'post',
-        url: DEFAULTS.DHSEndpoint + '/user/session',
+        url: DEFAULTS.DHSEndpoint + '/oauth/authorize',
         headers: DEFAULTS.headers
       },
       /**
       * Get access token from DHSEndpoint
       * @memberof WebRTCAPI.APIConfigs
       */
-      getAccessToken: {
-        method: 'put',
+      oAuthToken: {
+        method: 'post',
+        url: DEFAULTS.DHSEndpoint + '/oauth/token',
+        headers: DEFAULTS.headers
+      },
+      /**
+      * Authentication to DHSEndpoint
+      * @memberof WebRTCAPI.APIConfigs
+      */
+      authenticateUser: {
+        method: 'post',
         url: DEFAULTS.DHSEndpoint + '/user/session',
         headers: DEFAULTS.headers
       },
