@@ -93,16 +93,9 @@
     }
 
     function onTimeOut() {
-      // continue polling
+      // try again
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
-
-    //configure callbacks for this channel
-    // channelConfig.success = onSuccess;
-    // channelConfig.error = onError;
-    // if ('/events' === channelConfig.endpoint) {
-    //   channelConfig.ontimeout = onTimeOut;
-    // }
 
     function startListening() {
       isListenning = true;
@@ -112,8 +105,13 @@
           headers: {
             'Authorization' : 'Bearer ' + channelConfig.accessToken
           }
-        }
+        },
+        success: onSuccess,
+        error: onError,
+        timeout: 30000,
+        ontimeout: onTimeOut
       };
+
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
