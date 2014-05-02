@@ -260,7 +260,7 @@ if (!Env) {
   function configurePublicAPIs() {
     // get configured apiObject
     apiObject = resourceManager.getAPIObject();
-    
+
     resourceManager.addPublicMethod('login', login);
     resourceManager.addPublicMethod('logout', logout);
     resourceManager.addPublicMethod('dial', dial);
