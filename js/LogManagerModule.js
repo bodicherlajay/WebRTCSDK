@@ -105,12 +105,12 @@ if (!exports) {
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = app.logManager;
     }
-    exports.RESTClient = app.logManager;
+    exports.app.logManager = app.logManager;
   }
 
   //AMD exports
   if (typeof define === 'function' && define.amd) {
-    define('RESTClient', [], function() {
+    define('LogManager', [], function() {
       return app.logManager;
     });
   }
