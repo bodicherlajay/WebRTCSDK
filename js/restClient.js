@@ -2,7 +2,6 @@
 /*global ATT:true*/
 /**
  * Abstraction of the XMLHttpRequest used in the SDK and DHS.
- * Todo:  Add 'exports' handling so this can be used a node module (see underscore.js).
  */
 
 var RESTClient = (function () {

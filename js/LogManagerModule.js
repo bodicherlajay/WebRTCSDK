@@ -99,5 +99,20 @@ if (!exports) {
   };
 
   app.logManager = module;
-  exports.logManager = module;
+
+  //exports for nodejs, derived from underscore.js
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      exports = module.exports = app.logManager;
+    }
+    exports.RESTClient = app.logManager;
+  }
+
+  //AMD exports
+  if (typeof define === 'function' && define.amd) {
+    define('RESTClient', [], function() {
+      return app.logManager;
+    });
+  }
+
 }(ATT || {}));
