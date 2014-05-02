@@ -160,6 +160,21 @@ var RESTClient = (function () {
 
   addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
+  //exports for nodejs, derived from underscore.js
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      exports = module.exports = RESTClient;
+    }
+    exports.RESTClient = RESTClient;
+  }
+
+  //AMD exports
+  if (typeof define === 'function' && define.amd) {
+    define('RESTClient', [], function() {
+      return RESTClient;
+    });
+  }
+
   RESTClient.prototype.getConfig = function () {
     return this.config;
   };
