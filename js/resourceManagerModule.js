@@ -7,6 +7,10 @@ if (!Env) {
   var Env = {};
 }
 
+var logMgr = ATT.logManager.getInstance(), logger;
+logMgr.configureLogger('resourceManagerModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+logger = logMgr.getLogger('resourceManagerModule');
+
 
 Env = (function (app) {
   "use strict";
@@ -30,6 +34,7 @@ Env = (function (app) {
     addPublicMethod;
 
   function init() {
+    logger.logTrace('initializing resource manager module');
     return {
       configure:          configure,
       getAPIObject:       getAPIObject,
@@ -42,7 +47,7 @@ Env = (function (app) {
   // Configure REST operations object and public API object.
 
   configure = function (config) {
-
+    logger.trace('configuring resource manager module');
     config = ((config && Object.keys(config).length > 0) && config) || app.APIConfigs;
 
     restOperationsConfig = config;
@@ -68,14 +73,16 @@ Env = (function (app) {
    * @param method
    */
   addPublicMethod = function (name, method) {
+    logger.logTrace('adding public method', name);
     var apiObj = getAPIObject();
 
     apiObj[name] = method;
   };
 
   module.getInstance = function () {
-
+    logger.logTrace('getInstance called');
     if (!instance) {
+      logger.logDebug('initializing instance');
       instance = init();
     }
     return instance;
@@ -115,12 +122,13 @@ Env = (function (app) {
    * @param cb
    */
   module.doOperation = function (operationName, config) {
+    logger.logTrace('do operation', operationName);
     try {
       var operation = module.getOperation(operationName, config);
 
       operation(config.success, config.error, config.ontimeout);
     } catch (e) {
-      console.log(e);
+      logger.logError(e);
     }
   };
 
@@ -134,12 +142,13 @@ Env = (function (app) {
   module.getOperation = function (operationName, config) {
 
     if (!operationName) {
+      logger.logError('no operation name provided');
       throw new Error('Must specify an operation name.');
     }
 
     config = config || {
-      success: function () { console.log('Not implemented yet.'); },
-      error:   function () { console.log('Not implemented yet.'); }
+      success: function () { logger.logWarning('Not implemented yet.'); },
+      error:   function () { logger.logWarning('Not implemented yet.'); }
     };
 
     // todo:  remove the configure method.
@@ -153,7 +162,9 @@ Env = (function (app) {
       formattersLength,
       configuredRESTOperation;
 
+    logger.logDebug('Configure method begins. TODO: remove configure method');
     if (!operationConfig) {
+      logger.logError('Operation config not provided!');
       throw new Error('Operation does not exist.');
     }
 
@@ -164,12 +175,15 @@ Env = (function (app) {
 
     if (formatters && formattersLength > 0) {
       if (!config.params || (Object.keys(config.params).length !== formattersLength)) {
+        logger.logError('Params passed in much match number of formatters');
         throw new Error('Params passed in must match number of formatters.');
       }
 
       // check that formatters match up with passed in params.
       if (formatters.url) {
         if (!config.params.url) {
+
+          logger.logError('Please provide a URL parameter for the URL formatter.');
           throw new Error('You pass url param to for the url formatter.');
         }
       }
@@ -177,6 +191,7 @@ Env = (function (app) {
       // check headers.  just check that lengths match for now.
       if (formatters.headers) {
         if (Object.keys(config.params.headers).length !== Object.keys(operationConfig.formatters.headers).length) {
+          logger.logError('Header formatters in APIConfigs do not match header parameters provided.');
           throw new Error('Header formatters in APIConfigs do not match the header parameters being passed in.');
         }
       }
@@ -184,6 +199,7 @@ Env = (function (app) {
       // Override url parameter with url from url formatter.
       if (typeof formatters.url === 'function') {
         restConfig.url = operationConfig.formatters.url(config.params.url);
+        logger.logTrace('updated restConfig url', restConfig.url);
       }
 
       // header formatting.
@@ -196,6 +212,7 @@ Env = (function (app) {
           for (headerType in config.params.headers) {
             if (config.params.headers.hasOwnProperty(headerType)) {
               headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
+              logger.logDebug('header: ' + headerType + ', ' + headersObjectForREST[headerType]);
             }
           }
 
@@ -212,6 +229,7 @@ Env = (function (app) {
 
     // create the configured rest operation and return.
     configuredRESTOperation = function (successCB, errorCB, onTimeout) {
+      logger.logTrace('configuring REST operation');
       restConfig.success = successCB;
       restConfig.error = errorCB;
       restConfig.ontimeout = onTimeout;
