@@ -5,6 +5,10 @@ if (!ATT) {
   var ATT = {};
 }
 
+var logMgr = ATT.logManager.getInstance(), logger;
+logMgr.configureLogger('signalingServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+logger = logMgr.getLogger('signalingServiceModule');
+
 (function (app) {
   'use strict';
 
@@ -12,13 +16,14 @@ if (!ATT) {
     callManager = cmgmt.CallManager.getInstance();
 
   app.SignalingService = {
-
     /**
     * Send offer
     * @param {Object} config the peer conn config
     */
     sendOffer: function (config) {
+      logger.logTrace('running sdp pre-processor', config.sdp);
       // fix description just before sending
+
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
         // call data
         data = {
@@ -28,6 +33,7 @@ if (!ATT) {
           }
         };
 
+      logger.logTrace('doOperation: startCall');
       resourceManager.doOperation('startCall', {
         params: {
           url: [callManager.getSessionContext().getSessionId()],
@@ -57,6 +63,7 @@ if (!ATT) {
     */
     sendAnswer: function (config) {
       // fix description just before sending
+      logger.trace('sendAnswer, pre-processing SDP', config.sdp);
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
       // call data
         data = {
@@ -65,6 +72,7 @@ if (!ATT) {
           }
         };
 
+      logger.logTrace('answerCall');
       resourceManager.doOperation('answerCall', {
         params: {
           url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
@@ -101,6 +109,7 @@ if (!ATT) {
     */
     sendAcceptMods: function (config) {
       // fix description just before sending
+      logger.logTrace('sendAcceptMods, pre-processing sdp', config.sdp);
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
       // call data
         data = {
@@ -109,6 +118,7 @@ if (!ATT) {
           }
         };
 
+      logger.logTrace('doOperation, acceptModifications');
       resourceManager.doOperation('acceptModifications', {
         params: {
           url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
@@ -146,11 +156,13 @@ if (!ATT) {
     */
     sendHoldCall: function (config) {
       // request payload
+      logger.logTrace('sendHoldCall');
       var data = {
         callsMediaModifications : {
           sdp : config.sdp
         }
       };
+      logger.logTrace('doOperation: modifyCall');
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [ callManager.getSessionContext().getSessionId(),
@@ -183,6 +195,7 @@ if (!ATT) {
           sdp : config.sdp
         }
       };
+      logger.logTrace('sendResumeCall, doOperation: modifyCall');
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [ callManager.getSessionContext().getSessionId(),
