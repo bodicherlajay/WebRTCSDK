@@ -38,6 +38,8 @@ if (!Env) {
 
     register,
 
+    vtnList,
+
     authorize,
 
     token,
@@ -67,6 +69,7 @@ if (!Env) {
 
     dhsNamespace.session = session;
     dhsNamespace.register = register;
+    dhsNamespace.vtnList = vtnList;
     dhsNamespace.authorize = authorize;
     dhsNamespace.token = token;
     dhsNamespace.login = login;
@@ -170,9 +173,17 @@ if (!Env) {
   };
 
   register = function (config) {
-    // Call DHS to check for a browser session.
+    // Call DHS to register a new user on DHS
     resourceManager.doOperation('registerUser', {
       data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config)
+    });
+  };
+
+  vtnList = function (config) {
+    // Call DHS to get a list of VTN phone numbers
+    resourceManager.doOperation('getVTNList', {
       success:  handleSuccess.bind(this, config),
       error:    handleError.bind(this, config)
     });

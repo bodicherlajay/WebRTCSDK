@@ -55,6 +55,24 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
+        * Create new user from DHSEndpoint
+        * @memberof ATT.APIConfigs
+        */
+        registerUser: {
+          method: 'post',
+          url: DEFAULTS.DHSEndpoint + '/users',
+          headers: DEFAULTS.headers
+        },
+        /**
+        * Get a list of VTNs from DHSEndpoint
+        * @memberof ATT.APIConfigs
+        */
+        getVTNList: {
+          method: 'get',
+          url: DEFAULTS.DHSEndpoint + '/setup/vtnlist',
+          headers: DEFAULTS.headers
+        },
+        /**
         * Authentication to DHSEndpoint
         * @memberof ATT.APIConfigs
         */
@@ -88,15 +106,6 @@ if (!ATT) {
         logoutUser: {
           method: 'delete',
           url: DEFAULTS.DHSEndpoint + '/user/session',
-          headers: DEFAULTS.headers
-        },
-        /**
-        * Create new user from DHSEndpoint
-        * @memberof ATT.APIConfigs
-        */
-        registerUser: {
-          method: 'post',
-          url: DEFAULTS.DHSEndpoint + '/users',
           headers: DEFAULTS.headers
         },
         /**
