@@ -16,12 +16,12 @@ if (!Env) {
   'use strict';
 
   var resourceManager = Env.resourceManager.getInstance(),
-    apiObject = resourceManager.getAPIObject(),
     callManager = cmgmt.CallManager.getInstance(),
     createWebRTCSessionSuccess,
     createWebRTCSessionError,
     logMgr = ATT.logManager.getInstance(),
-    logger;
+    logger,
+    apiObject;
 
   logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('WebRTC');
@@ -258,6 +258,9 @@ if (!Env) {
 
   // The SDK public API.
   function configurePublicAPIs() {
+    // get configured apiObject
+    apiObject = resourceManager.getAPIObject();
+    
     resourceManager.addPublicMethod('login', login);
     resourceManager.addPublicMethod('logout', logout);
     resourceManager.addPublicMethod('dial', dial);
