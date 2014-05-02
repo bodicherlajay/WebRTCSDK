@@ -133,12 +133,13 @@ if (!Env) {
         sessionId: session.getSessionId(),
         publisher: ATT.event,
         resourceManager: resourceManager,
-        publicMethodName: 'getEvents'
+        publicMethodName: 'getEvents',
+        usesLongPolling: true
       };
       logger.logTrace('Creating event channel...');
-      apiObject.eventChannel = ATT.utils.createEventChannel(channelConfig);
-      if (apiObject.eventChannel) {
-        apiObject.eventChannel.startListening();
+      ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
+      if (ATT.utils.eventChannel) {
+        ATT.utils.eventChannel.startListening();
       }
     } else {
       logger.logDebug('No session id');

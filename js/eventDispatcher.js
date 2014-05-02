@@ -25,8 +25,8 @@
     }
 
     onSessionReady = function (evt) {
-      if (callbacks.onsessionContextReady) {
-        callbacks.onsessionContextReady(evt);
+      if (callbacks.onSessionReady) {
+        callbacks.onSessionReady(evt);
       }
     };
 
