@@ -47,7 +47,7 @@ Env = (function (app) {
   // Configure REST operations object and public API object.
 
   configure = function (config) {
-    logger.trace('configuring resource manager module');
+    logger.logTrace('configuring resource manager module');
     config = ((config && Object.keys(config).length > 0) && config) || app.APIConfigs;
 
     restOperationsConfig = config;
