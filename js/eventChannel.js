@@ -58,11 +58,11 @@
       if (eventData.events) {
         var sessID = eventData.events.eventList[0].eventObject.resourceURL.split('/')[4],
           events = eventData.events.eventList,
-          e;
+          evt;
         // publish individually
-        for (e in events) {
-          if (events.hasOwnProperty(e)) {
-            channelConfig.publisher.publish(sessID + '.responseEvent', events[e].eventObject);
+        for (evt in events) {
+          if (events.hasOwnProperty(evt)) {
+            channelConfig.publisher.publish(sessID + '.responseEvent', events[evt].eventObject);
           }
         }
       }
