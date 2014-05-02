@@ -105,13 +105,6 @@ if (!Env) {
     sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
 
     if (sessionId) {
-      // publish the UI callback for ready state
-      app.event.publish(sessionId + '.responseEvent', {
-        state:  app.SessionEvents.RTC_SESSION_CREATED,
-        data:   {
-          webRtcSessionId: sessionId
-        }
-      });
 
       // Set WebRTC.Session data object that will be needed downstream.
       session.setSessionId(sessionId);
@@ -120,6 +113,13 @@ if (!Env) {
 
       // setting up event callbacks using RTC Events
       app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+      // publish the UI callback for ready state
+      app.event.publish(sessionId + '.responseEvent', {
+        state:  app.SessionEvents.RTC_SESSION_CREATED,
+        data:   {
+          webRtcSessionId: sessionId
+        }
+      });
 
       /**
        * Call BF to create event chanenel

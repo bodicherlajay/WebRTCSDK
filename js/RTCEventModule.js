@@ -15,22 +15,17 @@ if (!ATT) {
     subscribeEvents,
     eventRegistry,
     init = function () {
-      eventRegistry = new EventDispatcher({
-        // mainModule: mainModule,
-        // callbacks: callbacks,
-        // peerConnectionSvc: PeerConnectionService,
-        // callManager: callManager
-      });
+      eventRegistry = mainModule.utils.createEventRegistry(callManager.getSessionContext());
       return {
         hookupEventsToUICallbacks: subscribeEvents
       };
     };
 
   function dispatchEventToHandler(event) {
-    console.log('dispatching event: ' + event.type);
-    if (eventRegistry[event.type]) {
-      var fn = eventRegistry[event.type];
-      fn(event.payload);
+    console.log('dispatching event: ' + event.state);
+    if (eventRegistry[event.state]) {
+      var fn = eventRegistry[event.state];
+      fn(event);
     } else {
       console.log("No event handler defined for " + event.event);
     }
@@ -49,7 +44,7 @@ if (!ATT) {
     console.log('New Event: ', JSON.stringify(event));
 
     console.log('dispatching event: ' + event.state);
-    dispatchEventToHandler(event.state);
+    dispatchEventToHandler(event);
   };
 
   subscribeEvents = function () {
