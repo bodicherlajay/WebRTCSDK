@@ -40,6 +40,7 @@
         || undefined === channelConfig.sessionId
         || undefined === channelConfig.publicMethodName
         || undefined === channelConfig.resourceManager
+        || undefined === channelConfig.usesLongPolling
         || undefined === channelConfig.publisher) {
       throw new Error('Invalid Options. Cannot create channel with options:' + JSON.stringify(channelConfig));
     }
