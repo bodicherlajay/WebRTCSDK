@@ -6,6 +6,10 @@ if (!ATT) {
   var ATT = {};
 }
 
+var logMgr = ATT.logManager.getInstance(), logger;
+logMgr.configureLogger('SDPFilterModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+logger = logMgr.getLogger('SDPFilterModule');
+
 (function (mainModule) {
   'use strict';
 
@@ -16,6 +20,9 @@ if (!ATT) {
   * returns {Object} sdp
   */
   function removeSDPAttribute(attributeValue, sdp) {
+    logger.logTrace('removing sdp attribute');
+    logger.logTrace('attribute', attributeValue);
+    logger.logTrace('sdp', sdp);
     //remove attribute from the middle.
     var attribute = 'a=' + attributeValue + '\r\n',
       index = sdp.indexOf(attribute),
@@ -27,6 +34,7 @@ if (!ATT) {
       rest = sdp.substr(index + attribute.length);
       sdp = prefix + rest;
     }
+    logger.logTrace('modified sdp', sdp);
     return sdp;
   }
 
@@ -39,6 +47,10 @@ if (!ATT) {
   * @returns {Object} sdp
   */
   function modifySDPAttribute(originalValue, newValue, sdp) {
+    logger.logTrace('modifySDPAttribute');
+    logger.logTrace('original value', originalValue);
+    logger.logTrace('new value', newValue);
+    logger.logTrace('sdp', sdp);
     var index = 0,
       attribute = 'a=' + originalValue + '\r\n',
       prefix,
@@ -53,6 +65,7 @@ if (!ATT) {
         sdp = prefix + 'a=' + newValue + '\n' + rest;
       }
     }
+    logger.logTrace('modified sdp', sdp);
     return sdp;
   }
 
@@ -63,6 +76,9 @@ if (!ATT) {
   * @returns {Object} sdp
   */
   function incrementSDP(sdp, count) {
+    logger.logTrace('increment sdp', sdp);
+    logger.logTrace('increment count', count);
+
     var oIndex = sdp.sdp.indexOf('o='),
       sIndex = sdp.sdp.indexOf('s=-'),
       oLine = sdp.sdp.slice(oIndex, sIndex),
@@ -71,6 +87,7 @@ if (!ATT) {
 
     sdp.sdp = sdp.sdp.replace(oLine, oLine2);
 
+    logger.logTrace('modified sdp', sdp);
     return sdp;
   }
 
@@ -80,6 +97,7 @@ if (!ATT) {
    * @returns {*|sdp}
   */
   function fixSDP(description) {
+    logger.logTrace('fixSDP', description.sdp);
     var sdp = description.sdp,
       cryptoMatch;
 
@@ -114,6 +132,7 @@ if (!ATT) {
     // set back the fixed sdp string on description
     description.sdp = sdp;
 
+    logger.logTrace('fixed sdp', sdp);
     return description;
   }
 
