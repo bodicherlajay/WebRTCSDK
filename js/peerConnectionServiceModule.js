@@ -7,7 +7,7 @@
  */
 
 var logMgr = ATT.logManager.getInstance(), logger;
-logMgr.configureLogger('peerConnectionServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+logMgr.configureLogger('peerConnectionServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 logger = logMgr.getLogger('peerConnectionServiceModule');
 
 (function (app, UserMediaService, SignalingService) {

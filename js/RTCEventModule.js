@@ -45,6 +45,9 @@ if (!ATT) {
 
     console.log('dispatching event: ' + event.state);
     dispatchEventToHandler(event);
+
+    // set current event on the session
+    callManager.getSessionContext().setEventObject(event);
   };
 
   subscribeEvents = function () {

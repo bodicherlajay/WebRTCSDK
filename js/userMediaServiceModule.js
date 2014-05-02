@@ -68,8 +68,12 @@ logger = logMgr.getLogger('userMediaServiceModule');
     */
     stopStream: function () {
       logger.logTrace('stopping stream...');
-      this.localVideoElement.src = '';
-      this.remoteVideoElement.src = '';
+      if (this.localVideoElement.src) {
+        this.localVideoElement.src = '';
+      }
+      if (this.remoteVideoElement.src) {
+        this.remoteVideoElement.src = '';
+      }
       if (this.localStream) {
         this.localStream.stop();
       }

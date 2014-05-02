@@ -20,8 +20,7 @@ if (!Env) {
     createWebRTCSessionSuccess,
     createWebRTCSessionError,
     logMgr = ATT.logManager.getInstance(),
-    logger,
-    apiObject;
+    logger;
 
   logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('WebRTC');
@@ -259,9 +258,6 @@ if (!Env) {
 
   // The SDK public API.
   function configurePublicAPIs() {
-    // get configured apiObject
-    apiObject = resourceManager.getAPIObject();
-
     resourceManager.addPublicMethod('login', login);
     resourceManager.addPublicMethod('logout', logout);
     resourceManager.addPublicMethod('dial', dial);

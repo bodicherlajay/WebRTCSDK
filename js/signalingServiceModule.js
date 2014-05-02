@@ -63,7 +63,7 @@ logger = logMgr.getLogger('signalingServiceModule');
     */
     sendAnswer: function (config) {
       // fix description just before sending
-      logger.trace('sendAnswer, pre-processing SDP', config.sdp);
+      logger.logTrace('sendAnswer, pre-processing SDP', config.sdp);
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
       // call data
         data = {
