@@ -12,15 +12,20 @@ if (!ATT) {
     module = {},
     instance,
     interceptingEventChannelCallback,
-    subscribeEvents,
+    subscribeToEvents,
     eventRegistry,
     init = function () {
       eventRegistry = mainModule.utils.createEventRegistry(callManager.getSessionContext());
       return {
-        hookupEventsToUICallbacks: subscribeEvents
+        hookupEventsToUICallbacks: subscribeToEvents
       };
     };
 
+  /**
+  * Dispatch Event to Registry
+  * @param {Object} event The event object
+  *
+  */
   function dispatchEventToHandler(event) {
     console.log('dispatching event: ' + event.state);
     if (eventRegistry[event.state]) {
@@ -32,7 +37,7 @@ if (!ATT) {
   }
 
   /*
-  * Subscribes to all Event Channel announcemets
+  * Subscribes to all Event Channel announcements
   * and triggers UI callbacks
   * @param {Object} event The event object
   */
@@ -50,12 +55,17 @@ if (!ATT) {
     callManager.getSessionContext().setEventObject(event);
   };
 
-  subscribeEvents = function () {
+  /**
+    This function subscribes to all events 
+    being published by the event channel.
+    It hands off the event to interceptingEventChannelCallback()
+  */
+  subscribeToEvents = function () {
     var sessionId = callManager.getSessionContext().getSessionId();
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
-    // subscribe to hook up callbacks to events
+    // subscribe to published events from event channel
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     console.log('Subscribed to events');
   };
