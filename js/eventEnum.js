@@ -10,6 +10,12 @@ if (!ATT) {
 
   var module = {};
 
+  module.UserTypes = {
+    ICMN: 'MOBILENUMBER',
+    VTN: 'VTN',
+    NOTN: 'NOTN'
+  };
+
   module.SdkEvents = {
     SDK_READY: 'SDK Ready'
   };
@@ -58,6 +64,7 @@ if (!ATT) {
     MEDIACONFERENCE:  'mediaconference'
   };
 
+  mainModule.UserTypes = Object.freeze(module.UserTypes);
   mainModule.SdkEvents = Object.freeze(module.SdkEvents);
   mainModule.SessionEvents = Object.freeze(module.SessionEvents);
   mainModule.CallStatus = Object.freeze(module.CallStatus);
