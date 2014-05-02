@@ -105,7 +105,7 @@ if (!exports) {
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = app.logManager;
     }
-    exports.app.logManager = app.logManager;
+    exports.ATT.logManager = app.logManager;
   }
 
   //AMD exports
