@@ -175,11 +175,11 @@ logger = logMgr.getLogger('signalingServiceModule');
         data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Hold request sent...');
+            logger.logTrace('Hold request sent...');
           }
         },
         error: function (err) {
-          console.log('CALL HOLD ERROR', err);
+          logger.logError('CALL HOLD ERROR', err);
         }
       });
     },
@@ -208,13 +208,13 @@ logger = logMgr.getLogger('signalingServiceModule');
         data: data,
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Resume request sent...');
+            logger.logTrace('Resume request sent...');
           } else {
-            console.log('CALL RESUME ERROR');
+            logger.logError('CALL RESUME ERROR, status', response.getResponseStatus());
           }
         },
         error: function (err) {
-          console.log('CALL RESUME ERROR', err);
+          logger.logError('CALL RESUME ERROR', err);
         }
       });
     },
@@ -224,6 +224,7 @@ logger = logMgr.getLogger('signalingServiceModule');
     * @param {Object} config the peer conn config
     */
     sendEndCall: function () {
+      logger.logTrace('ending call');
       resourceManager.doOperation('endCall', {
         params: {
           url: [ callManager.getSessionContext().getSessionId(),
@@ -234,13 +235,13 @@ logger = logMgr.getLogger('signalingServiceModule');
         },
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            console.log('Call termination success.');
+            logger.logTrace('Call termination success.');
           } else {
-            console.log('CALL TERMINATION ERROR');
+            logger.logError('CALL TERMINATION ERROR, status:', response.getResponseStatus());
           }
         },
         error: function (err) {
-          console.log('CALL TERMINATION ERROR', err);
+          logger.logError('CALL TERMINATION ERROR', err);
         }
       });
     }
