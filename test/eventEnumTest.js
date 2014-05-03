@@ -2,7 +2,7 @@
 /*global ATT:true, describe:true,it:true,expect:true*/
 
 //TODO Add more tests
-describe.only('EventEnums', function () {
+describe('EventEnums', function () {
   "use strict";
   it('should contain Event Type CALLING', function () {
     expect(ATT.CallStatus.CALLING).equals(1);
