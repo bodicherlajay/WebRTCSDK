@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # checks out the latest commit for the branch ($2) from repo ($1)
 function checkout_branch {
@@ -58,15 +58,17 @@ function git_latest {
 #### Main Program Starts Here #####
 ###################################
 
-DIST_DIR=./dist
+
+# Create dist dir if it doesn't exist
+mkdir -p $DIST_DIR
+
+DIST_DIR=$(pwd)/dist
+echo "Starting packaging at... $DIST_DIR ..."
 DHS_DIR=webrtc-dhs
 SAMPLE_DIR=webrtc-sample-apps
 SDKKIT_DIR=$DIST_DIR/webrtc-sdk-kit
 # Github base URL
 GITHUB_ROOT=git@github.com:attdevsupport
-
-# Create dist dir if it doesn't exist
-mkdir -p $DIST_DIR
 
 # Clear previous package & an create ouput dir
 echo "Cleaning WebRTC SDK Kit dir at $SDKKIT_DIR"
