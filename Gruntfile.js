@@ -27,7 +27,7 @@ module.exports = function (grunt) {
       'js/eventChannel.js',
       'js/resourceManagerModule.js',
       'js/signalingServiceModule.js',
-      'js/attEnums.js',
+      'js/eventEnum.js',
       'js/SDPFilterModule.js',
       'js/RTCEventModule.js',
       'js/webRTC.js',
