@@ -68,7 +68,7 @@
     return;
   }
   eventChannelConfig = { // configuration for a long polling channel
-    url: ATT.appConfig.BFEndpoint + '/sessions/' + sessionContext.getSessionId() + '/events',
+    url: ATT.appConfig.RTCEndpoint + '/sessions/' + sessionContext.getSessionId() + '/events',
     async: true,
     timeout: 30000,
     headers: {

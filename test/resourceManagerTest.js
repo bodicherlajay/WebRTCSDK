@@ -8,7 +8,7 @@ describe('ResourceManager', function () {
 
   var DEFAULTS = {
     DHSEndpoint: ATT.appConfig.DHSEndpoint,
-    BFEndpoint: ATT.appConfig.BFEndpoint,
+    RTCEndpoint: ATT.appConfig.RTCEndpoint,
     headers: {
       'Content-Type': 'application/json',
       'Accept' : 'application/json'
@@ -61,7 +61,7 @@ describe('ResourceManager', function () {
           method: 'post',
           formatters: {
             url: function (params) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params + '/calls';
             },
             headers: {
               Authorization: function (param) {
@@ -128,7 +128,7 @@ describe('ResourceManager', function () {
           method: 'post',
           formatters: {
             url: function (param) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + param + '/calls';
+              return DEFAULTS.RTCEndpoint + '/sessions/' + param + '/calls';
             },
             headers: {
               Authorization: function (param) {
@@ -162,7 +162,7 @@ describe('ResourceManager', function () {
       // expects
 
       // url
-      expect(operation.restConfig.url).equals(DEFAULTS.BFEndpoint + '/sessions/abc123/calls');
+      expect(operation.restConfig.url).equals(DEFAULTS.RTCEndpoint + '/sessions/abc123/calls');
 
       // headers
       expect(operation.restConfig.headers.Authorization).equals('Bearer authorization');

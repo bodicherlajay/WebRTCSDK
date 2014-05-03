@@ -29,7 +29,7 @@ if (!ATT) {
       * Black Flag Resource url.
       * @memberof ATT.DEFAULTS
       */
-      BFEndpoint: ATT.appConfig.BFEndpoint,
+      RTCEndpoint: ATT.appConfig.RTCEndpoint,
       /**
       * Default headers.
       * @memberof ATT.DEFAULTS
@@ -140,12 +140,12 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
-        * Create WebRTC session from BFEndpoint
+        * Create WebRTC session from RTCEndpoint
         * @memberof ATT.APIConfigs
         */
         createWebRTCSession: {
           method: 'post',
-          url: DEFAULTS.BFEndpoint + '/sessions',
+          url: DEFAULTS.RTCEndpoint + '/sessions',
           formatters: {
             headers: {
               'Authorization': function (param) {
@@ -159,14 +159,14 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
-        * Delete WebRTC session from BFEndpoint
+        * Delete WebRTC session from RTCEndpoint
         * @memberof ATT.APIConfigs
         */
         deleteWebRTCSession: {
           method: 'delete',
           formatters : {
             url: function (params) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + params;
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params;
             },
             headers: {
               'Authorization': function (param) {
@@ -180,14 +180,14 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
-        * Get WebRTC events from BFEndpoint
+        * Get WebRTC events from RTCEndpoint
         * @memberof ATT.APIConfigs
         */
         getEvents: {
           method: 'get',
           formatters: {
             url: function (params) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + params.sessionId + params.endpoint;
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + params.endpoint;
             },
             headers: {
               'Authorization': function (param) {
@@ -199,14 +199,14 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
-        * Start Call via BFEndpoint
+        * Start Call via RTCEndpoint
         * @memberof ATT.APIConfigs
         */
         startCall: {
           method: 'post',
           formatters: {
             url: function (params) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + params + '/calls';
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params + '/calls';
             },
             headers: {
               'Authorization': function (param) {
@@ -217,14 +217,14 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
-        * Answer Call via BFEndpoint
+        * Answer Call via RTCEndpoint
         * @memberof ATT.APIConfigs
         */
         answerCall: {
           method: 'put',
           formatters: {
             url: function (params) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
             },
             headers: {
               'Authorization': function (param) {
@@ -237,7 +237,7 @@ if (!ATT) {
           }, DEFAULTS.headers)
         },
         /**
-         * Modify Call via BFEndpoint
+         * Modify Call via RTCEndpoint
          * Used for hold, resume
          * @memberof ATT.APIConfigs
          */
@@ -245,7 +245,7 @@ if (!ATT) {
           method: 'put',
           formatters: {
             url: function (params) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
             },
             headers: {
               'Authorization': function (param) {
@@ -259,14 +259,14 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
-        * Accept Modifications via BFEndpoint
+        * Accept Modifications via RTCEndpoint
         * @memberof ATT.APIConfigs
         */
         acceptModifications: {
           method: 'put',
           formatters: {
             url: function (params) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
             },
             headers: {
               'Authorization': function (param) {
@@ -282,14 +282,14 @@ if (!ATT) {
           }, DEFAULTS.headers)
         },
         /**
-        * End Call via BFEndpoint
+        * End Call via RTCEndpoint
         * @memberof WebRTC.APIConfigs
         */
         endCall: {
           method: 'delete',
           formatters: {
             url: function (params) {
-              return DEFAULTS.BFEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
             },
             headers: {
               'Authorization': function (param) {

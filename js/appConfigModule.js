@@ -23,7 +23,7 @@ if (!ATT) {
     },
 
     appConfig = {
-      BFEndpoint: null,
+      RTCEndpoint: null,
       DHSEndpoint: null,
       eventChannelConfig: {
         endpoint: '/events'
@@ -34,7 +34,7 @@ if (!ATT) {
     if (!key) {
       key = 'AMS'; // default to AMS endpoints
     }
-    appConfig.BFEndpoint = BFConf[key];
+    appConfig.RTCEndpoint = BFConf[key];
     appConfig.DHSEndpoint = DHSConf;
 
     app.appConfig = appConfig;
