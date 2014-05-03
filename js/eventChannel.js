@@ -6,7 +6,7 @@
  * Event channel objects can be used to listen to a given `channel` continuously.
  */
 
-(function (ATT) {
+(function (mainModule) {
   'use strict';
 
   var utils = {};
@@ -130,7 +130,6 @@
   if (ATT.utils === undefined) {
     ATT.utils = utils;
   } else {
-    ATT.utils.createEventChannel = utils.createEventChannel;
+    ATT.utils.createEventChannel = createEventChannel;
   }
-
 }(ATT));

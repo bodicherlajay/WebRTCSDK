@@ -9,7 +9,7 @@
   * We don't need to test that every method works, because we already have unit tests for each module.
   */
 
-describe('Entry Point: SDK Assembly Integration Tests', function () {
+describe.only('Entry Point: SDK Assembly Integration Tests', function () {
   'use strict';
 
   describe('ATT.errorDictionary', function () {
@@ -18,8 +18,8 @@ describe('Entry Point: SDK Assembly Integration Tests', function () {
     });
   });
   describe('ATT.eventChannel', function () {
-    it('should exist', function () {
-      expect(ATT.eventChannel).to.be.an('object');
+    it('should not exist without session id', function () {
+      expect(ATT.eventChannel).to.be.an('undefined');
     });
   });
 });

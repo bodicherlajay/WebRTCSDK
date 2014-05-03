@@ -96,5 +96,4 @@
     };
   }
   ATT.utils.createErrorDictionary = createErrorDictionary;
-
 }());
