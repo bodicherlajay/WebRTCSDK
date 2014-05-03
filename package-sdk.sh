@@ -60,9 +60,9 @@ function git_latest {
 
 
 # Create dist dir if it doesn't exist
+DIST_DIR=$(pwd)/dist
 mkdir -p $DIST_DIR
 
-DIST_DIR=$(pwd)/dist
 echo "Starting packaging at... $DIST_DIR ..."
 DHS_DIR=webrtc-dhs
 SAMPLE_DIR=webrtc-sample-apps
@@ -110,6 +110,8 @@ fi
 
 # Zip package
 cd $DIST_DIR
+# Clear old packages
+rm *.zip
 # Ignore: .git, OSX tmp files, node_modules, tests
 echo "Generating Zip package..."
 zip -r webrtc-sdk-kit_$(date +%s).zip webrtc-sdk-kit -x *.git* *.DS_Store* *node_modules* *test*
