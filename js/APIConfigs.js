@@ -26,7 +26,7 @@ if (!ATT) {
       */
       DHSEndpoint: ATT.appConfig.DHSEndpoint,
       /**
-      * Black Flag Resource url.
+      * RTC Resource url.
       * @memberof ATT.DEFAULTS
       */
       RTCEndpoint: ATT.appConfig.RTCEndpoint,

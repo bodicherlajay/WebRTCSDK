@@ -15,8 +15,8 @@ if (!ATT) {
   // DHS endpoint
   var DHSConf = 'http://localhost:9000',
 
-  // BF Endpoints
-    BFConf = {
+  // API Platform Endpoints
+    EnvConf = {
       AMS: 'http://wdev.code-api-att.com:8080/RTC/v1',
       F6UAT: 'https://api-stage.mars.bf.sl.attcompute.com/RTC/v1',
       PROD: 'https://api.att.com/RTC/v1'
@@ -34,7 +34,7 @@ if (!ATT) {
     if (!key) {
       key = 'AMS'; // default to AMS endpoints
     }
-    appConfig.RTCEndpoint = BFConf[key];
+    appConfig.RTCEndpoint = EnvConf[key];
     appConfig.DHSEndpoint = DHSConf;
 
     app.appConfig = appConfig;
