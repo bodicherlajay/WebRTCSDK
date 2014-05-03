@@ -28,7 +28,7 @@ describe('SignalingService', function () {
     expect(ATT.UserMediaService.startCall).to.be.an('function');
   });
 
-  it('should set local stream', function () {
+  xit('should set local stream', function () {
     var createObjectURLStub = sinon.stub(URL, "createObjectURL", function () {
     });
 
