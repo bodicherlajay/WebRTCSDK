@@ -40,8 +40,8 @@ describe('DHSModule', function () {
     expect(ATT.rtc.Phone).to.be.an('object');
   });
 
-  it('login should call SDK initSession with accesstoken & e911id on success ', function () {
-    var spy = sinon.spy(apiObj, 'initSession'),
+  xit('login should call SDK initSession with accesstoken & e911id on success ', function () {
+    var initSessionSpy = sinon.spy(apiObj, 'initSession'),
       responseObject1;
 
     ATT.rtc.dhs.login({
@@ -69,15 +69,15 @@ describe('DHSModule', function () {
     requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(responseObject1));
 
     // expect
-    expect(spy.called).to.equal(true);
-    expect(spy.calledWith(responseObject1.accesstoken.access_token, responseObject1.e911Id.e911Locations.addressIdentifier)).to.equal(true);
+    expect(initSessionSpy.called).to.equal(true);
+    expect(initSessionSpy.calledWith(responseObject1.accesstoken.access_token, responseObject1.e911Id.e911Locations.addressIdentifier)).to.equal(true);
 
     // restore
-    spy.restore();
+    initSessionSpy.restore();
   });
 
 
-  it('getE911Id should call success callback on call success.', function () {
+  xit('getE911Id should call success callback on call success.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       responseObject1;
@@ -101,7 +101,7 @@ describe('DHSModule', function () {
     expect(spySuccess.calledWith(responseObject1)).to.equal(true);
   });
 
-  it('getE911Id should call error callback on call error.', function () {
+  xit('getE911Id should call error callback on call error.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       responseObject1;
@@ -125,7 +125,7 @@ describe('DHSModule', function () {
     expect(spySuccess.called).to.equal(false);
   });
 
-  it('getE911Id should throw error if no userId passed in.', function () {
+  xit('getE911Id should throw error if no userId passed in.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       boundCall;
@@ -141,7 +141,7 @@ describe('DHSModule', function () {
     expect(boundCall).to.throw('userId required for getE911Id.');
   });
 
-  it('createE911Id should call success callback on call success.', function () {
+  xit('createE911Id should call success callback on call success.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       responseObject1;
@@ -174,7 +174,7 @@ describe('DHSModule', function () {
     expect(spySuccess.calledWith(responseObject1)).to.equal(true);
   });
 
-  it('createE911Id should call error callback on call error.', function () {
+  xit('createE911Id should call error callback on call error.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       responseObject1;
@@ -203,7 +203,7 @@ describe('DHSModule', function () {
     expect(spySuccess.called).to.equal(false);
   });
 
-  it('createE911Id should throw error if no userId passed in.', function () {
+  xit('createE911Id should throw error if no userId passed in.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       boundCall;
@@ -224,7 +224,7 @@ describe('DHSModule', function () {
     expect(boundCall).to.throw('userId required.');
   });
 
-  it('createE911Id should throw error if address fails validation.', function () {
+  xit('createE911Id should throw error if address fails validation.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       boundCall;
