@@ -14,6 +14,8 @@ function checkout_branch {
     git checkout -b $BRANCH_NAME
   fi
 
+  # Remove untracked files
+  git clean -f
   # Include Git revision in a textfile
   git rev-parse --short HEAD > git_hash
 
@@ -33,6 +35,8 @@ function git_latest {
   git reset --hard $BRANCH_NAME
   git pull origin $BRANCH_NAME
   git submodule update --recursive
+  # Remove untracked files
+  git clean -f
   cd $START_DIR
 }
 
@@ -77,13 +81,16 @@ else # Create the directories
   # Download the Sample Application
   echo "Getting sources for the Sample App+SDK..."
   git clone $GITHUB_ROOT/$SAMPLE_DIR.git $SDKKIT_DIR/$SAMPLE_DIR --recursive
+  # checkout develop branch
   checkout_branch $SDKKIT_DIR/$SAMPLE_DIR develop
 
 fi
 
 # Place Initial Setup Readme in at the root
 README=$SDKKIT_DIR/$SAMPLE_DIR/sdk-sample-apps/README-0.md
-mv $README $SDKKIT_DIR/README.md
+if [[ -f $README ]]; then
+  mv $README $SDKKIT_DIR/README.md
+fi
 
 # Zip package
 cd $DIST_DIR
