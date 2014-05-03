@@ -9,7 +9,7 @@
   * We don't need to test that every method works, because we already have unit tests for each module.
   */
 
-describe.only('Entry Point: SDK Assembly Integration Tests', function () {
+describe('Entry Point: SDK Assembly Integration Tests', function () {
   'use strict';
 
   describe('ATT.errorDictionary', function () {
