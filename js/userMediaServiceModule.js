@@ -54,6 +54,7 @@ logger = logMgr.getLogger('userMediaServiceModule');
       } else {
         this.localStream = stream;
         videoStreamEl = this.localVideoElement;
+        videoStreamEl.setAttribute('muted', '');
       }
 
       if (videoStreamEl) {
@@ -64,10 +65,10 @@ logger = logMgr.getLogger('userMediaServiceModule');
 
     /**
     *
-    * Stop Stream
+    * Removes all media streams from the DOM
     */
     stopStream: function () {
-      logger.logTrace('stopping stream...');
+      logger.logTrace('stopping streams...');
       if (this.localVideoElement) {
         this.localVideoElement.src = '';
       }
