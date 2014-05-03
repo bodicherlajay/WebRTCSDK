@@ -47,6 +47,12 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
 
     modificationCount: 2,
 
+    configureICEServers: function (servers) {
+      this.pcConfig.iceServers = servers;
+    },
+    getICEServers: function () {
+      return this.pcConfig.iceServers;
+    },
     /**
     *
     * Create a Peer Connection
