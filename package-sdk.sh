@@ -111,7 +111,8 @@ fi
 # Zip package
 cd $DIST_DIR
 # Clear old packages
-rm *.zip
+find . -name "*.zip" -exec rm -rf {} \;
+
 # Ignore: .git, OSX tmp files, node_modules, tests
 echo "Generating Zip package..."
 zip -r webrtc-sdk-kit_$(date +%s).zip webrtc-sdk-kit -x *.git* *.DS_Store* *node_modules* *test*
