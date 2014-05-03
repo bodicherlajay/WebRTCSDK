@@ -48,7 +48,6 @@ if (!ATT) {
 
     console.log('New Event: ', JSON.stringify(event));
 
-    console.log('dispatching event: ' + event.state);
     dispatchEventToHandler(event);
 
     // set current event on the session
