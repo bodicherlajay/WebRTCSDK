@@ -1,6 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT: true, cmgmt*/
-'use strict';
 
 /** This is going to be the main entry/assembly module for the SDK 
  * By the time this file is loaded, all other modules have already 
@@ -19,6 +18,7 @@
 */
 
 (function () {
+  'use strict';
   var callManager, sessionContext, eventChannelConfig;
 
   // Fail if ATT is not defined. Everything else depends on it.
@@ -33,7 +33,7 @@
   ATT.configure();
 
   // Create an Error Dictionary
-  if (undefined === ATT.createErrorDictionary) {
+  if (undefined === ATT.utils.createErrorDictionary) {
     console.log('ATT doesn\'t have a method to create an error dictionary.');
     return;
   }

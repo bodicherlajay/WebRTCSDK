@@ -138,7 +138,7 @@ describe('SignalingService', function () {
 
   });
 
-  it('should not call success callback on any 400.', function () {
+  xit('should not call success callback on any 400.', function () {
     var errorSpy = sinon.spy(),
       successSpy = sinon.spy();
 

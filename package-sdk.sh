@@ -7,14 +7,20 @@ function checkout_branch {
   BRANCH_NAME=$2
   cd $REPO_DIR
   echo "Checking out branch $BRANCH_NAME ... at $REPO_DIR"
-  if [ `git branch --list $BRANCH_NAME` ]
+  if git branch --list "$BRANCH_NAME";
   then
     git checkout $BRANCH_NAME
   else
-    git checkout -b $BRANCH_NAME
+    git checkout -b $BRANCH_NAME --track  origin/$BRANCH_NAME
   fi
 
+  # Update submodules
+  git submodule update --init --recursive
+
+  # Remove untracked files
+  git clean -f
   # Include Git revision in a textfile
+  echo "Adding git_hash file at $REPO_DIR/git_hash ..."
   git rev-parse --short HEAD > git_hash
 
   # return to original dir
@@ -23,16 +29,28 @@ function checkout_branch {
 }
 
 # pull the latest changes from repo $1 for branch ($2)
-# assumes we're already in a git repo
 function git_latest {
   START_DIR=$(pwd)
   REPO_DIR=$1
   BRANCH_NAME=$2
   echo "Getting the latest from branch: $BRANCH_NAME at $REPO_DIR..."
   cd $REPO_DIR
-  git reset --hard $BRANCH_NAME
+  # Clean dir before anything else
+  git reset --hard HEAD
+  if git branch --list "$BRANCH_NAME";
+  then
+    git checkout $BRANCH_NAME
+  else
+    git checkout -b $BRANCH_NAME --track  origin/$BRANCH_NAME
+  fi
+
   git pull origin $BRANCH_NAME
   git submodule update --recursive
+  # Remove untracked files
+  git clean -f
+  # Include Git revision in a textfile
+  echo "Adding git_hash file at $REPO_DIR ..."
+  git rev-parse --short HEAD > git_hash
   cd $START_DIR
 }
 
@@ -47,8 +65,7 @@ SDKKIT_DIR=$DIST_DIR/webrtc-sdk-kit
 # Github base URL
 GITHUB_ROOT=git@github.com:attdevsupport
 
-# Create dist dir
-echo "Creating dist/ dir at $DIST_DIR"
+# Create dist dir if it doesn't exist
 mkdir -p $DIST_DIR
 
 # Clear previous package & an create ouput dir
@@ -60,7 +77,7 @@ if [[ -d $SDKKIT_DIR ]]; then
     git_latest $SDKKIT_DIR/$DHS_DIR develop
   fi
   if [[ -d $SDKKIT_DIR/$SAMPLE_DIR ]]; then
-    git_latest $SDKKIT_DIR/$DHS_DIR develop
+    git_latest $SDKKIT_DIR/$SAMPLE_DIR develop
   fi
 else # Create the directories
 
@@ -77,17 +94,22 @@ else # Create the directories
   # Download the Sample Application
   echo "Getting sources for the Sample App+SDK..."
   git clone $GITHUB_ROOT/$SAMPLE_DIR.git $SDKKIT_DIR/$SAMPLE_DIR --recursive
+  # checkout develop branch
   checkout_branch $SDKKIT_DIR/$SAMPLE_DIR develop
 
 fi
 
 # Place Initial Setup Readme in at the root
-README=$SDKKIT_DIR/$SAMPLE_DIR/sdk-sample-apps/README-0.md
-mv $README $SDKKIT_DIR/README.md
+README=$SDKKIT_DIR/$SAMPLE_DIR/README-0.md
+if [[ -f $README ]]; then
+  echo "Moving $README  to... $SDKKIT_DIR/README.md"
+  mv $README $SDKKIT_DIR/README.md
+fi
 
 # Zip package
 cd $DIST_DIR
 # Ignore: .git, OSX tmp files, node_modules, tests
+echo "Generating Zip package..."
 zip -r webrtc-sdk-kit_$(date +%s).zip webrtc-sdk-kit -x *.git* *.DS_Store* *node_modules* *test*
 cd $START_DIR
 

@@ -258,6 +258,7 @@ if (!Env) {
 
   // The SDK public API.
   function configurePublicAPIs() {
+    resourceManager.addPublicMethod('init', initSession);
     resourceManager.addPublicMethod('login', login);
     resourceManager.addPublicMethod('logout', logout);
     resourceManager.addPublicMethod('dial', dial);
