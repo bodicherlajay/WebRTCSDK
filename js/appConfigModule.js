@@ -18,7 +18,7 @@ if (!ATT) {
   // BF Endpoints
     BFConf = {
       AMS: 'http://wdev.code-api-att.com:8080/RTC/v1',
-      F6UAT: 'https://auth.api-stage.mars.bf.sl.attcompute.com/RTC/v1',
+      F6UAT: 'https://api-stage.mars.bf.sl.attcompute.com/RTC/v1',
       PROD: 'https://api.att.com/RTC/v1'
     },
 
