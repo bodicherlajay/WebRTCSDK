@@ -64,9 +64,13 @@ DIST_DIR=$(pwd)/dist
 mkdir -p $DIST_DIR
 
 echo "Starting packaging at... $DIST_DIR ..."
-DHS_DIR=webrtc-dhs
-SAMPLE_DIR=webrtc-sample-apps
+DHS_DIR_NAME=webrtc-dhs
+SAMPLE_DIR_NAME=webrtc-sample-apps
 SDKKIT_DIR=$DIST_DIR/webrtc-sdk-kit
+SAMPLE_DIR=$SDKKIT_DIR/$SAMPLE_DIR_NAME
+DHS_DIR=$SDKKIT_DIR/$DHS_DIR_NAME
+SDK_SAMPLE_APPS_DIR=$SAMPLE_DIR/sdk-sample-apps
+
 # Github base URL
 GITHUB_ROOT=git@github.com:attdevsupport
 
@@ -75,11 +79,11 @@ echo "Cleaning WebRTC SDK Kit dir at $SDKKIT_DIR"
 if [[ -d $SDKKIT_DIR ]]; then
   # if the repos already exist, just update to the latest commit
   # on the develop branch
-  if [[ -d $SDKKIT_DIR/$DHS_DIR ]]; then
-    git_latest $SDKKIT_DIR/$DHS_DIR develop
+  if [[ -d $DHS_DIR ]]; then
+    git_latest $DHS_DIR develop
   fi
-  if [[ -d $SDKKIT_DIR/$SAMPLE_DIR ]]; then
-    git_latest $SDKKIT_DIR/$SAMPLE_DIR develop
+  if [[ -d $SAMPLE_DIR ]]; then
+    git_latest $SAMPLE_DIR develop
   fi
 else # Create the directories
 
@@ -89,20 +93,29 @@ else # Create the directories
 
   # Download DHS component
   echo "Getting sources for the DHS..."
-  git clone $GITHUB_ROOT/$DHS_DIR.git $SDKKIT_DIR/$DHS_DIR --recursive
+  git clone $GITHUB_ROOT/$DHS_DIR_NAME.git $DHS_DIR --recursive
   # checkout develop branch
-  checkout_branch $SDKKIT_DIR/$DHS_DIR develop
+  checkout_branch $DHS_DIR develop
 
   # Download the Sample Application
   echo "Getting sources for the Sample App+SDK..."
-  git clone $GITHUB_ROOT/$SAMPLE_DIR.git $SDKKIT_DIR/$SAMPLE_DIR --recursive
+  git clone $GITHUB_ROOT/$SAMPLE_DIR_NAME.git $SAMPLE_DIR --recursive
   # checkout develop branch
-  checkout_branch $SDKKIT_DIR/$SAMPLE_DIR develop
+  checkout_branch $SAMPLE_DIR develop
 
 fi
 
+# run npm install in appropriate in dhs & sample apps
+echo "Installing NPM packages at $DHS_DIR"
+cd $DHS_DIR
+sudo npm install
+
+echo "Installing NPM packages at $SDK_SAMPLE_APPS_DIR"
+cd $SDK_SAMPLE_APPS_DIR
+sudo npm install
+
 # Place Initial Setup Readme in at the root
-README=$SDKKIT_DIR/$SAMPLE_DIR/README-0.md
+README=$SAMPLE_DIR/README-0.md
 if [[ -f $README ]]; then
   echo "Moving $README  to... $SDKKIT_DIR/README.md"
   mv $README $SDKKIT_DIR/README.md
