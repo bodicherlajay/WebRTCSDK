@@ -15,37 +15,7 @@ if (!module) {
 
 var RESTClient = (function () {
   'use strict';
-
-  function parse_headers(input) {
-    var result = [], headers_list = input.split('\n'), index, line, k, v;
-    for (index in headers_list)
-        {
-        if (headers_list.hasOwnProperty(index)) {
-          line = headers_list[index];
-          k = line.split(':')[0];
-          v = line.split(':').slice(1).join(':').trim();
-          if (k.length > 0) {
-            result[k] = v;
-          }
-        }
-      }
-    return result;
-  }
-  //print response details for success
-  function show_response(r) {
-    console.log('---------Response--------------');
-    console.log(r.getResponseStatus() + ' ' + r.responseText);
-    console.log('=========headers=======');
-    console.log(r.headers);
-    var ph = parse_headers(r.headers);
-    if (ph.Location !== 'undefined') {
-      console.log("Location: " + ph.Location);
-    }
-    console.log('=========body==========');
-    console.log(r.responseText);
-  }
-
-  var defaultErrorHandler,
+  var logger, defaultErrorHandler,
     errorHandler,
     RESTClient =  function (config) {
       this.config =  ATT.utils.extend({}, config);
@@ -61,6 +31,34 @@ var RESTClient = (function () {
     },
     error = function (errorCallback) {
       errorCallback.call(this, this.responseText);
+    },
+    parse_headers =  function (input) {
+      var result = [], headers_list = input.split('\n'), index, line, key, value;
+      for (index in headers_list)
+        {
+          if (headers_list.hasOwnProperty(index)) {
+            line = headers_list[index];
+            key = line.split(':')[0];
+            value = line.split(':').slice(1).join(':').trim();
+            if (key.length > 0) {
+              result[key] = value;
+            }
+          }
+        }
+      return result;
+    },
+    //print response details for success
+    show_response =  function (response) {
+      logger.log('---------Response--------------');
+      logger.log(response.getResponseStatus() + ' ' + response.responseText);
+      logger.log('=========headers=======');
+      logger.log(response.headers);
+      var ph = parse_headers(response.headers);
+      if (ph.Location !== 'undefined') {
+        logger.log("Location: " + ph.Location);
+      }
+      logger.log('=========body==========');
+      logger.log(response.responseText);
     },
     success = function (successCallback) {
       // private methods
@@ -92,12 +90,14 @@ var RESTClient = (function () {
         successCallback.call(xhr, responseCopy);
       }
     };
+  //Inject logger
+  function setLogger(lgr) {
+    logger = lgr;
+  }
+
   //print request details
   function showRequest(method, url, headers, body) {
-    var logMgr = ATT.logManager.getInstance(), logger, key, reqBody = JSON.stringify(body);
-    //TODO this configuration need to move outside this function
-    logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-    logger = logMgr.getLogger('RESTClient');
+    var key, reqBody = JSON.stringify(body);
     logger.logDebug('---------Request---------------');
     logger.logDebug(method + ' ' + url + ' HTTP/1.1');
     logger.logDebug('=========headers=======');
@@ -130,10 +130,12 @@ var RESTClient = (function () {
 
     // error callback
     xhr.onerror = function () {
-      error(config.error);
-      //throw new Error('Network error occurred in REST client.');
+      if (config.error !== 'undefined') {
+        error(config.error);
+      } else {
+        throw new Error('Network error occurred in REST client.');
+      }
     };
-
 
     // on timeout callback
     xhr.ontimeout = config.ontimeout;
@@ -169,7 +171,20 @@ var RESTClient = (function () {
     });
   }
 
+  function setupDefaultLogger() {
+    try {
+      if (logger === 'undefined') {
+        var logMgr = ATT.logManager.getInstance();
+        logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+        setLogger(logMgr.getLogger('RESTClient'));
+      }
+    } catch (e) {
+      console.log("Unable to configure default logger");
+    }
+  }
+
   addHttpMethodsToPrototype(['get', 'post', 'delete']);
+  setupDefaultLogger();
 
   //exports for nodejs, derived from underscore.js
   if (exports !== 'undefined') {
