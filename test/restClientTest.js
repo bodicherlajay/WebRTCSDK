@@ -3,7 +3,7 @@
 afterEach:true, it:true, xit:true, sinon:true, assert:true, expect:true, done:true */
 'use strict';
 
-describe('Rest Client', function () {
+describe.only('Rest Client', function () {
 
   // globals used in each test.
   var errorSpy,

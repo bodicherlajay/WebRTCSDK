@@ -1,41 +1,20 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true*/
+
 /**
  * Abstraction of the XMLHttpRequest used in the SDK and DHS.
  */
 
 var RESTClient = (function () {
   'use strict';
-
-  function parse_headers(input){
-    var result=[];
-    var headers_list=input.split('\n');
-    for(var index in headers_list){
-      var line=headers_list[index], k, v;
-      k = line.split(':')[0];
-      v = line.split(':').slice(1).join(':').trim();
-      if(k.length>0){
-        result[k]=v;
-      }
-    }
-    return result;
-  }
-  //print response details for success
-  function show_response(r){
-    console.log('---------Response--------------');
-    console.log(r.getResponseStatus()+' '+ r.responseText);
-    console.log('=========headers=======');
-    console.log(r.headers);
-    var ph = parse_headers(r.headers);
-    if (ph['Location']) {
-      console.log("Location: " + ph['Location']);
-    }
-    console.log('=========body==========');
-    console.log(r.responseText);
-  }
-
-  var defaultErrorHandler,
+  var logger = null, defaultErrorHandler,
     errorHandler,
+    typeofModule = typeof module,
+    typeofexports = typeof exports,
+    //Inject logger
+    setLogger = function (lgr) {
+      logger = lgr;
+    },
     RESTClient =  function (config) {
       this.config =  ATT.utils.extend({}, config);
         // default ajax configuration
@@ -50,6 +29,64 @@ var RESTClient = (function () {
     },
     error = function (errorCallback) {
       errorCallback.call(this, this.responseText);
+    },
+    parse_headers =  function (input) {
+      var result = [], headers_list = input.split('\n'), index, line, key, value;
+      for (index in headers_list)
+        {
+          if (headers_list.hasOwnProperty(index)) {
+            line = headers_list[index];
+            key = line.split(':')[0];
+            value = line.split(':').slice(1).join(':').trim();
+            if (key.length > 0) {
+              result[key] = value;
+            }
+          }
+        }
+      return result;
+    },
+    //print request details
+    showRequest =  function (method, url, headers, body) {
+      var reqLogger, key, reqBody = JSON.stringify(body), logMgr = ATT.logManager.getInstance();
+      try {
+        logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+        reqLogger = logMgr.getLogger('RESTClient');
+      } catch (e) {
+        console.log("Unable to configure request logger" + e);
+      }
+      reqLogger.logDebug('---------Request---------------');
+      reqLogger.logDebug(method + ' ' + url + ' HTTP/1.1');
+      reqLogger.logDebug('=========headers=======');
+      for (key in headers) {
+        if (headers.hasOwnProperty(key)) {
+          reqLogger.logDebug(key + ': ' + headers[key]);
+        }
+      }
+      reqLogger.logDebug('=========body==========');
+      if (reqBody !== undefined) {
+        reqLogger.logDebug(reqBody);
+      }
+    },
+    //print response details for success
+    show_response =  function (response) {
+      var resLogger, logMgr = ATT.logManager.getInstance(), ph;
+      try {
+        logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+        resLogger = logMgr.getLogger('RESTClient');
+      } catch (e) {
+        console.log("Unable to configure default logger" + e);
+      }
+
+      resLogger.logDebug('---------Response--------------');
+      resLogger.logDebug(response.getResponseStatus() + ' ' + response.responseText);
+      resLogger.logDebug('=========headers=======');
+      resLogger.logDebug(response.headers);
+      ph = parse_headers(response.headers);
+      if (ph.Location !== 'undefined') {
+        resLogger.logDebug("Location: " + ph.Location);
+      }
+      resLogger.logDebug('=========body==========');
+      resLogger.logDebug(response.responseText);
     },
     success = function (successCallback) {
       // private methods
@@ -70,7 +107,7 @@ var RESTClient = (function () {
           }
         },
         responseCopy = ATT.utils.extend({}, responseObject);
-        show_response(responseCopy);
+      show_response(responseCopy);
       if (xhr.status >= 400 && xhr.status <= 599) {
         if (typeof errorHandler === 'function') {
           errorHandler.call(xhr, responseCopy);
@@ -81,25 +118,7 @@ var RESTClient = (function () {
         successCallback.call(xhr, responseCopy);
       }
     };
-  //print request details
-  function showRequest(method, url, headers, body) {
-    var logMgr = ATT.logManager.getInstance(), logger, key, reqBody = JSON.stringify(body);
-    //TODO this configuration need to move outside this function
-    logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-    logger = logMgr.getLogger('RESTClient');
-    logger.logDebug('---------Request---------------');
-    logger.logDebug(method + ' ' + url + ' HTTP/1.1');
-    logger.logDebug('=========headers=======');
-    for (key in headers) {
-      if (headers.hasOwnProperty(key)) {
-        logger.logDebug(key + ': ' + headers[key]);
-      }
-    }
-    logger.logDebug('=========body==========');
-    if (body !== undefined) {
-      logger.logDebug(body);
-    }
-  }
+
 
   // public methods
   RESTClient.prototype.ajax = function () {
@@ -107,7 +126,10 @@ var RESTClient = (function () {
       xhr = new XMLHttpRequest(),
       data = config.data && JSON.stringify(config.data),
       header;
-
+    if (!logger) {
+      console.log("Using console logger for debugging");
+      setLogger(null);
+    }
     // timeout
     xhr.timeout = config.timeout;
 
@@ -119,9 +141,12 @@ var RESTClient = (function () {
 
     // error callback
     xhr.onerror = function () {
-      throw new Error('Network error occurred in REST client.');
+      if (config.error !== 'undefined') {
+        error(config.error);
+      } else {
+        throw new Error('Network error occurred in REST client.');
+      }
     };
-
 
     // on timeout callback
     xhr.ontimeout = config.ontimeout;
@@ -143,8 +168,7 @@ var RESTClient = (function () {
    * Default ajax error handler.
    */
   defaultErrorHandler = function (obj) {
-    console.log(obj);
-    //throw new Error('RESTClient error handler triggered!');
+    throw new Error('RESTClient error handler triggered!' + obj);
   };
 
   function addHttpMethodsToPrototype(methods) {
@@ -160,18 +184,11 @@ var RESTClient = (function () {
   addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
   //exports for nodejs, derived from underscore.js
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
+  if (typeofexports !== 'undefined') {
+    if (typeofModule !== 'undefined' && module.exports) {
       exports = module.exports = RESTClient;
     }
     exports.RESTClient = RESTClient;
-  }
-
-  //AMD exports
-  if (typeof define === 'function' && define.amd) {
-    define('RESTClient', [], function() {
-      return RESTClient;
-    });
   }
 
   RESTClient.prototype.getConfig = function () {

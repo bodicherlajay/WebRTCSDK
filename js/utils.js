@@ -84,7 +84,5 @@ if (!ATT) {
     if (typeofModule !== 'undefined' && module.exports) {
       exports = module.exports = ATT.utils;
     }
-    //exports.ATT.utils = ATT.utils;
   }
-
 }(ATT));
