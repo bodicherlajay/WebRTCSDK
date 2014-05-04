@@ -1,18 +1,16 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global error:true, ATT:true*/
 
-/** ErrorDictinaryModule will add a factory method to create Error Dictionaries.
- *  @param app The application to add the method to.
+/** ErrorDictinaryModule will extend ATT with a factory method to create Error Dictionaries.
+ *  @param ATT The variable to extend.
+ *  @note Assumes ATT is already defined.
  */
-(function () {
+(function (ATT) {
   "use strict";
-  // identify the environment
-  var typeOfWindow = typeof window,
-    rootEnv = 'undefined' === typeOfWindow ? module.exports : window;
 
   /** Will create an error object using a prototype and will append
    *  all the properties in `spec`
-   *  @param spec An object specifying the properties that need to be added to 
+   *  @param spec An object specifying the properties that need to be added to
    *  the error object.
    */
   function createErrorWith(spec, utils) {
@@ -85,15 +83,9 @@
 
   // Export method to ATT.utils.createErrorDictionary
   // will add a factory method to create an eventDictionary
-
-  // Check if the global ATT var has been created
-  if (undefined === rootEnv.ATT) { // ATT has not been defined
-    ATT = { utils: {}}; // define global ATT variable
-    console.log('Creating emtpy function ATT.utils.extend');
-    ATT.utils.extend = function (target, source) {
-      console.log(source);
-      return target;
-    };
+  if (undefined === ATT.utils) {
+    ATT.utils = {};
   }
   ATT.utils.createErrorDictionary = createErrorDictionary;
-}());
+
+}(ATT));
