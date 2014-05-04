@@ -108,10 +108,4 @@ if (!exports) {
     exports['ATT.logManager'] = app.logManager;
   }
 
-  //AMD exports
-  if (define === 'function' && define.amd) {
-    define('LogManager', [], function () {
-      return app.logManager;
-    });
-  }
 }(ATT || {}));

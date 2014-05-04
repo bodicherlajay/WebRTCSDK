@@ -1,8 +1,17 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, define:true, exports:true */
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
+/*global ATT:true*/
+
 /**
  * Abstraction of the XMLHttpRequest used in the SDK and DHS.
  */
+
+if (!exports) {
+  var exports = {};
+}
+
+if (!module) {
+  var module = {};
+}
 
 var RESTClient = (function () {
   'use strict';
@@ -168,13 +177,6 @@ var RESTClient = (function () {
       exports = module.exports = RESTClient;
     }
     exports.RESTClient = RESTClient;
-  }
-
-  //AMD exports
-  if (define === 'function' && define.amd) {
-    define('RESTClient', [], function () {
-      return RESTClient;
-    });
   }
 
   RESTClient.prototype.getConfig = function () {
