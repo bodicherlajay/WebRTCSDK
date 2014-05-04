@@ -74,4 +74,12 @@
     inherits: inherits
   };
 
+  //exports for nodejs, derived from underscore.js
+  if (exports !== 'undefined') {
+    if (module !== 'undefined' && module.exports) {
+      exports = module.exports = ATT.utils;
+    }
+    exports['ATT.utils'] = ATT.utils;
+  }
+
 }(ATT));
