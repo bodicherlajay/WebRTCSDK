@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true*/
+/*global ATT:true, define:true, exports:true */
 /**
  * Abstraction of the XMLHttpRequest used in the SDK and DHS.
  */
@@ -7,28 +7,30 @@
 var RESTClient = (function () {
   'use strict';
 
-  function parse_headers(input){
-    var result=[];
-    var headers_list=input.split('\n');
-    for(var index in headers_list){
-      var line=headers_list[index], k, v;
-      k = line.split(':')[0];
-      v = line.split(':').slice(1).join(':').trim();
-      if(k.length>0){
-        result[k]=v;
+  function parse_headers(input) {
+    var result = [], headers_list = input.split('\n'), index, line, k, v;
+    for (index in headers_list)
+        {
+        if (headers_list.hasOwnProperty(index)) {
+          line = headers_list[index];
+          k = line.split(':')[0];
+          v = line.split(':').slice(1).join(':').trim();
+          if (k.length > 0) {
+            result[k] = v;
+          }
+        }
       }
-    }
     return result;
   }
   //print response details for success
-  function show_response(r){
+  function show_response(r) {
     console.log('---------Response--------------');
-    console.log(r.getResponseStatus()+' '+ r.responseText);
+    console.log(r.getResponseStatus() + ' ' + r.responseText);
     console.log('=========headers=======');
     console.log(r.headers);
     var ph = parse_headers(r.headers);
-    if (ph['Location']) {
-      console.log("Location: " + ph['Location']);
+    if (ph.Location !== 'undefined') {
+      console.log("Location: " + ph.Location);
     }
     console.log('=========body==========');
     console.log(r.responseText);
@@ -70,7 +72,7 @@ var RESTClient = (function () {
           }
         },
         responseCopy = ATT.utils.extend({}, responseObject);
-        show_response(responseCopy);
+      show_response(responseCopy);
       if (xhr.status >= 400 && xhr.status <= 599) {
         if (typeof errorHandler === 'function') {
           errorHandler.call(xhr, responseCopy);
@@ -96,8 +98,8 @@ var RESTClient = (function () {
       }
     }
     logger.logDebug('=========body==========');
-    if (body !== undefined) {
-      logger.logDebug(body);
+    if (reqBody !== undefined) {
+      logger.logDebug(reqBody);
     }
   }
 
@@ -119,7 +121,8 @@ var RESTClient = (function () {
 
     // error callback
     xhr.onerror = function () {
-      throw new Error('Network error occurred in REST client.');
+      error(config.error);
+      //throw new Error('Network error occurred in REST client.');
     };
 
 
@@ -160,16 +163,16 @@ var RESTClient = (function () {
   addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
   //exports for nodejs, derived from underscore.js
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
+  if (exports !== 'undefined') {
+    if (module !== 'undefined' && module.exports) {
       exports = module.exports = RESTClient;
     }
     exports.RESTClient = RESTClient;
   }
 
   //AMD exports
-  if (typeof define === 'function' && define.amd) {
-    define('RESTClient', [], function() {
+  if (define === 'function' && define.amd) {
+    define('RESTClient', [], function () {
       return RESTClient;
     });
   }
