@@ -1,13 +1,12 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global error:true, ATT:true*/
 
-/** ErrorDictinaryModule will extend ATT with a factory method to create Error Dictionaries.
- *  @param ATT The variable to extend.
- *  @note Assumes ATT is already defined.
+/** ErrorDictinaryModule will extend ATT.utils with a factory method to create Error Dictionaries.
+ *  @warning Assumes ATT.utils is already defined.
  */
-(function (ATT) {
-  "use strict";
 
+(function () {
+  "use strict";
+  var typeofWindow, typeofModule;
   /** Will create an error object using a prototype and will append
    *  all the properties in `spec`
    *  @param spec An object specifying the properties that need to be added to
@@ -81,11 +80,21 @@
     };
   }
 
-  // Export method to ATT.utils.createErrorDictionary
-  // will add a factory method to create an eventDictionary
-  if (undefined === ATT.utils) {
-    ATT.utils = {};
+  // Export to NodeJS
+  typeofModule = typeof module;
+  if ('undefined' !== typeofModule && module.exports) {
+    module.exports = createErrorDictionary;
+  } else {
+    console.debug('Not exporting to NodeJS...');
   }
-  ATT.utils.createErrorDictionary = createErrorDictionary;
 
-}(ATT));
+  // Export to the Browser
+  typeofWindow = typeof window;
+  if ('undefined' !== typeofWindow) {
+    if (undefined !== window.ATT && window.ATT.utils) {
+      window.ATT.utils.createErrorDictionary = createErrorDictionary;
+    } else {
+      console.error('Not exporting... window.ATT.utils is:' + window.ATT.utils);
+    }
+  }
+}());
