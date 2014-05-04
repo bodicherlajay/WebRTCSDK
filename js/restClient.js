@@ -4,8 +4,11 @@
 /**
  * Abstraction of the XMLHttpRequest used in the SDK and DHS.
  */
-
-var RESTClient = (function () {
+//required for nodejs
+if (!ATT) {
+  var ATT = {};
+}
+var RESTClient = (function (mainModule) {
   'use strict';
   var logger = null, defaultErrorHandler,
     errorHandler,
@@ -16,7 +19,7 @@ var RESTClient = (function () {
       logger = lgr;
     },
     RESTClient =  function (config) {
-      this.config =  ATT.utils.extend({}, config);
+      this.config =  mainModule.utils.extend({}, config);
         // default ajax configuration
       this.config.async = this.config.async || true;
       this.config.timeout = this.config.timeout || 10000;
@@ -106,7 +109,7 @@ var RESTClient = (function () {
             return xhr.status;
           }
         },
-        responseCopy = ATT.utils.extend({}, responseObject);
+        responseCopy = mainModule.utils.extend({}, responseObject);
       show_response(responseCopy);
       if (xhr.status >= 400 && xhr.status <= 599) {
         if (typeof errorHandler === 'function') {
@@ -175,7 +178,7 @@ var RESTClient = (function () {
     methods.forEach(function (method) {
       RESTClient.prototype[method] = function (config) {
         config.method = method;
-        config.headers = ATT.utils.extend(this.config.headers, config.headers);
+        config.headers = mainModule.utils.extend(this.config.headers, config.headers);
         this.ajax(config);
       };
     });
@@ -186,13 +189,13 @@ var RESTClient = (function () {
   //exports for nodejs, derived from underscore.js
   if (typeofexports !== 'undefined') {
     if (typeofModule !== 'undefined' && module.exports) {
-      exports = module.exports = RESTClient;
+      exports = module.exports['ATT.RESTClient'] = RESTClient;
     }
-    exports.RESTClient = RESTClient;
+    exports['ATT.RESTClient'] = RESTClient;
   }
 
   RESTClient.prototype.getConfig = function () {
     return this.config;
   };
   return RESTClient;
-}());
+}(ATT));

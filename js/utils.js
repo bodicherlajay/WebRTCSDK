@@ -3,10 +3,11 @@
 /** Will export utilities, therefore nothing in here depends on anything else.
  * Will create `ATT.utils` namespace
  */
+//required for nodejs
 if (!ATT) {
   var ATT = {};
 }
-(function (ATT) {
+(function (mainModule) {
   'use strict';
 
   /**
@@ -25,7 +26,7 @@ if (!ATT) {
      * @param source
      * @returns {*} destination
      */
-      extend = function (destination, source) {
+    extend = function (destination, source) {
       var property;
       for (property in source) {
         // if the source has `property` as a `direct property`
@@ -58,7 +59,7 @@ if (!ATT) {
      Places namespaces on root object.  s is dot separated string of names adding to root.
      The namespace created is returned.
      */
-      createNamespace = function (root, s) {
+    createNamespace = function (root, s) {
       var names = s.split('.'),
         parent = root;
 
@@ -72,7 +73,7 @@ if (!ATT) {
     typeofExports = typeof exports;
 
   // create `utils` namespace under `ATT`
-  ATT.utils = {
+  mainModule.utils = {
     hasWebRTC: hasWebRTC,
     createNamespace: createNamespace,
     extend: extend,
@@ -82,7 +83,9 @@ if (!ATT) {
   //exports for nodejs, derived from underscore.js
   if (typeofExports !== 'undefined') {
     if (typeofModule !== 'undefined' && module.exports) {
-      exports = module.exports = ATT.utils;
+      //exports = module.exports['ATT'] = mainModule;
+      exports = module.exports['ATT.utils'] = mainModule.utils;
     }
+    exports['ATT.utils'] = mainModule.utils;
   }
 }(ATT));
