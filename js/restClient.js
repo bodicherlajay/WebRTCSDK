@@ -5,18 +5,12 @@
  * Abstraction of the XMLHttpRequest used in the SDK and DHS.
  */
 
-if (!exports) {
-  var exports = {};
-}
-
-if (!module) {
-  var module = {};
-}
-
 var RESTClient = (function () {
   'use strict';
   var logger = null, defaultErrorHandler,
     errorHandler,
+    typeofModule = typeof module,
+    typeofexports = typeof exports,
     //Inject logger
     setLogger = function (lgr) {
       logger = lgr;
@@ -190,8 +184,8 @@ var RESTClient = (function () {
   addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
   //exports for nodejs, derived from underscore.js
-  if (exports !== 'undefined') {
-    if (module !== 'undefined' && module.exports) {
+  if (typeofexports !== 'undefined') {
+    if (typeofModule !== 'undefined' && module.exports) {
       exports = module.exports = RESTClient;
     }
     exports.RESTClient = RESTClient;

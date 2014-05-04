@@ -64,7 +64,9 @@
         parent = parent[name];
       });
       return parent;
-    };
+    },
+    typeofModule = typeof module,
+    typeofExports = typeof exports;
 
   // create `utils` namespace under `ATT`
   ATT.utils = {
@@ -75,9 +77,9 @@
   };
 
   //exports for nodejs, derived from underscore.js
-  if (exports !== 'undefined') {
-    if (module !== 'undefined' && module.exports) {
-      exports = module.exports = ATT.utils;
+  if (typeofExports !== 'undefined') {
+    if (typeofModule !== 'undefined' && module.exports) {
+      exports = module.exports['ATT.utils'] = ATT.utils;
     }
     exports['ATT.utils'] = ATT.utils;
   }
