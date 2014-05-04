@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150, unparam:true*/
-/*global error:true, ATT:true*/
+/*global error:true, ATT:true, define:true */
 if (!exports) {
   var exports = {};
 }
@@ -101,18 +101,17 @@ if (!exports) {
   app.logManager = module;
 
   //exports for nodejs, derived from underscore.js
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
+  if (exports !== 'undefined') {
+    if (module !== 'undefined' && module.exports) {
       exports = module.exports = app.logManager;
     }
-    //exports.ATT.logManager = app.logManager;
+    exports['ATT.logManager'] = app.logManager;
   }
 
   //AMD exports
-  if (typeof define === 'function' && define.amd) {
-    define('LogManager', [], function() {
+  if (define === 'function' && define.amd) {
+    define('LogManager', [], function () {
       return app.logManager;
     });
   }
-
 }(ATT || {}));
