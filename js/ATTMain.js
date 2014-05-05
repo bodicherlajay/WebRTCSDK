@@ -19,21 +19,25 @@
 
 (function () {
   'use strict';
+  var logMgr = ATT.logManager.getInstance(),
+    logger;
 
+  logMgr.configureLogger('ATTMain', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
+  logger = logMgr.getLogger('ATTMain');
   // Fail if ATT is not defined. Everything else depends on it.
   if (undefined === window.ATT) {
-    console.log('ATT is not defined.');
+    logger.logTrace('ATT is not defined.');
     return;
   }
   if (!ATT.configure) {
-    console.log('ATT doesn\'t have a configure method defined.');
+    logger.logTrace('ATT doesn\'t have a configure method defined.');
     return;
   }
   ATT.configure();
 
   // Create an Error Dictionary
   if (undefined === ATT.utils.createErrorDictionary) {
-    console.log('ATT doesn\'t have a method to create an error dictionary.');
+    logger.logTrace('ATT doesn\'t have a method to create an error dictionary.');
     return;
   }
   ATT.errorDictionary = ATT.utils.createErrorDictionary({
