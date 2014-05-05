@@ -175,13 +175,12 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
         // call the user media service to show stream
         UserMediaService.showStream('local', this.localStream);
 
-        //todo: switch constraints to dynamic
-        logger.logTrace('creating offer for outgoing call -- audio video hard-coded to true still');
+        logger.logTrace('creating offer for outgoing call');
         this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
           logger.logTrace('Create offer failed');
         }, {'mandatory': {
-          'OfferToReceiveAudio': true,
-          'OfferToReceiveVideo': true
+          'OfferToReceiveAudio': this.mediaConstraints.audio,
+          'OfferToReceiveVideo': this.mediaConstraints.video
         }});
 
       } else if (callState === rm.SessionState.INCOMING_CALL) {
@@ -204,9 +203,9 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
         this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function () {
           logger.logWarning('Create answer failed.');
         }, {
-          'mandatory' : { //todo: switch constraints to dynamic
-            'OfferToReceiveAudio' : true,
-            'OfferToReceiveVideo' : true
+          'mandatory' : {
+            'OfferToReceiveAudio': this.mediaConstraints.audio,
+            'OfferToReceiveVideo': this.mediaConstraints.video
           }
         });
       } else {
@@ -230,7 +229,7 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
       this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
         logger.logTrace('Set Remote Description Success');
       }, function (err) {
-        // hack for difference between FF and Chrome
+        // difference between FF and Chrome
         if (typeof err === 'object') {
           err = err.message;
         }
@@ -311,20 +310,18 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
       var sdp = this.localDescription;
 
       logger.logTrace('holding call', sdp);
+
       // adjust SDP for hold request
       sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
-
       ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
-
       this.modificationCount = this.modificationCount + 1;
-
       ATT.sdpFilter.getInstance().incrementSDP(sdp, this.modificationCount);
 
-      logger.logTrace('sending modified sdp', sdp);
       // set local description
       this.peerConnection.setLocalDescription(sdp);
 
       // send hold signal...
+      logger.logTrace('sending modified sdp', sdp);
       SignalingService.sendHoldCall({
         sdp : sdp.sdp
       });
@@ -339,20 +336,18 @@ logger = logMgr.getLogger('peerConnectionServiceModule');
       var sdp = this.localDescription;
 
       logger.logTrace('resuming call', sdp);
+
       // adjust SDP for resume request
       sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
-
       ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
-
       this.modificationCount = this.modificationCount + 1;
-
       ATT.sdpFilter.getInstance().incrementSDP(sdp, this.modificationCount);
 
       // set local description
       this.peerConnection.setLocalDescription(sdp);
 
-      logger.logTrace('sending modified sdp', sdp);
       // send resume signal...
+      logger.logTrace('sending modified sdp', sdp);
       SignalingService.sendResumeCall({
         sdp : sdp.sdp
       });
