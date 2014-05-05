@@ -6,14 +6,14 @@
  * Dependencies:  adapter.js
  */
 
-var logMgr = ATT.logManager.getInstance(), logger;
-logMgr.configureLogger('peerConnectionServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-logger = logMgr.getLogger('peerConnectionServiceModule');
-
 (function (app, UserMediaService, SignalingService) {
   'use strict';
 
-  var module = {
+  var module, logMgr = ATT.logManager.getInstance(), logger = null;
+  logMgr.configureLogger('PeerConnectionService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
+  logger = logMgr.getLogger('PeerConnectionService');
+
+  module = {
 
     mediaConstraints: {},
 
