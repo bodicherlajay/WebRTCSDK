@@ -107,7 +107,7 @@ cmgmt = (function () {
 
   CreateSession = function (config) {
     session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
-    logger.logTrace('creating session with id: ' + config.sessionId);
+    logger.logTrace('creating session with token: ' + config.token);
     session_context.setCallState(SessionState.SDK_READY);
   };
 
