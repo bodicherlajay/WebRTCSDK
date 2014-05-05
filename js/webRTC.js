@@ -31,17 +31,19 @@ if (!Env) {
    * @param {String} e911Id
    */
   function initSession(accessToken, e911Id) {
+    logger.logTrace('Initializing SDK session with token and optional e911 id');
     if (!accessToken) {
       return logger.logError('Cannot init SDK session, no access token');
     }
     if (!e911Id) {
-      return logger.logError('Cannot init SDK session, no e911 id');
+      logger.logWarning('Initializing SDK session without e911 id');
     }
     // Set the access Token in the callManager.
     callManager.CreateSession({
       token: accessToken,
       e911Id: e911Id
     });
+    logger.logTrace('Initialed SDK session with token and optional e911 id');
   }
 
   /**
@@ -57,8 +59,11 @@ if (!Env) {
     if (!config.data) {
       return logger.logError('Cannot login to web rtc, no configuration data');
     }
+    var token = config.data.token.access_token,
+      e911Id = config.data.e911Id ? config.data.e911Id.e911Locations.addressIdentifier: null;
 
-    initSession(config.data.token.access_token, config.data.e911Id.e911Locations.addressIdentifier);
+    // create new session with token and optional e911id
+    initSession(token, e911Id);
 
     var session = callManager.getSessionContext(),
       accessToken = session.getAccessToken(),
