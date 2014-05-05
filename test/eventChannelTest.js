@@ -75,7 +75,7 @@ describe('Event Channel', function () {
         eventChannel = ATT.utils.createEventChannel(channelConfig);
         eventChannel.startListening();
         expect(channelConfig.resourceManager.doOperation.called).to.equal(true);
-        expect(eventChannel.isListenning()).to.equal(true);
+        expect(eventChannel.isListening()).to.equal(true);
       });
       xit('should call publisher.publish  given a event (long polling)', function () {
         channelConfig.resourceManager.doOperation = sinon.spy();
@@ -86,7 +86,7 @@ describe('Event Channel', function () {
         eventChannel.startListening = sinon.spy();
         // call the success callback for this event channel
         messages.responseText = JSON.stringify(response);
-//        channelConfig.success(messages);
+        //channelConfig.success(messages);
         expect(channelConfig.publisher.publish.called).to.equal(true);
         expect(channelConfig.resourceManager.doOperation.called).to.equal(true);
       });
