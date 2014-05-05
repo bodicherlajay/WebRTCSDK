@@ -6,12 +6,12 @@ if (!ATT) {
   var ATT = {};
 }
 
-var logMgr = ATT.logManager.getInstance(), logger;
-logMgr.configureLogger('SDPFilterModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-logger = logMgr.getLogger('SDPFilterModule');
-
 (function (mainModule) {
   'use strict';
+
+  var module = {}, instance, init, logMgr = ATT.logManager.getInstance(), logger = null;
+  logMgr.configureLogger('SDPFilterModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
+  logger = logMgr.getLogger('SDPFilterModule');
 
   /**
   * Remote an attribute from SDP
@@ -136,7 +136,7 @@ logger = logMgr.getLogger('SDPFilterModule');
     return description;
   }
 
-  var module = {}, instance, init = function () {
+  init = function () {
     return {
       processChromeSDPOffer : function (description) {
         return fixSDP(description);

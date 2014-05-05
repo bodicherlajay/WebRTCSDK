@@ -122,6 +122,7 @@ if (!Env) {
 
       // Set event channel configuration
       // All parameters are required
+      // Also, see appConfigModule
       channelConfig = {
         accessToken: session.getAccessToken(),
         endpoint: ATT.appConfig.eventChannelConfig.endpoint,
