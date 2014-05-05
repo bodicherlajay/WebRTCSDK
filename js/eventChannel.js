@@ -29,7 +29,7 @@
     // to appease the JSLint gods
     var channel = {}, // the channel to be configured and returned.
       httpConfig = {},
-      isListenning = false,
+      isListening = false,
       ws, // socket to use in case we're using WebSockets
       locationForSocket,
       eventData;
@@ -73,8 +73,11 @@
     function onSuccess(response) {
       if ('/events' === channelConfig.endpoint) { // long-polling
         processMessages(response);
-        // continue polling
-        channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+
+        if (isListening) {
+          // continue polling
+          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+        }
         return;
       }
 
@@ -96,11 +99,13 @@
 
     function onTimeOut() {
       // try again
-      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+      if (isListening) {
+        channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+      }
     }
 
     function startListening() {
-      isListenning = true;
+      isListening = true;
       httpConfig = {
         params: {
           url: {sessionId: channelConfig.sessionId, endpoint: channelConfig.endpoint},
@@ -116,11 +121,16 @@
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
+    function stopListening() {
+      isListening = false;
+    }
+
     channel = {
-      isListenning: function () {
-        return isListenning;
+      isListening: function () {
+        return isListening;
       },
-      startListening: startListening
+      startListening: startListening,
+      stopListening: stopListening
     };
 
     return channel;

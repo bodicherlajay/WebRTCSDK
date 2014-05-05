@@ -21,7 +21,8 @@ if (!ATT) {
       F6UAT: 'https://api-stage.mars.bf.sl.attcompute.com/RTC/v1',
       PROD: 'https://api.att.com/RTC/v1'
     },
-
+    logMgr = ATT.logManager.getInstance(),
+    logger,
     appConfig = {
       RTCEndpoint: null,
       DHSEndpoint: null,
@@ -34,10 +35,17 @@ if (!ATT) {
         method: 'get'
       }
     };
+  logMgr.configureLogger('appConfigModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
+  logger = logMgr.getLogger('appConfigModule');
 
   function configure(key) {
     if (!key) {
       key = 'AMS'; // default to AMS endpoints
+      logger.logTrace('Default ENVIRNOMENT set by SDK : ' + key);
+      logger.logTrace('url: ' + EnvConf[key]);
+    } else {
+      logger.logTrace('User Configured ENVIRNOMENT: ' + key);
+      logger.logTrace('url: ' + EnvConf[key]);
     }
     appConfig.RTCEndpoint = EnvConf[key];
     appConfig.DHSEndpoint = DHSConf;
