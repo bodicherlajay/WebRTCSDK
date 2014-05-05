@@ -184,7 +184,7 @@ if (!ATT) {
         * @memberof ATT.APIConfigs
         */
         getEvents: {
-          method: 'get',
+          method: ATT.appConfig.eventChannelConfig.method,
           formatters: {
             url: function (params) {
               return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + params.endpoint;
