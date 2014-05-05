@@ -19,7 +19,6 @@
 
 (function () {
   'use strict';
-  var callManager, sessionContext, eventChannelConfig;
 
   // Fail if ATT is not defined. Everything else depends on it.
   if (undefined === window.ATT) {
