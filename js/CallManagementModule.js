@@ -146,15 +146,6 @@ cmgmt = (function () {
       };
     };
 
-  // Call.reject = function () {
-  // };
-
-  // Call.transfer = function () {
-  // };
-
-  // Call.move = function () {
-  // };
-
   Call.hold = function () {
     if (ATT.PeerConnectionService.peerConnection
         && session_context.getCurrentCallId()) {
@@ -194,37 +185,6 @@ cmgmt = (function () {
     logger.logTrace('unmuting call');
     ATT.UserMediaService.unmuteStream();
   };
-
-  // Call.removeVideo = function () {
-  // };
-
-  // Call.addVideo = function () {
-  // };
-
-  // Call.transferTo = function () {
-  // };
-
-  // Call.sendDTMF = function () {
-  // };
-
-  // Call.onAddStream = function (stream, event) {
-  //   console.log(stream);
-  //   console.log(event);
-  // };
-  // Call.onConnected = function (event) {
-  //   console.log(event);
-  // };
-  // Call.onDisconnected = function (event) {
-  //   console.log(event);
-  // };
-  // Call.onError = function (error, event) {
-  //   console.log(error);
-  //   console.log(event);
-  // };
-  // Call.onStatus = function (status, event) {
-  //   console.log(status);
-  //   console.log(event);
-  // };
 
   module.getInstance = function () {
     if (!instance) {
