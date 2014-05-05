@@ -60,14 +60,15 @@ if (!Env) {
       return logger.logError('Cannot login to web rtc, no configuration data');
     }
     var token = config.data.token.access_token,
-      e911Id = config.data.e911Id ? config.data.e911Id.e911Locations.addressIdentifier: null;
+      e911Id = config.data.e911Id ? config.data.e911Id.e911Locations.addressIdentifier : null,
+      session;
 
     // create new session with token and optional e911id
     initSession(token, e911Id);
 
-    var session = callManager.getSessionContext(),
-      accessToken = session.getAccessToken(),
-      e911Id = session.getE911Id();
+    session = callManager.getSessionContext();
+    token = session.getAccessToken();
+    e911Id = session.getE911Id();
 
     // todo: need to decide if callbacks should be mandatory
     if (typeof config.onSessionReady !== 'function') {
@@ -91,7 +92,7 @@ if (!Env) {
       },
       params: {
         headers: {
-          'Authorization': accessToken,
+          'Authorization': token,
           'x-e911Id': e911Id || ""
         }
       },
