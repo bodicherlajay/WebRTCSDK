@@ -46,28 +46,28 @@ if (!ATT) {
   * @param {Object} sdp
   * @returns {Object} sdp
   */
-  function modifySDPAttribute(originalValue, newValue, sdp) {
-    logger.logTrace('modifySDPAttribute');
-    logger.logTrace('original value', originalValue);
-    logger.logTrace('new value', newValue);
-    logger.logTrace('sdp', sdp);
-    var index = 0,
-      attribute = 'a=' + originalValue + '\r\n',
-      prefix,
-      rest;
+  // function modifySDPAttribute(originalValue, newValue, sdp) {
+  //   logger.logTrace('modifySDPAttribute');
+  //   logger.logTrace('original value', originalValue);
+  //   logger.logTrace('new value', newValue);
+  //   logger.logTrace('sdp', sdp);
+  //   var index = 0,
+  //     attribute = 'a=' + originalValue + '\r\n',
+  //     prefix,
+  //     rest;
 
-    while (index > -1) {
-      index = sdp.indexOf(attribute, index);
+  //   while (index > -1) {
+  //     index = sdp.indexOf(attribute, index);
 
-      if (index > 0) {
-        prefix = sdp.substr(0, index);
-        rest = sdp.substr(index + attribute.length);
-        sdp = prefix + 'a=' + newValue + '\n' + rest;
-      }
-    }
-    logger.logTrace('modified sdp', sdp);
-    return sdp;
-  }
+  //     if (index > 0) {
+  //       prefix = sdp.substr(0, index);
+  //       rest = sdp.substr(index + attribute.length);
+  //       sdp = prefix + 'a=' + newValue + '\n' + rest;
+  //     }
+  //   }
+  //   logger.logTrace('modified sdp', sdp);
+  //   return sdp;
+  // }
 
   /**
   * Function to increment SDP
@@ -141,11 +141,11 @@ if (!ATT) {
       processChromeSDPOffer : function (description) {
         return fixSDP(description);
       },
-      modifySDPAttribute: function (attributeValue, newValue, sdp) {
-        return modifySDPAttribute(attributeValue, newValue, sdp);
-      },
       incrementSDP: function (sdp, modCount) {
         return incrementSDP(sdp, modCount);
+      },
+      removeSDPAttribute : function (attributeValue, sdp) {
+        return removeSDPAttribute(attributeValue, sdp);
       }
     };
   };
