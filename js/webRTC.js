@@ -147,7 +147,8 @@ if (!Env) {
   };
 
   function logout(config) {
-    logger.logTrace('Logging out...');
+    ATT.UserMediaService.stopStream();
+    ATT.utils.eventChannel.stopListening();
     var session = callManager.getSessionContext(),
       dataForDeleteWebRTCSession,
       successCallback = function (statusCode) {
@@ -181,6 +182,7 @@ if (!Env) {
       }
     };
 
+    logger.logTrace('Logging out...');
     // Call BF to delete WebRTC Session.
     resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
   }
