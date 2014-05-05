@@ -5,12 +5,12 @@ if (!ATT) {
   var ATT = {};
 }
 
-var logMgr = ATT.logManager.getInstance(), logger;
-logMgr.configureLogger('signalingServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-logger = logMgr.getLogger('signalingServiceModule');
-
 (function (app) {
   'use strict';
+
+  var logMgr = ATT.logManager.getInstance(), logger = null;
+  logMgr.configureLogger('SignalingService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
+  logger = logMgr.getLogger('SignalingService');
 
   var resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance();
