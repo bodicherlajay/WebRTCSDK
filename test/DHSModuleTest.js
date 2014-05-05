@@ -70,7 +70,8 @@ describe('DHSModule', function () {
 
     // expect
     expect(initSessionSpy.called).to.equal(true);
-    expect(initSessionSpy.calledWith(responseObject1.accesstoken.access_token, responseObject1.e911Id.e911Locations.addressIdentifier)).to.equal(true);
+    expect(initSessionSpy.calledWith(responseObject1.accesstoken.access_token,
+      responseObject1.e911Id.e911Locations.addressIdentifier)).to.equal(true);
 
     // restore
     initSessionSpy.restore();
