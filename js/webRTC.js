@@ -120,12 +120,8 @@ if (!Env) {
         }
       });
 
-      /**
-       * Call BF to create event chanenel
-       * @param {Boolean} true/false Use Long Polling?
-       * todo: publish session ready event after event channel is created
-       * todo: move the login callback code to the publish
-       */
+      // Set event channel configuration
+      // All parameters are required
       channelConfig = {
         accessToken: session.getAccessToken(),
         endpoint: ATT.appConfig.eventChannelConfig.endpoint,
