@@ -5,14 +5,14 @@ if (!ATT) {
   var ATT = {};
 }
 
-var logMgr = ATT.logManager.getInstance(), logger;
-logMgr.configureLogger('userMediaServiceModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-logger = logMgr.getLogger('userMediaServiceModule');
-
 (function (app) {
   'use strict';
 
-  var module = {
+  var module, logMgr = ATT.logManager.getInstance(), logger = null;
+  logMgr.configureLogger('UserMediaService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
+  logger = logMgr.getLogger('UserMediaService');
+
+  module = {
 
     localVideoElement: null,
 
