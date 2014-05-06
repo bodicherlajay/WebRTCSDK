@@ -3,10 +3,10 @@
 /** Will export utilities, therefore nothing in here depends on anything else.
  * Will create `ATT.utils` namespace
  */
-//required for nodejs
 if (!ATT) {
   var ATT = {};
 }
+
 (function (mainModule) {
   'use strict';
 
@@ -68,9 +68,7 @@ if (!ATT) {
         parent = parent[name];
       });
       return parent;
-    },
-    typeofModule = typeof module,
-    typeofExports = typeof exports;
+    };
 
   // create `utils` namespace under `ATT`
   mainModule.utils = {
@@ -80,12 +78,4 @@ if (!ATT) {
     inherits: inherits
   };
 
-  //exports for nodejs, derived from underscore.js
-  if (typeofExports !== 'undefined') {
-    if (typeofModule !== 'undefined' && module.exports) {
-      //exports = module.exports['ATT'] = mainModule;
-      exports = module.exports['ATT.utils'] = mainModule.utils;
-    }
-    exports['ATT.utils'] = mainModule.utils;
-  }
-}(ATT));
+}(typeof exports === 'function' ? exports : ATT));
