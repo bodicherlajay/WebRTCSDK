@@ -86,7 +86,7 @@ var RESTClient = (function (mainModule) {
       resLogger.logDebug('=========headers=======');
       resLogger.logDebug(response.headers);
       ph = parse_headers(response.headers);
-      if (ph.Location !== 'undefined') {
+      if (ph.Location !== undefined) {
         resLogger.logDebug("Location: " + ph.Location);
       }
       resLogger.logDebug('=========body==========');
