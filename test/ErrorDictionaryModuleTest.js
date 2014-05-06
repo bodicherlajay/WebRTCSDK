@@ -62,7 +62,7 @@ describe('ErrorDictionaryModule', function () {
     describe('Error Object', function () {
       it('should generate correct ID', function () {
         var err = errorDictionary.createError(errorSpec);
-        expect(err.getId()).to.equal('RTC00000Create Session400SVC0002');
+        expect(err.getId()).to.equal('00000');
       });
 
       it('should format error messages properly', function () {

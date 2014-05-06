@@ -14,6 +14,7 @@
     //onCallResume,
     onCallEnded,
     onCallError,
+    onError,
     eventRegistry = {};
 
   function createEventRegistry(sessionContext) {
@@ -74,6 +75,12 @@
     onCallError = function (evt) {
       if (callbacks.onCallError) {
         callbacks.onCallError(evt);
+      }
+    };
+
+    onError = function (evt) {
+      if (callbacks.onError) {
+        callbacks.onError(evt);
       }
     };
 
