@@ -107,7 +107,7 @@ cmgmt = (function () {
 
   CreateSession = function (config) {
     session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
-    logger.logTrace('creating session with id: ' + config.sessionId);
+    logger.logTrace('creating session with token: ' + config.token);
     session_context.setCallState(SessionState.SDK_READY);
   };
 
@@ -117,7 +117,9 @@ cmgmt = (function () {
     session_context.setCallState(SessionState.OUTGOING_CALL);
     session_context.setUICallbacks(config.success);
     logger.logTrace('creating outgoing call', 'to: ' + config.to + ', constraints: ' + config.mediaConstraints);
-    ATT.UserMediaService.startCall(config);
+    if (config.success) {
+      ATT.UserMediaService.startCall(config);
+    }
   };
 
   CreateIncomingCall = function (config) {
@@ -127,7 +129,9 @@ cmgmt = (function () {
     session_context.setCallState(SessionState.INCOMING_CALL);
     session_context.setUICallbacks(config.success);
     logger.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
-    ATT.UserMediaService.startCall(config);
+    if (config.success) {
+      ATT.UserMediaService.startCall(config);
+    }
   };
 
   init = function () {

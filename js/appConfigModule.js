@@ -49,8 +49,15 @@ if (!ATT) {
         logger.logTrace('url: ' + EnvConf[key]);
       }
       appConfig.RTCEndpoint = EnvConf[key];
-      appConfig.DHSEndpoint = DHSConf;
-
+      if (!key) {
+        key = 'AMS'; // default to AMS endpoints
+        logger.logInfo('Default ENVIRNOMENT set by SDK : ' + key);
+        logger.logInfo('url: ' + EnvConf[key]);
+      } else {
+        logger.logInfo('User Configured ENVIRNOMENT: ' + key);
+        logger.logInfo('url: ' + EnvConf[key]);
+      }
+      appConfig.RTCEndpoint = EnvConf[key];
       app.appConfig = appConfig;
 
       // configure rest APIs now

@@ -69,5 +69,6 @@ if (!ATT) {
   mainModule.SessionEvents = Object.freeze(module.SessionEvents);
   mainModule.CallStatus = Object.freeze(module.CallStatus);
   mainModule.RTCCallEvents = Object.freeze(module.RTCCallEvents);
+  mainModule.MediaTypes = Object.freeze(module.MediaTypes);
 
 }(ATT || {}));

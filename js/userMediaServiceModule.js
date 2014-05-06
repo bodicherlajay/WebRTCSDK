@@ -77,9 +77,11 @@ if (!ATT) {
       }
       if (this.localStream) {
         this.localStream.stop();
+        this.localStream = null;
       }
       if (this.remoteStream) {
         this.remoteStream.stop();
+        this.remoteStream = null;
       }
     },
 
