@@ -22,7 +22,8 @@ if (!ATT) {
 
   module.SessionEvents = {
     RTC_SESSION_CREATED: 0,
-    RTC_SESSION_DELETED: 1
+    RTC_SESSION_DELETED: 1,
+    RTC_SESSION_ERROR: 2
   };
 
   module.CallStatus = {
