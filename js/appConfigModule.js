@@ -41,11 +41,11 @@ if (!ATT) {
   function configure(key) {
     if (!key) {
       key = 'AMS'; // default to AMS endpoints
-      logger.logTrace('Default ENVIRNOMENT set by SDK : ' + key);
-      logger.logTrace('url: ' + EnvConf[key]);
+      logger.logInfo('Default ENVIRNOMENT set by SDK : ' + key);
+      logger.logInfo('url: ' + EnvConf[key]);
     } else {
-      logger.logTrace('User Configured ENVIRNOMENT: ' + key);
-      logger.logTrace('url: ' + EnvConf[key]);
+      logger.logInfo('User Configured ENVIRNOMENT: ' + key);
+      logger.logInfo('url: ' + EnvConf[key]);
     }
     appConfig.RTCEndpoint = EnvConf[key];
     appConfig.DHSEndpoint = DHSConf;
