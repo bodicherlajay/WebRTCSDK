@@ -1,4 +1,4 @@
-/*jslint indent:2*/
+/*jslint indent:2, todo:true*/
 module.exports = function (grunt) {
   'use strict';
   var karmaConfig = {
@@ -107,5 +107,6 @@ module.exports = function (grunt) {
   // grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
-  grunt.registerTask('default', ['karma:jenkins', 'jslint', 'concat', 'uglify']);
+  //TODO: uglify
+  grunt.registerTask('default', ['karma:jenkins', 'jslint', 'concat']);//, 'uglify']);
 };
