@@ -1,6 +1,6 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
- before: true, sinon: true, expect: true, xit: true, URL: true*/
+ before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
 describe('Call Management', function () {
   'use strict';
 
@@ -18,30 +18,109 @@ describe('Call Management', function () {
     expect(instance1).equals(instance2);
   });
 
-  it('should create Session Context', function () {
-    expect(sessionContext.getAccessToken()).equals("abcd");
-    expect(sessionContext.getE911Id()).equals("e911id");
-    expect(sessionContext.getSessionId()).equals("sessionId");
-    expect(sessionContext.getCallState()).equals(callmgr.SessionState.SDK_READY);
+  describe('Session Context', function () {
+    it('should create Session Context', function () {
+      expect(sessionContext.getAccessToken()).equals("abcd");
+      expect(sessionContext.getE911Id()).equals("e911id");
+      expect(sessionContext.getSessionId()).equals("sessionId");
+      expect(sessionContext.getCallState()).equals(callmgr.SessionState.SDK_READY);
+    });
   });
 
-  it('should create an outgoing call', function () {
-    var config = {
-      to: '1-800-foo',
-      mediaContraints: {audio: true, video: true}
-    };
-    callmgr.CreateOutgoingCall(config);
-    expect(sessionContext.getCallObject().callee()).to.equal(config.to);
-    expect(sessionContext.getCallState()).to.equal('Outgoing');
-  });
+  describe('Call Object', function () {
+    it('should return a valid Call Object', function () {
+      var config = {
+        caller: '1-800-call-junhua',
+        mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateIncomingCall(config);
+      expect(sessionContext.getCallObject()).to.be.an('object');
+    });
 
-  it('should create an incoming call', function () {
-    var config = {
-      mediaContraints: {audio: true, video: true}
-    };
-    sessionContext.setEventObject({event: {caller: '1-800-bar'}});
-    callmgr.CreateIncomingCall(config);
-    expect(sessionContext.getEventObject().event.caller).to.equal('1-800-bar');
-    expect(sessionContext.getCallState()).to.equal('Incoming');
+    it('should create an outgoing call', function () {
+      var config = {
+        to: '1-800-call-junhua',
+        mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateOutgoingCall(config);
+      expect(sessionContext.getCallObject()).to.be.an('object');
+      assert.isNull(sessionContext.getCallObject().caller());
+      expect(sessionContext.getCallObject().callee()).to.equal('1-800-call-junhua');
+      expect(sessionContext.getCallState()).to.equal('Outgoing');
+    });
+
+    it('should create an incoming call', function () {
+      var config = {
+        caller: '1-800-call-junhua',
+        mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateIncomingCall(config);
+      expect(sessionContext.getCallObject()).to.be.an('object');
+      assert.isNull(sessionContext.getCallObject().callee());
+      expect(sessionContext.getCallObject().caller()).to.equal('1-800-call-junhua');
+      expect(sessionContext.getCallState()).to.equal('Incoming');
+    });
+
+    it('should call ATT.PeerConnection.holdCall() if peer connection and callObject are defined', function () {
+      var config = {
+        to: '1-800-call-junhua',
+        mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateOutgoingCall(config);
+      ATT.PeerConnectionService.peerConnection = {foo: 'bar'};
+      ATT.PeerConnectionService.holdCall = sinon.spy();
+      callmgr.getSessionContext().getCallObject().hold();
+      expect(ATT.PeerConnectionService.holdCall.called).to.equal(true);
+    });
+
+    it('should call ATT.PeerConnection.resumeCall() if peer connection and callObject are defined', function () {
+      var config = {
+        to: '1-800-call-junhua',
+        mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateOutgoingCall(config);
+      ATT.PeerConnectionService.peerConnection = {foo: 'bar'};
+      ATT.PeerConnectionService.resumeCall = sinon.spy();
+      callmgr.getSessionContext().getCallObject().resume();
+      expect(ATT.PeerConnectionService.resumeCall.called).to.equal(true);
+    });
+
+    it('should call ATT.SignalingService.sendEndCall() if peer connection and callObject are defined', function () {
+      var config = {
+        to: '1-800-call-junhua',
+        mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateOutgoingCall(config);
+      ATT.PeerConnectionService.peerConnection = {foo: 'bar'};
+      ATT.SignalingService.sendEndCall = sinon.spy();
+      callmgr.getSessionContext().getCallObject().end();
+      expect(ATT.SignalingService.sendEndCall.called).to.equal(true);
+    });
+
+    it('should ATT.UserMediaService.muteStream() to mute the call', function () {
+      var Mute = ATT.UserMediaService.muteStream,
+        config = {
+          to: '1-800-call-junhua',
+          mediaContraints: {audio: true, video: true}
+        };
+      callmgr.CreateOutgoingCall(config);
+      ATT.UserMediaService.muteStream = sinon.spy();
+      callmgr.getSessionContext().getCallObject().mute();
+      expect(ATT.UserMediaService.muteStream.called).to.equal(true);
+      ATT.UserMediaService.muteStream = Mute;
+    });
+
+    it('should ATT.UserMediaService.unmuteStream() to unmute the call', function () {
+      var Unmute = ATT.UserMediaService.unmuteStream,
+        config = {
+          to: '1-800-call-junhua',
+          mediaContraints: {audio: true, video: true}
+        };
+      callmgr.CreateOutgoingCall(config);
+      ATT.UserMediaService.unmuteStream = sinon.spy();
+      callmgr.getSessionContext().getCallObject().unmute();
+      expect(ATT.UserMediaService.unmuteStream.called).to.equal(true);
+      ATT.UserMediaService.unmuteStream = Unmute;
+    });
   });
 });
