@@ -148,8 +148,16 @@ if (!Env) {
     }
   };
 
-  createWebRTCSessionError = function () {
-    logger.logError('createWebRTCSessionError');
+  createWebRTCSessionError = function (error) {
+    logger.logError('createWebRTCSessionError: ' + error);
+    var session = callManager.getSessionContext(),
+      sessionId = session.getSessionId();
+
+    // publish the UI callback for ready state
+    app.event.publish(sessionId + '.responseEvent', {
+      state: app.SessionEvents.RTC_SESSION_ERROR,
+      data: error
+    }); 
   };
 
   function logout(config) {
