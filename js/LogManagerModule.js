@@ -32,6 +32,12 @@
       level: function () {
         return level;
       },
+      logInfo: function (msg) {
+        if (msg === undefined || msg.length === 0) { return; }
+        if (level >= logManager.LOG_LEVEL.INFO) {
+          console.log('[INFO]' + msg);
+        }
+      },
       logDebug: function (msg) {
         if (msg === undefined || msg.length === 0) {return; }
         if (level >= logManager.LOG_LEVEL.DEBUG) {

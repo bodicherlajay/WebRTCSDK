@@ -201,5 +201,5 @@ var RESTClient = (function (mainModule) {
   if ('undefined' !== typeofWindow && ATT) {
     ATT.RESTClient = RESTClient;
   }
-
+  return RESTClient;
 }(ATT));
