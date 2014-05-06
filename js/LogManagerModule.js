@@ -53,7 +53,7 @@ if (!exports) {
     //todo file logger
     configureLogger = function (moduleName, type, level) {
       var clogger = loggersCollection[moduleName];
-      if (clogger === 'undefined') {
+      if (clogger !== 'undefined' && clogger.level === level) {
         throw new Error('Logger exists, Can not create the logger specified');
       }
       if (type === module.LOGGER_TYPE.CONSOLE) {
