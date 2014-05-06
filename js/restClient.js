@@ -146,7 +146,7 @@ var RESTClient = (function (mainModule) {
     // error callback
     xhr.onerror = function () {
       if (config.error !== 'undefined') {
-        error(config.error);
+        error.call(this, config.error);
       } else {
         throw new Error('Network error occurred in REST client.');
       }
