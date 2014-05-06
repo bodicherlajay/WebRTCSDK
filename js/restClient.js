@@ -4,16 +4,15 @@
 /**
  * Abstraction of the XMLHttpRequest used in the SDK and DHS.
  */
-//required for nodejs
-if (!ATT) {
-  var ATT = {};
-}
+
 var RESTClient = (function (mainModule) {
   'use strict';
-  var logger = null, defaultErrorHandler,
-    errorHandler,
+  var typeofWindow = typeof window,
     typeofModule = typeof module,
-    typeofexports = typeof exports,
+    logger = null,
+    defaultErrorHandler,
+    errorHandler,
+    logMgr = ATT.logManager.getInstance(),
     //Inject logger
     setLogger = function (lgr) {
       logger = lgr;
@@ -23,12 +22,16 @@ var RESTClient = (function (mainModule) {
         // default ajax configuration
       this.config.async = this.config.async || true;
       this.config.timeout = this.config.timeout || 10000;
-      this.config.success = this.config.success || function () {};
+      this.config.success = this.config.success || function () { return; };
       this.config.error = this.config.error || defaultErrorHandler;
-      this.config.ontimeout = this.config.ontimeout || function () {};
+      this.config.ontimeout = this.config.ontimeout || function () { return; };
       this.config.headers = this.config.headers || {};
       this.config.headers['Content-Type'] = this.config.headers['Content-Type'] || 'application/json';
       this.config.headers.Accept = this.config.headers.Accept || 'application/json';
+
+      // set default logger
+      logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+      logger = logMgr.getLogger('RESTClient');
     },
     error = function (errorCallback) {
       errorCallback.call(this, this.responseText);
@@ -50,9 +53,8 @@ var RESTClient = (function (mainModule) {
     },
     //print request details
     showRequest =  function (method, url, headers, body) {
-      var reqLogger, key, reqBody = JSON.stringify(body), logMgr = ATT.logManager.getInstance();
+      var reqLogger, key, reqBody = JSON.stringify(body);
       try {
-        logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
         reqLogger = logMgr.getLogger('RESTClient');
       } catch (e) {
         console.log("Unable to configure request logger" + e);
@@ -72,9 +74,8 @@ var RESTClient = (function (mainModule) {
     },
     //print response details for success
     show_response =  function (response) {
-      var resLogger, logMgr = ATT.logManager.getInstance(), ph;
+      var resLogger, ph;
       try {
-        logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
         resLogger = logMgr.getLogger('RESTClient');
       } catch (e) {
         console.log("Unable to configure default logger" + e);
@@ -186,16 +187,19 @@ var RESTClient = (function (mainModule) {
 
   addHttpMethodsToPrototype(['get', 'post', 'delete']);
 
-  //exports for nodejs, derived from underscore.js
-  if (typeofexports !== 'undefined') {
-    if (typeofModule !== 'undefined' && module.exports) {
-      exports = module.exports['ATT.RESTClient'] = RESTClient;
-    }
-    exports['ATT.RESTClient'] = RESTClient;
-  }
-
   RESTClient.prototype.getConfig = function () {
     return this.config;
   };
-  return RESTClient;
+
+    //exports for nodejs
+  typeofModule = typeof module;
+  if (typeofModule !== 'undefined' && module.exports) {
+    module.exports = RESTClient;
+  }
+
+  // export to the browser
+  if ('undefined' !== typeofWindow && ATT) {
+    ATT.RESTClient = RESTClient;
+  }
+
 }(ATT));
