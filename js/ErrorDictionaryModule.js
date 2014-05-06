@@ -40,13 +40,11 @@
     // will add a `getId` method to `error`
     function addIdGetter(error) {
       error.getId = function () {
-        var errorID = error.moduleID + error.userErrorCode + error.operationName
-            + error.httpStatusCode + error.messageId;
+        var errorID = error.userErrorCode;
         return errorID;
       };
       return error;
     }
-
     newError = Object.create(prototypeError);
     // extend with the properties in the spec
     newError = utils.extend(newError, spec);
