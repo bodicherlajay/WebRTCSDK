@@ -17,12 +17,12 @@ cmgmt = (function () {
       caller: function () { return caller; },
       callee: function () { return callee; },
       mediaType: function () { return mediaType; },
-      setSDP: function (sdp) {
-        localSDP = sdp;
-      },
-      getSDP: function () {
-        return localSDP;
-      },
+      // setSDP: function (sdp) {
+      //   localSDP = sdp;
+      // },
+      // getSDP: function () {
+      //   return localSDP;
+      // },
       start: Call.start,
       hold: Call.hold,
       resume: Call.resume,
@@ -48,18 +48,18 @@ cmgmt = (function () {
     var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
       currentCallId, UICbks = {}, currentCall = null;
     return {
-      getCurrentCall: function () {
-        return currentCall;
-      },
-      setCurrentCall: function (callObj) {
-        currentCall = callObj;
-      },
-      getAccessToken: function () {
-        return accessToken;
-      },
-      setAccessToken: function (token) {
-        accessToken = token;
-      },
+      // getCurrentCall: function () {
+      //   return currentCall;
+      // },
+      // setCurrentCall: function (callObj) {
+      //   currentCall = callObj;
+      // },
+      // getAccessToken: function () {
+      //   return accessToken;
+      // },
+      // setAccessToken: function (token) {
+      //   accessToken = token;
+      // },
       getE911Id: function () {
         return e911Id;
       },
