@@ -39,21 +39,32 @@ if (!ATT) {
   logger = logMgr.getLogger('appConfigModule');
 
   function configure(key) {
-    if (!key) {
-      key = 'AMS'; // default to AMS endpoints
-      logger.logInfo('Default ENVIRNOMENT set by SDK : ' + key);
-      logger.logInfo('url: ' + EnvConf[key]);
-    } else {
-      logger.logInfo('User Configured ENVIRNOMENT: ' + key);
-      logger.logInfo('url: ' + EnvConf[key]);
+    try {
+      if (!key) {
+        key = 'AMS'; // default to AMS endpoints
+        logger.logTrace('Default ENVIRNOMENT set by SDK : ' + key);
+        logger.logTrace('url: ' + EnvConf[key]);
+      } else {
+        logger.logTrace('User Configured ENVIRNOMENT: ' + key);
+        logger.logTrace('url: ' + EnvConf[key]);
+      }
+      appConfig.RTCEndpoint = EnvConf[key];
+      if (!key) {
+        key = 'AMS'; // default to AMS endpoints
+        logger.logInfo('Default ENVIRNOMENT set by SDK : ' + key);
+        logger.logInfo('url: ' + EnvConf[key]);
+      } else {
+        logger.logInfo('User Configured ENVIRNOMENT: ' + key);
+        logger.logInfo('url: ' + EnvConf[key]);
+      }
+      appConfig.RTCEndpoint = EnvConf[key];
+      app.appConfig = appConfig;
+
+      // configure rest APIs now
+      app.configueAPIs();
+    } catch (e) {
+      //logger.logError(app.errorDictionary.getError());
     }
-    appConfig.RTCEndpoint = EnvConf[key];
-    appConfig.DHSEndpoint = DHSConf;
-
-    app.appConfig = appConfig;
-
-    // configure rest APIs now
-    app.configueAPIs();
 
     if (Env) {
       // configure resource manager to for SDK public APIs

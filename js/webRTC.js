@@ -2,6 +2,8 @@
 /*global ATT:true, RESTClient, Env, cmgmt */
 /**
  *  The WebRTC SDK. 
+ * @fileOverview Handles all the calls related to web rtc
+ * @namespace ATT.rtc.Phone
  */
 
 if (!ATT) {
@@ -26,7 +28,9 @@ if (!Env) {
   logger = logMgr.getLogger('WebRTC');
 
   /**
-   * Initialize the SDK with Oauth accessToken and e911Id
+   * Initializes SDK with Oauth access token and e911Id. E911Id is an optional parameter which is needed for ICMN and VTN customers
+   * @memberof ATT.rtc.Phone
+   * @function initSession
    * @param {String} accessToken
    * @param {String} e911Id
    */
@@ -47,9 +51,9 @@ if (!Env) {
   }
 
   /**
-   * SDK login will just create the webRTC session.  It requires
-   * both the e911Id and the oauth access token set in the call manager.
-   * @memberof WebRTC
+   * Used to establish webRTC session so that the user can place webRTC calls. 
+   * The service parameter indicates the desired service such as audio or video call
+   * @memberof ATT.rtc
    * @param {Object} data The required login form data from the UI.
    */
   function login(config) {
@@ -151,10 +155,15 @@ if (!Env) {
   createWebRTCSessionError = function (config, error) {
     logger.logError('Error creating web rtc session: ' + error);
     if (typeof config.onError === 'function') {
-      config.onError('Error creating web rtc session: ' + error);
+      config.onError('Error creating web rtc session: ' + ATT.errorDictionary.getError('SDK-10000'));
     }
   };
 
+ /**
+   * Logs out the user from webRTC session. When invoked webRTC session gets deleted
+   * @memberof ATT.rtc
+   * @param {Object} data The required login form data from the UI.
+   */
   function logout(config) {
     ATT.UserMediaService.stopStream();
     ATT.utils.eventChannel.stopListening();
@@ -197,8 +206,11 @@ if (!Env) {
   }
 
   /**
-   *
+   * Used to make outgoing call. This function takes five arguments: the destination(tel or sip uri), 
+   * html element id to display the local video/audio, html element id to display remote video,
+   * media constraints, configuration object with callback functions 
    * @param {Object} config Dial configuration object.
+   * @memberof ATT.rtc.Phone
    * @attribute {String} phoneNumber
    * @attribute {HTMLElement} localVideo
    * @attribute {HTMLElement} remoteVideo
@@ -213,8 +225,14 @@ if (!Env) {
   }
 
   /**
-   *
-   * @param {Object} config answer configuration object.
+   * When call arrives via an incoming call event, call can be answered by using this method
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} phoneNumber
+   * @attribute {HTMLElement} localVideo
+   * @attribute {HTMLElement} remoteVideo
+   * @attribute {Object} mediaConstraints
+   * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
    */
   function answer(config) {
     callManager.CreateIncomingCall(config);
@@ -224,21 +242,24 @@ if (!Env) {
   }
 
   /**
-  * Mute existing stream
+  * Mutes the local stream (video or audio)
+  * @memberof ATT.rtc.Phone
   */
   function mute() {
     callManager.getSessionContext().getCallObject().mute();
   }
 
   /**
-  * Unmute existing stream
+  * Unmutes the local stream
+  * @memberof ATT.rtc.Phone
   */
   function unmute() {
     callManager.getSessionContext().getCallObject().unmute();
   }
 
   /**
-  * Hold existing call
+  * Holds the current call and the other party gets notified through event channel
+  * @memberof ATT.rtc.Phone
   */
   function hold() {
     if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
@@ -247,7 +268,8 @@ if (!Env) {
   }
 
   /**
-  * Resume existing call
+  * Resumes the current call and the other party gets notified through event channel and the call resumes
+  * @memberof ATT.rtc.Phone
   */
   function resume() {
     if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
@@ -256,7 +278,8 @@ if (!Env) {
   }
 
   /**
-  * Hangup existing call
+  * Hangs up the current call
+  * @memberof ATT.rtc.Phone
   */
   function hangup() {
     if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
