@@ -78,4 +78,4 @@ if (!ATT) {
     inherits: inherits
   };
 
-}(typeof exports === 'function' ? exports : ATT));
+}(typeof exports === 'object' ? exports : ATT));
