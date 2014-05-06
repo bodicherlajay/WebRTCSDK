@@ -97,14 +97,14 @@ if (!Env) {
         }
       },
       success: createWebRTCSessionSuccess.bind(this, config),
-      error: createWebRTCSessionError
+      error: createWebRTCSessionError.bind(this, config)
     });
   }
 
   createWebRTCSessionSuccess = function (config, responseObject) {
     logger.logTrace('WebRTC Session created');
-    var sessionId,
-      session = callManager.getSessionContext(),
+    var session = callManager.getSessionContext(),
+      sessionId,
       channelConfig;
 
     sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
@@ -148,16 +148,11 @@ if (!Env) {
     }
   };
 
-  createWebRTCSessionError = function (error) {
-    logger.logError('createWebRTCSessionError: ' + error);
-    var session = callManager.getSessionContext(),
-      sessionId = session.getSessionId();
-
-    // publish the UI callback for ready state
-    app.event.publish(sessionId + '.responseEvent', {
-      state: app.SessionEvents.RTC_SESSION_ERROR,
-      data: error
-    }); 
+  createWebRTCSessionError = function (config, error) {
+    logger.logError('Error creating web rtc session: ' + error);
+    if (typeof config.onError === 'function') {
+      config.onError ('Error creating web rtc session: ' + error);
+    }
   };
 
   function logout(config) {
