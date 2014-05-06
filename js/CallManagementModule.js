@@ -123,12 +123,11 @@ cmgmt = (function () {
   };
 
   CreateIncomingCall = function (config) {
-    var event = session_context.getEventObject(),
-      call = new Call(event.caller, null, config.mediaConstraints);
+    var call = new Call(config.caller, null, config.mediaConstraints);
     session_context.setCallObject(call);
     session_context.setCallState(SessionState.INCOMING_CALL);
     session_context.setUICallbacks(config.success);
-    logger.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
+    logger.logTrace('creating incoming call', 'caller: ' + config.caller + ', constraints: ' + config.mediaConstraints);
     if (config.success) {
       ATT.UserMediaService.startCall(config);
     }
@@ -149,7 +148,7 @@ cmgmt = (function () {
 
   Call.hold = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCurrentCallId()) {
+        && session_context.getCallObject()) {
       logger.logTrace('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
@@ -159,7 +158,7 @@ cmgmt = (function () {
 
   Call.resume = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCurrentCallId()) {
+        && session_context.getCallObject()) {
       logger.logTrace('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
@@ -169,7 +168,7 @@ cmgmt = (function () {
 
   Call.hangup = function () {
     if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCurrentCallId()) {
+        && session_context.getCallObject()) {
       logger.logTrace('Hanging up...');
       ATT.SignalingService.sendEndCall();
     } else {
