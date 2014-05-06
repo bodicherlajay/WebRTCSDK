@@ -67,8 +67,8 @@ var RESTClient = (function (mainModule) {
           reqLogger.logDebug(key + ': ' + headers[key]);
         }
       }
-      reqLogger.logDebug('=========body==========');
       if (reqBody !== undefined) {
+        reqLogger.logDebug('=========body==========');
         reqLogger.logDebug(reqBody);
       }
     },
@@ -121,51 +121,90 @@ var RESTClient = (function (mainModule) {
       } else {
         successCallback.call(xhr, responseCopy);
       }
+    },
+    onError = function(errorCallback) {
+      var xhr = this,
+        responseObject = {
+          getJson: function () {
+            return JSON.parse(xhr.responseText);
+          },
+          getResponseHeader: function (key) {
+            return xhr.getResponseHeader(key);
+          },
+          responseText: xhr.responseText,
+          headers: xhr.getAllResponseHeaders(),
+          location: xhr.getResponseHeader('Location'),
+          statusText: xhr.statusText,
+          getResponseStatus: function () {
+            return xhr.status;
+          }
+        },
+        responseCopy = mainModule.utils.extend({}, responseObject);
+      show_response(responseCopy);
+      if (typeof errorHandler === 'function') {
+        errorHandler.call(xhr, responseCopy);
+      } else {
+        defaultErrorHandler.call(xhr, responseCopy);
+      }
     };
 
 
   // public methods
   RESTClient.prototype.ajax = function () {
-    var config = this.config,
-      xhr = new XMLHttpRequest(),
-      data = config.data && JSON.stringify(config.data),
-      header;
-    if (!logger) {
-      console.log("Using console logger for debugging");
-      setLogger(null);
-    }
-    // timeout
-    xhr.timeout = config.timeout;
+    var config = this.config;
+    try {
+      var xhr = new XMLHttpRequest(),
+        data = config.data && JSON.stringify(config.data),
+        header;
+      if (!logger) {
+        console.log("Using console logger for debugging");
+        setLogger(null);
+      }
+      // timeout
+      xhr.timeout = config.timeout;
 
-    // success callback
-    xhr.onload = success.bind(xhr, config.success);
+      // success callback
+      xhr.onload = success.bind(xhr, config.success);
 
-    // set up passed in error handler to be called if xhr status is in error.
-    errorHandler = config.error;
+      // set up passed in error handler to be called if xhr status is in error.
+      errorHandler = config.error;
 
-    // error callback
-    xhr.onerror = function () {
-      if (config.error !== 'undefined') {
-        error.call(this, config.error);
+      // error callback
+  /*
+      xhr.onerror = function () {
+        if (config.error !== 'undefined') {
+          error.call(this, config.error);
+        } else {
+          throw new Error('Network error occurred in REST client.');
+        }
+      };
+  */
+      xhr.onerror = error.bind(xhr,config.error);
+
+      // on timeout callback
+      xhr.ontimeout = config.ontimeout;
+
+      // open connection
+      xhr.open(config.method, config.url, config.async);
+
+      // optional headers from config
+      for (header in config.headers) {
+        if (config.headers.hasOwnProperty(header)) {
+          xhr.setRequestHeader(header, config.headers[header]);
+        }
+      }
+      showRequest(config.method, config.url, config.headers, data);
+      xhr.send(data);
+
+    } catch (ex) {
+      var errLogger = logMgr.getLogger('RESTClient');
+      errLogger.logError("XHR request failed, " + ex);
+      if (typeof errorHandler === 'function') {
+        errorHandler.call(xhr, ex);
       } else {
-        throw new Error('Network error occurred in REST client.');
-      }
-    };
-
-    // on timeout callback
-    xhr.ontimeout = config.ontimeout;
-
-    // open connection
-    xhr.open(config.method, config.url, config.async);
-
-    // optional headers from config
-    for (header in config.headers) {
-      if (config.headers.hasOwnProperty(header)) {
-        xhr.setRequestHeader(header, config.headers[header]);
+        defaultErrorHandler.call(xhr, ex);
       }
     }
-    showRequest(config.method, config.url, config.headers, data);
-    xhr.send(data);
   };
 
   /**
