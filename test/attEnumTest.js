@@ -2,7 +2,7 @@
 /*global ATT:true, describe:true,it:true,expect:true, assert:true*/
 
 //TODO Add more tests
-describe('EventEnums', function () {
+describe('ATT Enums', function () {
   "use strict";
 
   it('should contain Needed Enums', function () {

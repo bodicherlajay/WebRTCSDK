@@ -77,6 +77,14 @@
       }
     };
 
+    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
+      onSessionReady(event);
+    };
+
+    eventRegistry[mainModule.SessionEvents.RTC_SESSION_ERROR] = function (event) {
+      onError(event);
+    };
+
     eventRegistry[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
     // registers UI functions for incomming IIP states
       if (event.reason) {
@@ -98,13 +106,6 @@
       onIncomingCall({
         type: mainModule.CallStatus.RINGING,
         caller: kaller
-      });
-    };
-
-    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
-      onSessionReady({
-        type: mainModule.CallStatus.READY,
-        data: event.data
       });
     };
 
