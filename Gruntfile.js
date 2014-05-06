@@ -33,6 +33,7 @@ module.exports = function (grunt) {
       'js/webRTC.js',
       'js/DHSModule.js',
       'js/ATTMain.js',
+      'js/sdkErrors.js',
       'test/**/*.js'],
     logLevel: 'DEBUG',
     port: 9876,

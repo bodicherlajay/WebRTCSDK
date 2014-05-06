@@ -151,7 +151,7 @@ if (!Env) {
   createWebRTCSessionError = function (config, error) {
     logger.logError('Error creating web rtc session: ' + error);
     if (typeof config.onError === 'function') {
-      config.onError('Error creating web rtc session: ' + error);
+      config.onError('Error creating web rtc session: ' + ATT.errorDictionary.getError('SDK-10000'));
     }
   };
 
