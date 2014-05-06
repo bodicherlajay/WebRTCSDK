@@ -58,6 +58,7 @@ if (!ATT) {
         logger.logInfo('url: ' + EnvConf[key]);
       }
       appConfig.RTCEndpoint = EnvConf[key];
+      appConfig.DHSEndpoint = DHSConf;
       app.appConfig = appConfig;
 
       // configure rest APIs now
