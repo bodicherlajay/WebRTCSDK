@@ -40,13 +40,11 @@
     // will add a `getId` method to `error`
     function addIdGetter(error) {
       error.getId = function () {
-        var errorID = error.moduleID + error.userErrorCode + error.operationName
-            + error.httpStatusCode + error.messageId;
+        var errorID = error.userErrorCode;
         return errorID;
       };
       return error;
     }
-
     newError = Object.create(prototypeError);
     // extend with the properties in the spec
     newError = utils.extend(newError, spec);
@@ -65,8 +63,9 @@
     return { // return the error dictionary
       createError: function (spec) {
         // only allow creation of error for modules in the list
+        console.log(modules);
         if (!modules.hasOwnProperty(spec.moduleID)) {
-          throw new Error('Invalid Module ID');
+          throw new Error('Invalid Module ID-' + spec.moduleID);
         }
         // create the error
         newError = createErrorWith(spec, utils);
@@ -76,7 +75,8 @@
       },
       getError: function (errorId) {
         return allErrors[errorId];
-      }
+      },
+      modules: modules
     };
   }
 

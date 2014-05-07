@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT: true, cmgmt*/
+/*global ATT: true, cmgmt,sdkErrorCollection:true */
 
 /** This is going to be the main entry/assembly module for the SDK 
  * By the time this file is loaded, all other modules have already 
@@ -42,16 +42,16 @@
   }
   ATT.errorDictionary = ATT.utils.createErrorDictionary({
     modules: {
-      APP_COfNFIG: 'APP-CFG',
+      APP_CONFIG: 'APP_CONFIG',
       DHS: 'DHS',
-      EVENT_CHANNEL: 'EVT-CHL',
-      PEER_CONNECTION: 'PCN-SRV',
-      USER_MEDIA: 'USR-SRV',
-      RESOURCE_MGR: 'RES-MGR',
-      RTC_EVENT: 'RTC-EVT',
-      SIGNALING: 'SIG-SRV',
-      SDP_FILTER: 'SDP-FLT',
-      CALL_MGR: 'CALL-MGR',
+      EVENT_CHANNEL: 'EVENT_CHANNEL',
+      PEER_CONNECTION: 'PEER_CONNECTION',
+      USER_MEDIA: 'USER_MEDIA',
+      RESOURCE_MGR: 'RESOURCE_MGR',
+      RTC_EVENT: 'RTC_EVENT',
+      SIGNALING: 'SIGNALING',
+      SDP_FILTER: 'SDP_FILTER',
+      CALL_MGR: 'CALL_MGR',
       RTC: 'RTC'
     }
   }, ATT.utils);
