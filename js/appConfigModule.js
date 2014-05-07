@@ -27,11 +27,11 @@ if (!ATT) {
       RTCEndpoint: null,
       DHSEndpoint: null,
       eventChannelConfig: {
-        // Websockets: '/websocket'
-        // Long-Polling: '/events'
+        // For Websockets: '/websocket'
+        // For Long-Polling: '/events'
         endpoint: '/events',
-        // Websockets: 'post'
-        // Long-Polling: 'get'
+        // For Websockets: 'post'
+        // For Long-Polling: 'get'
         method: 'get'
       }
     };
