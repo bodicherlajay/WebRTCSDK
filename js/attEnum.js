@@ -25,20 +25,71 @@ if (!ATT) {
     RTC_SESSION_DELETED: 1,
     RTC_SESSION_ERROR: 2
   };
-
   module.CallStatus = {
+   /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     READY:      0,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     CALLING:    1,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     RINGING:    2,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     INPROGRESS: 3,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     HOLD:       4,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     TRANSITION: 5,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     WAITING: 6,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     ENDED: 7,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     RESUMED: 8,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     MUTED: 9,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     UNMUTED: 10,
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
     ERROR: 99
+       /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
   };
 
   module.RTCCallEvents = {

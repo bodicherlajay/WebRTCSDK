@@ -24,7 +24,13 @@
       console.log('No callbacks to execute');
       return;
     }
-
+  /**
+   * OnSessionReady
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} Time stamp
+   */
     onSessionReady = function (evt) {
       if (callbacks.onSessionReady) {
         callbacks.onSessionReady(evt);
