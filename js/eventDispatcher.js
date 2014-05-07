@@ -74,7 +74,7 @@
       }
     };
  /**
-   * OnSessionReady
+   * onCallHold
    * @memberof ATT.rtc.Phone
    * @param {Object} config Dial configuration object.
    * @attribute {String} callStatus
@@ -86,7 +86,7 @@
   //   }
   // };
  /**
-   * OnSessionReady
+   * onCallResume
    * @memberof ATT.rtc.Phone
    * @param {Object} config Dial configuration object.
    * @attribute {String} callStatus
