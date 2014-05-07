@@ -17,12 +17,12 @@ cmgmt = (function () {
       caller: function () { return caller; },
       callee: function () { return callee; },
       mediaType: function () { return mediaType; },
-      // setSDP: function (sdp) {
-      //   localSDP = sdp;
-      // },
-      // getSDP: function () {
-      //   return localSDP;
-      // },
+      setSDP: function (sdp) {
+        localSDP = sdp;
+      },
+      getSDP: function () {
+        return localSDP;
+      },
       start: Call.start,
       hold: Call.hold,
       resume: Call.resume,
@@ -49,7 +49,7 @@ cmgmt = (function () {
       currentCallId, UICbks = {}, currentCall = null;
     return {
       getCurrentCall: function () {
-         return currentCall;
+        return currentCall;
       },
       setCurrentCall: function (callObj) {
         currentCall = callObj;
@@ -123,11 +123,12 @@ cmgmt = (function () {
   };
 
   CreateIncomingCall = function (config) {
-    var call = new Call(config.caller, null, config.mediaConstraints);
+    var event = session_context.getEventObject(),
+      call = new Call(event.caller, null, config.mediaConstraints);
     session_context.setCallObject(call);
     session_context.setCallState(SessionState.INCOMING_CALL);
     session_context.setUICallbacks(config.success);
-    logger.logTrace('creating incoming call', 'caller: ' + config.caller + ', constraints: ' + config.mediaConstraints);
+    logger.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
     if (config.success) {
       ATT.UserMediaService.startCall(config);
     }
