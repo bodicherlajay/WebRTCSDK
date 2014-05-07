@@ -24,60 +24,125 @@
       console.log('No callbacks to execute');
       return;
     }
-
+  /**
+   * OnSessionReady
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} Time stamp
+   */
     onSessionReady = function (evt) {
       if (callbacks.onSessionReady) {
         callbacks.onSessionReady(evt);
       }
     };
-
+ /**
+   * onIncomingCall
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} callID
+   * @attribute {String} Time stamp
+   */
     onIncomingCall = function (evt) {
       if (callbacks.onIncomingCall) {
         callbacks.onIncomingCall(evt);
       }
     };
-
+ /**
+   * onOutgoingCall
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} Time stamp
+   */
     onOutgoingCall = function (evt) {
       if (callbacks.onOutgoingCall) {
         callbacks.onOutgoingCall(evt);
       }
     };
-
+ /**
+   * onInProgress
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} Time stamp
+   */
     onInProgress = function (evt) {
       if (callbacks.onInProgress) {
         callbacks.onInProgress(evt);
       }
     };
-
+ /**
+   * OnSessionReady
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} Time stamp
+   */
   // onCallHold = function (evt) {
   //   if (callbacks.onCallHold) {
   //     callbacks.onCallHold(evt);
   //   }
   // };
-
+ /**
+   * OnSessionReady
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} Time stamp
+   */
   // onCallResume = function (evt) {
   //   if (callbacks.onCallResume) {
   //     callbacks.onCallResume(evt);
   //   }
   // };
+   /**
+   * onCallError
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} Time stamp
+   */
     onCallError = function (evt) {
       if (callbacks.onCallError) {
         callbacks.onCallError(evt);
       }
     };
-
+ /**
+   * onCallEnded
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+   * @attribute {String} callID
+   * @attribute {String} Time stamp
+   */
     onCallEnded = function (evt) {
       if (callbacks.onCallEnded) {
         callbacks.onCallEnded(evt);
       }
     };
-
+ /**
+   * onCallError
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+    * @attribute {String} callID
+   * @attribute {String} Time stamp
+   */
     onCallError = function (evt) {
       if (callbacks.onCallError) {
         callbacks.onCallError(evt);
       }
     };
-
+ /**
+   * onError
+   * @memberof ATT.rtc.Phone
+   * @param {Object} config Dial configuration object.
+   * @attribute {String} callStatus
+    * @attribute {String} callID
+   * @attribute {String} Time stamp
+   */
     onError = function (evt) {
       if (callbacks.onError) {
         callbacks.onError(evt);
