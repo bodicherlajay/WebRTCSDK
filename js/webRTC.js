@@ -33,6 +33,9 @@ if (!Env) {
    * @function initSession
    * @param {String} accessToken
    * @param {String} e911Id
+   * @example Preconditions: Developer hosts the login page and obtained user credentials, 
+   * invoked the API endpoint to obtain access token and e911 id.
+   * ATT.rtc.Phone.initSDK(“e911id”,”access token”)
    */
   function initSession(accessToken, e911Id) {
     logger.logTrace('Initializing SDK session with token and optional e911 id');
@@ -55,6 +58,9 @@ if (!Env) {
    * The service parameter indicates the desired service such as audio or video call
    * @memberof ATT.rtc
    * @param {Object} data The required login form data from the UI.
+   * @example Preconditions: SDK was initialized.
+   * ATT.rtc.Phone.login(“audio-session”); //for audio service
+   * ATT.rtc.Phone.login(“video-session”); //for video service
    */
   function login(config) {
     if (!config) {
@@ -163,7 +169,9 @@ if (!Env) {
    * Logs out the user from webRTC session. When invoked webRTC session gets deleted
    * @memberof ATT.rtc
    * @param {Object} data The required login form data from the UI.
-   */
+   * @example 
+  ATT.rtc.Phone.logout();
+  */
   function logout(config) {
     ATT.UserMediaService.stopStream();
     ATT.utils.eventChannel.stopListening();
@@ -216,6 +224,55 @@ if (!Env) {
    * @attribute {HTMLElement} remoteVideo
    * @attribute {Object} mediaConstraints
    * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
+   * @example Preconditions: SDK was initialized with access token and e911 id
+
+   * //audio call
+   * //Example 1
+   ATT.rtc.Phone.dial(“telephone number or sip uri”,
+   localVideo: “localvideo”,
+   remoteVideo: “remotevideo”,
+   mediaConstraints: {
+   audio:true,
+   video:false},
+   callbacks: {
+   onSessionOpen: callback_name,
+   onOutgoingCall: callback_name,
+   onInProgress: callback_name,
+   onCallEnded: callback_name,
+   onCallError: callback_name}
+   //removed other callbacks for brevity
+   );
+
+  //Example 2
+   ATT.rtc.Phone(
+   OnSessionOpen(event) {
+   },
+   OnIncomingCall(event) {
+   },
+   OnInProgress(event) {
+   },
+   OnRinging(event) {
+   },
+   OnCallEnded(event) {
+   },
+   //removed other callbacks for brevity
+   OnError(event) {
+   }).dial(“telephone or sip uri”,
+   localVideo: “localvideo”,
+   remoteVideo: “remotevideo”,
+   mediaConstraints: {
+   audio:true,
+   video:false});
+
+
+   //video call
+   ATT.rtc.Phone.dial(“telephone number or sip uri”,
+   localVideo: “localvideo”,
+   remoteVideo: “remotevideo”,
+   mediaConstraints: {
+   audio:true,
+   video:true},
+
    */
   function dial(config) {
     callManager.CreateOutgoingCall(config);
@@ -233,6 +290,46 @@ if (!Env) {
    * @attribute {HTMLElement} remoteVideo
    * @attribute {Object} mediaConstraints
    * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
+   * @example 
+   Preconditions: SDK was initialized with access token and e911 id
+
+    //Example 1
+    //audio call
+    ATT.rtc.Phone.answer(
+    localVideo: “localvideo”,
+    remoteVideo: “remotevideo”,
+    mediaConstraints: {
+    audio:true,
+    video:false},
+    success: {
+    onSessionOpen: callback_name,
+    onInProgress: callback_name,
+    onCallEnded: callback_name,
+    //removed other callbacks for brevity
+    onCallError: callback_name}
+    );
+
+    //Example 2
+    ATT.rtc.Phone(
+    OnSessionOpen(event) {
+    },
+    OnIncomingCall(event) {
+    },
+    OnInProgress(event) {
+    },
+    OnRinging(event) {
+    },
+    OnCallEnded(event) {
+    },
+    //removed other callbacks for brevity
+    OnError(event) {
+    }).answer(localVideo: “localvideo”,
+    remoteVideo: “remotevideo”,
+    mediaConstraints: {
+    audio:true,
+    video:false});
+    //video call
+
    */
   function answer(config) {
     callManager.CreateIncomingCall(config);
@@ -244,6 +341,8 @@ if (!Env) {
   /**
   * Mutes the local stream (video or audio)
   * @memberof ATT.rtc.Phone
+  * @example 
+  ATT.rtc.Phone.mute();
   */
   function mute() {
     callManager.getSessionContext().getCallObject().mute();
@@ -252,6 +351,8 @@ if (!Env) {
   /**
   * Unmutes the local stream
   * @memberof ATT.rtc.Phone
+  * @example 
+  ATT.rtc.Phone.unmute();
   */
   function unmute() {
     callManager.getSessionContext().getCallObject().unmute();
@@ -260,6 +361,8 @@ if (!Env) {
   /**
   * Holds the current call and the other party gets notified through event channel
   * @memberof ATT.rtc.Phone
+  * @example 
+  ATT.rtc.Phone.hold();
   */
   function hold() {
     if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
@@ -270,6 +373,8 @@ if (!Env) {
   /**
   * Resumes the current call and the other party gets notified through event channel and the call resumes
   * @memberof ATT.rtc.Phone
+  * @example 
+  ATT.rtc.Phone.resume();
   */
   function resume() {
     if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
@@ -280,6 +385,8 @@ if (!Env) {
   /**
   * Hangs up the current call
   * @memberof ATT.rtc.Phone
+  * @example 
+  ATT.rtc.Phone.hangup();
   */
   function hangup() {
     if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
