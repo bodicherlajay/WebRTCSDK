@@ -86,10 +86,18 @@ if (!Env) {
   };
 
   handleError = function (config, responseObject) {
-    log.logError(responseObject.getJson().error);
+    var respObj = responseObject.getJson(),
+      error;
 
+    if (respObj.error) {
+      error = respObj.error;
+    } else if (respObj.RequestError) {
+      error = respObj.RequestError.ServiceException.MessageId + ': ' + respObj.RequestError.ServiceException.Text;
+    }
+
+    log.logError(error);
     if (typeof config.error === 'function') {
-      config.error(responseObject.getJson());
+      config.error(error);
     }
   };
 
