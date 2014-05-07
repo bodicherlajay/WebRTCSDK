@@ -55,4 +55,5 @@
       RTC: 'RTC'
     }
   }, ATT.utils);
+  logger.logTrace("created dictionary");
 }());

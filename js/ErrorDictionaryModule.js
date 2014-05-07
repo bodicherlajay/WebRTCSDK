@@ -63,7 +63,6 @@
     return { // return the error dictionary
       createError: function (spec) {
         // only allow creation of error for modules in the list
-        console.log(modules);
         if (!modules.hasOwnProperty(spec.moduleID)) {
           throw new Error('Invalid Module ID-' + spec.moduleID);
         }
