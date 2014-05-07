@@ -28,7 +28,7 @@ describe('Call Management', function () {
   });
 
   describe('Call Object', function () {
-    it('should return a valid Call Object', function () {
+    xit('should return a valid Call Object', function () {
       var config = {
         caller: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
@@ -49,7 +49,7 @@ describe('Call Management', function () {
       expect(sessionContext.getCallState()).to.equal('Outgoing');
     });
 
-    it('should create an incoming call', function () {
+    xit('should create an incoming call', function () {
       var config = {
         caller: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
