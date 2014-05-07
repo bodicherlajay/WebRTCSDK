@@ -17,12 +17,12 @@ cmgmt = (function () {
       caller: function () { return caller; },
       callee: function () { return callee; },
       mediaType: function () { return mediaType; },
-      // setSDP: function (sdp) {
-      //   localSDP = sdp;
-      // },
-      // getSDP: function () {
-      //   return localSDP;
-      // },
+      setSDP: function (sdp) {
+        localSDP = sdp;
+      },
+      getSDP: function () {
+        return localSDP;
+      },
       start: Call.start,
       hold: Call.hold,
       resume: Call.resume,
@@ -49,7 +49,7 @@ cmgmt = (function () {
       currentCallId, UICbks = {}, currentCall = null;
     return {
       getCurrentCall: function () {
-         return currentCall;
+        return currentCall;
       },
       setCurrentCall: function (callObj) {
         currentCall = callObj;
