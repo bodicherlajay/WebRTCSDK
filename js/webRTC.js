@@ -159,18 +159,19 @@ if (!Env) {
     }
   };
 
-  createWebRTCSessionError = function (config, error) {
-    logger.logError('Error creating web rtc session: ');
+  createWebRTCSessionError = function (config, errorResp) {
+    logger.logWarning('Error creating web rtc session');
+    var error;
+    if (errorResp.responseText === "") {
+      error = ATT.errorDictionary.getError('SDK-10000');
+    } else {
+      error = errorResp.getJson();
+    }
+    // log the error
+    logger.logError(error.formatError());
+
     if (typeof config.onError === 'function') {
-      if (error.responseText === "") {
-        var msg = 'SDK-10000:' + ATT.errorDictionary.getError('SDK-10000').helpText;
-        config.onError(msg);
-      } else {
-        //look at responseObject structure on RESTClient
-        //parse the json error response, get http status code, message id (svc/pol) and then lookup the error dictionary
-        //get the helptext and display
-        config.onError("CreateSession operation failed.");
-      }
+      config.onError(error);
     }
   };
 

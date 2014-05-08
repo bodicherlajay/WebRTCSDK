@@ -46,9 +46,9 @@
       return error;
     }
     // second key to lookup using operation name, http status code and message id
-    function addOpStatusMessageId (error) {
+    function addOpStatusMessageId(error) {
       error.opStatusMsgId = function () {
-        var opStatusMsgId = error.operationName+error.httpStatusCode+error.messageId;
+        var opStatusMsgId = error.operationName + error.httpStatusCode + error.messageId;
         return opStatusMsgId;
       };
       return error;
@@ -86,7 +86,20 @@
         return allErrors[errorId];
       },
       getErrorByOpStatus: function (operationName, httpStatusCode, messageId) {
-        return allErrorsOpStats[operationName+httpStatusCode+messageId];
+        return allErrorsOpStats[operationName + httpStatusCode + messageId];
+      },
+      getMissingError: function () {
+        return allErrors['SDK-00000'];
+      },
+      getDafaultError: function () {
+        return allErrors['SDK-00001'];
+      },
+      getDHSError: function (dhsErrSpec) {
+        var err = utils.extend(allErrors['SDK-50000']);
+        err.operationName = dhsErrSpec.operationName;
+        err.httpStatusCode = dhsErrSpec.httpStatusCode;
+        err.reasonText = dhsErrSpec.reasonText;
+        return err;
       },
       modules: modules
     };
