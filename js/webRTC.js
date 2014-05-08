@@ -185,7 +185,7 @@ if (!Env) {
     logger.logError('Error creating web rtc session: ');
     if (typeof config.onError === 'function') {
       if (error.responseText === "") {
-        config.onError(error);
+        config.onError(app.errorDictionary.getError("SDK-10000"));
       } else {
         config.onError(newErrorObj(error, "CreateSession"));
       }
