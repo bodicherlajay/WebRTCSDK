@@ -1,6 +1,6 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true,
-beforeEach: true, before: true, sinon: true, expect: true, xit: true, xdescribe: true*/
+ before: true, sinon: true, expect: true, xit: true, xdescribe: true, afterEach: true, beforeEach: true*/
 
 'use strict';
 
@@ -13,9 +13,9 @@ describe('ResourceManager', function () {
       'Content-Type': 'application/json',
       'Accept' : 'application/json'
     }
-  }, resourceManager;
-
+  }, resourceManager, backupAtt;
   beforeEach(function () {
+    backupAtt = ATT;
     resourceManager = Env.resourceManager.getInstance();
   });
   it('should be a singleton', function () {
@@ -198,5 +198,9 @@ describe('ResourceManager', function () {
         expect(apiObject[methodName]).is.a('function');
       });
     });
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });

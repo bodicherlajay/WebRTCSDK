@@ -10,13 +10,14 @@
 
 describe('APIConfig', function () {
   "use strict";
-  var appConfig;
+  var appConfig, backupatt;
   beforeEach(function () {
+    backupatt = ATT;
     appConfig = {
       DHSEndpoint: "http://localhost:9000",
       RTCEndpoint: "http://wdev.code-api-att.com:8080/RTC/v1"
     };
-    ATT.configueAPIs(appConfig);
+    ATT.configureAPIs(appConfig);
   });
 
   it('should contain a valid APIConfig object', function () {
@@ -94,6 +95,10 @@ describe('APIConfig', function () {
     expect(ATT.APIConfigs.endCall).to.be.an('object');
     expect(ATT.APIConfigs.endCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/param1/calls/param2');
     expect(ATT.APIConfigs.endCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
+  });
+
+  afterEach(function () {
+    ATT = backupatt;
   });
 
 });

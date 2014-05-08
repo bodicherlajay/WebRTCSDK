@@ -3,8 +3,11 @@
 
 describe('SDPFilter', function () {
   'use strict';
-
-  var filter = ATT.sdpFilter.getInstance();
+  var backupAtt,
+    filter = ATT.sdpFilter.getInstance();
+  beforeEach(function () {
+    backupAtt = ATT;
+  });
 
   it('should be a singleton', function () {
     var instance1 = ATT.sdpFilter.getInstance(),
@@ -31,5 +34,9 @@ describe('SDPFilter', function () {
       sdp = "b=1\r\n c=2\r\n a=badboy\r\n";
     sdp = filter.removeSDPAttribute(attr, sdp);
     expect(sdp.indexOf(attr)).to.equal(-1);
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });

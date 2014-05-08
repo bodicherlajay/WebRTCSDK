@@ -85,17 +85,25 @@ if (!Env) {
     }
   };
 
-  handleError = function (config, responseObject) {
+  handleError = function (config, operation, responseObject) {
     var respObj = responseObject.getJson(),
       error;
 
-    if (respObj.error) {
-      error = respObj.error;
-    } else if (respObj.RequestError) {
-      error = respObj.RequestError.ServiceException.MessageId + ': ' + respObj.RequestError.ServiceException.Text;
+    if (respObj.RequestError) {
+      error = ATT.errorDictionary.getErrorByOpStatus(operation, responseObject.getResponseStatus(), respObj.RequestError.ServiceException.MessageId);
+    } else {
+      error = ATT.errorDictionary.getDHSError({
+        operationName: operation,
+        httpStatusCode: responseObject.getResponseStatus(),
+        reasonText: respObj.error || ''
+      });
     }
+    if (!error) {
+      error = ATT.errorDictionary.getMissingError();
+    }
+    // log the error
+    log.logError(error.formatError());
 
-    log.logError(error);
     if (typeof config.error === 'function') {
       config.error(error);
     }
@@ -165,18 +173,9 @@ if (!Env) {
   session = function (config) {
     // Call DHS to check for a browser session.
     resourceManager.doOperation('checkDhsSession', {
-      data: config.data,
-      success: handleSuccess.bind(this, config),
-      error: function (response) {
-        var error = (response && response.getResponseStatus() !== 401 && response.getJson()) ? response.getJson() : {
-          status: response.getResponseStatus(),
-          error: "Please login first"
-        };
-        log.logError(error.error);
-        if (typeof config.error === 'function') {
-          config.error(error);
-        }
-      }
+      data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'session')
     });
   };
 
@@ -185,7 +184,7 @@ if (!Env) {
     resourceManager.doOperation('registerUser', {
       data:     config.data,
       success:  handleSuccess.bind(this, config),
-      error:    handleError.bind(this, config)
+      error:    handleError.bind(this, config, 'register')
     });
   };
 
@@ -193,7 +192,7 @@ if (!Env) {
     // Call DHS to get a list of VTN phone numbers
     resourceManager.doOperation('getVTNList', {
       success:  handleSuccess.bind(this, config),
-      error:    handleError.bind(this, config)
+      error:    handleError.bind(this, config, 'vtnList')
     });
   };
 
@@ -206,7 +205,7 @@ if (!Env) {
     resourceManager.doOperation('oAuthAuthorize', {
       data:     config.data,
       success:  handleSuccess.bind(this, config),
-      error:    handleError.bind(this, config)
+      error:    handleError.bind(this, config, 'authorize')
     });
   };
 
@@ -219,7 +218,7 @@ if (!Env) {
     resourceManager.doOperation('oAuthToken', {
       data:     config.data,
       success:  handleSuccess.bind(this, config),
-      error:    handleError.bind(this, config)
+      error:    handleError.bind(this, config, 'token')
     });
   };
 
@@ -232,7 +231,7 @@ if (!Env) {
     resourceManager.doOperation('authenticateUser', {
       data:     config.data,
       success:  handleSuccess.bind(this, config),
-      error:    handleError.bind(this, config)
+      error:    handleError.bind(this, config, 'login')
     });
   };
 
@@ -256,7 +255,7 @@ if (!Env) {
           config.success(data);
         }
       },
-      error: handleError.bind(this, config)
+      error: handleError.bind(this, config, 'logout')
     });
   };
 
@@ -280,7 +279,7 @@ if (!Env) {
         url: config.data.id
       },
       success:  handleSuccess.bind(this, config),
-      error:    handleError.bind(this, config)
+      error:    handleError.bind(this, config, 'getE911Id')
     });
   };
 
@@ -304,7 +303,7 @@ if (!Env) {
     resourceManager.doOperation('createE911Id', {
       data:     config.data,
       success:  handleSuccess.bind(this, config),
-      error:    handleError.bind(this, config)
+      error:    handleError.bind(this, config, 'createE911Id')
     });
   };
 
@@ -328,7 +327,7 @@ if (!Env) {
     resourceManager.doOperation('updateE911Id', {
       data:     config.data,
       success:  handleSuccess.bind(this, config),
-      error:    handleError.bind(this, config)
+      error:    handleError.bind(this, config, 'updateE911Id')
     });
   };
 

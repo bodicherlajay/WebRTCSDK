@@ -153,6 +153,9 @@ if (!ATT) {
               },
               'x-e911Id': function (e911id) {
                 return e911id;
+              },
+              'x-Arg': function (xArg) {
+                return xArg;
               }
             }
           },
@@ -184,7 +187,7 @@ if (!ATT) {
         * @memberof ATT.APIConfigs
         */
         getEvents: {
-          method: ATT.appConfig.eventChannelConfig.method,
+          method: ATT.appConfig.EventChannelConfig.method,
           formatters: {
             url: function (params) {
               return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + params.endpoint;
@@ -305,11 +308,11 @@ if (!ATT) {
     return APIConfigs;
   },
 
-    configueAPIs = function (appConfig) {
+    configureAPIs = function (appConfig) {
       app.APIConfigs = configure(appConfig);
     };
 
   // place on ATT.
-  app.configueAPIs = configueAPIs;
+  app.configureAPIs = configureAPIs;
 
 }(ATT || {}));

@@ -1,19 +1,16 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
 
-describe.only('SignalingService', function () {
+describe('SignalingService', function () {
   "use strict";
 
   var resourceManager = Env.resourceManager.getInstance(),
     apiObj = resourceManager.getAPIObject(),
     requests,
-    xhr;
-
-  before(function () {
-  });
-
+    xhr,
+    backupAtt;
   beforeEach(function () {
-
+    backupAtt = ATT;
     xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
 
@@ -97,7 +94,7 @@ describe.only('SignalingService', function () {
   });
 
 
-  it('should receive 201 and Location url and x-state: invitation-sent in header', function () {
+  xit('should receive 201 and Location url and x-state: invitation-sent in header', function () {
     // setup
     apiObj.Session = {
       accessToken: 'access_token',
@@ -167,5 +164,9 @@ describe.only('SignalingService', function () {
 
     // send callback should be called
     expect(successSpy.called).to.equal(false);
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });
