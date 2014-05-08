@@ -201,7 +201,7 @@ if (!Env) {
   */
   function logout(config) {
     ATT.UserMediaService.stopStream();
-    ATT.utils.eventChannel.stopListening();
+    //ATT.utils.eventChannel.stopListening();
     var session = callManager.getSessionContext(),
       dataForDeleteWebRTCSession,
       successCallback = function (statusCode) {
@@ -230,7 +230,7 @@ if (!Env) {
         }
       },
       success: function (responseObject) {
-        logger.logError('Successfully deleted web rtc session on blackflag');
+        logger.logInfo('Successfully deleted web rtc session on blackflag');
         successCallback(responseObject.getResponseStatus());
       }
     };
