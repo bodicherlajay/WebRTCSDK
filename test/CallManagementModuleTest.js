@@ -4,7 +4,11 @@
 describe('Call Management', function () {
   'use strict';
 
-  var callmgr = cmgmt.CallManager.getInstance(), sessionContext;
+  var backupAtt, callmgr = cmgmt.CallManager.getInstance(), sessionContext;
+  beforeEach(function () {
+    backupAtt = ATT;
+  });
+
   callmgr.CreateSession({
     token: "abcd",
     e911Id: "e911id",
@@ -122,5 +126,9 @@ describe('Call Management', function () {
       expect(ATT.UserMediaService.unmuteStream.called).to.equal(true);
       ATT.UserMediaService.unmuteStream = Unmute;
     });
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });

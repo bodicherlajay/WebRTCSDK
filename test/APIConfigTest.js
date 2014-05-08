@@ -17,7 +17,7 @@ describe('APIConfig', function () {
       DHSEndpoint: "http://localhost:9000",
       RTCEndpoint: "http://wdev.code-api-att.com:8080/RTC/v1"
     };
-    ATT.configueAPIs(appConfig);
+    ATT.configureAPIs(appConfig);
   });
 
   it('should contain a valid APIConfig object', function () {
@@ -99,7 +99,6 @@ describe('APIConfig', function () {
 
   afterEach(function () {
     ATT = backupatt;
-
   });
 
 });

@@ -1,9 +1,14 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT:true, describe:true,it:true,expect:true, assert:true*/
+/*global ATT:true, describe:true,it:true,expect:true, assert:true, afterEach: true, beforeEach: true*/
 
 //TODO Add more tests
 describe('ATT Enums', function () {
   "use strict";
+
+  var backupAtt;
+  beforeEach(function () {
+    backupAtt = ATT;
+  });
 
   it('should contain Needed Enums', function () {
     assert.typeOf(ATT.UserTypes, 'object');
@@ -21,5 +26,9 @@ describe('ATT Enums', function () {
     assert.isTrue(Object.isFrozen(ATT.CallStatus));
     assert.isTrue(Object.isFrozen(ATT.RTCCallEvents));
     assert.isTrue(Object.isFrozen(ATT.MediaTypes));
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });
