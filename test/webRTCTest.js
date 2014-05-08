@@ -24,6 +24,7 @@ describe('webRTC', function () {
 
   afterEach(function () {
     xhr.restore();
+    ATT = backupAtt;
   });
 
   it('ATT namespace should exist and contain utils', function () {
@@ -217,8 +218,5 @@ describe('webRTC', function () {
       ATT.rtc.Phone.hangup();
       stubSessionContext.restore();
     });
-  });
-  afterEach(function () {
-    ATT = backupAtt;
   });
 });

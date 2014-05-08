@@ -10,7 +10,9 @@ describe('Event Channel', function () {
   beforeEach(function () {
     backupAtt = ATT;
   });
-
+  afterEach(function () {
+    ATT = backupAtt;
+  });
   describe('ATT.utils namespace', function () {
     it('should have factory method to create an eventChannel at ATT.utils.createEventChannel', function () {
       expect(ATT.utils.createEventChannel).to.be.a('function');
@@ -33,11 +35,15 @@ describe('Event Channel', function () {
         publicMethodName: 'publicMethodName',
         usesLongPolling: true
       };
-
+      backupAtt = ATT;
       // Mock for the resource manager
       channelConfig.resourceManager = {
         addPublicMethod: function () { return true; }
       };
+    });
+
+    afterEach(function () {
+      ATT = backupAtt;
     });
 
     it('should throw error if the config options are invalid', function () {
@@ -133,9 +139,5 @@ describe('Event Channel', function () {
       });
       it('should publish an event given a message on the open socket');
     });
-  });
-
-  afterEach(function () {
-    ATT = backupAtt;
   });
 });

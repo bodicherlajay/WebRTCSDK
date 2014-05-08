@@ -2,7 +2,7 @@
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
 before: true, sinon: true, expect: true, xit: true, xdescribe: true*/
 
-describe('DHSModule', function () {
+describe.only('DHSModule', function () {
   "use strict";
 
   var resourceManager = Env.resourceManager.getInstance(),
@@ -38,6 +38,27 @@ describe('DHSModule', function () {
     expect(ATT.rtc.Phone).to.be.an('object');
   });
 
+  it('should call `doOperation` on the resourceManager', function () {
+    var config = {"data" : {"type" : "MOBILENUMBER"}};
+    resourceManager.doOperation = sinon.spy(resourceManager.doOperation);
+    ATT.rtc.dhs.login(config);
+    expect(resourceManager.doOperation.called).to.equal(true);
+  });
+
+  it('should call success callback after authentication', function () {
+    var config = {
+      "data" :
+        { "type" : "MOBILENUMBER"},
+    };
+
+    resourceManager.doOperation = function (config) {
+      config.success(config);
+    };
+
+    ATT.rtc.dhs.login(config);
+    expect(config.success.called).to.equal(true);
+  });
+
   xit('login should call SDK initSession with accesstoken & e911id on success ', function () {
     var initSessionSpy = sinon.spy(apiObj, 'initSession'),
       responseObject1;
@@ -47,7 +68,7 @@ describe('DHSModule', function () {
         un: 'un',
         pw: 'pw'
       },
-      success: function () {}
+      success: function () { return; }
     });
 
     // response json from authorizeUser call.  check the schema.

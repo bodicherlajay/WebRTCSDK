@@ -6,11 +6,11 @@
  * @namespace ATT.rtc.Phone
  */
 
-if (!ATT) {
+if (ATT === undefined) {
   var ATT = {};
 }
 
-if (!Env) {
+if (Env === undefined) {
   var Env = {};
 }
 
@@ -58,6 +58,8 @@ if (!Env) {
    * The service parameter indicates the desired service such as audio or video call
    * @memberof ATT.rtc
    * @param {Object} data The required login form data from the UI.
+   * @attribute {String} token
+   * @attribute {String} e911Locations
    * @example Preconditions: SDK was initialized.
    * ATT.rtc.Phone.login(“audio-session”); //for audio service
    * ATT.rtc.Phone.login(“video-session”); //for video service
@@ -178,6 +180,8 @@ if (!Env) {
    * Logs out the user from webRTC session. When invoked webRTC session gets deleted
    * @memberof ATT.rtc
    * @param {Object} data The required login form data from the UI.
+   * @attribute {String} token
+   * @attribute {String} e911Locations
    * @example 
   ATT.rtc.Phone.logout();
   */
@@ -382,7 +386,7 @@ if (!Env) {
   /**
   * Resumes the current call and the other party gets notified through event channel and the call resumes
   * @memberof ATT.rtc.Phone
-  * @example 
+  * @example  
   ATT.rtc.Phone.resume();
   */
   function resume() {
