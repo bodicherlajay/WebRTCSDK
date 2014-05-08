@@ -84,9 +84,9 @@ var attUtils = (function (mainModule) {
   if (typeofExports !== 'undefined') {
     if (typeofModule !== 'undefined' && module.exports) {
       //making it readonly so that it does not get accidentally overridden in nodejs environment
-      exports = module.exports['ATT.utils'] = attUtils;
+      exports = module.exports['ATT.utils'] = mainModule;
     }
-    exports['ATT.utils'] = attUtils;
+    exports['ATT.utils'] = mainModule;
   }
   return attUtils;
 
