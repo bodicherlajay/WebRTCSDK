@@ -69,8 +69,8 @@ if (!Env) {
     if (!config.data) {
       return logger.logError('Cannot login to web rtc, no configuration data');
     }
-    var token = config.data.token.access_token,
-      e911Id = config.data.e911Id ? config.data.e911Id.e911Locations.addressIdentifier : null,
+    var token = config.token.access_token,
+      e911Id = config.e911Id ? config.e911Id : null, //config.data.e911Id.e911Locations.addressIdentifier : null,
       session;
 
     // create new session with token and optional e911id
