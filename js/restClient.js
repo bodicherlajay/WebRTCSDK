@@ -33,9 +33,6 @@ var RESTClient = (function (mainModule) {
       logMgr.configureLogger('RESTClient', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
       logger = logMgr.getLogger('RESTClient');
     },
-    error = function (errorCallback) {
-      errorCallback.call(this, this.responseText);
-    },
     parse_headers =  function (input) {
       var result = [], headers_list = input.split('\n'), index, line, key, value;
       for (index in headers_list)
@@ -92,12 +89,19 @@ var RESTClient = (function (mainModule) {
       resLogger.logDebug('=========body==========');
       resLogger.logDebug(response.responseText);
     },
+    parseJSON = function (xhr) {
+      var contType = xhr.getResponseHeader("Content-Type");
+      if (contType.indexOf("application/json") === 0) {
+        return JSON.parse(xhr.responseText);
+      }
+      return "";
+    },
     success = function (successCallback) {
       // private methods
       var xhr = this,
         responseObject = {
           getJson: function () {
-            return JSON.parse(xhr.responseText);
+            return parseJSON(xhr);
           },
           getResponseHeader: function (key) {
             return xhr.getResponseHeader(key);
@@ -122,11 +126,11 @@ var RESTClient = (function (mainModule) {
         successCallback.call(xhr, responseCopy);
       }
     },
-    onError = function(errorCallback) {
+    error = function (errorCallback) {
       var xhr = this,
         responseObject = {
           getJson: function () {
-            return JSON.parse(xhr.responseText);
+            return parseJSON(xhr);
           },
           getResponseHeader: function (key) {
             return xhr.getResponseHeader(key);
@@ -141,21 +145,14 @@ var RESTClient = (function (mainModule) {
         },
         responseCopy = mainModule.utils.extend({}, responseObject);
       show_response(responseCopy);
-      if (typeof errorHandler === 'function') {
-        errorHandler.call(xhr, responseCopy);
-      } else {
-        defaultErrorHandler.call(xhr, responseCopy);
-      }
+      //call the error callback
+      errorCallback.call(this, responseCopy);
     };
-
-
   // public methods
   RESTClient.prototype.ajax = function () {
-    var config = this.config;
+    var config = this.config,  xhr = new XMLHttpRequest(), data = null, header = null, errLogger = null;
     try {
-      var xhr = new XMLHttpRequest(),
-        data = config.data && JSON.stringify(config.data),
-        header;
+      data = config.data && JSON.stringify(config.data);
       if (!logger) {
         console.log("Using console logger for debugging");
         setLogger(null);
@@ -170,7 +167,6 @@ var RESTClient = (function (mainModule) {
       errorHandler = config.error;
 
       // error callback
-  /*
       xhr.onerror = function () {
         if (config.error !== 'undefined') {
           error.call(this, config.error);
@@ -178,8 +174,8 @@ var RESTClient = (function (mainModule) {
           throw new Error('Network error occurred in REST client.');
         }
       };
-  */
-      xhr.onerror = error.bind(xhr,config.error);
+
+      xhr.onabort = error.bind(xhr, config.error);
 
       // on timeout callback
       xhr.ontimeout = config.ontimeout;
@@ -197,7 +193,7 @@ var RESTClient = (function (mainModule) {
       xhr.send(data);
 
     } catch (ex) {
-      var errLogger = logMgr.getLogger('RESTClient');
+      errLogger = logMgr.getLogger('RESTClient');
       errLogger.logError("XHR request failed, " + ex);
       if (typeof errorHandler === 'function') {
         errorHandler.call(xhr, ex);
