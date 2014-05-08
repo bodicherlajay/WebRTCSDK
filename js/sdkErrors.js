@@ -4,16 +4,28 @@
 'use strict';
 
 var sdkErrorCollection = [
+  //SDK-00000 range reserved for appConfigModule, APIConfigs, ErrorDictionary
+  // This is the error thrown if the configured error is not found in the error dictionary
   {
-    //SDK-00000 range reserved for appConfigModule
     userErrorCode: 'SDK-00000',    //5 digit error code
-    operationName: '',    //Name of the REST operation
-    httpStatusCode: 'N/A',   //HTTP Status code
-    messageId: 'N/A',        //SVC or POL Error
-    helpText: '',         //Help text which can be displayed on UI
+    operationName: 'ErrorConfig',    //Name of the REST operation
+    httpStatusCode: '',   //HTTP Status code
+    messageId: '',        //SVC or POL Error
+    helpText: 'Please configure the error in the error dictionary', //Help text which can be displayed on UI
     reasonText: 'configerror',       //High level reason text, invalid input, forbidden
-    errorDescription: 'Failed to configure API Configuration', //Error Description
-    moduleID: 'APP_CONFIG'
+    errorDescription: 'The specified error code is not configured in the error disctionary', //Error Description
+    moduleID: 'ERROR_DICT'
+  },
+  // This is the default error, can be used for all purposes. Shouldn't use it since doesn't provide much information
+  {
+    userErrorCode: 'SDK-00001',    //5 digit error code
+    operationName: 'GeneralOperation',    //Name of the REST operation
+    httpStatusCode: '',   //HTTP Status code
+    messageId: '',        //SVC or POL Error
+    helpText: '', //Help text which can be displayed on UI
+    reasonText: 'error',       //High level reason text, invalid input, forbidden
+    errorDescription: 'There was an error performing the operation', //Error Description
+    moduleID: 'GENERAL'
   },
   //SDK-10000 range reserved for webRTC module
   {
@@ -22,14 +34,6 @@ var sdkErrorCollection = [
     reasonText: 'configerror',       //High level reason text, invalid input, forbidden
     errorDescription: 'Fatal Error XHR Request failed', //Error Description
     moduleID: 'RTC'
-  },
-  {
-    moduleID: "DHS",
-    userErrorCode: "DHS0001",
-    operationName: "Login",
-    httpStatusCode: "<optional>",
-    errorDescription: "Failed to authenticate user",
-    reasonText: "[TODO: To be filled by Product/Marketing]"
   },
   {
     moduleID : 'RTC',
@@ -228,7 +232,29 @@ var sdkErrorCollection = [
     errorDescription: "Unable to create Session",
     reasonText: "Session Id not associated with the to",
     moduleID: 'RTC'
+  },
+
+  // range SDK-50000 is reserverd for SDK errors
+  // SDK-50000 is reserverd for all error thrown within SDK (not API through DHS)
+  {
+    userErrorCode: "SDK-50000",
+    moduleID: "DHS",
+    messageId: "",
+    operationName: "",
+    httpStatusCode: "",
+    errorDescription: "DHS Operation failed",
+    reasonText: ""
+  },
+  {
+    userErrorCode: "SDK-51000",
+    moduleID: "DHS",
+    messageId : "SVC0016",
+    operationName : "createE911Id",
+    httpStatusCode : "400",
+    errorDescription : "Unable to create E911 Id",
+    reasonText : "Address could not be confirmed"
   }
+
 ];
 
 //load SDK Errors

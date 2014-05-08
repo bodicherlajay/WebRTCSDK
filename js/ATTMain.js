@@ -43,6 +43,7 @@
   ATT.errorDictionary = ATT.utils.createErrorDictionary({
     modules: {
       APP_CONFIG: 'APP_CONFIG',
+      ERROR_DICT: 'ERROR_DICT',
       DHS: 'DHS',
       EVENT_CHANNEL: 'EVENT_CHANNEL',
       PEER_CONNECTION: 'PEER_CONNECTION',
@@ -52,7 +53,8 @@
       SIGNALING: 'SIGNALING',
       SDP_FILTER: 'SDP_FILTER',
       CALL_MGR: 'CALL_MGR',
-      RTC: 'RTC'
+      RTC: 'RTC',
+      GENERAL: 'GENERAL'
     }
   }, ATT.utils);
   logger.logTrace("created dictionary");

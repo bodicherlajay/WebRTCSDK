@@ -88,6 +88,19 @@
       getErrorByOpStatus: function (operationName, httpStatusCode, messageId) {
         return allErrorsOpStats[operationName + httpStatusCode + messageId];
       },
+      getMissingError: function () {
+        return allErrors['SDK-00000'];
+      },
+      getDafaultError: function () {
+        return allErrors['SDK-00001'];
+      },
+      getDHSError: function (dhsErrSpec) {
+        var err = utils.extend(allErrors['SDK-50000']);
+        err.operationName = dhsErrSpec.operationName;
+        err.httpStatusCode = dhsErrSpec.httpStatusCode;
+        err.reasonText = dhsErrSpec.reasonText;
+        return err;
+      },
       modules: modules
     };
   }

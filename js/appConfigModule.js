@@ -17,7 +17,7 @@ if (!ATT) {
 
   // API Platform Endpoints
     EnvConf = {
-      AMS: 'https://wdev.code-api-att.com/RTC/v1',
+      AMS: 'http://wdev.code-api-att.com:8080/RTC/v1',
       F6UAT: 'https://api-stage.mars.bf.sl.attcompute.com/RTC/v1',
       PROD: 'https://api.att.com/RTC/v1'
     },

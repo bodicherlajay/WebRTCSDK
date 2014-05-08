@@ -22,7 +22,8 @@ if (Env === undefined) {
     createWebRTCSessionSuccess,
     createWebRTCSessionError,
     logMgr = ATT.logManager.getInstance(),
-    logger;
+    logger,
+    newErrorObj;
 
   logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('WebRTC');
@@ -72,7 +73,7 @@ if (Env === undefined) {
       return logger.logError('Cannot login to web rtc, no access token');
     }
     var token = config.token.access_token,
-      e911Id = config.e911Id ? config.e911Id.e911Locations.addressIdentifier : null,
+      e911Id = config.e911Id || null,
       session;
 
     // create new session with token and optional e911id
@@ -134,7 +135,7 @@ if (Env === undefined) {
       // publish the UI callback for ready state
       app.event.publish(sessionId + '.responseEvent', {
         state:  app.SessionEvents.RTC_SESSION_CREATED,
-        data: {
+        data:   {
           webRtcSessionId: sessionId
         }
       });
@@ -144,12 +145,12 @@ if (Env === undefined) {
       // Also, see appConfigModule
       channelConfig = {
         accessToken: session.getAccessToken(),
-        endpoint: ATT.appConfig.EventChannelConfig.endpoint,
+        endpoint: ATT.appConfig.eventChannelConfig.endpoint,
         sessionId: session.getSessionId(),
         publisher: ATT.event,
         resourceManager: resourceManager,
         publicMethodName: 'getEvents',
-        usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
+        usesLongPolling: true
       };
       logger.logTrace('Creating event channel...');
       ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
@@ -161,17 +162,34 @@ if (Env === undefined) {
     }
   };
 
+  newErrorObj = function (error, operation) {
+    //look at responseObject structure on RESTClient
+    //parse the json error response, get http status code, message id (svc/pol) and then lookup the error dictionary
+    //get the helptext and display
+    var response = error.getJson(), httpStatusCode =  error.getResponseStatus(), messageId, errObj;
+    messageId = response.RequestError.ServiceException.MessageId;
+    errObj = app.errorDictionary.getErrorByOpStatus("CreateSession", httpStatusCode, messageId);
+    //If error object is found then make one
+    if (!errObj) {
+      errObj = app.errorDictionary.createError({moduleID : 'RTC',
+        userErrorCode : "SDK-UNKNOWN",
+        operationName : operation,
+        httpStatusCode : httpStatusCode,
+        errorDescription : "Unable to create Session",
+        reasonText : response.RequestError.ServiceException.Text});
+      logger.info("Error object not available");
+      logger.info(errObj);
+    }
+    return errObj;
+  };
+
   createWebRTCSessionError = function (config, error) {
     logger.logError('Error creating web rtc session: ');
     if (typeof config.onError === 'function') {
       if (error.responseText === "") {
-        var msg = 'SDK-10000:' + ATT.errorDictionary.getError('SDK-10000').helpText;
-        config.onError(msg);
+        config.onError(app.errorDictionary.getError("SDK-10000"));
       } else {
-        //look at responseObject structure on RESTClient
-        //parse the json error response, get http status code, message id (svc/pol) and then lookup the error dictionary
-        //get the helptext and display
-        config.onError("CreateSession operation failed.");
+        config.onError(newErrorObj(error, "CreateSession"));
       }
     }
   };
@@ -187,7 +205,7 @@ if (Env === undefined) {
   */
   function logout(config) {
     ATT.UserMediaService.stopStream();
-    ATT.utils.eventChannel.stopListening();
+    //ATT.utils.eventChannel.stopListening();
     var session = callManager.getSessionContext(),
       dataForDeleteWebRTCSession,
       successCallback = function (statusCode) {
@@ -216,7 +234,7 @@ if (Env === undefined) {
         }
       },
       success: function (responseObject) {
-        logger.logError('Successfully deleted web rtc session on blackflag');
+        logger.logInfo('Successfully deleted web rtc session on blackflag');
         successCallback(responseObject.getResponseStatus());
       }
     };
