@@ -7,7 +7,7 @@ if (!ATT) {
   var ATT = {};
 }
 
-(function (mainModule) {
+var attUtils = (function (mainModule) {
   'use strict';
 
   /**
@@ -54,6 +54,8 @@ if (!ATT) {
         }
       });
     },
+    typeofExports = typeof exports,
+    typeofModule = typeof module,
 
     /**
      Places namespaces on root object.  s is dot separated string of names adding to root.
@@ -77,5 +79,15 @@ if (!ATT) {
     extend: extend,
     inherits: inherits
   };
+
+  //exports for nodejs
+  if (typeofExports !== 'undefined') {
+    if (typeofModule !== 'undefined' && module.exports) {
+      //making it readonly so that it does not get accidentally overridden in nodejs environment
+      exports = module.exports['ATT.utils'] = attUtils;
+    }
+    exports['ATT.utils'] = attUtils;
+  }
+  return attUtils;
 
 }(typeof exports === 'object' ? exports : ATT));

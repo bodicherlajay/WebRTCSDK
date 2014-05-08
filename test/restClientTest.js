@@ -171,7 +171,7 @@ describe('Rest Client', function () {
     noConfig = client.getConfig();
     expect(noConfig.success).to.be.a('function', 'success callback not set');
     expect(noConfig.error).to.be.a('function', 'error callback not set');
-    expect(noConfig.timeout).to.equal(10000);
+    expect(noConfig.timeout).to.equal(30000);
     assert(expect(noConfig.async).to.be.true);
   });
 
