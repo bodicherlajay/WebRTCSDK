@@ -61,7 +61,7 @@ if (!ATT) {
       app.appConfig = appConfig;
 
       // configure rest APIs now
-      app.configueAPIs(appConfig);
+      app.configureAPIs(appConfig);
     } catch (e) {
       //logger.logError(app.errorDictionary.getError());
       logger.logError(e);

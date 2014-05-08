@@ -308,11 +308,11 @@ if (!ATT) {
     return APIConfigs;
   },
 
-    configueAPIs = function (appConfig) {
+    configureAPIs = function (appConfig) {
       app.APIConfigs = configure(appConfig);
     };
 
   // place on ATT.
-  app.configueAPIs = configueAPIs;
+  app.configureAPIs = configureAPIs;
 
 }(ATT || {}));
