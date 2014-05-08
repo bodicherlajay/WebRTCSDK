@@ -7,18 +7,29 @@
 
 var RESTClient = (function (mainModule) {
   'use strict';
+
   var typeofWindow = typeof window,
     typeofModule = typeof module,
+    typeofExports = typeof exports,
     logger = null,
     defaultErrorHandler,
     errorHandler,
     logMgr = ATT.logManager.getInstance(),
+    getUtils = function (app) {
+      if (typeofExports !== 'undefined') {
+        if (typeofModule !== 'undefined' && module.exports) {
+          return exports['ATT.utils'];
+        }
+      } else {
+        return app.utils;
+      }
+    },
     //Inject logger
     setLogger = function (lgr) {
       logger = lgr;
     },
     RESTClient =  function (config) {
-      this.config =  mainModule.utils.extend({}, config);
+      this.config =  getUtils(mainModule).extend({}, config);
         // default ajax configuration
       this.config.async = this.config.async || true;
       this.config.timeout = this.config.timeout || 10000;
@@ -114,7 +125,7 @@ var RESTClient = (function (mainModule) {
             return xhr.status;
           }
         },
-        responseCopy = mainModule.utils.extend({}, responseObject);
+        responseCopy = getUtils(mainModule).extend({}, responseObject);
       show_response(responseCopy);
       if (xhr.status >= 400 && xhr.status <= 599) {
         if (typeof errorHandler === 'function') {
@@ -143,7 +154,7 @@ var RESTClient = (function (mainModule) {
             return xhr.status;
           }
         },
-        responseCopy = mainModule.utils.extend({}, responseObject);
+        responseCopy = getUtils(mainModule).extend({}, responseObject);
       show_response(responseCopy);
       //call the error callback
       errorCallback.call(this, responseCopy);
@@ -214,7 +225,7 @@ var RESTClient = (function (mainModule) {
     methods.forEach(function (method) {
       RESTClient.prototype[method] = function (config) {
         config.method = method;
-        config.headers = mainModule.utils.extend(this.config.headers, config.headers);
+        config.headers = getUtils(mainModule).extend(this.config.headers, config.headers);
         this.ajax(config);
       };
     });
@@ -227,9 +238,12 @@ var RESTClient = (function (mainModule) {
   };
 
     //exports for nodejs
-  typeofModule = typeof module;
-  if (typeofModule !== 'undefined' && module.exports) {
-    module.exports = RESTClient;
+  if (typeofExports !== 'undefined') {
+    if (typeofModule !== 'undefined' && module.exports) {
+      //making it readonly so that it does not get accidentally overridden in nodejs environment
+      exports = module.exports['ATT.RESTClient'] = RESTClient;
+    }
+    exports['ATT.RESTClient'] = RESTClient;
   }
 
   // export to the browser
