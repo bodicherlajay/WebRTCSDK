@@ -1,8 +1,12 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, errorDictionary, describe, it, expect, beforeEach*/
+/*global ATT:true, errorDictionary, describe, it, expect, afterEach: true, beforeEach: true*/
 
 describe('ErrorDictionaryModule', function () {
   "use strict";
+  var backupAtt;
+  beforeEach(function () {
+    backupAtt = ATT;
+  });
 
   describe('Application Object', function () {
     it('should have factory method at ATT.utils', function () {
@@ -70,5 +74,9 @@ describe('ErrorDictionaryModule', function () {
         expect(err.formatError()).to.equal('RTC-00000-Create Session-400-SVC0002-invalidinput-Request payload does not conform as documented');
       });
     });
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });

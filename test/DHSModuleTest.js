@@ -8,13 +8,11 @@ describe('DHSModule', function () {
   var resourceManager = Env.resourceManager.getInstance(),
     apiObj = resourceManager.getAPIObject(),
     requests,
-    xhr;
-
-  before(function () {
-  });
+    xhr,
+    backupAtt;
 
   beforeEach(function () {
-
+    backupAtt = ATT;
     xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
 
@@ -256,6 +254,10 @@ describe('DHSModule', function () {
     });
 
     expect(boundCall).to.throw('Address did not validate.');
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 
 });

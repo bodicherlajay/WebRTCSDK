@@ -4,7 +4,11 @@ before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
 
 describe('UserMediaService', function () {
   'use strict';
+  var backupAtt;
 
+  beforeEach(function () {
+    backupAtt = ATT;
+  });
   it('should exist and contain startCall, showStream, stopStream', function () {
     expect(ATT.UserMediaService).to.be.an('object');
     expect(ATT.UserMediaService.startCall).to.be.a('function');
@@ -50,5 +54,9 @@ describe('UserMediaService', function () {
     ATT.UserMediaService.localStream = {foo: 'bar', getAudioTracks: function () { return audioTracks; }};
     ATT.UserMediaService.unmuteStream();
     assert.isTrue(ATT.UserMediaService.localStream.getAudioTracks()[0].enabled);
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });

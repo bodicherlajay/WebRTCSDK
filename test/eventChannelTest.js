@@ -6,6 +6,10 @@
  */
 describe('Event Channel', function () {
   'use strict';
+  var backupAtt;
+  beforeEach(function () {
+    backupAtt = ATT;
+  });
 
   describe('ATT.utils namespace', function () {
     it('should have factory method to create an eventChannel at ATT.utils.createEventChannel', function () {
@@ -129,5 +133,9 @@ describe('Event Channel', function () {
       });
       it('should publish an event given a message on the open socket');
     });
+  });
+
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });

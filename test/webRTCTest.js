@@ -8,10 +8,11 @@ describe('webRTC', function () {
   var resourceManager = Env.resourceManager.getInstance(),
     apiObj = resourceManager.getAPIObject(),
     requests,
-    xhr;
+    xhr,
+    backupAtt;
 
   beforeEach(function () {
-
+    backupAtt = ATT;
     xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
 
@@ -216,5 +217,8 @@ describe('webRTC', function () {
       ATT.rtc.Phone.hangup();
       stubSessionContext.restore();
     });
+  });
+  afterEach(function () {
+    ATT = backupAtt;
   });
 });
