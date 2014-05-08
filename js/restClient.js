@@ -21,7 +21,7 @@ var RESTClient = (function (mainModule) {
       this.config =  mainModule.utils.extend({}, config);
         // default ajax configuration
       this.config.async = this.config.async || true;
-      this.config.timeout = this.config.timeout || 10000;
+      this.config.timeout = this.config.timeout || 30000;
       this.config.success = this.config.success || function () { return; };
       this.config.error = this.config.error || defaultErrorHandler;
       this.config.ontimeout = this.config.ontimeout || function () { return; };
