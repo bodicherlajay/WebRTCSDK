@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
 
-describe('SignalingService', function () {
+describe.only('SignalingService', function () {
   "use strict";
 
   var resourceManager = Env.resourceManager.getInstance(),
@@ -56,18 +56,16 @@ describe('SignalingService', function () {
     expect(ATT.SignalingService.sendEndCall).to.be.a('function');
   });
 
-  xit('should call startCall API method with call object passed as data with SDP & calledParty.', function () {
+  it('should call startCall operation with call object passed as data with SDP & calledParty.', function () {
 
     // setup
-
     apiObj.Session = {
       accessToken: 'access_token',
       Id: 'webrtc_sessionid'
     };
 
-    // spy on ATT.WebRTC.startCall
-    //var startCallSpy = sinon.spy(ATT[apiNamespace], 'startCall');
-    var startCallSpy = sinon.spy(apiObj, 'startCall'),
+    var startCallSpy = sinon.spy(resourceManager, 'doOperation'),
+      operationPassedToStartCall,
       configPassedToStartCall;
 
     sinon.stub(ATT.sdpFilter, "getInstance", function () {
@@ -80,9 +78,6 @@ describe('SignalingService', function () {
       };
     });
 
-    // stub out ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp)
-    //var stub = sinon.stub(object, "method", func)
-
     ATT.SignalingService.sendOffer({
       calledParty: '123',
       sdp: 'sdp'
@@ -90,18 +85,19 @@ describe('SignalingService', function () {
 
     expect(startCallSpy.called).to.equal(true);
 
-    configPassedToStartCall = startCallSpy.args[0][0];
+    operationPassedToStartCall = startCallSpy.args[0][0];
+    configPassedToStartCall = startCallSpy.args[0][1];
 
-    expect(configPassedToStartCall).to.be.an('object');
+    expect(operationPassedToStartCall).to.equal('startCall');
     expect(configPassedToStartCall.data.call).to.be.an('object');
-    expect(configPassedToStartCall.data.call.sdp).to.be.a('string');
-    expect(configPassedToStartCall.data.call.calledParty).to.be.a('string');
+    expect(configPassedToStartCall.data.call.sdp).to.equal('sdp');
+    expect(configPassedToStartCall.data.call.calledParty).to.equal('sip:123@icmn.api.att.net');
 
     startCallSpy.restore();
   });
 
 
-  xit('should receive 201 and Location url and x-state: invitation-sent in header', function () {
+  it('should receive 201 and Location url and x-state: invitation-sent in header', function () {
     // setup
     apiObj.Session = {
       accessToken: 'access_token',
@@ -116,7 +112,17 @@ describe('SignalingService', function () {
       },
       successSpy = sinon.spy(),
       errorSpy = sinon.spy(),
-      sendSuccessArguments;
+      sendSuccessArguments,
+      appConfig;
+
+    appConfig = {
+      DHSEndpoint: "http://localhost:9000",
+      RTCEndpoint: "http://wdev.code-api-att.com:8080/RTC/v1"
+    };
+
+    // TODO: Find out proper configure call. Fix configue typo.
+    ATT.configueAPIs(appConfig);
+    ATT.configure();
 
     // call
     ATT.SignalingService.sendOffer({
@@ -135,7 +141,6 @@ describe('SignalingService', function () {
     // send should be called with object with x-state and location.
     sendSuccessArguments = successSpy.args[0][0];
     expect(sendSuccessArguments).to.be.an('object');
-
   });
 
   xit('should not call success callback on any 400.', function () {
