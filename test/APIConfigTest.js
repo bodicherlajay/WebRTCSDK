@@ -8,7 +8,7 @@
  *  @namespace WebRTCAPI
  */
 
-describe.only('APIConfig', function () {
+describe('APIConfig', function () {
   "use strict";
   var appConfig;
   beforeEach(function () {
@@ -50,7 +50,7 @@ describe.only('APIConfig', function () {
   it('should have a valid method getEvents method and returns Authorization and url', function () {
     var  params = {sessionId : "sessionid", endpoint : "endpoint"};
     expect(ATT.APIConfigs.getEvents).to.be.an('object');
-    expect(ATT.APIConfigs.getEvents.method).to.equal('post');
+    expect(ATT.APIConfigs.getEvents.method).to.equal('get');
     expect(ATT.APIConfigs.getEvents.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionidendpoint');
     expect(ATT.APIConfigs.getEvents.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
   });
@@ -97,5 +97,3 @@ describe.only('APIConfig', function () {
   });
 
 });
-
-
