@@ -66,11 +66,11 @@ if (!Env) {
     if (!config) {
       return logger.logError('Cannot login to web rtc, no configuration');
     }
-    if (!config.data) {
-      return logger.logError('Cannot login to web rtc, no configuration data');
+    if (!config.token) {
+      return logger.logError('Cannot login to web rtc, no access token');
     }
     var token = config.token.access_token,
-      e911Id = config.e911Id ? config.e911Id : null, //config.data.e911Id.e911Locations.addressIdentifier : null,
+      e911Id = config.e911Id ? config.e911Id : null,
       session;
 
     // create new session with token and optional e911id
@@ -159,10 +159,18 @@ if (!Env) {
   };
 
   createWebRTCSessionError = function (config, error) {
-    logger.logError('Error creating web rtc session: ' + error);
+    logger.logError('Error creating web rtc session: ');
     if (typeof config.onError === 'function') {
-      var msg = 'SDK-10000:' + ATT.errorDictionary.getError('SDK-10000').helpText;
-      config.onError(msg);
+      if (error.responseText === "") {
+        var msg = 'SDK-10000:' + ATT.errorDictionary.getError('SDK-10000').helpText;
+        config.onError(msg);
+      }
+      else {
+        //look at responseObject structure on RESTClient
+        //parse the json error response, get http status code, message id (svc/pol) and then lookup the error dictionary
+        //get the helptext and display
+        config.onError("CreateSession operation failed.");
+      }
     }
   };
 
