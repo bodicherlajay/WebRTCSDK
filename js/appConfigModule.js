@@ -17,7 +17,7 @@ if (!ATT) {
 
   // API Platform Endpoints
     EnvConf = {
-      AMS: 'http://wdev.code-api-att.com:8080/RTC/v1',
+      AMS: 'https://wdev.code-api-att.com/RTC/v1',
       F6UAT: 'https://api-stage.mars.bf.sl.attcompute.com/RTC/v1',
       PROD: 'https://api.att.com/RTC/v1'
     },
@@ -56,23 +56,15 @@ if (!ATT) {
         logger.logTrace('url: ' + EnvConf[key]);
       }
       appConfig.RTCEndpoint = EnvConf[key];
-      if (!key) {
-        key = 'AMS'; // default to AMS endpoints
-        logger.logInfo('Default ENVIRNOMENT set by SDK : ' + key);
-        logger.logInfo('url: ' + EnvConf[key]);
-      } else {
-        logger.logInfo('User Configured ENVIRNOMENT: ' + key);
-        logger.logInfo('url: ' + EnvConf[key]);
-      }
-      appConfig.RTCEndpoint = EnvConf[key];
       appConfig.DHSEndpoint = DHSConf;
       appConfig.EventChannelConfig = EventChannelConf[(useWebSockets ? 'WebSockets' : 'LongPolling')];
       app.appConfig = appConfig;
 
       // configure rest APIs now
-      app.configueAPIs();
+      app.configueAPIs(appConfig);
     } catch (e) {
       //logger.logError(app.errorDictionary.getError());
+      logger.logError(e);
     }
 
     if (Env) {

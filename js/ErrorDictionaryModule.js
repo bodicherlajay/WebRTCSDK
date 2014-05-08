@@ -45,12 +45,20 @@
       };
       return error;
     }
+    // second key to lookup using operation name, http status code and message id
+    function addOpStatusMessageId (error) {
+      error.opStatusMsgId = function () {
+        var opStatusMsgId = error.operationName+error.httpStatusCode+error.messageId;
+        return opStatusMsgId;
+      };
+      return error;
+    }
     newError = Object.create(prototypeError);
     // extend with the properties in the spec
     newError = utils.extend(newError, spec);
     newError = addFormatter(newError);// add `formatMethod`
     newError = addIdGetter(newError);
-
+    newError = addOpStatusMessageId(newError);
     return newError;
   }
 
@@ -58,7 +66,8 @@
     var allErrors = [], // collection of all errors in this dictionary
       // `modules` is an immutable of abbreviations for the modules of this `app`
       modules = Object.freeze(spec.modules),
-      newError = null;
+      newError = null,
+      allErrorsOpStats = [];
 
     return { // return the error dictionary
       createError: function (spec) {
@@ -70,10 +79,14 @@
         newError = createErrorWith(spec, utils);
         // add it to the dictionary
         allErrors[newError.getId()] = newError;
+        allErrorsOpStats[newError.opStatusMsgId()] = newError;
         return newError;
       },
       getError: function (errorId) {
         return allErrors[errorId];
+      },
+      getErrorByOpStatus: function (operationName, httpStatusCode, messageId) {
+        return allErrorsOpStats[operationName+httpStatusCode+messageId];
       },
       modules: modules
     };

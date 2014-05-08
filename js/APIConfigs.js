@@ -13,7 +13,7 @@ if (!ATT) {
 (function (app) {
   'use strict';
 
-  var configure = function () {
+  var configure = function (appConfig) {
     /**
      * Property defaults.
      * @namespace ATT.DEFAULTS
@@ -24,12 +24,12 @@ if (!ATT) {
       * Developer Hosted Server Resource url.
       * @memberof ATT.DEFAULTS
       */
-      DHSEndpoint: ATT.appConfig.DHSEndpoint,
+      DHSEndpoint: appConfig.DHSEndpoint,
       /**
       * RTC Resource url.
       * @memberof ATT.DEFAULTS
       */
-      RTCEndpoint: ATT.appConfig.RTCEndpoint,
+      RTCEndpoint: appConfig.RTCEndpoint,
       /**
       * Default headers.
       * @memberof ATT.DEFAULTS
@@ -115,8 +115,8 @@ if (!ATT) {
         getE911Id: {
           method: 'get',
           formatters : {
-            url: function (params) {
-              return DEFAULTS.DHSEndpoint + '/e911/' + params;
+            url: function (e911Id) {
+              return DEFAULTS.DHSEndpoint + '/e911/' + e911Id;
             }
           },
           headers: DEFAULTS.headers
@@ -148,14 +148,14 @@ if (!ATT) {
           url: DEFAULTS.RTCEndpoint + '/sessions',
           formatters: {
             headers: {
-              'Authorization': function (param) {
-                return 'Bearer ' + param;
+              'Authorization': function (oAuthToken) {
+                return 'Bearer ' + oAuthToken;
               },
-              'x-e911Id': function (param) {
-                return param;
+              'x-e911Id': function (e911id) {
+                return e911id;
               },
-              'x-Arg': function (param) {
-                return param;
+              'x-Arg': function (xArg) {
+                return xArg;
               }
             }
           },
@@ -168,15 +168,15 @@ if (!ATT) {
         deleteWebRTCSession: {
           method: 'delete',
           formatters : {
-            url: function (params) {
-              return DEFAULTS.RTCEndpoint + '/sessions/' + params;
+            url: function (sessionId) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + sessionId;
             },
             headers: {
-              'Authorization': function (param) {
-                return 'Bearer ' + param;
+              'Authorization': function (oAuthToken) {
+                return 'Bearer ' + oAuthToken;
               },
-              'x-e911Id': function (param) {
-                return param;
+              'x-e911Id': function (e911id) {
+                return e911id;
               }
             }
           },
@@ -308,8 +308,8 @@ if (!ATT) {
     return APIConfigs;
   },
 
-    configueAPIs = function () {
-      app.APIConfigs = configure();
+    configueAPIs = function (appConfig) {
+      app.APIConfigs = configure(appConfig);
     };
 
   // place on ATT.
