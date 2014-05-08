@@ -65,6 +65,7 @@ if (!ATT) {
       app.configueAPIs();
     } catch (e) {
       //logger.logError(app.errorDictionary.getError());
+      logger.logError(e);
     }
 
     if (Env) {
