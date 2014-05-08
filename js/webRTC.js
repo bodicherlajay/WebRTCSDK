@@ -103,7 +103,8 @@ if (!Env) {
       params: {
         headers: {
           'Authorization': token,
-          'x-e911Id': e911Id || ""
+          'x-e911Id': e911Id || "",
+          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
         }
       },
       success: createWebRTCSessionSuccess.bind(this, config),
@@ -131,7 +132,7 @@ if (!Env) {
       // publish the UI callback for ready state
       app.event.publish(sessionId + '.responseEvent', {
         state:  app.SessionEvents.RTC_SESSION_CREATED,
-        data:   {
+        data: {
           webRtcSessionId: sessionId
         }
       });
@@ -141,12 +142,12 @@ if (!Env) {
       // Also, see appConfigModule
       channelConfig = {
         accessToken: session.getAccessToken(),
-        endpoint: ATT.appConfig.eventChannelConfig.endpoint,
+        endpoint: ATT.appConfig.EventChannelConfig.endpoint,
         sessionId: session.getSessionId(),
         publisher: ATT.event,
         resourceManager: resourceManager,
         publicMethodName: 'getEvents',
-        usesLongPolling: true
+        usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
       };
       logger.logTrace('Creating event channel...');
       ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);

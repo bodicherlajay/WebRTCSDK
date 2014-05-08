@@ -153,6 +153,9 @@ if (!ATT) {
               },
               'x-e911Id': function (param) {
                 return param;
+              },
+              'x-Arg': function (param) {
+                return param;
               }
             }
           },
@@ -184,7 +187,7 @@ if (!ATT) {
         * @memberof ATT.APIConfigs
         */
         getEvents: {
-          method: ATT.appConfig.eventChannelConfig.method,
+          method: ATT.appConfig.EventChannelConfig.method,
           formatters: {
             url: function (params) {
               return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + params.endpoint;

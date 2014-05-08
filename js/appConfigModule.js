@@ -21,24 +21,31 @@ if (!ATT) {
       F6UAT: 'https://api-stage.mars.bf.sl.attcompute.com/RTC/v1',
       PROD: 'https://api.att.com/RTC/v1'
     },
-    logMgr = ATT.logManager.getInstance(),
-    logger,
+  // Event Channel Config
+    EventChannelConf = {
+      WebSockets: {
+        type: 'websocket',
+        method: 'post',
+        endpoint: '/websocket'
+      },
+      LongPolling: {
+        type: 'longpolling',
+        method: 'get',
+        endpoint: '/events' 
+      }
+    },
     appConfig = {
       RTCEndpoint: null,
       DHSEndpoint: null,
-      eventChannelConfig: {
-        // Websockets: '/websocket'
-        // Long-Polling: '/events'
-        endpoint: '/events',
-        // Websockets: 'post'
-        // Long-Polling: 'get'
-        method: 'get'
-      }
-    };
+      EventChannelConfig: null
+    },
+    logMgr = ATT.logManager.getInstance(),
+    logger;
+
   logMgr.configureLogger('appConfigModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('appConfigModule');
 
-  function configure(key) {
+  function configure(key, useWebSockets) { // useWebSockets is optional, default to long-polling
     try {
       if (!key) {
         key = 'AMS'; // default to AMS endpoints
@@ -59,6 +66,7 @@ if (!ATT) {
       }
       appConfig.RTCEndpoint = EnvConf[key];
       appConfig.DHSEndpoint = DHSConf;
+      appConfig.EventChannelConfig = EventChannelConf[(useWebSockets ? 'WebSockets' : 'LongPolling')];
       app.appConfig = appConfig;
 
       // configure rest APIs now
