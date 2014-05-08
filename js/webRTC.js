@@ -104,7 +104,8 @@ if (!Env) {
       params: {
         headers: {
           'Authorization': token,
-          'x-e911Id': e911Id || ""
+          'x-e911Id': e911Id || "",
+          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
         }
       },
       success: createWebRTCSessionSuccess.bind(this, config),
