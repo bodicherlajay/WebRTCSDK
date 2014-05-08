@@ -31,7 +31,7 @@ if (!ATT) {
       LongPolling: {
         type: 'longpolling',
         method: 'get',
-        endpoint: '/events' 
+        endpoint: '/events'
       }
     },
     appConfig = {

@@ -70,7 +70,7 @@ if (!Env) {
       return logger.logError('Cannot login to web rtc, no access token');
     }
     var token = config.token.access_token,
-      e911Id = config.e911Id ? config.e911Id : null,
+      e911Id = config.e911Id ? config.e911Id.e911Locations.addressIdentifier : null,
       session;
 
     // create new session with token and optional e911id
@@ -165,8 +165,7 @@ if (!Env) {
       if (error.responseText === "") {
         var msg = 'SDK-10000:' + ATT.errorDictionary.getError('SDK-10000').helpText;
         config.onError(msg);
-      }
-      else {
+      } else {
         //look at responseObject structure on RESTClient
         //parse the json error response, get http status code, message id (svc/pol) and then lookup the error dictionary
         //get the helptext and display
