@@ -22,7 +22,8 @@ if (!Env) {
     createWebRTCSessionSuccess,
     createWebRTCSessionError,
     logMgr = ATT.logManager.getInstance(),
-    logger;
+    logger,
+    newErrorObj;
 
   logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('WebRTC');
@@ -70,7 +71,7 @@ if (!Env) {
       return logger.logError('Cannot login to web rtc, no access token');
     }
     var token = config.token.access_token,
-      e911Id = config.e911Id ? config.e911Id : null,
+      e911Id = config.e911Id || null,
       session;
 
     // create new session with token and optional e911id
@@ -158,18 +159,34 @@ if (!Env) {
     }
   };
 
+  newErrorObj = function (error, operation) {
+    //look at responseObject structure on RESTClient
+    //parse the json error response, get http status code, message id (svc/pol) and then lookup the error dictionary
+    //get the helptext and display
+    var response = error.getJson(), httpStatusCode =  error.getResponseStatus(), messageId, errObj;
+    messageId = response.RequestError.ServiceException.MessageId;
+    errObj = app.errorDictionary.getErrorByOpStatus("CreateSession", httpStatusCode, messageId);
+    //If error object is found then make one
+    if (!errObj) {
+      errObj = app.errorDictionary.createError({moduleID : 'RTC',
+        userErrorCode : "SDK-UNKNOWN",
+        operationName : operation,
+        httpStatusCode : httpStatusCode,
+        errorDescription : "Unable to create Session",
+        reasonText : response.RequestError.ServiceException.Text});
+      logger.info("Error object not available");
+      logger.info(errObj);
+    }
+    return errObj;
+  };
+
   createWebRTCSessionError = function (config, error) {
     logger.logError('Error creating web rtc session: ');
     if (typeof config.onError === 'function') {
       if (error.responseText === "") {
-        var msg = 'SDK-10000:' + ATT.errorDictionary.getError('SDK-10000').helpText;
-        config.onError(msg);
-      }
-      else {
-        //look at responseObject structure on RESTClient
-        //parse the json error response, get http status code, message id (svc/pol) and then lookup the error dictionary
-        //get the helptext and display
-        config.onError("CreateSession operation failed.");
+        config.onError(app.errorDictionary.getError('SDK-10000'));
+      } else {
+        config.onError(newErrorObj(error, "CreateSession"));
       }
     }
   };
