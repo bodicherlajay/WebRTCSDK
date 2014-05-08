@@ -89,16 +89,19 @@ var RESTClient = (function (mainModule) {
       resLogger.logDebug('=========body==========');
       resLogger.logDebug(response.responseText);
     },
+    parseJSON = function (xhr) {
+      var contType = xhr.getResponseHeader("Content-Type");
+      if (contType.indexOf("application/json") === 0) {
+        return JSON.parse(xhr.responseText);
+      }
+      return "";
+    },
     success = function (successCallback) {
       // private methods
       var xhr = this,
         responseObject = {
           getJson: function () {
-            var contType = xhr.getResponseHeader("Content-Type");
-            if (contType.indexOf("application/json") === 0) {
-              return JSON.parse(xhr.responseText);
-            }
-            return "";
+            return parseJSON(xhr);
           },
           getResponseHeader: function (key) {
             return xhr.getResponseHeader(key);
@@ -127,7 +130,7 @@ var RESTClient = (function (mainModule) {
       var xhr = this,
         responseObject = {
           getJson: function () {
-            return JSON.parse(xhr.responseText);
+            return parseJSON(xhr);
           },
           getResponseHeader: function (key) {
             return xhr.getResponseHeader(key);
@@ -139,10 +142,11 @@ var RESTClient = (function (mainModule) {
           getResponseStatus: function () {
             return xhr.status;
           }
-        };
-      show_response(responseObject);
+        },
+        responseCopy = mainModule.utils.extend({}, responseObject);
+      show_response(responseCopy);
       //call the error callback
-      errorCallback.call(this, this.responseText);
+      errorCallback.call(this, responseCopy);
     };
   // public methods
   RESTClient.prototype.ajax = function () {
@@ -170,7 +174,6 @@ var RESTClient = (function (mainModule) {
           throw new Error('Network error occurred in REST client.');
         }
       };
-//    xhr.onerror = error.bind(xhr, config.error);
 
       xhr.onabort = error.bind(xhr, config.error);
 
