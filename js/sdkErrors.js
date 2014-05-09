@@ -8,36 +8,46 @@ var sdkErrorCollection = [
   // This is the error thrown if the configured error is not found in the error dictionary
   {
     userErrorCode: 'SDK-00000',    //5 digit error code
-    operationName: 'ErrorConfig',    //Name of the REST operation
+    moduleID: 'ERROR_DICT',
+    operationName: 'ErrorConfig',    //Name of the operation
     httpStatusCode: '',   //HTTP Status code
     messageId: '',        //SVC or POL Error
-    helpText: 'Please configure the error in the error dictionary', //Help text which can be displayed on UI
-    reasonText: 'configerror',       //High level reason text, invalid input, forbidden
-    errorDescription: 'The specified error code is not configured in the error disctionary', //Error Description
-    moduleID: 'ERROR_DICT'
+    errorDescription: 'Error no configured', //Error Description
+    reasonText: 'The specified error code is not configured in the error disctionary',  //High level reason text, invalid input, forbidden
+    helpText: 'Please configure the error in the error dictionary' //Help text which can be displayed on UI
   },
   // This is the default error, can be used for all purposes. Shouldn't use it since doesn't provide much information
   {
     userErrorCode: 'SDK-00001',    //5 digit error code
-    operationName: 'GeneralOperation',    //Name of the REST operation
+    moduleID: 'GENERAL',
+    operationName: 'GeneralOperation',  //Name of the operation
     httpStatusCode: '',   //HTTP Status code
     messageId: '',        //SVC or POL Error
-    helpText: '', //Help text which can be displayed on UI
-    reasonText: 'error',       //High level reason text, invalid input, forbidden
-    errorDescription: 'There was an error performing the operation', //Error Description
-    moduleID: 'GENERAL'
+    errorDescription: 'Error performing the operation', //Error Description
+    reasonText: 'There was an error performing the operation',   //High level reason text, invalid input, forbidden
+    helpText: 'Please look at tracelog for further information' //Help text which can be displayed on UI
   },
-  //SDK-10000 range reserved for webRTC module
+  //SDK-10000 range reserved for RESOURCE_MGR module
   {
-    userErrorCode: 'SDK-10000',    //5 digit error code
-    helpText: 'Unable to complete login..text tobe filled in by marketing',         //Help text which can be displayed on UI
+    userErrorCode: 'SDK-10000',   //5 digit error code
+    moduleID: 'RESOURCE_MGR',
+    operationName: 'doOperation', //Name of the REST operation
+    httpStatusCode: '',           //HTTP Status code
+    errorDescription: 'XHR request error', //Error Description
+    reasonText: 'There was an error in sending the XHR request',//High level reason text, invalid input, forbidden
+    helpText: 'Please check your network connectivity',         //Help text which can be displayed on UI
+  },
+  //SDK-20000 range reserved for webRTC module
+  {
+    userErrorCode: 'SDK-20000',    //5 digit error code
+    helpText: 'Unable to complete login..text tobe filled in by marketing', //Help text which can be displayed on UI
     reasonText: 'configerror',       //High level reason text, invalid input, forbidden
     errorDescription: 'Fatal Error XHR Request failed', //Error Description
     moduleID: 'RTC'
   },
   {
     moduleID : 'RTC',
-    userErrorCode : "SDK-10001",
+    userErrorCode : "SDK-20001",
     operationName : "Login",
     httpStatusCode : "<optional>",
     errorDescription : "[TODO: To be filled by Product/Marketing]",
@@ -45,7 +55,7 @@ var sdkErrorCollection = [
   },
   {
     moduleID : 'RTC',
-    userErrorCode : "SDK-10002",
+    userErrorCode : "SDK-20002",
     operationName : "CreateSession",
     httpStatusCode : "400",
     errorDescription : "Unable to create Session",
@@ -53,7 +63,7 @@ var sdkErrorCollection = [
   },
   {
     moduleID : 'RTC',
-    userErrorCode : "SDK-10003",
+    userErrorCode : "SDK-20003",
     operationName : "CreateSession",
     httpStatusCode : "400",
     errorDescription : "Unable to create Session",
@@ -61,14 +71,14 @@ var sdkErrorCollection = [
   },
   {
     moduleID : 'RTC',
-    userErrorCode : "SDK-10004",
+    userErrorCode : "SDK-20004",
     operationName : "CreateSession",
     httpStatusCode : "400",
     errorDescription : "Unable to create Session",
     reasonText : "Invalid input value for Message part <part_name>, valid values are <part_values>"
   },
   {
-    userErrorCode : "SDK-10005",
+    userErrorCode : "SDK-20005",
     moduleID : 'RTC',
     messageId : "SVC0004",
     operationName : "CreateSession",
@@ -77,7 +87,7 @@ var sdkErrorCollection = [
     reasonText : "No valid addresses provided in the Message part <part_name>"
   },
   {
-    userErrorCode : "SDK-10006",
+    userErrorCode : "SDK-20006",
     moduleID : 'RTC',
     messageId : "SVC8510",
     operationName : "CreateSession",
@@ -86,7 +96,7 @@ var sdkErrorCollection = [
     reasonText : "E911 not supported for non-telephone users"
   },
   {
-    userErrorCode : "SDK-10007",
+    userErrorCode : "SDK-20007",
     moduleID : 'RTC',
     messageId : "SVC8511",
     operationName : "CreateSession",
@@ -95,7 +105,7 @@ var sdkErrorCollection = [
     reasonText : "Valid e911Id is mandatory for <part_value>"
   },
   {
-    userErrorCode : "SDK-10008",
+    userErrorCode : "SDK-20008",
     moduleID : 'RTC',
     messageId : "SVC8512",
     operationName : "CreateSession",
@@ -104,7 +114,7 @@ var sdkErrorCollection = [
     reasonText : "Unassigned token Associate token to VTN or username"
   },
   {
-    userErrorCode : "SDK-10009",
+    userErrorCode : "SDK-20009",
     moduleID : 'RTC',
     messageId : "SVC8513",
     operationName : "CreateSession",
@@ -113,7 +123,7 @@ var sdkErrorCollection = [
     reasonText : "Token in use."
   },
   {
-    userErrorCode : "SDK-10010",
+    userErrorCode : "SDK-20010",
     moduleID : 'RTC',
     messageId : "POL0001",
     operationName : "CreateSession",
@@ -122,7 +132,7 @@ var sdkErrorCollection = [
     reasonText : "A policy error occurred. For example, rate limit error, authentication and authorization errors"
   },
   {
-    userErrorCode : "SDK-10011",
+    userErrorCode : "SDK-20011",
     moduleID : 'RTC',
     messageId : "POL0002",
     operationName : "CreateSession",
@@ -131,7 +141,7 @@ var sdkErrorCollection = [
     reasonText : "Privacy verification failed for address <address> request is refused"
   },
   {
-    userErrorCode : "SDK-10012",
+    userErrorCode : "SDK-20012",
     moduleID : 'RTC',
     messageId : "POL0003",
     operationName : "CreateSession",
@@ -140,7 +150,7 @@ var sdkErrorCollection = [
     reasonText : "Too many addresses specified in Message part"
   },
   {
-    userErrorCode : "SDK-10013",
+    userErrorCode : "SDK-20013",
     moduleID : 'RTC',
     messageId : "POL0009",
     operationName : "CreateSession",
@@ -149,7 +159,7 @@ var sdkErrorCollection = [
     reasonText : "User has not been provisioned for %1"
   },
   {
-    userErrorCode : "SDK-10014",
+    userErrorCode : "SDK-20014",
     moduleID : 'RTC',
     messageId : "POL1100",
     operationName : "CreateSession",
@@ -158,7 +168,7 @@ var sdkErrorCollection = [
     reasonText : "Max number of session exceeded allowed limit %1"
   },
   {
-    userErrorCode : "SDK-10015",
+    userErrorCode : "SDK-20015",
     moduleID : 'RTC',
     operationName: "RefreshSession",
     httpStatusCode: "<optional>",
@@ -167,14 +177,14 @@ var sdkErrorCollection = [
   },
   {
     moduleID: 'RTC',
-    userErrorCode: "SDK-10016",
+    userErrorCode: "SDK-20016",
     operationName: "DeleteSession",
     messageId: "SVC0001",
     errorDescription: "Unable to Delete Session",
     reasonText: "A service error has occurred. Error code is <error_explanation>"
   },
   {
-    userErrorCode: "SDK-10017",
+    userErrorCode: "SDK-20017",
     moduleID: 'RTC',
     operationName: "DeleteSession",
     messageId: "SVC0002",
@@ -183,14 +193,14 @@ var sdkErrorCollection = [
   },
   {
     moduleID: 'RTC',
-    userErrorCode: "SDK-10018",
+    userErrorCode: "SDK-20018",
     operationName: "DeleteSession",
     messageId: "SVC0003",
     errorDescription: "Unable to Delete Session",
     reasonText: "Invalid input value for Message part <part_name>, valid values are <part_values>"
   },
   {
-    userErrorCode: "SDK-10019",
+    userErrorCode: "SDK-20019",
     moduleID: 'RTC',
     operationName: "DeleteSession",
     messageId: "SVC0004",
@@ -198,7 +208,7 @@ var sdkErrorCollection = [
     reasonText: "No valid addresses provided in the Message part <part_name>"
   },
   {
-    userErrorCode: "SDK-10020",
+    userErrorCode: "SDK-20020",
     moduleID: 'RTC',
     messageId: "POL0001",
     operationName: "DeleteSession",
@@ -207,7 +217,7 @@ var sdkErrorCollection = [
     reasonText: "A policy error occurred. For example, rate limit error, authentication and authorization errors"
   },
   {
-    userErrorCode: "SDK-10021",
+    userErrorCode: "SDK-20021",
     moduleID: 'RTC',
     messageId: "POL0002",
     operationName: "DeleteSession",
@@ -216,7 +226,7 @@ var sdkErrorCollection = [
     reasonText: "Privacy verification failed for address <address>, request is refused"
   },
   {
-    userErrorCode: "SDK-10022",
+    userErrorCode: "SDK-20022",
     moduleID: 'RTC',
     messageId: "POL0003",
     operationName: "DeleteSession",
@@ -225,7 +235,7 @@ var sdkErrorCollection = [
     reasonText: "Too many addresses specified in Message part"
   },
   {
-    userErrorCode: "SDK-10023",
+    userErrorCode: "SDK-20023",
     messageId: "POL1102",
     operationName: "DeleteSession",
     httpStatusCode: "401/403",
@@ -243,7 +253,8 @@ var sdkErrorCollection = [
     operationName: "",
     httpStatusCode: "",
     errorDescription: "DHS Operation failed",
-    reasonText: ""
+    reasonText: "",
+    helpText: 'Please look at tracelog for further information' //Help text which can be displayed on UI
   },
   {
     userErrorCode: "SDK-51000",
@@ -252,7 +263,8 @@ var sdkErrorCollection = [
     operationName : "createE911Id",
     httpStatusCode : "400",
     errorDescription : "Unable to create E911 Id",
-    reasonText : "Address could not be confirmed"
+    reasonText : "Address could not be confirmed",
+    helpText: 'Please make sure that the address is valid or confirmed' //Help text which can be displayed on UI
   }
 
 ];
