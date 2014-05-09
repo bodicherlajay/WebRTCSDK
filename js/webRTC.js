@@ -47,10 +47,15 @@ if (Env === undefined) {
       logger.logWarning('Initializing SDK session without e911 id');
     }
     // Set the access Token in the callManager.
-    callManager.CreateSession({
-      token: accessToken,
-      e911Id: e911Id
-    });
+    try {
+      callManager.CreateSession({
+        token: accessToken,
+        e911Id: e911Id
+      });
+    } catch (err) {
+      logger.logError("Init Session Error " + err.message);
+      //config.onError(app.errorDictionary.getError("SDK-00001));
+    }
     logger.logTrace('Initialed SDK session with token and optional e911 id');
   }
 
@@ -92,27 +97,32 @@ if (Env === undefined) {
     }
 
     logger.logTrace('Creating WebRTC session...');
-    resourceManager.doOperation('createWebRTCSession', {
-      data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
-        'session': {
-          'mediaType': 'dtls-srtp',
-          'ice': 'true',
-          'services': [
-            'ip_voice_call',
-            'ip_video_call'
-          ]
-        }
-      },
-      params: {
-        headers: {
-          'Authorization': token,
-          'x-e911Id': e911Id || "",
-          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
-        }
-      },
-      success: createWebRTCSessionSuccess.bind(this, config),
-      error: createWebRTCSessionError.bind(this, config)
-    });
+    try {
+      resourceManager.doOperation('createWebRTCSession', {
+        data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
+          'session': {
+            'mediaType': 'dtls-srtp',
+            'ice': 'true',
+            'services': [
+              'ip_voice_call',
+              'ip_video_call'
+            ]
+          }
+        },
+        params: {
+          headers: {
+            'Authorization': token,
+            'x-e911Id': e911Id || "",
+            'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
+          }
+        },
+        success: createWebRTCSessionSuccess.bind(this, config),
+        error: createWebRTCSessionError.bind(this, config)
+      });
+    } catch (err) {
+      config.onError(app.errorDictionary.getError("SDK-00001"));
+
+    }
   }
 
   createWebRTCSessionSuccess = function (config, responseObject) {
@@ -153,9 +163,13 @@ if (Env === undefined) {
         usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
       };
       logger.logTrace('Creating event channel...');
-      ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
-      if (ATT.utils.eventChannel) {
-        ATT.utils.eventChannel.startListening();
+      try {
+        ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
+        if (ATT.utils.eventChannel) {
+          ATT.utils.eventChannel.startListening();
+        }
+      } catch (err) {
+        config.onError(app.errorDictionary.getError("SDK-00001"));
       }
     } else {
       logger.logDebug('No session id');
@@ -224,24 +238,31 @@ if (Env === undefined) {
     if (!session) {
       successCallback();
     }
-
-    dataForDeleteWebRTCSession = {
-      params: {
-        url: [session.getSessionId()],
-        headers: {
-          'Authorization': session.getAccessToken(),
-          'x-e911Id': session.getE911Id()
+    try {
+      dataForDeleteWebRTCSession = {
+        params: {
+          url: [session.getSessionId()],
+          headers: {
+            'Authorization': session.getAccessToken(),
+            'x-e911Id': session.getE911Id()
+          }
+        },
+        success: function (responseObject) {
+          logger.logInfo('Successfully deleted web rtc session on blackflag');
+          successCallback(responseObject.getResponseStatus());
         }
-      },
-      success: function (responseObject) {
-        logger.logInfo('Successfully deleted web rtc session on blackflag');
-        successCallback(responseObject.getResponseStatus());
-      }
-    };
-
+      };
+    } catch (err) {
+      config.onError(app.errorDictionary.getError("SDK-00001"));
+    }
     logger.logTrace('Logging out...');
+
+    try {
     // Call BF to delete WebRTC Session.
-    resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
+      resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
+    } catch (err) {
+      config.onError(app.errorDictionary.getError("SDK-00001"));
+    }
   }
 
   /**
@@ -307,7 +328,6 @@ if (Env === undefined) {
    */
   function dial(config) {
     callManager.CreateOutgoingCall(config);
-
     // setting up event callbacks using RTC Events
     app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
@@ -364,7 +384,6 @@ if (Env === undefined) {
    */
   function answer(config) {
     callManager.CreateIncomingCall(config);
-
     // setting up event callbacks using RTC Events
     app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
