@@ -63,7 +63,7 @@ if (Env === undefined) {
   };
 
   handleError = function (config, operation, errorResp) {
-    logger.logTrace('handleError' + operation);
+    logger.logTrace('handleError: ' + operation);
     logger.logInfo('There was an error performing operation ' + operation);
 
     var error,
@@ -81,7 +81,19 @@ if (Env === undefined) {
     } else if (errorResp.getJson) { // Errors from Network/API
       errObj = errorResp.getJson();
       if (errObj.RequestError) {    // Known API errors
-        error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+        if (errObj.RequestError.ServiceException) { // API Service Exceptions
+          error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+        } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
+          error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+        } else if (errObj.RequestError.Exception) { // API Exceptions
+          error = ATT.errorDictionary.getDefaultError({
+            moduleID: 'RTC',
+            operationName: operation,
+            httpStatusCode: errorResp.getResponseStatus(),
+            errorDescription: 'Operation ' + operation + ' failed',
+            reasonText: errObj.RequestError.Exception.Text
+          });
+        }
       } else {                      // Unknown network errors
         error = ATT.errorDictionary.getDefaultError({
           moduleID: 'RTC',
@@ -99,8 +111,8 @@ if (Env === undefined) {
     logger.logError(error.formatError());
     logger.logDebug(error);
 
-    if (typeof config.onError === 'function') {
-      config.onError(error);
+    if (typeof config.error === 'function') {
+      config.error(error);
     }
   };
 
@@ -225,10 +237,10 @@ if (Env === undefined) {
           }
         },
         success: createWebRTCSessionSuccess.bind(this, config),
-        error: handleError.bind(this, config, 'createWebRTCSession')
+        error: handleError.bind(this, config, 'CreateSession')
       });
     } catch (err) {
-      handleError.call(this, config, 'createWebRTCSession', err);
+      handleError.call(this, config, 'CreateSession', err);
     }
   }
 
@@ -274,13 +286,13 @@ if (Env === undefined) {
             config.success();
           }
         },
-        error: handleError.bind(this, config, 'deleteWebRTCSession')
+        error: handleError.bind(this, config, 'DeleteSession')
       };
 
     // Call BF to delete WebRTC Session.
       resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
     } catch (err) {
-      handleError.call(this, config, 'deleteWebRTCSession', err);
+      handleError.call(this, config, 'DeleteSession', err);
     }
   }
 
