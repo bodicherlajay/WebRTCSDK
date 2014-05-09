@@ -231,7 +231,13 @@ Env = (function (app) {
     configuredRESTOperation = function (successCB, errorCB, onTimeout) {
       logger.logTrace('configuring REST operation');
       restConfig.success = successCB;
-      restConfig.error = errorCB;
+      restConfig.error = function (errResp) {
+        if (errResp.getResponseStatus() === 0 && errResp.responseText === "") {
+          errorCB.call(this, app.errorDictionary.getError("SDK-10000"));
+        } else {
+          errorCB.call(this, errResp);
+        }
+      };
       restConfig.ontimeout = onTimeout;
 
       restClient = new ATT.RESTClient(restConfig);
