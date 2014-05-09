@@ -94,7 +94,7 @@ if (Env === undefined) {
             reasonText: errObj.RequestError.Exception.Text
           });
         }
-      } else {                      // Unknown network errors
+      } else {                      // Unknown API network errors
         error = ATT.errorDictionary.getDefaultError({
           moduleID: 'RTC',
           operationName: operation,
