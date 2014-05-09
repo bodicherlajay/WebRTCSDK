@@ -12,7 +12,7 @@ var sdkErrorCollection = [
     operationName: 'ErrorConfig',    //Name of the operation
     httpStatusCode: '',   //HTTP Status code
     messageId: '',        //SVC or POL Error
-    errorDescription: 'Error no configured', //Error Description
+    errorDescription: 'Error not configured', //Error Description
     reasonText: 'The specified error code is not configured in the error disctionary',  //High level reason text, invalid input, forbidden
     helpText: 'Please configure the error in the error dictionary' //Help text which can be displayed on UI
   },
@@ -238,9 +238,9 @@ var sdkErrorCollection = [
     userErrorCode: "SDK-20023",
     messageId: "POL1102",
     operationName: "DeleteSession",
-    httpStatusCode: "401/403",
-    errorDescription: "Unable to create Session",
-    reasonText: "Session Id not associated with the to",
+    httpStatusCode: "403",
+    errorDescription: "Unable to delete Session",
+    reasonText: "Session Id not associated with the token",
     moduleID: 'RTC'
   },
 
