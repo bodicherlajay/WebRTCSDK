@@ -92,7 +92,7 @@
       getMissingError: function () {
         return allErrors['SDK-00000'];
       },
-      getDafaultError: function (errSpec) {
+      getDefaultError: function (errSpec) {
         var err = utils.extend(allErrors['SDK-00001']);
         err.operationName = errSpec.operationName || err.operationName;
         err.httpStatusCode = errSpec.httpStatusCode || err.httpStatusCode;
