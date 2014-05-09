@@ -73,7 +73,7 @@ if (Env === undefined) {
       return logger.logError('Cannot login to web rtc, no access token');
     }
     var token = config.token.access_token,
-      e911Id = config.e911Id || null,
+      e911Id = config.e911Id ? config.e911Id.e911Locations.addressIdentifier : null,
       session;
 
     // create new session with token and optional e911id
@@ -145,12 +145,12 @@ if (Env === undefined) {
       // Also, see appConfigModule
       channelConfig = {
         accessToken: session.getAccessToken(),
-        endpoint: ATT.appConfig.eventChannelConfig.endpoint,
+        endpoint: ATT.appConfig.EventChannelConfig.endpoint,
         sessionId: session.getSessionId(),
         publisher: ATT.event,
         resourceManager: resourceManager,
         publicMethodName: 'getEvents',
-        usesLongPolling: true
+        usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
       };
       logger.logTrace('Creating event channel...');
       ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
@@ -205,7 +205,7 @@ if (Env === undefined) {
   */
   function logout(config) {
     ATT.UserMediaService.stopStream();
-    //ATT.utils.eventChannel.stopListening();
+    ATT.utils.eventChannel.stopListening();
     var session = callManager.getSessionContext(),
       dataForDeleteWebRTCSession,
       successCallback = function (statusCode) {
