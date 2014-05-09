@@ -72,8 +72,8 @@ if (Env === undefined) {
     if (!config.token) {
       return logger.logError('Cannot login to web rtc, no access token');
     }
-    var token = config.token.access_token,
-      e911Id = config.e911Id ? config.e911Id.e911Locations.addressIdentifier : null,
+    var token = config.token,
+      e911Id = config.e911Id || null,
       session;
 
     // create new session with token and optional e911id
