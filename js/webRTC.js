@@ -70,13 +70,20 @@ if (Env === undefined) {
     var error,
       errObj;
 
-    if (errorResp.isSdkErr) {
+    if (typeof errorResp === 'string') { // String Errors
+      error = ATT.errorDictionary.getDefaultError({
+        moduleID: 'RTC',
+        operationName: operation,
+        errorDescription: 'Operation ' + operation + ' failed',
+        reasonText: errorResp
+      });
+    } else if (errorResp.isSdkErr) { // Previously thrown SDK Errors
       error = errorResp;
-    } else {
+    } else if (errorResp.getJson) { // Errors from Network/API
       errObj = errorResp.getJson();
-      if (errObj.RequestError) {
+      if (errObj.RequestError) {    // Known API errors
         error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
-      } else {
+      } else {                      // Unknown network errors
         error = ATT.errorDictionary.getDefaultError({
           moduleID: 'RTC',
           operationName: operation,
@@ -86,7 +93,7 @@ if (Env === undefined) {
         });
       }
     }
-    if (!error) {
+    if (!error) { // Unknown errors
       error = ATT.errorDictionary.getMissingError();
     }
 
@@ -118,11 +125,16 @@ if (Env === undefined) {
       logger.logWarning('Initializing SDK session without e911 id');
     }
     // Set the access Token in the callManager.
-    callManager.CreateSession({
-      token: accessToken,
-      e911Id: e911Id
-    });
-    logger.logInfo('Initialed SDK session with token and optional e911 id');
+    try {
+      callManager.CreateSession({
+        token: accessToken,
+        e911Id: e911Id
+      });
+      logger.logInfo('Initialed SDK session with token and optional e911 id');
+    } catch (err) {
+      logger.logError("Init Session Error " + err.message);
+      //config.onError(app.errorDictionary.getError("SDK-00001));
+    }
   }
 
   createWebRTCSessionSuccess = function (config, responseObject) {
@@ -170,52 +182,56 @@ if (Env === undefined) {
   function login(config) {
     logger.logTrace('createWebRTCSession');
 
-    if (!config) {
-      return logger.logError('Cannot login to web rtc, no configuration');
-    }
-    if (!config.token) {
-      return logger.logError('Cannot login to web rtc, no access token');
-    }
-    var token = config.token,
-      e911Id = config.e911Id || null,
-      session;
+    try {
+      if (!config) {
+        throw 'Cannot login to web rtc, no configuration';
+      }
+      if (!config.token) {
+        throw 'Cannot login to web rtc, no access token';
+      }
+      var token = config.token,
+        e911Id = config.e911Id || null,
+        session;
 
-    // create new session with token and optional e911id
-    initSession(token, e911Id);
+      // create new session with token and optional e911id
+      initSession(token, e911Id);
 
-    session = callManager.getSessionContext();
-    token = session.getAccessToken();
-    e911Id = session.getE911Id();
+      session = callManager.getSessionContext();
+      token = session.getAccessToken();
+      e911Id = session.getE911Id();
 
-    // todo: need to decide if callbacks should be mandatory
-    if (typeof config.onSessionReady !== 'function') {
-      logger.logWarning('No UI success callback specified');
+      // todo: need to decide if callbacks should be mandatory
+      if (typeof config.onSessionReady !== 'function') {
+        logger.logWarning('No UI success callback specified');
+      }
+      if (typeof config.onError !== 'function') {
+        logger.logWarning('No UI error callback specified');
+      }
+
+      resourceManager.doOperation('createWebRTCSession', {
+        data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
+          'session': {
+            'mediaType': 'dtls-srtp',
+            'ice': 'true',
+            'services': [
+              'ip_voice_call',
+              'ip_video_call'
+            ]
+          }
+        },
+        params: {
+          headers: {
+            'Authorization': token,
+            'x-e911Id': e911Id || "",
+            'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
+          }
+        },
+        success: createWebRTCSessionSuccess.bind(this, config),
+        error: handleError.bind(this, config, 'createWebRTCSession')
+      });
+    } catch (err) {
+      handleError.call(this, config, 'createWebRTCSession', err);
     }
-    if (typeof config.onError !== 'function') {
-      logger.logWarning('No UI error callback specified');
-    }
-
-    resourceManager.doOperation('createWebRTCSession', {
-      data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
-        'session': {
-          'mediaType': 'dtls-srtp',
-          'ice': 'true',
-          'services': [
-            'ip_voice_call',
-            'ip_video_call'
-          ]
-        }
-      },
-      params: {
-        headers: {
-          'Authorization': token,
-          'x-e911Id': e911Id || "",
-          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
-        }
-      },
-      success: createWebRTCSessionSuccess.bind(this, config),
-      error: handleError.bind(this, config, 'createWebRTCSession')
-    });
   }
 
  /**
@@ -230,40 +246,44 @@ if (Env === undefined) {
   function logout(config) {
     logger.logTrace('deleteWebRTCSession');
 
-    // stop media stream
-    ATT.UserMediaService.stopStream();
-    // stop event channel
-    shutdownEventChannel();
+    try {
 
-    var session = callManager.getSessionContext(),
-      dataForDeleteWebRTCSession;
+      // stop media stream
+      ATT.UserMediaService.stopStream();
+      // stop event channel
+      shutdownEventChannel();
 
-    if (!session) {
-      if (typeof config.success === 'function') {
-        config.success();
-      }
-      return;
-    }
+      var session = callManager.getSessionContext(),
+        dataForDeleteWebRTCSession;
 
-    dataForDeleteWebRTCSession = {
-      params: {
-        url: [session.getSessionId()],
-        headers: {
-          'Authorization': session.getAccessToken(),
-          'x-e911Id': session.getE911Id()
-        }
-      },
-      success: function () {
-        logger.logInfo('Successfully deleted web rtc session on blackflag');
+      if (!session) {
         if (typeof config.success === 'function') {
           config.success();
         }
-      },
-      error: handleError.bind(this, config, 'deleteWebRTCSession')
-    };
+        return;
+      }
+      dataForDeleteWebRTCSession = {
+        params: {
+          url: [session.getSessionId()],
+          headers: {
+            'Authorization': session.getAccessToken(),
+            'x-e911Id': session.getE911Id()
+          }
+        },
+        success: function () {
+          logger.logInfo('Successfully deleted web rtc session on blackflag');
+          if (typeof config.success === 'function') {
+            config.success();
+          }
+        },
+        error: handleError.bind(this, config, 'deleteWebRTCSession')
+      };
 
     // Call BF to delete WebRTC Session.
-    resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
+      resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
+    } catch (err) {
+      handleError.call(this, config, 'deleteWebRTCSession', err);
+    }
   }
 
   /**
@@ -329,7 +349,6 @@ if (Env === undefined) {
    */
   function dial(config) {
     callManager.CreateOutgoingCall(config);
-
     // setting up event callbacks using RTC Events
     app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
@@ -386,7 +405,6 @@ if (Env === undefined) {
    */
   function answer(config) {
     callManager.CreateIncomingCall(config);
-
     // setting up event callbacks using RTC Events
     app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
