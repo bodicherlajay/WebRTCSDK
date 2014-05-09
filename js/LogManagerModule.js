@@ -23,6 +23,15 @@
     TRACE: 4
   };
 
+  function log(type, toLog) {
+    if (typeof toLog === 'object') {
+      console.log(type);
+      console.log(toLog);
+    } else {
+      console.log(type + ' ' + toLog);
+    }
+  }
+
   function createConsoleLogger(spec) {
     var level = spec.level, type = spec.type;
     return {
@@ -35,31 +44,31 @@
       logInfo: function (msg) {
         if (msg === undefined || msg.length === 0) { return; }
         if (level >= logManager.LOG_LEVEL.INFO) {
-          console.log('[INFO]' + msg);
+          log('[INFO]', msg);
         }
       },
       logDebug: function (msg) {
         if (msg === undefined || msg.length === 0) {return; }
         if (level >= logManager.LOG_LEVEL.DEBUG) {
-          console.log('[DEBUG]' + msg);
+          log('[DEBUG]', msg);
         }
       },
       logWarning: function (msg) {
         if (msg === undefined || msg.length === 0) {return; }
         if (level >= logManager.LOG_LEVEL.WARNING) {
-          console.log('[WARN]' + msg);
+          log('[WARN]', msg);
         }
       },
       logError: function (msg) {
         if (msg === undefined || msg.length === 0) {return; }
         if (level >= logManager.LOG_LEVEL.ERROR) {
-          console.log('[ERROR]' + msg);
+          log('[ERROR]', msg);
         }
       },
       logTrace: function (msg) {
         if (msg === undefined || msg.length === 0) {return; }
         if (level >= logManager.LOG_LEVEL.TRACE) {
-          console.log('[TRACE]' + msg);
+          log('[TRACE]', msg);
         }
       },
       setLevel: function (newLevel) {
