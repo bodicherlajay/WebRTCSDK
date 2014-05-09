@@ -19,6 +19,7 @@ For examples on how to use the SDK go to: [attdevsupport/webrtc-sample-aps](http
 * Install dependencies: `$ npm install`
 * Unit Tests: Run Karma Unit Tests locally: `$ grunt karma:unit`
 * JSLint: `$ grunt jslint`
+* Generate API Documentation (JSDoc): `$ grunt jsdoc`
 
 ## Directory structure
 

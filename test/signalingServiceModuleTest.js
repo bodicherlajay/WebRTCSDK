@@ -1,5 +1,6 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
+/*global ATT:true, RESTClient, Env, cmgmt, describe: true, it: true, afterEach: true,
+beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
 
 describe('SignalingService', function () {
   "use strict";
@@ -8,7 +9,9 @@ describe('SignalingService', function () {
     apiObj = resourceManager.getAPIObject(),
     requests,
     xhr,
-    backupAtt;
+    backupAtt,
+    callManager = cmgmt.CallManager.getInstance();
+
   beforeEach(function () {
     backupAtt = ATT;
     xhr = sinon.useFakeXMLHttpRequest();
@@ -53,7 +56,7 @@ describe('SignalingService', function () {
     expect(ATT.SignalingService.sendEndCall).to.be.a('function');
   });
 
-  xit('should call startCall operation with call object passed as data with SDP & calledParty.', function () {
+  it('sendOffer should call startCall operation with call object passed as data with SDP & calledParty.', function () {
 
     // setup
     apiObj.Session = {
@@ -63,9 +66,10 @@ describe('SignalingService', function () {
 
     var startCallSpy = sinon.spy(resourceManager, 'doOperation'),
       operationPassedToStartCall,
-      configPassedToStartCall;
+      configPassedToStartCall,
+      stub;
 
-    sinon.stub(ATT.sdpFilter, "getInstance", function () {
+    stub = sinon.stub(ATT.sdpFilter, "getInstance", function () {
       return {
         processChromeSDPOffer: function () {
           return {
@@ -91,10 +95,11 @@ describe('SignalingService', function () {
     expect(configPassedToStartCall.data.call.calledParty).to.equal('sip:123@icmn.api.att.net');
 
     startCallSpy.restore();
+    stub.restore();
   });
 
 
-  xit('should receive 201 and Location url and x-state: invitation-sent in header', function () {
+  it('sendOffer should receive 201 and Location url and x-state: invitation-sent in header', function () {
     // setup
     apiObj.Session = {
       accessToken: 'access_token',
@@ -117,9 +122,7 @@ describe('SignalingService', function () {
       RTCEndpoint: "http://wdev.code-api-att.com:8080/RTC/v1"
     };
 
-    // TODO: Find out proper configure call. Fix configue typo.
-    ATT.configueAPIs(appConfig);
-    ATT.configure();
+    ATT.configureAPIs(appConfig);
 
     // call
     ATT.SignalingService.sendOffer({
@@ -140,30 +143,46 @@ describe('SignalingService', function () {
     expect(sendSuccessArguments).to.be.an('object');
   });
 
-  xit('should not call success callback on any 400.', function () {
-    var errorSpy = sinon.spy(),
-      successSpy = sinon.spy();
+  it('sendAnswer should call startCall operation with sdp', function () {
 
-    // setup
-    apiObj.Session = {
-      accessToken: 'access_token',
-      Id: 'webrtc_sessionid'
-    };
+    var operationName,
+      configPassedToOperation,
+      spy = sinon.spy(resourceManager, 'doOperation'),
 
-    // call
-    ATT.SignalingService.sendOffer({
-      calledParty: '123',
-      sdp: 'sdp',
-      success: successSpy,
-      error: errorSpy
+      // stubs for sendAnswer function.
+      stub = sinon.stub(ATT.sdpFilter, "getInstance", function () {
+        return {
+          processChromeSDPOffer: function () {
+            return {
+              sdp: 'sdp'
+            };
+          }
+        };
+      }),
+
+      sessionContext = callManager.getSessionContext(),
+      stubGetEventObject = sinon.stub(sessionContext, 'getEventObject', function () {
+        return {
+          resourceURL: ''
+        };
+      });
+
+    ATT.SignalingService.sendAnswer({
+      sdp: 'sdp'
     });
 
-    // response
-    // Response to startCall (happy path)
-    requests[0].respond(400, {}, "");
+    expect(spy.called).to.equal(true);
 
-    // send callback should be called
-    expect(successSpy.called).to.equal(false);
+    operationName = spy.args[0][0];
+    configPassedToOperation = spy.args[0][1];
+
+    expect(operationName).to.equal('answerCall');
+    expect(configPassedToOperation.data.callsMediaModifications).to.be.an('object');
+    expect(configPassedToOperation.data.callsMediaModifications.sdp).to.equal('sdp');
+
+    spy.restore();
+    stub.restore();
+    stubGetEventObject.restore();
   });
 
   afterEach(function () {

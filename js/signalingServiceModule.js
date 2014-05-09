@@ -45,9 +45,9 @@ if (!ATT) {
         success: function (obj) {
           console.log('offer sent successfully');
 
-          var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
-            location : location,
-            xState : xState
+          var headers = {
+            location : obj.getResponseHeader('Location'),
+            xState : obj.getResponseHeader('x-state')
           };
 
           if (typeof config.success === 'function') {
@@ -75,7 +75,10 @@ if (!ATT) {
       logger.logTrace('answerCall');
       resourceManager.doOperation('answerCall', {
         params: {
-          url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
+          url: [
+            callManager.getSessionContext().getSessionId(),
+            callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]
+          ],
           headers: {
             'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()
           }
@@ -84,9 +87,9 @@ if (!ATT) {
         success : function (obj) {
           console.log('answer sent successfully');
 
-          var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
-            location : location,
-            xState : xState
+          var headers = {
+            location : obj.getResponseHeader('Location'),
+            xState : obj.getResponseHeader('x-state')
           };
 
           if (typeof config.success === 'function') {
@@ -121,7 +124,10 @@ if (!ATT) {
       logger.logTrace('doOperation, acceptModifications');
       resourceManager.doOperation('acceptModifications', {
         params: {
-          url: [callManager.getSessionContext().getSessionId(), callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]],
+          url: [
+            callManager.getSessionContext().getSessionId(),
+            callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]
+          ],
           headers : {
             'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
             'x-modId' : config.modId
@@ -131,10 +137,10 @@ if (!ATT) {
         success : function (obj) {
           console.log('accepted modifications successfully');
 
-          var location = obj.getResponseHeader('Location'), xState = obj.getResponseHeader('x-state'), headers = {
-            location : location,
-            xState : xState
-          };
+          var headers = {
+              location : obj.getResponseHeader('Location'),
+              xState : obj.getResponseHeader('x-state')
+            };
 
           if (typeof config.success === 'function') {
             config.success.call(null, headers);
