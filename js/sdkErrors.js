@@ -35,7 +35,7 @@ var sdkErrorCollection = [
     httpStatusCode: '',           //HTTP Status code
     errorDescription: 'XHR request error', //Error Description
     reasonText: 'There was an error in sending the XHR request',//High level reason text, invalid input, forbidden
-    helpText: 'Please check your network connectivity',         //Help text which can be displayed on UI
+    helpText: 'Please check your network connectivity'         //Help text which can be displayed on UI
   },
   //SDK-20000 range reserved for webRTC module
   {
