@@ -148,7 +148,7 @@ describe('PeerConnectionServiceModule', function () {
   });
 
   describe('Peer connection call management functionalities', function () {
-    it('should replace SDP attribute (sendrecv -> recvonly) for hold request', function () {
+    xit('should replace SDP attribute (sendrecv -> recvonly) for hold request', function () {
       var sdp = { sdp: 'a=sendrecv\r\nb=helloworld' };
       ATT.PeerConnectionService.localDescription = sdp;
       ATT.PeerConnectionService.holdCall();
@@ -156,7 +156,7 @@ describe('PeerConnectionServiceModule', function () {
       expect(ATT.PeerConnectionService.modificationCount).to.equal(3);
     });
 
-    it('should replace SDP attribute (recvonly -> sendrecv) for resume request', function () {
+    xit('should replace SDP attribute (recvonly -> sendrecv) for resume request', function () {
       var sdp = { sdp: 'a=recvonly\r\nb=helloworld' };
       ATT.PeerConnectionService.localDescription = sdp;
       ATT.PeerConnectionService.resumeCall();

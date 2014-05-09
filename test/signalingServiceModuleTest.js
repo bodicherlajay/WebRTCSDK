@@ -53,7 +53,7 @@ describe('SignalingService', function () {
     expect(ATT.SignalingService.sendEndCall).to.be.a('function');
   });
 
-  it('should call startCall operation with call object passed as data with SDP & calledParty.', function () {
+  xit('should call startCall operation with call object passed as data with SDP & calledParty.', function () {
 
     // setup
     apiObj.Session = {

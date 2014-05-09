@@ -11,10 +11,6 @@
 
 describe('Entry Point: SDK Assembly Integration Tests', function () {
   'use strict';
-  var backupAtt;
-  beforeEach(function () {
-    backupAtt = ATT;
-  });
 
   describe('ATT.errorDictionary', function () {
     it('should exist', function () {
@@ -25,9 +21,5 @@ describe('Entry Point: SDK Assembly Integration Tests', function () {
     it('should not exist without session id', function () {
       expect(ATT.eventChannel).to.be.an('undefined');
     });
-  });
-
-  afterEach(function () {
-    ATT = backupAtt;
   });
 });

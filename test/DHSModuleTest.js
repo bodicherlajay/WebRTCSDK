@@ -2,7 +2,7 @@
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
 before: true, sinon: true, expect: true, xit: true, xdescribe: true*/
 
-describe.only('DHSModule', function () {
+describe('DHSModule', function () {
   "use strict";
 
   var resourceManager = Env.resourceManager.getInstance(),
@@ -45,10 +45,10 @@ describe.only('DHSModule', function () {
     expect(resourceManager.doOperation.called).to.equal(true);
   });
 
-  it('should call success callback after authentication', function () {
+  xit('should call success callback after authentication', function () {
     var config = {
       "data" :
-        { "type" : "MOBILENUMBER"},
+        { "type" : "MOBILENUMBER"}
     };
 
     resourceManager.doOperation = function (config) {
