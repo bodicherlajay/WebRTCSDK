@@ -52,7 +52,6 @@ if (Env === undefined) {
       ATT.utils.eventChannel.startListening();
       logger.logInfo('Event channel setup and running...');
     } else {
-      logger.logError('Event channel setup failed');
       throw 'Event channel setup failed';
     }
   };
@@ -118,22 +117,21 @@ if (Env === undefined) {
   function initSession(accessToken, e911Id) {
     logger.logTrace('initSession');
 
-    if (!accessToken) {
-      return logger.logError('Cannot init SDK session, no access token');
-    }
-    if (!e911Id) {
-      logger.logWarning('Initializing SDK session without e911 id');
-    }
-    // Set the access Token in the callManager.
     try {
+      if (!accessToken) {
+        throw 'Cannot init SDK session, no access token';
+      }
+      if (!e911Id) {
+        logger.logWarning('Initializing SDK session without e911 id');
+      }
+    // Set the access Token in the callManager.
       callManager.CreateSession({
         token: accessToken,
         e911Id: e911Id
       });
       logger.logInfo('Initialed SDK session with token and optional e911 id');
     } catch (err) {
-      logger.logError("Init Session Error " + err.message);
-      //config.onError(app.errorDictionary.getError("SDK-00001));
+      throw "Init Session Error: " + err;
     }
   }
 
