@@ -22,7 +22,8 @@
         helpText: '',         //Help text which can be displayed on UI
         reasonText: '',       //High level reason text, invalid input, forbidden
         errorDescription: '', //Error Description
-        moduleID: ''
+        moduleID: '',
+        isSdkErr: true
       },
       newError;
 
@@ -31,7 +32,7 @@
       error.formatError = function () {
         var errorString = error.moduleID + '-' + error.userErrorCode + '-'
           + error.operationName + '-' + error.httpStatusCode + '-'
-          + error.messageId + '-' + error.reasonText + '-' + error.errorDescription;
+          + error.messageId + '-' + error.errorDescription + '-' + error.reasonText;
         return errorString;
       };
       return error;
@@ -91,8 +92,13 @@
       getMissingError: function () {
         return allErrors['SDK-00000'];
       },
-      getDafaultError: function () {
-        return allErrors['SDK-00001'];
+      getDafaultError: function (errSpec) {
+        var err = utils.extend(allErrors['SDK-00001']);
+        err.operationName = errSpec.operationName || err.operationName;
+        err.httpStatusCode = errSpec.httpStatusCode || err.httpStatusCode;
+        err.reasonText = errSpec.reasonText || err.reasonText;
+        err.errorDescription = errSpec.errorDescription || err.errorDescription;
+        return err;
       },
       getDHSError: function (dhsErrSpec) {
         var err = utils.extend(allErrors['SDK-50000']);
