@@ -71,13 +71,14 @@
 
     // setup success and error callbacks
     function onSuccess(response) {
-      if ('/events' === channelConfig.endpoint) { // long-polling
+      if (!isListening) {
+        return;
+      }
+      if (true === channelConfig.usesLongPolling) { // long-polling
         processMessages(response);
 
-        if (isListening) {
-          // continue polling
-          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
-        }
+        // continue polling
+        channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
         return;
       }
 

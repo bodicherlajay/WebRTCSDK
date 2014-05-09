@@ -20,16 +20,16 @@ if (Env === undefined) {
   var resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance(),
     setupEventChannel,
+    shutdownEventChannel,
     handleError,
     createWebRTCSessionSuccess,
     logMgr = ATT.logManager.getInstance(),
-    logger,
-    newErrorObj;
+    logger;
 
   logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('WebRTC');
 
-  setupEventChannel = function() {
+  setupEventChannel = function () {
     logger.logTrace('setupEventChannel');
 
     var session = callManager.getSessionContext(),
@@ -55,7 +55,13 @@ if (Env === undefined) {
       logger.logError('Event channel setup failed');
       throw 'Event channel setup failed';
     }
-  }
+  };
+
+  shutdownEventChannel = function () {
+    logger.logTrace('shutdownEventChannel');
+    ATT.utils.eventChannel.stopListening();
+    logger.logInfo('Event channel shutdown successfully');
+  };
 
   handleError = function (config, operation, errorResp) {
     logger.logTrace('handleError' + operation);
@@ -83,8 +89,10 @@ if (Env === undefined) {
     if (!error) {
       error = ATT.errorDictionary.getMissingError();
     }
-    logger.logError (error.formatError());
+
+    logger.logError(error.formatError());
     logger.logDebug(error);
+
     if (typeof config.onError === 'function') {
       config.onError(error);
     }
@@ -222,15 +230,17 @@ if (Env === undefined) {
   function logout(config) {
     logger.logTrace('deleteWebRTCSession');
 
+    // stop media stream
     ATT.UserMediaService.stopStream();
-    ATT.utils.eventChannel.stopListening();
+    // stop event channel
+    shutdownEventChannel();
 
     var session = callManager.getSessionContext(),
       dataForDeleteWebRTCSession;
 
     if (!session) {
       if (typeof config.success === 'function') {
-          config.success();
+        config.success();
       }
       return;
     }
@@ -243,10 +253,10 @@ if (Env === undefined) {
           'x-e911Id': session.getE911Id()
         }
       },
-      success: function (responseObject) {
+      success: function () {
         logger.logInfo('Successfully deleted web rtc session on blackflag');
         if (typeof config.success === 'function') {
-          config.success(data);
+          config.success();
         }
       },
       error: handleError.bind(this, config, 'deleteWebRTCSession')
