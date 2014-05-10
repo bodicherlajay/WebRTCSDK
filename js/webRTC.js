@@ -111,8 +111,8 @@ if (Env === undefined) {
     logger.logError(error.formatError());
     logger.logDebug(error);
 
-    if (typeof config.error === 'function') {
-      config.error(error);
+    if (typeof config.onError === 'function') {
+      config.onError(error);
     }
   };
 
