@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  var typeofModule, typeofWindow,
+  var typeofWindow,
     logManager = {},
     instance,
     loggersCollection = [];
@@ -109,10 +109,8 @@
     return instance;
   };
 
-  //exports for nodejs, derived from underscore.js
-  typeofModule = typeof module;
-  if (typeofModule !== 'undefined' && module.exports) {
-    module.exports.logger = logManager;
+  if (typeof module === "object" && module && typeof module.exports === "object") {
+    module.exports = logManager;
   }
 
   // export to the browser

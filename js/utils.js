@@ -54,8 +54,6 @@ var attUtils = (function (mainModule) {
         }
       });
     },
-    typeofExports = typeof exports,
-    typeofModule = typeof module,
 
     /**
      Places namespaces on root object.  s is dot separated string of names adding to root.
@@ -80,14 +78,9 @@ var attUtils = (function (mainModule) {
     inherits: inherits
   };
 
-  //exports for nodejs
-  if (typeofExports !== 'undefined') {
-    if (typeofModule !== 'undefined' && module.exports) {
-      //making it readonly so that it does not get accidentally overridden in nodejs environment
-      exports = module.exports['ATT.utils'] = mainModule;
-    }
-    exports['ATT.utils'] = mainModule;
+  if (typeof module === "object" && module && typeof module.exports === "object") {
+    module.exports = mainModule;
   }
-  return attUtils;
 
-}(typeof exports === 'object' ? exports : ATT));
+}(ATT));
+

@@ -4,32 +4,46 @@
 /**
  * Abstraction of the XMLHttpRequest used in the SDK and DHS.
  */
+//required for nodejs
+if (!ATT) {
+  var ATT = {};
+}
+var attUtils = null;
+if (typeof module === "object" && module && typeof module.exports === "object") {
+  attUtils = {
+    utils : require('./../js/utils'),
+    LogManagerModule : require('./../js/LogManagerModule')
+  };
+  module.exports = attUtils;
+}
 
 var RESTClient = (function (mainModule) {
   'use strict';
 
   var typeofWindow = typeof window,
-    typeofModule = typeof module,
-    typeofExports = typeof exports,
+    typeofModule = typeof module === "object" && module && typeof module.exports === "object",
     logger = null,
     defaultErrorHandler,
     errorHandler,
-    logMgr = ATT.logManager.getInstance(),
     getUtils = function (app) {
-      if (typeofExports !== 'undefined') {
-        if (typeofModule !== 'undefined' && module.exports) {
-          return exports['ATT.utils'];
-        }
-      } else {
-        return app.utils;
+      if (typeofModule) {
+        return attUtils.utils.utils;
       }
+      return app.utils;
     },
     //Inject logger
     setLogger = function (lgr) {
       logger = lgr;
     },
+    getLogger = function (app) {
+      if (typeofModule) {
+        return attUtils.LogManagerModule.getInstance();
+      }
+      return app.logManager.getInstance();
+    },
+    logMgr = getLogger(mainModule),
     RESTClient =  function (config) {
-      this.config =  getUtils(mainModule).extend({}, config);
+        this.config =  getUtils(mainModule).extend({}, config);
         // default ajax configuration
       this.config.async = this.config.async || true;
       this.config.timeout = this.config.timeout || 30000;
@@ -237,18 +251,13 @@ var RESTClient = (function (mainModule) {
     return this.config;
   };
 
-    //exports for nodejs
-  if (typeofExports !== 'undefined') {
-    if (typeofModule !== 'undefined' && module.exports) {
-      //making it readonly so that it does not get accidentally overridden in nodejs environment
-      exports = module.exports['ATT.RESTClient'] = RESTClient;
-    }
-    exports['ATT.RESTClient'] = RESTClient;
-  }
-
   // export to the browser
   if ('undefined' !== typeofWindow && ATT) {
     ATT.RESTClient = RESTClient;
   }
   return RESTClient;
 }(ATT));
+
+if (typeof module === "object" && module && typeof module.exports === "object") {
+  module.exports = RESTClient;
+}
