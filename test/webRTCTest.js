@@ -3,29 +3,57 @@
  before: true, sinon: true, expect: true, xit: true, URL: true*/
 
 
-describe('webRTC', function () {
+describe.only('webRTC', function () {
   'use strict';
   var resourceManager = Env.resourceManager.getInstance(),
     apiObj = resourceManager.getAPIObject(),
     requests,
-    xhr,
     backupAtt;
 
   beforeEach(function () {
     backupAtt = ATT;
-    xhr = sinon.useFakeXMLHttpRequest();
+    this.xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
 
-    xhr.onCreate = function (xhr) {
+    this.xhr.onCreate = function (xhr) {
       requests.push(xhr);
     };
+
   });
 
 
   afterEach(function () {
-    xhr.restore();
+    this.xhr.restore();
     ATT = backupAtt;
   });
+
+  describe('login with audio only service', function () {
+    var resMgrSpy = sinon.spy(resourceManager, "doOperation"), opData;
+    ATT.rtc.Phone.login({token: "token", e911Id: "e911id", audioOnly: true, onSessionReady: function () {}, onError : function () {}});
+    expect(resMgrSpy.called).equals(true);
+    opData = {
+      data: {
+        'session': {
+          'mediaType': 'dtls-srtp',
+          'ice': 'true',
+          'services': ['ip_voice_call']
+        }
+      },
+      params: {
+        headers: {
+          'Authorization': "token",
+          'x-e911Id': "e911Id",
+          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
+        }
+      },
+      success: function createWebRTCSessionSuccess() {}, //createWebRTCSessionSuccess.bind(this, config),
+      error: function handleError() {} //handleError.bind(this, config, 'CreateSession')
+    };
+        //todo fix me
+    resMgrSpy.calledWithMatch(opData);
+    resMgrSpy.restore();
+  });
+
 
   it('ATT namespace should exist and contain utils', function () {
     expect(ATT).to.be.an('object');
@@ -53,10 +81,8 @@ describe('webRTC', function () {
         responseObject1;
 
       apiObj.login({
-        data: {
-          un: 'un',
-          pw: 'pw'
-        },
+        token: 'un',
+        e911Id: 'pw',
         callbacks : {
           onSessionReady: function () {
           },
@@ -81,7 +107,6 @@ describe('webRTC', function () {
       expect(args1[0].headers.Authorization).to.contain(responseObject1.accesstoken.access_token);
       expect(args1[0].headers.Authorization).to.contain(responseObject1.accesstoken.access_token);
       expect(args1[0].headers['x-e911Id']).to.be.a('string');
-
 
       // restore
       createWebRTCSessionSpy.restore();

@@ -185,6 +185,7 @@ if (Env === undefined) {
    * @param {Object} data The required login form data from the UI.
    * @attribute {String} token
    * @attribute {String} e911Locations
+   * @attribute {Boolean} audioOnly
    * @example Preconditions: SDK was initialized.
    * ATT.rtc.Phone.login(“audio-session”); //for audio service
    * ATT.rtc.Phone.login(“video-session”); //for video service
@@ -199,10 +200,15 @@ if (Env === undefined) {
       if (!config.token) {
         throw 'Cannot login to web rtc, no access token';
       }
+
       var token = config.token,
         e911Id = config.e911Id || null,
-        session;
-
+        session,
+        services = ['ip_voice_call', 'ip_video_call'];
+      //remove video service for audio only service
+      if (config.audioOnly) {
+        services = services.slice(0, 1);
+      }
       // create new session with token and optional e911id
       initSession(token, e911Id);
 
@@ -219,14 +225,11 @@ if (Env === undefined) {
       }
 
       resourceManager.doOperation('createWebRTCSession', {
-        data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
+        data: {
           'session': {
             'mediaType': 'dtls-srtp',
             'ice': 'true',
-            'services': [
-              'ip_voice_call',
-              'ip_video_call'
-            ]
+            'services': services
           }
         },
         params: {
@@ -291,7 +294,9 @@ if (Env === undefined) {
 
     // Call BF to delete WebRTC Session.
       resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
+      callManager.DeleteSession();
     } catch (err) {
+      callManager.DeleteSession();
       handleError.call(this, config, 'DeleteSession', err);
     }
   }

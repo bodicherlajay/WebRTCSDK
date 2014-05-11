@@ -6,7 +6,7 @@ cmgmt = (function () {
   //Call prototype
   var module = {}, logMgr = ATT.logManager.getInstance(), logger, Call, SessionState,
     SessionContext, session_context, CreateSession, CreateOutgoingCall, CreateIncomingCall,
-    instance, init;
+    instance, init, DeleteSession;
   logMgr.configureLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
   logger = logMgr.getLogger('CallManagementModule');
   Call = function (from, to, media) {
@@ -111,6 +111,11 @@ cmgmt = (function () {
     session_context.setCallState(SessionState.SDK_READY);
   };
 
+  //Cleanup session after logout
+  DeleteSession = function () {
+    session_context = null;
+  };
+
   CreateOutgoingCall = function (config) {
     var call = new Call(null, config.to, config.mediaConstraints);
     session_context.setCallObject(call);
@@ -142,6 +147,7 @@ cmgmt = (function () {
       },
       SessionState: SessionState,
       CreateSession: CreateSession,
+      DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
       CreateIncomingCall: CreateIncomingCall
     };
