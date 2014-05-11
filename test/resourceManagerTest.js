@@ -190,7 +190,6 @@ describe('ResourceManager', function () {
         'dial',
         'login',
         'logout',
-        'init',
         'hangup',
         'hold',
         'resume',
