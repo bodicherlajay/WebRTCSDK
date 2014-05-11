@@ -3,7 +3,7 @@
  before: true, sinon: true, expect: true, xit: true, URL: true*/
 
 
-describe.only('webRTC', function () {
+describe('webRTC', function () {
   'use strict';
   var resourceManager = Env.resourceManager.getInstance(),
     apiObj = resourceManager.getAPIObject(),
