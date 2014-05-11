@@ -6,16 +6,27 @@
 if (!Env) {
   var Env = {};
 }
-
-var logMgr = ATT.logManager.getInstance(), logger;
-logMgr.configureLogger('resourceManagerModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-logger = logMgr.getLogger('resourceManagerModule');
-
-
 Env = (function (app) {
   "use strict";
 
-  var module = {},
+  var
+    loggers = [],
+    newLogger = function (moduleName) {
+      var logMgr = ATT.logManager.getInstance(), lgr;
+      logMgr.configureLogger(moduleName, logMgr.loggerType.CONSOLE, logMgr.logLevel.INFO);
+      lgr = logMgr.getLogger(moduleName);
+      loggers[moduleName] = lgr;
+      return loggers[moduleName];
+    },
+    getLogger = function getLogger(moduleName) {
+      var lgr = loggers[moduleName];
+      if (lgr === undefined) {
+        return newLogger(moduleName);
+      }
+      return lgr;
+    },
+    logger = getLogger("resourceManagerModule"),
+    module = {},
     instance,
     apiObject,  // the object that public methods are placed on
     restOperationsConfig = {},
@@ -33,6 +44,14 @@ Env = (function (app) {
 
     addPublicMethod;
 
+
+  function updateLogLevel(moduleName, level) {
+    var lgr = getLogger(moduleName);
+    if (!lgr) {
+      lgr.setLevel(level);
+    }
+  }
+
   function init() {
     logger.logTrace('initializing resource manager module');
     return {
@@ -41,13 +60,15 @@ Env = (function (app) {
       getOperationsAPI:   getOperationsAPI,
       addPublicMethod:    addPublicMethod,
       getOperation:       module.getOperation,
-      doOperation:        module.doOperation
+      doOperation:        module.doOperation,
+      getLogger:          getLogger,
+      updateLogLevel:     updateLogLevel
     };
   }
   // Configure REST operations object and public API object.
 
   configure = function (config) {
-    logger.logTrace('configuring resource manager module');
+    //logger.logTrace('configuring resource manager module');
     config = ((config && Object.keys(config).length > 0) && config) || app.APIConfigs;
 
     restOperationsConfig = config;
