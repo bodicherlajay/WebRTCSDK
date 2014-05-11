@@ -15,7 +15,8 @@
     onCallEnded,
     onCallError,
     onError,
-    eventRegistry = {};
+    eventRegistry = {},
+    callingParty;
 
   function createEventRegistry(sessionContext) {
     var callbacks = sessionContext.getUICallbacks();
@@ -229,9 +230,14 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_SENT] = function () {
+      if (callManager.getSessionContext().getCallObject()) {
+        callingParty = callManager.getSessionContext().getCallObject().callee();
+      } else {
+        callingParty = '';
+      }
       onOutgoingCall({
         type: mainModule.CallStatus.CALLING,
-        callee: callManager.getSessionContext().getCallObject().callee()
+        callee: callingParty
       });
     };
 

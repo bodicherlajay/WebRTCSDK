@@ -1,10 +1,12 @@
 /*jslint indent:2*/
-/*global assert, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, console, window*/
+/*global assert,cmgmt, event, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, console, window*/
 
 describe('Event Dispatcher Tests', function () {
   'use strict';
 
-  var backupAtt, utils = ATT.utils, eventRegistry;
+  var backupAtt, utils = ATT.utils, eventRegistry,
+    onSessionReady, onError, onIncomingCall, onOutgoingCall,
+    onInProgress, onCallError, onCallEnded, event;
   beforeEach(function () {
     backupAtt = window.ATT;
   });
@@ -20,6 +22,33 @@ describe('Event Dispatcher Tests', function () {
   });
 
   describe('createEventRegistry method', function () {
+    var goodContext = {
+      getUICallbacks: function () {
+        return {
+          onSessionReady: function () {
+            onSessionReady = true;
+          },
+          onError: function () {
+            onError = true;
+          },
+          onCallEnded: function () {
+            onCallEnded = true;
+          },
+          onCallError: function () {
+            onCallError = true;
+          },
+          onIncomingCall: function () {
+            onIncomingCall = true;
+          },
+          onOutgoingCall: function () {
+            onOutgoingCall = true;
+          },
+          onInProgress: function () {
+            onInProgress = true;
+          }
+        };
+      }
+    };
     it('should not create a registry if called without callbacks', function () {
       var badContext = { getUICallbacks: function () { return; } };
       eventRegistry = utils.createEventRegistry(badContext);
@@ -27,17 +56,68 @@ describe('Event Dispatcher Tests', function () {
     });
 
     it('should create a registry if called with callbacks', function () {
-      var goodContext = {
-        getUICallbacks: function () {
-          return {
-            onCallback: function () {
-              console.log('Hi! My name is callack!');
-            }
-          };
-        }
-      };
       eventRegistry = utils.createEventRegistry(goodContext);
       assert.ok(eventRegistry);
+    });
+
+    it('should invoke onSessionReady when RTC_SESSION_CREATED happens', function () {
+      onSessionReady = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry[ATT.SessionEvents.RTC_SESSION_CREATED]();
+      assert.isTrue(onSessionReady);
+    });
+
+    it('should invoke onError when RTC_SESSION_ERROR happens', function () {
+      onError = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry[ATT.SessionEvents.RTC_SESSION_ERROR]();
+      assert.isTrue(onError);
+    });
+
+    it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
+      onCallEnded = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      event = {reason: ''};
+      eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
+      assert.isTrue(onCallEnded);
+    });
+
+    it('should invoke onCallError when SESSION_TERMINATED happens WITH event.reason', function () {
+      onCallError = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      event = {reason: 'the aliens took it'};
+      eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
+      assert.isTrue(onCallError);
+    });
+
+    it('should invoke onIncomingCall when INVITATION_RECEIVED happens', function () {
+      onIncomingCall = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      event = {sdp: 'sendonly', from: '@mc:hammer'};
+      eventRegistry[ATT.RTCCallEvents.INVITATION_RECEIVED](event);
+      assert.isTrue(onIncomingCall);
+    });
+
+    it('should invoke onInProgress when SESSION_OPEN happens', function () {
+      onInProgress = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      event = {sdp: 'sendonly', resourceURL: 'aaa-bbb-123'};
+      eventRegistry[ATT.RTCCallEvents.SESSION_OPEN](event);
+      assert.isTrue(onInProgress);
+    });
+
+    it('should invoke onOutgoingCall when INVITATION_SENT happens', function () {
+      onOutgoingCall = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry[ATT.RTCCallEvents.INVITATION_SENT](event);
+      assert.isTrue(onOutgoingCall);
+    });
+
+    it('should invoke onCallError when UNKNOWN happens', function () {
+      onCallError = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry[ATT.RTCCallEvents.UNKNOWN]();
+      assert.isTrue(onCallError);
     });
   });
 });
