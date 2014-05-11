@@ -43,7 +43,7 @@ var RESTClient = (function (mainModule) {
     },
     logMgr = getLogger(mainModule),
     RESTClient =  function (config) {
-        this.config =  getUtils(mainModule).extend({}, config);
+      this.config =  getUtils(mainModule).extend({}, config);
         // default ajax configuration
       this.config.async = this.config.async || true;
       this.config.timeout = this.config.timeout || 30000;
@@ -197,6 +197,13 @@ var RESTClient = (function (mainModule) {
           error.call(this, config.error);
         } else {
           throw new Error('Network error occurred in REST client.');
+        }
+      };
+      // This should address request cancel events for CORS or any other issues
+      xhr.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 0 && this.statusText === "") {
+          logger.logError("Failed to complete request for resource:" + config.url);
+          error.call(this, config.error);
         }
       };
 
