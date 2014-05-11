@@ -111,8 +111,8 @@ if (Env === undefined) {
     logger.logError(error.formatError());
     logger.logDebug(error);
 
-    if (typeof config.error === 'function') {
-      config.error(error);
+    if (typeof config.onError === 'function') {
+      config.onError(error);
     }
   };
 
@@ -154,7 +154,7 @@ if (Env === undefined) {
       sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
 
     if (sessionId) {
-      logger.logInfo('Successfully created web rtc session on blackflag');
+      logger.logInfo('Successfully created web rtc session, the session id is:' + sessionId);
 
       // Set WebRTC.Session data object that will be needed downstream.
       session.setSessionId(sessionId);
@@ -172,9 +172,14 @@ if (Env === undefined) {
       });
 
       // fire up the event channel after successfult create session
+      logger.logInfo("Setting up event channel...");
       setupEventChannel();
+      //Invoke the UI callback to indicate we are ready to receive or make calls
+      config.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
     } else {
-      logger.logError('Failed to retrieve session id from black flag');
+      //todo fix me create new error description ?
+      logger.logError('Failed to retrieve session id');
+      handleError.call(this, config, 'CreateSession', "Unable to create session");
     }
   };
 
@@ -185,9 +190,7 @@ if (Env === undefined) {
    * @param {Object} data The required login form data from the UI.
    * @attribute {String} token
    * @attribute {String} e911Locations
-   * @example Preconditions: SDK was initialized.
-   * ATT.rtc.Phone.login(“audio-session”); //for audio service
-   * ATT.rtc.Phone.login(“video-session”); //for video service
+   * @attribute {Boolean} audioOnly
    */
   function login(config) {
     logger.logTrace('createWebRTCSession');
@@ -199,10 +202,15 @@ if (Env === undefined) {
       if (!config.token) {
         throw 'Cannot login to web rtc, no access token';
       }
+
       var token = config.token,
         e911Id = config.e911Id || null,
-        session;
-
+        session,
+        services = ['ip_voice_call', 'ip_video_call'];
+      //remove video service for audio only service
+      if (config.audioOnly) {
+        services = services.slice(0, 1);
+      }
       // create new session with token and optional e911id
       initSession(token, e911Id);
 
@@ -219,14 +227,11 @@ if (Env === undefined) {
       }
 
       resourceManager.doOperation('createWebRTCSession', {
-        data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
+        data: {
           'session': {
             'mediaType': 'dtls-srtp',
             'ice': 'true',
-            'services': [
-              'ip_voice_call',
-              'ip_video_call'
-            ]
+            'services': services
           }
         },
         params: {
@@ -291,7 +296,9 @@ if (Env === undefined) {
 
     // Call BF to delete WebRTC Session.
       resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
+      callManager.DeleteSession();
     } catch (err) {
+      callManager.DeleteSession();
       handleError.call(this, config, 'DeleteSession', err);
     }
   }
@@ -327,6 +334,7 @@ if (Env === undefined) {
    );
 
   //Example 2
+   //Not yet implemented
    ATT.rtc.Phone(
    OnSessionOpen(event) {
    },
@@ -392,6 +400,7 @@ if (Env === undefined) {
     );
 
     //Example 2
+   //Not yet implemented
     ATT.rtc.Phone(
     OnSessionOpen(event) {
     },
@@ -477,7 +486,6 @@ if (Env === undefined) {
 
   // The SDK public API.
   function configurePublicAPIs() {
-    resourceManager.addPublicMethod('init', initSession);
     resourceManager.addPublicMethod('login', login);
     resourceManager.addPublicMethod('logout', logout);
     resourceManager.addPublicMethod('dial', dial);
