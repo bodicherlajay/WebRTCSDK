@@ -13,7 +13,7 @@ var sdkErrorCollection = [
     httpStatusCode: '',   //HTTP Status code
     messageId: '',        //SVC or POL Error
     errorDescription: 'Error not configured', //Error Description
-    reasonText: 'The specified error code is not configured in the error disctionary',  //High level reason text, invalid input, forbidden
+    reasonText: 'The specified error code is not configured in the error dictionary',  //High level reason text, invalid input, forbidden
     helpText: 'Please configure the error in the error dictionary' //Help text which can be displayed on UI
   },
   // This is the default error, can be used for all purposes. Shouldn't use it since doesn't provide much information
@@ -40,7 +40,7 @@ var sdkErrorCollection = [
   //SDK-20000 range reserved for webRTC module
   {
     userErrorCode: 'SDK-20000',    //5 digit error code
-    helpText: 'Unable to complete login..text tobe filled in by marketing', //Help text which can be displayed on UI
+    helpText: 'Unable to complete login..text to be filled in by marketing', //Help text which can be displayed on UI
     reasonText: 'configerror',       //High level reason text, invalid input, forbidden
     errorDescription: 'Fatal Error XHR Request failed', //Error Description
     moduleID: 'RTC'
