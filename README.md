@@ -1,4 +1,4 @@
-# WebRTC SDK
+# WebRTC JavaScript SDK
 
 [![Build Status](http://ec2-54-85-119-205.compute-1.amazonaws.com:8080/buildStatus/icon?job=webrtc-sdk develop)](http://ec2-54-85-119-205.compute-1.amazonaws.com:8080/job/webrtc-sdk%20develop/)
 
