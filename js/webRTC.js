@@ -19,136 +19,20 @@ if (Env === undefined) {
 
   var resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance(),
+    setupEventChannel,
+    shutdownEventChannel,
+    handleError,
     createWebRTCSessionSuccess,
-    createWebRTCSessionError,
     logMgr = ATT.logManager.getInstance(),
-    logger,
-    newErrorObj;
+    logger;
 
   logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('WebRTC');
 
-  /**
-   * Initializes SDK with Oauth access token and e911Id. E911Id is an optional parameter which is needed for ICMN and VTN customers
-   * @memberof ATT.rtc.Phone
-   * @function initSession
-   * @param {String} accessToken
-   * @param {String} e911Id
-   * @example Preconditions: Developer hosts the login page and obtained user credentials, 
-   * invoked the API endpoint to obtain access token and e911 id.
-   * ATT.rtc.Phone.initSDK(“e911id”,”access token”)
-   */
-  function initSession(accessToken, e911Id) {
-    logger.logTrace('Initializing SDK session with token and optional e911 id');
-    if (!accessToken) {
-      return logger.logError('Cannot init SDK session, no access token');
-    }
-    if (!e911Id) {
-      logger.logWarning('Initializing SDK session without e911 id');
-    }
-    // Set the access Token in the callManager.
-    try {
-      callManager.CreateSession({
-        token: accessToken,
-        e911Id: e911Id
-      });
-    } catch (err) {
-      logger.logError("Init Session Error " + err.message);
-      //config.onError(app.errorDictionary.getError("SDK-00001));
-    }
-    logger.logTrace('Initialed SDK session with token and optional e911 id');
-  }
+  setupEventChannel = function () {
+    logger.logTrace('setupEventChannel');
 
-  /**
-   * Used to establish webRTC session so that the user can place webRTC calls. 
-   * The service parameter indicates the desired service such as audio or video call
-   * @memberof ATT.rtc
-   * @param {Object} data The required login form data from the UI.
-   * @attribute {String} token
-   * @attribute {String} e911Locations
-   * @example Preconditions: SDK was initialized.
-   * ATT.rtc.Phone.login(“audio-session”); //for audio service
-   * ATT.rtc.Phone.login(“video-session”); //for video service
-   */
-  function login(config) {
-    if (!config) {
-      return logger.logError('Cannot login to web rtc, no configuration');
-    }
-    if (!config.token) {
-      return logger.logError('Cannot login to web rtc, no access token');
-    }
-    var token = config.token,
-      e911Id = config.e911Id || null,
-      session;
-
-    // create new session with token and optional e911id
-    initSession(token, e911Id);
-
-    session = callManager.getSessionContext();
-    token = session.getAccessToken();
-    e911Id = session.getE911Id();
-
-    // todo: need to decide if callbacks should be mandatory
-    if (typeof config.onSessionReady !== 'function') {
-      logger.logError('No UI success callback specified');
-    }
-    if (typeof config.onError !== 'function') {
-      logger.logError('No UI error callback specified');
-    }
-
-    logger.logTrace('Creating WebRTC session...');
-    try {
-      resourceManager.doOperation('createWebRTCSession', {
-        data: {     // Todo: this needs to be configurable in SDK, not hardcoded.
-          'session': {
-            'mediaType': 'dtls-srtp',
-            'ice': 'true',
-            'services': [
-              'ip_voice_call',
-              'ip_video_call'
-            ]
-          }
-        },
-        params: {
-          headers: {
-            'Authorization': token,
-            'x-e911Id': e911Id || "",
-            'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
-          }
-        },
-        success: createWebRTCSessionSuccess.bind(this, config),
-        error: createWebRTCSessionError.bind(this, config)
-      });
-    } catch (err) {
-      config.onError(app.errorDictionary.getError("SDK-00001"));
-
-    }
-  }
-
-  createWebRTCSessionSuccess = function (config, responseObject) {
-    logger.logTrace('WebRTC Session created');
     var session = callManager.getSessionContext(),
-      sessionId,
-      channelConfig;
-
-    sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
-
-    if (sessionId) {
-
-      // Set WebRTC.Session data object that will be needed downstream.
-      session.setSessionId(sessionId);
-      // Also setup UI callbacks
-      session.setUICallbacks(config);
-
-      // setting up event callbacks using RTC Events
-      app.RTCEvent.getInstance().hookupEventsToUICallbacks();
-      // publish the UI callback for ready state
-      app.event.publish(sessionId + '.responseEvent', {
-        state:  app.SessionEvents.RTC_SESSION_CREATED,
-        data:   {
-          webRtcSessionId: sessionId
-        }
-      });
 
       // Set event channel configuration
       // All parameters are required
@@ -162,51 +46,208 @@ if (Env === undefined) {
         publicMethodName: 'getEvents',
         usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
       };
-      logger.logTrace('Creating event channel...');
-      try {
-        ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
-        if (ATT.utils.eventChannel) {
-          ATT.utils.eventChannel.startListening();
-        }
-      } catch (err) {
-        config.onError(app.errorDictionary.getError("SDK-00001"));
-      }
+
+    ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
+    if (ATT.utils.eventChannel) {
+      ATT.utils.eventChannel.startListening();
+      logger.logInfo('Event channel setup and running...');
     } else {
-      logger.logDebug('No session id');
+      throw 'Event channel setup failed';
     }
   };
 
-  newErrorObj = function (error, operation) {
-    //look at responseObject structure on RESTClient
-    //parse the json error response, get http status code, message id (svc/pol) and then lookup the error dictionary
-    //get the helptext and display
-    var response = error.getJson(), httpStatusCode =  error.getResponseStatus(), messageId, errObj;
-    messageId = response.RequestError.ServiceException.MessageId;
-    errObj = app.errorDictionary.getErrorByOpStatus("CreateSession", httpStatusCode, messageId);
-    //If error object is found then make one
-    if (!errObj) {
-      errObj = app.errorDictionary.createError({moduleID : 'RTC',
-        userErrorCode : "SDK-UNKNOWN",
-        operationName : operation,
-        httpStatusCode : httpStatusCode,
-        errorDescription : "Unable to create Session",
-        reasonText : response.RequestError.ServiceException.Text});
-      logger.info("Error object not available");
-      logger.info(errObj);
-    }
-    return errObj;
+  shutdownEventChannel = function () {
+    logger.logTrace('shutdownEventChannel');
+    ATT.utils.eventChannel.stopListening();
+    logger.logInfo('Event channel shutdown successfully');
   };
 
-  createWebRTCSessionError = function (config, error) {
-    logger.logError('Error creating web rtc session: ');
-    if (typeof config.onError === 'function') {
-      if (error.responseText === "") {
-        config.onError(app.errorDictionary.getError("SDK-10000"));
-      } else {
-        config.onError(newErrorObj(error, "CreateSession"));
+  handleError = function (config, operation, errorResp) {
+    logger.logTrace('handleError: ' + operation);
+    logger.logInfo('There was an error performing operation ' + operation);
+
+    var error,
+      errObj;
+
+    if (typeof errorResp === 'string') { // String Errors
+      error = ATT.errorDictionary.getDefaultError({
+        moduleID: 'RTC',
+        operationName: operation,
+        errorDescription: 'Operation ' + operation + ' failed',
+        reasonText: errorResp
+      });
+    } else if (errorResp.isSdkErr) { // Previously thrown SDK Errors
+      error = errorResp;
+    } else if (errorResp.getJson) { // Errors from Network/API
+      errObj = errorResp.getJson();
+      if (errObj.RequestError) {    // Known API errors
+        if (errObj.RequestError.ServiceException) { // API Service Exceptions
+          error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+        } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
+          error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+        } else if (errObj.RequestError.Exception) { // API Exceptions
+          error = ATT.errorDictionary.getDefaultError({
+            moduleID: 'RTC',
+            operationName: operation,
+            httpStatusCode: errorResp.getResponseStatus(),
+            errorDescription: 'Operation ' + operation + ' failed',
+            reasonText: errObj.RequestError.Exception.Text
+          });
+        }
+      } else {                      // Unknown API network errors
+        error = ATT.errorDictionary.getDefaultError({
+          moduleID: 'RTC',
+          operationName: operation,
+          httpStatusCode: errorResp.getResponseStatus(),
+          errorDescription: 'Operation ' + operation + ' failed',
+          reasonText: 'WebRTC operation ' + operation + ' failed due to unknown reason'
+        });
       }
     }
+    if (!error) { // Unknown errors
+      error = ATT.errorDictionary.getMissingError();
+    }
+
+    logger.logError(error.formatError());
+    logger.logDebug(error);
+
+    if (typeof config.onError === 'function') {
+      config.onError(error);
+    }
   };
+
+  /**
+   * Initializes SDK with Oauth access token and e911Id. E911Id is an optional parameter which is needed for ICMN and VTN customers
+   * @memberof ATT.rtc.Phone
+   * @function initSession
+   * @param {String} accessToken
+   * @param {String} e911Id
+   * @example Preconditions: Developer hosts the login page and obtained user credentials, 
+   * invoked the API endpoint to obtain access token and e911 id.
+   * ATT.rtc.Phone.initSDK(“e911id”,”access token”)
+   */
+  function initSession(accessToken, e911Id) {
+    logger.logTrace('initSession');
+
+    try {
+      if (!accessToken) {
+        throw 'Cannot init SDK session, no access token';
+      }
+      if (!e911Id) {
+        logger.logWarning('Initializing SDK session without e911 id');
+      }
+    // Set the access Token in the callManager.
+      callManager.CreateSession({
+        token: accessToken,
+        e911Id: e911Id
+      });
+      logger.logInfo('Initialed SDK session with token and optional e911 id');
+    } catch (err) {
+      throw "Init Session Error: " + err;
+    }
+  }
+
+  createWebRTCSessionSuccess = function (config, responseObject) {
+    logger.logTrace('createWebRTCSessionSuccess');
+
+    var session = callManager.getSessionContext(),
+      sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
+
+    if (sessionId) {
+      logger.logInfo('Successfully created web rtc session, the session id is:' + sessionId);
+
+      // Set WebRTC.Session data object that will be needed downstream.
+      session.setSessionId(sessionId);
+      // Also setup UI callbacks
+      session.setUICallbacks(config);
+
+      // setting up event callbacks using RTC Events
+      app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+      // publish the UI callback for ready state
+      app.event.publish(sessionId + '.responseEvent', {
+        state:  app.SessionEvents.RTC_SESSION_CREATED,
+        data: {
+          webRtcSessionId: sessionId
+        }
+      });
+
+      // fire up the event channel after successfult create session
+      logger.logInfo("Setting up event channel...");
+      setupEventChannel();
+      //Invoke the UI callback to indicate we are ready to receive or make calls
+      config.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
+    } else {
+      //todo fix me create new error description ?
+      logger.logError('Failed to retrieve session id');
+      handleError.call(this, config, 'CreateSession', "Unable to create session");
+    }
+  };
+
+  /**
+   * Used to establish webRTC session so that the user can place webRTC calls. 
+   * The service parameter indicates the desired service such as audio or video call
+   * @memberof ATT.rtc
+   * @param {Object} data The required login form data from the UI.
+   * @attribute {String} token
+   * @attribute {String} e911Locations
+   * @attribute {Boolean} audioOnly
+   */
+  function login(config) {
+    logger.logTrace('createWebRTCSession');
+
+    try {
+      if (!config) {
+        throw 'Cannot login to web rtc, no configuration';
+      }
+      if (!config.token) {
+        throw 'Cannot login to web rtc, no access token';
+      }
+
+      var token = config.token,
+        e911Id = config.e911Id || null,
+        session,
+        services = ['ip_voice_call', 'ip_video_call'];
+      //remove video service for audio only service
+      if (config.audioOnly) {
+        services = services.slice(0, 1);
+      }
+      // create new session with token and optional e911id
+      initSession(token, e911Id);
+
+      session = callManager.getSessionContext();
+      token = session.getAccessToken();
+      e911Id = session.getE911Id();
+
+      // todo: need to decide if callbacks should be mandatory
+      if (typeof config.onSessionReady !== 'function') {
+        logger.logWarning('No UI success callback specified');
+      }
+      if (typeof config.onError !== 'function') {
+        logger.logWarning('No UI error callback specified');
+      }
+
+      resourceManager.doOperation('createWebRTCSession', {
+        data: {
+          'session': {
+            'mediaType': 'dtls-srtp',
+            'ice': 'true',
+            'services': services
+          }
+        },
+        params: {
+          headers: {
+            'Authorization': token,
+            'x-e911Id': e911Id || "",
+            'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
+          }
+        },
+        success: createWebRTCSessionSuccess.bind(this, config),
+        error: handleError.bind(this, config, 'CreateSession')
+      });
+    } catch (err) {
+      handleError.call(this, config, 'CreateSession', err);
+    }
+  }
 
  /**
    * Logs out the user from webRTC session. When invoked webRTC session gets deleted
@@ -218,27 +259,24 @@ if (Env === undefined) {
   ATT.rtc.Phone.logout();
   */
   function logout(config) {
-    ATT.UserMediaService.stopStream();
-    ATT.utils.eventChannel.stopListening();
-    var session = callManager.getSessionContext(),
-      dataForDeleteWebRTCSession,
-      successCallback = function (statusCode) {
-        var data = {};
-        if (statusCode !== 200) {
-          data = {
-            type : 'error',
-            error : 'Failed to delete the web rtc session on blackflag'
-          };
-        }
-        if (typeof config.success === 'function') {
-          config.success(data);
-        }
-      };
+    logger.logTrace('deleteWebRTCSession');
 
-    if (!session) {
-      successCallback();
-    }
     try {
+
+      // stop media stream
+      ATT.UserMediaService.stopStream();
+      // stop event channel
+      shutdownEventChannel();
+
+      var session = callManager.getSessionContext(),
+        dataForDeleteWebRTCSession;
+
+      if (!session) {
+        if (typeof config.success === 'function') {
+          config.success();
+        }
+        return;
+      }
       dataForDeleteWebRTCSession = {
         params: {
           url: [session.getSessionId()],
@@ -247,21 +285,21 @@ if (Env === undefined) {
             'x-e911Id': session.getE911Id()
           }
         },
-        success: function (responseObject) {
+        success: function () {
           logger.logInfo('Successfully deleted web rtc session on blackflag');
-          successCallback(responseObject.getResponseStatus());
-        }
+          if (typeof config.success === 'function') {
+            config.success();
+          }
+        },
+        error: handleError.bind(this, config, 'DeleteSession')
       };
-    } catch (err) {
-      config.onError(app.errorDictionary.getError("SDK-00001"));
-    }
-    logger.logTrace('Logging out...');
 
-    try {
     // Call BF to delete WebRTC Session.
       resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
+      callManager.DeleteSession();
     } catch (err) {
-      config.onError(app.errorDictionary.getError("SDK-00001"));
+      callManager.DeleteSession();
+      handleError.call(this, config, 'DeleteSession', err);
     }
   }
 
@@ -296,6 +334,7 @@ if (Env === undefined) {
    );
 
   //Example 2
+   //Not yet implemented
    ATT.rtc.Phone(
    OnSessionOpen(event) {
    },
@@ -361,6 +400,7 @@ if (Env === undefined) {
     );
 
     //Example 2
+   //Not yet implemented
     ATT.rtc.Phone(
     OnSessionOpen(event) {
     },
@@ -446,7 +486,6 @@ if (Env === undefined) {
 
   // The SDK public API.
   function configurePublicAPIs() {
-    resourceManager.addPublicMethod('init', initSession);
     resourceManager.addPublicMethod('login', login);
     resourceManager.addPublicMethod('logout', logout);
     resourceManager.addPublicMethod('dial', dial);

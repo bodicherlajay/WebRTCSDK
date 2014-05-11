@@ -85,17 +85,37 @@ if (!Env) {
     }
   };
 
-  handleError = function (config, operation, responseObject) {
-    var respObj = responseObject.getJson(),
+  handleError = function (config, operation, errorResp) {
+    var errObj = errorResp.getJson(),
       error;
 
-    if (respObj.RequestError) {
-      error = ATT.errorDictionary.getErrorByOpStatus(operation, responseObject.getResponseStatus(), respObj.RequestError.ServiceException.MessageId);
+    if (errObj.RequestError) {    // Known API errors
+      if (errObj.RequestError.ServiceException) { // API Service Exceptions
+        error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+      } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
+        error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+      } else if (errObj.RequestError.Exception) { // API Exceptions
+        error = ATT.errorDictionary.getDefaultError({
+          moduleID: 'DHS',
+          operationName: operation,
+          httpStatusCode: errorResp.getResponseStatus(),
+          errorDescription: 'Operation ' + operation + ' failed',
+          reasonText: errObj.RequestError.Exception.Text
+        });
+      } else {                      // Unknown API network errors
+        error = ATT.errorDictionary.getDefaultError({
+          moduleID: 'DHS',
+          operationName: operation,
+          httpStatusCode: errorResp.getResponseStatus(),
+          errorDescription: 'Operation ' + operation + ' failed',
+          reasonText: 'DHS operation ' + operation + ' failed due to unknown reason'
+        });
+      }
     } else {
-      error = ATT.errorDictionary.getDHSError({
+      error = ATT.errorDictionary.getDHSError({ // DHS thrown errors
         operationName: operation,
-        httpStatusCode: responseObject.getResponseStatus(),
-        reasonText: respObj.error || ''
+        httpStatusCode: errorResp.getResponseStatus(),
+        reasonText: errObj.error || ''
       });
     }
     if (!error) {

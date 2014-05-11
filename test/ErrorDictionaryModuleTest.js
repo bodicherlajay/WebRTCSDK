@@ -34,8 +34,8 @@ describe('ErrorDictionaryModule', function () {
         httpStatusCode: '400',   //HTTP Status code
         messageId: 'SVC0002',        //SVC or POL Error
         helpText: 'One or more of the input parameters are not valid for this operation',         //Help text which can be displayed on UI
-        reasonText: 'invalidinput',       //High level reason text, invalid input, forbidden
-        errorDescription: 'Request payload does not conform as documented', //Error Description
+        errorDescription: 'invalidinput',    //High level reason text, invalid input, forbidden
+        reasonText: 'Request payload does not conform as documented', //Error Description
         moduleID: 'RTC'          //one of the configured module name
       };
       // Initialize the dictionary
