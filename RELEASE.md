@@ -1,4 +1,5 @@
-# Purpose
+# AT&T WebRTC JS SDK SVT1-MVP1
+## Purpose
 This release is primarily meant for use by members of SVT team.
 
 The sample web application shipped with this package can be used as a utility by SVT team members to execute SVT test use cases in scope for SVT1-MVP1.
@@ -13,7 +14,7 @@ Using this package for other general purposes is also encouraged but cannot be f
 
 Any feedback to improve the product is highly appreciated. Please communicate with your support contact to provide any feedback.
 
-# Features
+## Features
 * Functional:
   * Detect browser support for WebRTC
   * Login & Logout AT&T Subscriber (ICMN)
@@ -22,7 +23,7 @@ Any feedback to improve the product is highly appreciated. Please communicate wi
   * JS API (callbacks) to attach Developer-defined functionality for above functions
   * Logging and Error Handling
 
-# Limitations
+## Limitations
 * Environment: The SDK was tested against F6 UAT.
 
 This release is tested on following environments. It may also work for other versions of O/S, Browser and NodeJS but is not tested or supported.
