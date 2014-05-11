@@ -97,18 +97,6 @@
   //     callbacks.onCallResume(evt);
   //   }
   // };
-   /**
-   * onCallError
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
-   */
-    onCallError = function (evt) {
-      if (callbacks.onCallError) {
-        callbacks.onCallError(evt);
-      }
-    };
  /**
    * onCallEnded
    * @memberof ATT.rtc.Phone
