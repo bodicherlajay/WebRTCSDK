@@ -154,7 +154,7 @@ if (Env === undefined) {
       sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
 
     if (sessionId) {
-      logger.logInfo('Successfully created web rtc session on blackflag');
+      logger.logInfo('Successfully created web rtc session, the session id is:' + sessionId);
 
       // Set WebRTC.Session data object that will be needed downstream.
       session.setSessionId(sessionId);
@@ -172,9 +172,14 @@ if (Env === undefined) {
       });
 
       // fire up the event channel after successfult create session
+      logger.logInfo("Setting up event channel...");
       setupEventChannel();
+      //Invoke the UI callback to indicate we are ready to receive or make calls
+      config.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
     } else {
-      logger.logError('Failed to retrieve session id from black flag');
+      //todo fix me create new error description ?
+      logger.logError('Failed to retrieve session id');
+      handleError.call(this, config, 'CreateSession', "Unable to create session");
     }
   };
 
@@ -186,9 +191,6 @@ if (Env === undefined) {
    * @attribute {String} token
    * @attribute {String} e911Locations
    * @attribute {Boolean} audioOnly
-   * @example Preconditions: SDK was initialized.
-   * ATT.rtc.Phone.login(“audio-session”); //for audio service
-   * ATT.rtc.Phone.login(“video-session”); //for video service
    */
   function login(config) {
     logger.logTrace('createWebRTCSession');
@@ -332,6 +334,7 @@ if (Env === undefined) {
    );
 
   //Example 2
+   //Not yet implemented
    ATT.rtc.Phone(
    OnSessionOpen(event) {
    },
@@ -397,6 +400,7 @@ if (Env === undefined) {
     );
 
     //Example 2
+   //Not yet implemented
     ATT.rtc.Phone(
     OnSessionOpen(event) {
     },
@@ -482,7 +486,6 @@ if (Env === undefined) {
 
   // The SDK public API.
   function configurePublicAPIs() {
-    resourceManager.addPublicMethod('init', initSession);
     resourceManager.addPublicMethod('login', login);
     resourceManager.addPublicMethod('logout', logout);
     resourceManager.addPublicMethod('dial', dial);
