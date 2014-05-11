@@ -1,4 +1,4 @@
-# js-shared
+# Shared JavaScript code
 This repository is intended to host reusable code components.
 
 # Quick Start
