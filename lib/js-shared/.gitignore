@@ -1,0 +1,8 @@
+/nbproject/private/
+/node_modules
+/nbproject
+/coverage
+results.xml
+/dist/
+/out/
+/.idea/
