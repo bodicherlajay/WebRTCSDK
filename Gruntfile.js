@@ -25,6 +25,7 @@ module.exports = function (grunt) {
       'js/peerConnectionServiceModule.js',
       'js/CallManagementModule.js',
       'js/eventChannel.js',
+      'js/RTCEventModule.js',
       'js/eventDispatcher.js',
       'js/resourceManagerModule.js',
       'js/signalingServiceModule.js',
