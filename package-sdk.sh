@@ -129,11 +129,17 @@ fi
 # Generate JSDocs from the SDK and place them at the root level of the SDK Kit dir.
 gen_jsdoc $SDK_DIR $SDKKIT_DIR
 
-# Place Initial Setup Readme in at the root
-README=$SAMPLE_DIR/README-0.md
+# Place README-0.md in at the root
+README=$SDK_DIR/README-0.md
 if [[ -f $README ]]; then
   echo "Moving $README  to... $SDKKIT_DIR/README.md"
   mv $README $SDKKIT_DIR/README.md
+fi
+# Place Release Notes at root level of the package
+RELEASE_FILE=$SDK_DIR/RELEASE.md
+if [[ -f $RELEASE_FILE ]]; then
+  echo "Moving $RELEASE_FILE  to... $SDKKIT_DIR/RELEASE.md"
+  mv $RELEASE_FILE $SDKKIT_DIR/RELEASE.md
 fi
 
 # Zip package
