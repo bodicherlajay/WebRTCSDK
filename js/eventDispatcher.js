@@ -15,7 +15,8 @@
     onCallEnded,
     onCallError,
     onError,
-    eventRegistry = {};
+    eventRegistry = {},
+    callingParty;
 
   function createEventRegistry(sessionContext) {
     var callbacks = sessionContext.getUICallbacks();
@@ -97,18 +98,6 @@
   //     callbacks.onCallResume(evt);
   //   }
   // };
-   /**
-   * onCallError
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
-   */
-    onCallError = function (evt) {
-      if (callbacks.onCallError) {
-        callbacks.onCallError(evt);
-      }
-    };
  /**
    * onCallEnded
    * @memberof ATT.rtc.Phone
@@ -241,9 +230,14 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_SENT] = function () {
+      if (callManager.getSessionContext().getCallObject()) {
+        callingParty = callManager.getSessionContext().getCallObject().callee();
+      } else {
+        callingParty = '';
+      }
       onOutgoingCall({
         type: mainModule.CallStatus.CALLING,
-        callee: callManager.getSessionContext().getCallObject().callee()
+        callee: callingParty
       });
     };
 
