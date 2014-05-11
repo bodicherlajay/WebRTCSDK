@@ -21,7 +21,7 @@ function checkout_branch {
   git clean -f
   # Include Git revision in a textfile
   echo "Adding git_hash file at $REPO_DIR/git_hash ..."
-  git rev-parse --short HEAD > git_hash
+  git rev-parse HEAD > git_hash
 
   # return to original dir
   echo "Finished checkout... moving to $START_DIR"
@@ -54,20 +54,42 @@ function git_latest {
   cd $START_DIR
 }
 
+function gen_jsdoc {
+  START_DIR=$(pwd)
+  SRC_DIR=$1
+  OUT_DIR=$2
+  cd $SRC_DIR
+  # install NPM dependencies to generate JSDocs
+  npm install 
+  grunt jsdoc
+  cp -Rf doc $OUT_DIR/html-docs
+  cd $START_DIR
+}
+
 ###################################
 #### Main Program Starts Here #####
 ###################################
 
+# We have to pass at least the name of the branch to check out
+if [ "$#" -ne 1 ]; then
+    echo "Illegal number of parameters. Pass the name of the branch to use."
+    exit 1 # End the execution
+fi
+
+# Name of the branch to use for generating the package
+BRANCH_NAME=$1
 
 # Create dist dir if it doesn't exist
 DIST_DIR=$(pwd)/dist
 mkdir -p $DIST_DIR
 
-echo "Starting packaging at... $DIST_DIR ..."
+echo "Starting packaging at... $DIST_DIR ... using branch $BRANCH_NAME"
 DHS_DIR_NAME=webrtc-dhs
 SAMPLE_DIR_NAME=webrtc-sample-apps
+SDK_DIR_NAME=webrtc-sdk
 SDKKIT_DIR=$DIST_DIR/webrtc-sdk-kit
 SAMPLE_DIR=$SDKKIT_DIR/$SAMPLE_DIR_NAME
+SDK_DIR=$SAMPLE_DIR/sdk-sample-apps/webrtc-sdk
 DHS_DIR=$SDKKIT_DIR/$DHS_DIR_NAME
 SDK_SAMPLE_APPS_DIR=$SAMPLE_DIR/sdk-sample-apps
 
@@ -78,12 +100,11 @@ GITHUB_ROOT=git@github.com:attdevsupport
 echo "Cleaning WebRTC SDK Kit dir at $SDKKIT_DIR"
 if [[ -d $SDKKIT_DIR ]]; then
   # if the repos already exist, just update to the latest commit
-  # on the develop branch
   if [[ -d $DHS_DIR ]]; then
-    git_latest $DHS_DIR develop
+    git_latest $DHS_DIR $BRANCH_NAME
   fi
   if [[ -d $SAMPLE_DIR ]]; then
-    git_latest $SAMPLE_DIR develop
+    git_latest $SAMPLE_DIR $BRANCH_NAME
   fi
 else # Create the directories
 
@@ -94,25 +115,19 @@ else # Create the directories
   # Download DHS component
   echo "Getting sources for the DHS..."
   git clone $GITHUB_ROOT/$DHS_DIR_NAME.git $DHS_DIR --recursive
-  # checkout develop branch
-  checkout_branch $DHS_DIR develop
+  # checkout branch
+  checkout_branch $DHS_DIR $BRANCH_NAME
 
   # Download the Sample Application
   echo "Getting sources for the Sample App+SDK..."
   git clone $GITHUB_ROOT/$SAMPLE_DIR_NAME.git $SAMPLE_DIR --recursive
   # checkout develop branch
-  checkout_branch $SAMPLE_DIR develop
+  checkout_branch $SAMPLE_DIR $BRANCH_NAME
 
 fi
 
-# run npm install in appropriate in dhs & sample apps
-echo "Installing NPM packages at $DHS_DIR"
-cd $DHS_DIR
-sudo npm install
-
-echo "Installing NPM packages at $SDK_SAMPLE_APPS_DIR"
-cd $SDK_SAMPLE_APPS_DIR
-sudo npm install
+# Generate JSDocs from the SDK and place them at the root level of the SDK Kit dir.
+gen_jsdoc $SDK_DIR $SDKKIT_DIR
 
 # Place Initial Setup Readme in at the root
 README=$SAMPLE_DIR/README-0.md
