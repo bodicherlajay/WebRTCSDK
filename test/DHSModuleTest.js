@@ -39,10 +39,12 @@ describe('DHSModule', function () {
   });
 
   it('should call `doOperation` on the resourceManager', function () {
-    var config = {"data" : {"type" : "MOBILENUMBER"}};
-    resourceManager.doOperation = sinon.spy(resourceManager.doOperation);
+    var config = {"data" : {"type" : "MOBILENUMBER"}},
+      spy = sinon.spy(resourceManager, 'doOperation');
+
     ATT.rtc.dhs.login(config);
-    expect(resourceManager.doOperation.called).to.equal(true);
+    expect(spy.called).to.equal(true);
+    spy.restore();
   });
 
   xit('should call success callback after authentication', function () {
