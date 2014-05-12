@@ -3,12 +3,19 @@
 
 cmgmt = (function () {
   'use strict';
-  //Call prototype
+
   var module = {}, logMgr = ATT.logManager.getInstance(), logger, Call, SessionState,
     SessionContext, session_context, CreateSession, CreateOutgoingCall, CreateIncomingCall,
     instance, init, DeleteSession;
   logMgr.configureLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
   logger = logMgr.getLogger('CallManagementModule');
+
+  /**
+  * Call Prototype
+  * @param {String} to The caller
+  * @param {String} to The callee
+  * @param {String} media 'audio' or 'video'
+  */
   Call = function (from, to, media) {
     var caller = from, callee = to, mediaType = media, localSDP = null;
     logger.logTrace('call method started, from: ' + from + ', to: ' + to + ', media type: ' + media);
@@ -43,7 +50,14 @@ cmgmt = (function () {
     READY: 'Ready', //Ready to accept Outgoing or Incoming call
     SDK_READY: 'SDK Ready'
   };
-  //Session context to hold session variables
+  
+  /**
+  * Session Context Protype
+  * @param {String} token The access token
+  * @param {String} e9Id The e911Id
+  * @param {String} sessionId The sessionId
+  * @param {String} state 'Incoming' or 'Outgoing'
+  */
   SessionContext = function (token, e9Id, sessionId, state) {
     var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
       currentCallId, UICbks = {}, currentCall = null;
@@ -105,6 +119,15 @@ cmgmt = (function () {
     };
   };
 
+  /**
+  * Create a new Session Context
+  * @param {Object} config The configuration
+  * callmgr.CreateSession({
+  *   token: 'abcd'
+  *   e911Id: 'e911Id'
+  *   sessionId: 'sessionId'
+  * })
+  */
   CreateSession = function (config) {
     session_context = new SessionContext(config.token, config.e911Id, config.sessionId, SessionState.READY);
     logger.logTrace('creating session with token: ' + config.token);
@@ -116,6 +139,14 @@ cmgmt = (function () {
     session_context = null;
   };
 
+  /**
+  * Create an Outgoing Call
+  * @param {Object} config The configuration
+  * callmgr.CreateOutgoingCall({
+  *   to: '1-800-foo-bar,
+  *   mediaConstraints: {audio: true, video: true}
+  * })
+  */
   CreateOutgoingCall = function (config) {
     var call = new Call(null, config.to, config.mediaConstraints);
     session_context.setCallObject(call);
@@ -127,16 +158,30 @@ cmgmt = (function () {
     }
   };
 
+
+  /**
+  * Create an Incoming Call
+  * @param {Object} config The configuration
+  * callmgr.CreateIncomingCall({
+  *   mediaConstraints: {audio: true, video: true}
+  * })
+  */
   CreateIncomingCall = function (config) {
     var event = session_context.getEventObject(),
-      call = new Call(event.caller, null, config.mediaConstraints);
+      caller = event.caller || config.caller,
+      call = new Call(caller, null, config.mediaConstraints);
     session_context.setCallObject(call);
     session_context.setCallState(SessionState.INCOMING_CALL);
     session_context.setUICallbacks(config.success);
-    logger.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
+    logger.logTrace('creating incoming call', 'caller: ' + caller + ', constraints: ' + config.mediaConstraints);
     if (config.success) {
       ATT.UserMediaService.startCall(config);
     }
+  };
+
+  // call object cleanup
+  DeleteCallObject = function () {
+    session_context.setCallObject(null);
   };
 
   init = function () {
