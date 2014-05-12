@@ -6,7 +6,7 @@ cmgmt = (function () {
 
   var module = {}, logMgr = ATT.logManager.getInstance(), logger, Call, SessionState,
     SessionContext, session_context, CreateSession, CreateOutgoingCall, CreateIncomingCall,
-    instance, init, DeleteSession;
+    instance, init, DeleteSession, DeleteCallObject;
   logMgr.configureLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
   logger = logMgr.getLogger('CallManagementModule');
 
