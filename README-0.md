@@ -18,6 +18,7 @@ This package contains software and documentation for **SVT1-MVP1** release of Ja
 
 * `/webrtc-dhs`: Software to run Sample DHS Server in NodeJ
 * `/webrtc-sample-apps/sdk-sample-apps`: Software to run Sample WebRTC
+* `/webrtc-sample-apps/sdk-sample-apps/docs/common.html`: Tutorial: How to use the JS SDK.
 * `/webrtc-sample-apps/sdk-sample-apps/webrtc-sdk`: Core JS SDK
  * `/html-docs`: API reference documentation
  * Tutorial: Writing a Hello-world Sample using JS SDK Web Application.
