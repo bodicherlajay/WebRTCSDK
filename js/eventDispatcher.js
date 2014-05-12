@@ -154,7 +154,7 @@
         onCallEnded({ type: mainModule.CallStatus.ENDED });
       }
       callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
-      callManager.getSessionContext().setCallObject(null);
+      callManager.getSessionContext().DeleteCallObject();
       PeerConnectionService.endCall();
     };
 
