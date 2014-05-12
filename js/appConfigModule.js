@@ -5,10 +5,11 @@
 *
 */
 
+// Resource manager should be available now
+
 if (!ATT) {
   var ATT = {};
 }
-
 (function (app) {
   'use strict';
 
@@ -39,11 +40,7 @@ if (!ATT) {
       DHSEndpoint: null,
       EventChannelConfig: null
     },
-    logMgr = ATT.logManager.getInstance(),
-    logger;
-
-  logMgr.configureLogger('appConfigModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-  logger = logMgr.getLogger('appConfigModule');
+    logger = Env.resourceManager.getLogger('appConfigModule');
 
   function configure(key, useWebSockets) { // useWebSockets is optional, default to long-polling
     try {
@@ -51,9 +48,13 @@ if (!ATT) {
         key = 'AMS'; // default to AMS endpoints
         logger.logTrace('Default ENVIRNOMENT set by SDK : ' + key);
         logger.logTrace('url: ' + EnvConf[key]);
+        logger.logInfo('Default ENVIRNOMENT set by SDK : ' + key);
+        logger.logInfo('url: ' + EnvConf[key]);
       } else {
         logger.logTrace('User Configured ENVIRNOMENT: ' + key);
         logger.logTrace('url: ' + EnvConf[key]);
+        logger.logInfo('Default ENVIRNOMENT set by SDK : ' + key);
+        logger.logInfo('url: ' + EnvConf[key]);
       }
       appConfig.RTCEndpoint = EnvConf[key];
       appConfig.DHSEndpoint = DHSConf;
@@ -61,16 +62,14 @@ if (!ATT) {
       app.appConfig = appConfig;
 
       // configure rest APIs now
+      logger.logTrace("About to configure APIs");
       app.configureAPIs(appConfig);
     } catch (e) {
-      //logger.logError(app.errorDictionary.getError());
       logger.logError(e);
+      logger.logError(JSON.stringify(app.errorDictionary.getError("SDK-00002")));
     }
-
-    if (Env) {
-      // configure resource manager to for SDK public APIs
-      Env.resourceManager.configure();
-    }
+    // configure resource manager to for SDK public APIs
+    Env.resourceManager.configure();
   }
   app.configure = configure;
 

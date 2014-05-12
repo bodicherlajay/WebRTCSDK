@@ -9,6 +9,10 @@ describe('Call Management', function () {
     backupAtt = ATT;
   });
 
+  afterEach(function () {
+    ATT = backupAtt;
+  });
+
   callmgr.CreateSession({
     token: "abcd",
     e911Id: "e911id",
@@ -47,10 +51,10 @@ describe('Call Management', function () {
         mediaContraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
-      expect(sessionContext.getCallObject()).to.be.an('object');
-      assert.isNull(sessionContext.getCallObject().caller());
-      expect(sessionContext.getCallObject().callee()).to.equal('1-800-call-junhua');
-      expect(sessionContext.getCallState()).to.equal('Outgoing');
+      expect(callmgr.getSessionContext().getCallObject()).to.be.an('object');
+      assert.isNull(callmgr.getSessionContext().getCallObject().caller());
+      expect(callmgr.getSessionContext().getCallObject().callee()).to.equal('1-800-call-junhua');
+      expect(callmgr.getSessionContext().getCallState()).to.equal('Outgoing');
     });
 
     xit('should create an incoming call', function () {

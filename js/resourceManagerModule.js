@@ -2,7 +2,7 @@
 /*global Env:true, ATT: true*/
 
 // Dependency:  need to load ATT apiconfig module first before this can run.
-
+// todo fix me - remove getInstance
 if (!Env) {
   var Env = {};
 }
@@ -68,7 +68,7 @@ Env = (function (app) {
   // Configure REST operations object and public API object.
 
   configure = function (config) {
-    //logger.logTrace('configuring resource manager module');
+    logger.logTrace('configuring resource manager module');
     config = ((config && Object.keys(config).length > 0) && config) || app.APIConfigs;
 
     restOperationsConfig = config;
@@ -272,6 +272,8 @@ Env = (function (app) {
   };
 
   module.configure = configure;
+  module.getLogger = getLogger;
+  module.updateLogLevel = updateLogLevel;
 
   return {
     resourceManager : module

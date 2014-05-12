@@ -27,6 +27,16 @@ var sdkErrorCollection = [
     reasonText: 'There was an error performing the operation',   //High level reason text, invalid input, forbidden
     helpText: 'Please look at tracelog for further information' //Help text which can be displayed on UI
   },
+  {
+    userErrorCode: 'SDK-00002',    //5 digit error code
+    moduleID: 'APP_CONFIG',
+    operationName: 'configure',  //Name of the operation
+    httpStatusCode: '',   //HTTP Status code
+    messageId: '',        //SVC or POL Error
+    errorDescription: 'Unable to configure SDK environment configuration', //Error Description
+    reasonText: 'There was an error performing the operation',   //High level reason text, invalid input, forbidden
+    helpText: 'Unable to configure SDK' //Help text which can be displayed on UI
+  },
   //SDK-10000 range reserved for RESOURCE_MGR module
   {
     userErrorCode: 'SDK-10000',   //5 digit error code
