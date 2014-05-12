@@ -50,7 +50,7 @@ cmgmt = (function () {
     READY: 'Ready', //Ready to accept Outgoing or Incoming call
     SDK_READY: 'SDK Ready'
   };
-  
+
   /**
   * Session Context Protype
   * @param {String} token The access token
@@ -194,7 +194,8 @@ cmgmt = (function () {
       CreateSession: CreateSession,
       DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
-      CreateIncomingCall: CreateIncomingCall
+      CreateIncomingCall: CreateIncomingCall,
+      DeleteCallObject: DeleteCallObject
     };
   };
 

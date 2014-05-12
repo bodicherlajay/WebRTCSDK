@@ -65,6 +65,18 @@ describe('Call Management', function () {
       expect(sessionContext.getCallState()).to.equal('Incoming');
     });
 
+    it('should be able to delete the call object', function () {
+      var config = {
+        to: '1-800-call-junhua',
+        mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateIncomingCall(config);
+      expect(sessionContext.getCallObject()).to.be.an('object');
+
+      callmgr.DeleteCallObject();
+      assert.isNull(sessionContext.getCallObject());
+    });
+
     it('should call ATT.PeerConnection.holdCall() if peer connection and callObject are defined', function () {
       var config = {
         to: '1-800-call-junhua',
