@@ -5,9 +5,12 @@ getUserMedia: true, navigator, MediaStream: true */
 
 'use strict';
 
-var oldATT = window.ATT;
-
 describe('PeerConnectionServiceModule', function () {
+
+  var backupAtt;
+  beforeEach(function () {
+    backupAtt = ATT;
+  });
 
   describe('Preliminary setup information', function () {
     it('is defined', function () {
@@ -148,7 +151,7 @@ describe('PeerConnectionServiceModule', function () {
   });
 
   describe('Peer connection call management functionalities', function () {
-    xit('should replace SDP attribute (sendrecv -> recvonly) for hold request', function () {
+    it('should replace SDP attribute (sendrecv -> recvonly) for hold request', function () {
       var sdp = { sdp: 'a=sendrecv\r\nb=helloworld' };
       ATT.PeerConnectionService.localDescription = sdp;
       ATT.PeerConnectionService.holdCall();
@@ -156,7 +159,7 @@ describe('PeerConnectionServiceModule', function () {
       expect(ATT.PeerConnectionService.modificationCount).to.equal(3);
     });
 
-    xit('should replace SDP attribute (recvonly -> sendrecv) for resume request', function () {
+    it('should replace SDP attribute (recvonly -> sendrecv) for resume request', function () {
       var sdp = { sdp: 'a=recvonly\r\nb=helloworld' };
       ATT.PeerConnectionService.localDescription = sdp;
       ATT.PeerConnectionService.resumeCall();
@@ -170,6 +173,8 @@ describe('PeerConnectionServiceModule', function () {
       expect(ATT.PeerConnectionService.modificationCount).to.equal(2);
     });
   });
-});
 
-window.ATT = oldATT;
+  afterEach(function () {
+    ATT = backupAtt;
+  });
+});
