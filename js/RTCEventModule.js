@@ -11,13 +11,15 @@ if (!ATT) {
   var callManager = cmgmt.CallManager.getInstance(),
     module = {},
     instance,
+    RTCEvent,
     interceptingEventChannelCallback,
     subscribeToEvents,
     eventRegistry,
     init = function () {
       eventRegistry = mainModule.utils.createEventRegistry(callManager.getSessionContext());
       return {
-        hookupEventsToUICallbacks: subscribeToEvents
+        hookupEventsToUICallbacks: subscribeToEvents,
+        createEvent: module.createEvent
       };
     };
 
@@ -55,7 +57,7 @@ if (!ATT) {
   };
 
   /**
-    This function subscribes to all events 
+    This function subscribes to all events
     being published by the event channel.
     It hands off the event to interceptingEventChannelCallback()
   */
@@ -67,6 +69,37 @@ if (!ATT) {
     // subscribe to published events from event channel
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     console.log('Subscribed to events');
+  };
+
+  //Event structure for RTCEvent
+  /** Event Object structure for RTC Event
+   * @memberof ATT.rtc.Phone
+   * @param from Origination party
+   * @param to  Destination party
+   * @param state Call State
+   * @param error Error Description
+   * @type {{from: string, to: string, timeStamp: string, state: string, error: string}}
+   */
+  RTCEvent = {
+    from: "",
+    to: "",
+    timeStamp: "",
+    state: "",
+    error: ""
+  };
+
+  module.createEvent = function (from, to, state, error) {
+    if (state.hasOwnProperty(ATT.CallStatus)) {
+      throw new Error("State must be of type ATT.CallStatus");
+    }
+    var evt = Object.create(RTCEvent);
+    evt.from = from;
+    evt.to = to;
+    evt.state = state;
+    evt.error = error;
+    evt.timestamp = new Date();
+    Object.freeze(evt);
+    return evt;
   };
 
   module.getInstance = function () {
