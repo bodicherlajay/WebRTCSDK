@@ -9,7 +9,10 @@
 (function (app, UserMediaService, SignalingService) {
   'use strict';
 
-  var module, logMgr = ATT.logManager.getInstance(), logger = null;
+  var module,
+    logMgr = ATT.logManager.getInstance(),
+    logger = null;
+
   logMgr.configureLogger('PeerConnectionService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('PeerConnectionService');
 
@@ -179,7 +182,7 @@
       // send any ice candidates to the other peer
       // get a local stream, show it in a self-view and add it to be sent
       getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), function () {
-        logger.logError('Get User Media Fail');
+        ATT.rtc.error.publish('Get user media failed');
       });
     },
 

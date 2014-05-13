@@ -15,12 +15,10 @@ cmgmt = (function () {
     session_context,
     CreateSession,
     UpdateSession,
-    UpdateCallSession,
     DeleteSession,
     CreateOutgoingCall,
     CreateIncomingCall,
-    DeleteCallObject,
-    PublishError;
+    DeleteCallObject;
 
   logMgr.configureLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
   logger = logMgr.getLogger('CallManagementModule');
@@ -134,6 +132,12 @@ cmgmt = (function () {
     };
   };
 
+  function updateCallSession(call, callState, uiCallbacks) {
+    session_context.setCallObject(call);
+    session_context.setCallState(callState);
+    session_context.setUICallbacks(uiCallbacks);
+  }
+
   /**
   * Create a new Session Context
   * @param {Object} config The configuration
@@ -166,12 +170,6 @@ cmgmt = (function () {
   DeleteSession = function () {
     session_context = null;
   };
-  
-  UpdateCallSession = function (call, callState, uiCallbacks) {
-    session_context.setCallObject(call);
-    session_context.setCallState(callState);
-    session_context.setUICallbacks(uiCallbacks);
-  };
 
   /**
   * Create an Outgoing Call
@@ -189,7 +187,7 @@ cmgmt = (function () {
 
     // set call and callbacks in current session
     logger.logInfo('Updating current session for outgoing call');
-    UpdateCallSession(call, SessionState.OUTGOING_CALL, config.callbacks);
+    updateCallSession(call, SessionState.OUTGOING_CALL, config.callbacks);
 
     // setting up event callbacks using RTC Events
     logger.logInfo('Hooking up event callbacks');
@@ -221,8 +219,8 @@ cmgmt = (function () {
 
     // set call and callbacks in current session
     logger.logInfo('Updating current session for incoming call');
-    UpdateCallSession(call, SessionState.INCOMING_CALL, config.callbacks);
-    
+    updateCallSession(call, SessionState.INCOMING_CALL, config.callbacks);
+
     // setting up event callbacks using RTC Events
     logger.logInfo('Hooking up event callbacks');
     ATT.RTCEvent.getInstance().setupEventBasedCallbacks();
@@ -237,36 +235,6 @@ cmgmt = (function () {
     session_context.setCallObject(null);
   };
 
-  PublishError = function (error) {
-    logger.logDebug('PublishError');
-    logger.logError(error);
-
-    var sessionId = session_context.getSessionId();
-    if (sessionId) {
-      // publish the UI callback event for call fail state
-      ATT.event.publish(sessionId + '.responseEvent', {
-        state:  ATT.CallStatus.ERROR,
-        data: error
-      });
-    } else {
-      var callbacks = session_context.getUICallbacks();
-      if (callbacks) {
-        if (typeof callbacks.onError === 'function') {
-          return callbacks.onError({
-            state: ATT.CallState.ERROR,
-            data: error
-          });
-        } else if (typeof callbacks.onCallError === 'function') {
-          return callbacks.onCallError({
-            state: ATT.CallState.ERROR,
-            data: error
-          });
-        }
-      }
-      logger.logError('Unable to publish error');
-    }
-  };
-
   init = function () {
     logger.logTrace('call management module init');
     return {
@@ -279,8 +247,7 @@ cmgmt = (function () {
       DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
       CreateIncomingCall: CreateIncomingCall,
-      DeleteCallObject: DeleteCallObject,
-      PublishError: PublishError
+      DeleteCallObject: DeleteCallObject
     };
   };
 

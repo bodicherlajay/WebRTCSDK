@@ -150,7 +150,10 @@ if (Env === undefined) {
   createWebRTCSessionSuccess = function (config, responseObject) {
     logger.logTrace('createWebRTCSessionSuccess');
 
-    var sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
+    var sessionId = null;
+    if (responseObject && responseObject.getResponseHeader('Location')) {
+      sessionId = responseObject.getResponseHeader('Location').split('/')[4];
+    }
 
     if (sessionId) {
       logger.logInfo('Successfully created web rtc session, the session id is:' + sessionId);
@@ -173,7 +176,7 @@ if (Env === undefined) {
       // fire up the event channel after successfult create session
       logger.logInfo("Setting up event channel...");
       setupEventChannel();
-    
+
     } else {
       //todo fix me create new error description ?
       logger.logError('Failed to retrieve session id');
@@ -367,7 +370,7 @@ if (Env === undefined) {
     try {
       callManager.CreateOutgoingCall(config);
     } catch (e) {
-      callManager.PublishError(e);
+      ATT.rtc.error.publish(e);
     }
   }
 
