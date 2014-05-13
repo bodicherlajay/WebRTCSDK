@@ -265,6 +265,9 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             logger.logTrace('Call termination success.');
+            if (typeof config.success === 'function') {
+              config.success();
+            }
           } else {
             logger.logError('CALL TERMINATION ERROR, status:', response.getResponseStatus());
             if (typeof config.error === 'function') {

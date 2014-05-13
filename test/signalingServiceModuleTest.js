@@ -471,11 +471,99 @@ describe('SignalingService', function () {
     expect(errorSpy.called).to.equal(true);
   });
 
-  /**
-   * TODO:  For some reason sinon is always replacing sendEndCall with a spy. (??)
-   * Put breakpoint at 430 and look at ATT.SignalingService.sendEndCall.
-   */
-  xit('sendEndCall should call endCall op with correct url & headers', function () {
+  it('sendEndCall should call endCall op with correct url & headers', function () {
+    // setup
 
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendEndCall',
+        inputConfig: {
+          success: successSpy
+        },
+        operation: 'endCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(204, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(true);
+  });
+
+  it('sendEndCall should call error callback if not 204 HTTP response code.', function () {
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+      errorSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendEndCall',
+        inputConfig: {
+          success: successSpy,
+          error: errorSpy
+        },
+        operation: 'endCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(200, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
+  });
+
+  it('sendEndCall should call error callback if 500 HTTP response code.', function () {
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+      errorSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendEndCall',
+        inputConfig: {
+          success: successSpy,
+          error: errorSpy
+        },
+        operation: 'endCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(500, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
   });
 });
