@@ -43,6 +43,7 @@
   ATT.errorDictionary = ATT.utils.createErrorDictionary({
     modules: {
       APP_CONFIG: 'APP_CONFIG',
+      ERROR: 'ERROR',
       ERROR_DICT: 'ERROR_DICT',
       DHS: 'DHS',
       EVENT_CHANNEL: 'EVENT_CHANNEL',

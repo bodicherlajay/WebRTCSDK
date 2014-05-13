@@ -16,6 +16,7 @@ module.exports = function (grunt) {
       'js/ErrorDictionaryModule.js',
       'js/appConfigModule.js',
       'js/adapter.js',
+      'js/error.js',
       'js/APIConfigs.js',
       'js/userMediaServiceModule.js',
       'js/peerConnectionServiceModule.js',
