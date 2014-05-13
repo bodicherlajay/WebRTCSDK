@@ -153,6 +153,11 @@ cmgmt = (function () {
     session_context.setCallState(SessionState.OUTGOING_CALL);
     session_context.setUICallbacks(config.success);
     logger.logTrace('creating outgoing call', 'to: ' + config.to + ', constraints: ' + config.mediaConstraints);
+    // Here, we publish `onConnecting`
+    // event for the UI
+    ATT.event.publish(session_context.getSessionId() + '.responseEvent', {
+      state : ATT.RTCCallEvents.CALL_CONNECTING
+    });
     if (config.success) {
       ATT.UserMediaService.startCall(config);
     }
