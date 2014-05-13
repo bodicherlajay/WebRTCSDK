@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
-describe.only('Call Management', function () {
+describe('Call Management', function () {
   'use strict';
 
   var backupAtt, callmgr = cmgmt.CallManager.getInstance(), sessionContext;
@@ -143,6 +143,15 @@ describe.only('Call Management', function () {
     });
   });
 
+  describe('Session Context cleanup', function () {
+    it('should delete session context', function () {
+      expect(sessionContext).to.be.an('object');
+
+      callmgr.DeleteSession();
+      sessionContext = callmgr.getSessionContext();
+      assert.isNull(sessionContext);
+    });
+  });
   afterEach(function () {
     ATT = backupAtt;
   });
