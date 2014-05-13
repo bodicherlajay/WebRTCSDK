@@ -50,7 +50,7 @@ cmgmt = (function () {
     READY: 'Ready', //Ready to accept Outgoing or Incoming call
     SDK_READY: 'SDK Ready'
   };
-  
+
   /**
   * Session Context Protype
   * @param {String} token The access token
@@ -168,12 +168,11 @@ cmgmt = (function () {
   */
   CreateIncomingCall = function (config) {
     var event = session_context.getEventObject(),
-      caller = event.caller || config.caller,
-      call = new Call(caller, null, config.mediaConstraints);
+      call = new Call(event.caller, null, config.mediaConstraints);
     session_context.setCallObject(call);
     session_context.setCallState(SessionState.INCOMING_CALL);
     session_context.setUICallbacks(config.success);
-    logger.logTrace('creating incoming call', 'caller: ' + caller + ', constraints: ' + config.mediaConstraints);
+    logger.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
     if (config.success) {
       ATT.UserMediaService.startCall(config);
     }
@@ -194,7 +193,8 @@ cmgmt = (function () {
       CreateSession: CreateSession,
       DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
-      CreateIncomingCall: CreateIncomingCall
+      CreateIncomingCall: CreateIncomingCall,
+      DeleteCallObject: DeleteCallObject
     };
   };
 

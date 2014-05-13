@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
-describe('Call Management', function () {
+describe.only('Call Management', function () {
   'use strict';
 
   var backupAtt, callmgr = cmgmt.CallManager.getInstance(), sessionContext;
@@ -34,10 +34,11 @@ describe('Call Management', function () {
   describe('Call Object', function () {
     it('should return a valid Call Object', function () {
       var config = {
-        caller: '1-800-call-junhua',
+        to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
       };
-      callmgr.CreateIncomingCall(config);
+      callmgr.CreateOutgoingCall(config);
+      sessionContext = callmgr.getSessionContext();
       expect(sessionContext.getCallObject()).to.be.an('object');
     });
 
@@ -47,6 +48,7 @@ describe('Call Management', function () {
         mediaContraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
+      sessionContext = callmgr.getSessionContext();
       expect(sessionContext.getCallObject()).to.be.an('object');
       assert.isNull(sessionContext.getCallObject().caller());
       expect(sessionContext.getCallObject().callee()).to.equal('1-800-call-junhua');
@@ -57,12 +59,24 @@ describe('Call Management', function () {
       var config = {
         caller: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
+      }, event = { caller: '1800-foo-bar' };
+      sessionContext = callmgr.getSessionContext();
+      sessionContext.setEventObject(event);
+      callmgr.CreateIncomingCall(config);
+      expect(sessionContext.getCallObject().caller()).to.equal('1800-foo-bar');
+    });
+
+    it('should be able to delete the call object', function () {
+      var config = {
+        to: '1-800-call-junhua',
+        mediaContraints: {audio: true, video: true}
       };
       callmgr.CreateIncomingCall(config);
+      sessionContext = callmgr.getSessionContext();
       expect(sessionContext.getCallObject()).to.be.an('object');
-      assert.isNull(sessionContext.getCallObject().callee());
-      expect(sessionContext.getCallObject().caller()).to.equal('1-800-call-junhua');
-      expect(sessionContext.getCallState()).to.equal('Incoming');
+
+      callmgr.DeleteCallObject();
+      assert.isNull(sessionContext.getCallObject());
     });
 
     it('should call ATT.PeerConnection.holdCall() if peer connection and callObject are defined', function () {
