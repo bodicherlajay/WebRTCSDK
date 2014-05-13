@@ -21,8 +21,10 @@ if (!ATT) {
     * @param {Object} config the peer conn config
     */
     sendOffer: function (config) {
-      logger.logTrace('running sdp pre-processor', config.sdp);
+      logger.logTrace('sendOffer');
+
       // fix description just before sending
+      logger.logDebug(config.sdp);
 
       var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
         // call data
@@ -33,7 +35,6 @@ if (!ATT) {
           }
         };
 
-      logger.logTrace('doOperation: startCall');
       resourceManager.doOperation('startCall', {
         params: {
           url: [callManager.getSessionContext().getSessionId()],
@@ -43,17 +44,16 @@ if (!ATT) {
         },
         data: data,
         success: function (obj) {
-          console.log('offer sent successfully');
+          logger.logInfo('offer sent successfully');
 
           var headers = {
             location : obj.getResponseHeader('Location'),
             xState : obj.getResponseHeader('x-state')
           };
 
-          if (typeof config.success === 'function') {
-            config.success.call(null, headers);
-          }
-        }
+          config.success.call(null, headers);
+        },
+        error: config.error.bind(this, config)
       });
     },
 
