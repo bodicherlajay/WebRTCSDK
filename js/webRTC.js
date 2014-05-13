@@ -423,9 +423,11 @@ if (Env === undefined) {
 
    */
   function answer(config) {
-    callManager.CreateIncomingCall(config);
-    // setting up event callbacks using RTC Events
-    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+    try {
+      callManager.CreateIncomingCall(config);
+    } catch (e) {
+      callManager.PublishError(e);
+    }
   }
 
   /**
