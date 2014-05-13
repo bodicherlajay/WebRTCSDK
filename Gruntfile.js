@@ -12,15 +12,11 @@ module.exports = function (grunt) {
         included: true
       },
       'js/att.js',
-      'js-shared/js/utils.js',
-      'js-shared/js/LogManagerModule.js',
+      'lib/js-shared/js/*.js',
       'js/ErrorDictionaryModule.js',
       'js/adapter.js',
       'js/appConfigModule.js',
-      'js-shared/js/utils.js',
-      'js-shared/js/restClient.js',
       'js/APIConfigs.js',
-      'js-shared/js/eventEmitter.js',
       'js/userMediaServiceModule.js',
       'js/peerConnectionServiceModule.js',
       'js/CallManagementModule.js',
@@ -69,7 +65,7 @@ module.exports = function (grunt) {
         file: 'coverage.xml'
       },
       colors: false,
-      autoWatch: false,
+      autoWatch: true,
       singleRun: true
     },
     attrname;
