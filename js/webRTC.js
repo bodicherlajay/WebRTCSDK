@@ -150,32 +150,30 @@ if (Env === undefined) {
   createWebRTCSessionSuccess = function (config, responseObject) {
     logger.logTrace('createWebRTCSessionSuccess');
 
-    var session = callManager.getSessionContext(),
-      sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
+    var sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
 
     if (sessionId) {
       logger.logInfo('Successfully created web rtc session, the session id is:' + sessionId);
 
       // Set WebRTC.Session data object that will be needed downstream.
-      session.setSessionId(sessionId);
       // Also setup UI callbacks
-      session.setUICallbacks(config);
+      callManager.UpdateSession({
+        sessionId: sessionId,
+        callbacks: config.callbacks
+      });
 
-      // setting up event callbacks using RTC Events
-      app.RTCEvent.getInstance().hookupEventsToUICallbacks();
       // publish the UI callback for ready state
       app.event.publish(sessionId + '.responseEvent', {
         state:  app.SessionEvents.RTC_SESSION_CREATED,
         data: {
-          webRtcSessionId: sessionId
+          sessionId: sessionId
         }
       });
 
       // fire up the event channel after successfult create session
       logger.logInfo("Setting up event channel...");
       setupEventChannel();
-      //Invoke the UI callback to indicate we are ready to receive or make calls
-      config.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
+    
     } else {
       //todo fix me create new error description ?
       logger.logError('Failed to retrieve session id');
@@ -366,9 +364,11 @@ if (Env === undefined) {
 
    */
   function dial(config) {
-    callManager.CreateOutgoingCall(config);
-    // setting up event callbacks using RTC Events
-    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+    try {
+      callManager.CreateOutgoingCall(config);
+    } catch (e) {
+      callManager.PublishError(e);
+    }
   }
 
   /**
@@ -423,9 +423,11 @@ if (Env === undefined) {
 
    */
   function answer(config) {
-    callManager.CreateIncomingCall(config);
-    // setting up event callbacks using RTC Events
-    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+    try {
+      callManager.CreateIncomingCall(config);
+    } catch (e) {
+      callManager.PublishError(e);
+    }
   }
 
   /**

@@ -146,6 +146,13 @@
       onError(event);
     };
 
+    eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
+      onCallError({
+        type: event.state,
+        reason: event.data
+      });
+    };
+
     eventRegistry[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
     // registers UI functions for incomming IIP states
       if (event.reason) {

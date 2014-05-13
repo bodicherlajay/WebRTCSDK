@@ -4,9 +4,24 @@
 cmgmt = (function () {
   'use strict';
 
-  var module = {}, logMgr = ATT.logManager.getInstance(), logger, Call, SessionState,
-    SessionContext, session_context, CreateSession, CreateOutgoingCall, CreateIncomingCall,
-    instance, init, DeleteSession, DeleteCallObject;
+  var module = {},
+    instance,
+    init,
+    logMgr = ATT.logManager.getInstance(),
+    logger,
+    Call,
+    SessionState,
+    SessionContext,
+    session_context,
+    CreateSession,
+    UpdateSession,
+    UpdateCallSession,
+    DeleteSession,
+    CreateOutgoingCall,
+    CreateIncomingCall,
+    DeleteCallObject,
+    PublishError;
+
   logMgr.configureLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
   logger = logMgr.getLogger('CallManagementModule');
 
@@ -134,9 +149,28 @@ cmgmt = (function () {
     session_context.setCallState(SessionState.SDK_READY);
   };
 
+  UpdateSession = function (config) {
+    if (config.sessionId) {
+      session_context.setSessionId(config.sessionId);
+    }
+    if (config.callbacks) {
+      session_context.setUICallbacks(config.callbacks);
+
+      // setting up event callbacks using RTC Events
+      logger.logInfo('Hooking up event callbacks');
+      ATT.RTCEvent.getInstance().setupEventBasedCallbacks();
+    }
+  };
+
   //Cleanup session after logout
   DeleteSession = function () {
     session_context = null;
+  };
+  
+  UpdateCallSession = function (call, callState, uiCallbacks) {
+    session_context.setCallObject(call);
+    session_context.setCallState(callState);
+    session_context.setUICallbacks(uiCallbacks);
   };
 
   /**
@@ -148,19 +182,26 @@ cmgmt = (function () {
   * })
   */
   CreateOutgoingCall = function (config) {
+    logger.logDebug('CreateOutgoingCall');
+
+    logger.logInfo('Creating outgoing call');
     var call = new Call(null, config.to, config.mediaConstraints);
-    session_context.setCallObject(call);
-    session_context.setCallState(SessionState.OUTGOING_CALL);
-    session_context.setUICallbacks(config.success);
-    logger.logTrace('creating outgoing call', 'to: ' + config.to + ', constraints: ' + config.mediaConstraints);
+
+    // set call and callbacks in current session
+    logger.logInfo('Updating current session for outgoing call');
+    UpdateCallSession(call, SessionState.OUTGOING_CALL, config.callbacks);
+
+    // setting up event callbacks using RTC Events
+    logger.logInfo('Hooking up event callbacks');
+    ATT.RTCEvent.getInstance().setupEventBasedCallbacks();
+
     // Here, we publish `onConnecting`
     // event for the UI
     ATT.event.publish(session_context.getSessionId() + '.responseEvent', {
       state : ATT.RTCCallEvents.CALL_CONNECTING
     });
-    if (config.success) {
-      ATT.UserMediaService.startCall(config);
-    }
+
+    ATT.UserMediaService.startCall(config);
   };
 
 
@@ -172,20 +213,58 @@ cmgmt = (function () {
   * })
   */
   CreateIncomingCall = function (config) {
+    logger.logDebug('CreateIncomingCall');
+
+    logger.logInfo('Creating incoming call');
     var event = session_context.getEventObject(),
       call = new Call(event.caller, null, config.mediaConstraints);
-    session_context.setCallObject(call);
-    session_context.setCallState(SessionState.INCOMING_CALL);
-    session_context.setUICallbacks(config.success);
-    logger.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
-    if (config.success) {
-      ATT.UserMediaService.startCall(config);
-    }
+
+    // set call and callbacks in current session
+    logger.logInfo('Updating current session for incoming call');
+    UpdateCallSession(call, SessionState.INCOMING_CALL, config.callbacks);
+    
+    // setting up event callbacks using RTC Events
+    logger.logInfo('Hooking up event callbacks');
+    ATT.RTCEvent.getInstance().setupEventBasedCallbacks();
+
+    logger.logInfo('caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
+
+    ATT.UserMediaService.startCall(config);
   };
 
   // call object cleanup
   DeleteCallObject = function () {
     session_context.setCallObject(null);
+  };
+
+  PublishError = function (error) {
+    logger.logDebug('PublishError');
+    logger.logError(error);
+
+    var sessionId = session_context.getSessionId();
+    if (sessionId) {
+      // publish the UI callback event for call fail state
+      ATT.event.publish(sessionId + '.responseEvent', {
+        state:  ATT.CallStatus.ERROR,
+        data: error
+      });
+    } else {
+      var callbacks = session_context.getUICallbacks();
+      if (callbacks) {
+        if (typeof callbacks.onError === 'function') {
+          return callbacks.onError({
+            state: ATT.CallState.ERROR,
+            data: error
+          });
+        } else if (typeof callbacks.onCallError === 'function') {
+          return callbacks.onCallError({
+            state: ATT.CallState.ERROR,
+            data: error
+          });
+        }
+      }
+      logger.logError('Unable to publish error');
+    }
   };
 
   init = function () {
@@ -196,10 +275,12 @@ cmgmt = (function () {
       },
       SessionState: SessionState,
       CreateSession: CreateSession,
+      UpdateSession: UpdateSession,
       DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
       CreateIncomingCall: CreateIncomingCall,
-      DeleteCallObject: DeleteCallObject
+      DeleteCallObject: DeleteCallObject,
+      PublishError: PublishError
     };
   };
 
