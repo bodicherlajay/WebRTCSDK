@@ -77,6 +77,7 @@ if (!ATT) {
    * @param from Origination party
    * @param to  Destination party
    * @param state Call State
+   * @param codec Audio/Video Codec
    * @param error Error Description
    * @type {{from: string, to: string, timeStamp: string, state: string, error: string}}
    */
@@ -88,7 +89,7 @@ if (!ATT) {
     error: ""
   };
 
-  module.createEvent = function (from, to, state, error) {
+  module.createEvent = function (from, to, state, codec, error) {
     if (state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error("State must be of type ATT.CallStatus");
     }
@@ -98,6 +99,7 @@ if (!ATT) {
     evt.state = state;
     evt.error = error;
     evt.timestamp = new Date();
+    evt.codec = codec;
     Object.freeze(evt);
     return evt;
   };
