@@ -186,14 +186,20 @@ cmgmt = (function () {
 
     logger.logInfo('Creating outgoing call');
     var call = new Call(null, config.to, config.mediaConstraints);
-    
+
     // set call and callbacks in current session
     logger.logInfo('Updating current session for outgoing call');
     UpdateCallSession(call, SessionState.OUTGOING_CALL, config.callbacks);
-    
+
     // setting up event callbacks using RTC Events
     logger.logInfo('Hooking up event callbacks');
     ATT.RTCEvent.getInstance().setupEventBasedCallbacks();
+
+    // Here, we publish `onConnecting`
+    // event for the UI
+    ATT.event.publish(session_context.getSessionId() + '.responseEvent', {
+      state : ATT.RTCCallEvents.CALL_CONNECTING
+    });
 
     ATT.UserMediaService.startCall(config);
   };
