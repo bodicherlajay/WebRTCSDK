@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true, Env: true, cmgmt: true*/
 
-"use strict";
+'use strict';
 
 (function (mainModule, callManager, utils, PeerConnectionService) {
   var kaller,
