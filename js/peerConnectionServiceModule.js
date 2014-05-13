@@ -117,7 +117,7 @@
                     }
                   },
                   error: function (error) {
-                    logger.logDebug('success for offer sent, outgoing call');
+                    logger.logError('Error sending offer: ' + error);
                   }
                 });
               } catch (e) {
@@ -154,7 +154,7 @@
         logger.logTrace('pc.onaddstream');
 
         self.remoteStream = evt.stream;
-        
+
         logger.logDebug('Adding Remote Stream...', evt.stream);
         UserMediaService.showStream('remote', evt.stream);
       };
@@ -171,7 +171,7 @@
       this.callingParty = config.from;
       this.calledParty = config.to;
       this.mediaConstraints = config.mediaConstraints;
- 
+
       logger.logDebug('calling party', config.from);
       logger.logDebug('called party', config.to);
       logger.logDebug('media constraints', config.mediaConstraints);
