@@ -8,7 +8,7 @@
     timestamp,
     onSessionReady,
     onIncomingCall,
-    onOutgoingCall,
+    onConnecting,
     onInProgress,
     //onCallHold,
     //onCallResume,
@@ -51,24 +51,24 @@
       }
     };
  /**
-   * onOutgoingCall
+   * onConnecting
    * @memberof ATT.rtc.Phone
    * @param {Object} config Dial configuration object.
    * @attribute {String} callStatus
    * @attribute {String} Time stamp
    */
-    onOutgoingCall = function (evt) {
-      if (callbacks.onOutgoingCall) {
-        callbacks.onOutgoingCall(evt);
+    onConnecting = function (evt) {
+      if (callbacks.onConnecting) {
+        callbacks.onConnecting(evt);
       }
     };
- /**
-   * onInProgress
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
-   */
+ // *
+ //   * onInProgress
+ //   * @memberof ATT.rtc.Phone
+ //   * @param {Object} config Dial configuration object.
+ //   * @attribute {String} callStatus
+ //   * @attribute {String} Time stamp
+
     onInProgress = function (evt) {
       if (callbacks.onInProgress) {
         callbacks.onInProgress(evt);
@@ -229,14 +229,14 @@
     //   }
     };
 
-    eventRegistry[mainModule.RTCCallEvents.INVITATION_SENT] = function () {
+    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
       if (callManager.getSessionContext().getCallObject()) {
         callingParty = callManager.getSessionContext().getCallObject().callee();
       } else {
         callingParty = '';
       }
-      onOutgoingCall({
-        type: mainModule.CallStatus.CALLING,
+      onConnecting({
+        type: mainModule.CallStatus.CONNECTING,
         callee: callingParty
       });
     };
