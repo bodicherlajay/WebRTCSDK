@@ -13,9 +13,8 @@ describe('ResourceManager', function () {
       'Content-Type': 'application/json',
       'Accept' : 'application/json'
     }
-  }, resourceManager, backupAtt;
+  }, resourceManager;
   beforeEach(function () {
-    backupAtt = ATT;
     resourceManager = Env.resourceManager.getInstance();
   });
   it('should be a singleton', function () {
@@ -190,7 +189,6 @@ describe('ResourceManager', function () {
         'dial',
         'login',
         'logout',
-        'init',
         'hangup',
         'hold',
         'resume',
@@ -198,9 +196,5 @@ describe('ResourceManager', function () {
         expect(apiObject[methodName]).is.a('function');
       });
     });
-  });
-
-  afterEach(function () {
-    ATT = backupAtt;
   });
 });

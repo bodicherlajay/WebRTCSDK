@@ -19,7 +19,7 @@ describe('SignalingService', function () {
     // resource Manager
     resourceManager = Env.resourceManager.getInstance();
     apiObj = resourceManager.getAPIObject();
-    operationSpy = sinon.spy(resourceManager, 'doOperation');
+    operationSpy = sinon.stub(resourceManager, 'doOperation');
 
     // call manager
     callManager = cmgmt.CallManager.getInstance();
@@ -40,9 +40,9 @@ describe('SignalingService', function () {
   });
 
   afterEach(function () {
-    xhr.restore();
     stubGetEventObject.restore();
     operationSpy.restore();
+    xhr.restore();
   });
 
   it('should exist and contain sendOffer method.', function () {

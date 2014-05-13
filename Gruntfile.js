@@ -31,9 +31,9 @@ module.exports = function (grunt) {
       'js/webRTC.js',
       'js/DHSModule.js',
       'js/ATTMain.js',
-      'js/sdkErrors.js',
+//      'js/sdkErrors.js',
       'test/**/*.js'],
-    logLevel: 'DEBUG',
+    logLevel: 'INFO',
     port: 9876,
     browsers: ['Chrome'],
     captureTimeout: 60000
