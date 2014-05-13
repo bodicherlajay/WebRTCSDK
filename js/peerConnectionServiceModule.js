@@ -105,7 +105,6 @@
               // send offer...
               logger.logInfo('sending offer');
               try {
-                throw 'Test send offer failed';
                 SignalingService.sendOffer({
                   calledParty: self.calledParty,
                   sdp: self.localDescription,
