@@ -168,12 +168,11 @@ cmgmt = (function () {
   */
   CreateIncomingCall = function (config) {
     var event = session_context.getEventObject(),
-      caller = event.caller || config.caller,
-      call = new Call(caller, null, config.mediaConstraints);
+      call = new Call(event.caller, null, config.mediaConstraints);
     session_context.setCallObject(call);
     session_context.setCallState(SessionState.INCOMING_CALL);
     session_context.setUICallbacks(config.success);
-    logger.logTrace('creating incoming call', 'caller: ' + caller + ', constraints: ' + config.mediaConstraints);
+    logger.logTrace('creating incoming call', 'caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
     if (config.success) {
       ATT.UserMediaService.startCall(config);
     }
