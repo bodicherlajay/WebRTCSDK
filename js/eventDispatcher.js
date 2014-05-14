@@ -15,7 +15,7 @@
     logger;
 
   ATT.logManager.getInstance().configureLogger('CallManagementModule',
-  ATT.logManager.getInstance().loggerType.CONSOLE, ATT.logManager.getInstance().logLevel.DEBUG);
+    ATT.logManager.getInstance().loggerType.CONSOLE, ATT.logManager.getInstance().logLevel.DEBUG);
 
   logger = ATT.logManager.getInstance().getLogger('CallManagementModule');
 
@@ -206,7 +206,7 @@
       if (event.reason) {
         onCallError(rtcEvent.createEvent({
           state: mainModule.CallStatus.ERROR,
-          error: ATT.rtc.error.create (event.reason)
+          error: ATT.rtc.error.create(event.reason)
         }));
       } else {
         onCallEnded(rtcEvent.createEvent({

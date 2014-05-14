@@ -72,8 +72,7 @@ if (!ATT) {
   */
   setupEventBasedCallbacks = function () {
     // get current session context
-    var session = callManager.getSessionContext(),
-      sessionId = session.getSessionId();
+    var sessionId = session.getSessionId();
 
     // setup events registry
     eventRegistry = mainModule.utils.createEventRegistry(session);
