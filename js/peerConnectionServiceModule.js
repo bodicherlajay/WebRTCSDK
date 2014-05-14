@@ -61,7 +61,7 @@
     * @param {String} callState 'Outgoing' or 'Incoming'
     */
     createPeerConnection: function (callState) {
-      logger.logTrace('createPeerConnection');
+      logger.logDebug('createPeerConnection');
 
       var self = this,
         rm = cmgmt.CallManager.getInstance(),
@@ -77,13 +77,13 @@
 
       // ICE candidate trickle
       pc.onicecandidate = function (evt) {
-        logger.logTrace('pc.onicecandidate');
+        logger.logDebug('pc.onicecandidate');
         if (evt.candidate) {
-          logger.logDebug('ICE candidate', evt.candidate);
+          logger.logTrace('ICE candidate', evt.candidate);
         } else {
           if (self.peerConnection !== null) {
             var sdp = pc.localDescription;
-            logger.logDebug('callState', callState);
+            logger.logTrace('callState', callState);
             // fix SDP
             try {
               ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
@@ -92,7 +92,7 @@
               ATT.rtc.error.publish('Could not process Chrome offer SDP. Exception: ' + e.message);
             }
 
-            logger.logDebug('local description', sdp);
+            logger.logTrace('local description', sdp);
            // set local description
             try {
               self.peerConnection.setLocalDescription(sdp);
@@ -154,11 +154,11 @@
 
       // add remote stream
       pc.onaddstream =  function (evt) {
-        logger.logTrace('pc.onaddstream');
+        logger.logDebug('pc.onaddstream');
 
         self.remoteStream = evt.stream;
 
-        logger.logDebug('Adding Remote Stream...', evt.stream);
+        logger.logTrace('Adding Remote Stream...', evt.stream);
         UserMediaService.showStream('remote', evt.stream);
       };
     },
@@ -169,15 +169,15 @@
      * 
      */
     start: function (config) {
-      logger.logTrace('peerConnectionService:start');
+      logger.logDebug('peerConnectionService:start');
 
       this.callingParty = config.from;
       this.calledParty = config.to;
       this.mediaConstraints = config.mediaConstraints;
 
-      logger.logDebug('calling party', config.from);
-      logger.logDebug('called party', config.to);
-      logger.logDebug('media constraints', config.mediaConstraints);
+      logger.logTrace('calling party', config.from);
+      logger.logTrace('called party', config.to);
+      logger.logTrace('media constraints', config.mediaConstraints);
 
       // send any ice candidates to the other peer
       // get a local stream, show it in a self-view and add it to be sent
@@ -191,7 +191,7 @@
     * @param {Object} stream The media stream
     */
     getUserMediaSuccess: function (stream) {
-      logger.logTrace('getUserMediaSuccess');
+      logger.logDebug('getUserMediaSuccess');
 
       // set local stream
       this.localStream = stream;
@@ -206,13 +206,13 @@
       // Create peer connection
       self.createPeerConnection(callState);
 
-      logger.logDebug('session state', callState);
+      logger.logTrace('session state', callState);
 
       if (callState === rm.SessionState.OUTGOING_CALL) {
         // call the user media service to show stream
         UserMediaService.showStream('local', this.localStream);
 
-        logger.logTrace('creating offer for outgoing call');
+        logger.logInfo('creating offer for outgoing call');
         this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
           ATT.rtc.error.publish('Create offer failed');
         }, {'mandatory': {
@@ -235,7 +235,7 @@
     * Create Answer
     */
     createAnswer: function () {
-      logger.logTrace('createAnswer');
+      logger.logDebug('createAnswer');
       try {
         if (this.userAgent().indexOf('Chrome') < 0) {
           this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function () {
@@ -261,7 +261,7 @@
     * @param {String} type 'answer' or 'offer'
     */
     setTheRemoteDescription: function (description, type) {
-      logger.logTrace('setTheRemoteDescription');
+      logger.logDebug('setTheRemoteDescription');
       this.remoteDescription = {
         'sdp' : description,
         'type' : type
@@ -288,7 +288,7 @@
     * @param {String} modId modification id
     */
     setRemoteAndCreateAnswer: function (sdp, modId) {
-      logger.logTrace('Creating answer.');
+      logger.logDebug('Creating answer.');
       logger.logDebug('modId', modId);
       this.modificationId = modId;
       this.incrementModCount();
@@ -302,9 +302,9 @@
     * @param {Object} description SDP
     */
     setLocalAndSendMessage : function (description) {
-      logger.logTrace('setLocalAndSendMessage');
+      logger.logDebug('setLocalAndSendMessage');
       // fix SDP
-      logger.logDebug('Fixing SDP for Chrome', description);
+      logger.logTrace('Fixing SDP for Chrome', description);
       ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
 
       this.localDescription = description;
@@ -360,11 +360,11 @@
     *
     */
     holdCall: function () {
-      logger.logTrace('holdCall');
+      logger.logDebug('holdCall');
 
       var sdp = this.localDescription;
 
-      logger.logDebug('holding call', sdp);
+      logger.logTrace('holding call', sdp);
 
       // adjust SDP for hold request
       sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
@@ -386,7 +386,7 @@
 
       try {
         // send hold signal...
-        logger.logDebug('sending modified sdp', sdp);
+        logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendHoldCall({
           sdp : sdp.sdp
         });
@@ -400,11 +400,11 @@
     * Resume Call
     */
     resumeCall: function () {
-      logger.logTrace('resumeCall');
+      logger.logDebug('resumeCall');
 
       var sdp = this.localDescription;
 
-      logger.logDebug('resuming call', sdp);
+      logger.logTrace('resuming call', sdp);
 
       // adjust SDP for resume request
       sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
@@ -426,7 +426,7 @@
 
       try {
         // send resume signal...
-        logger.logDebug('sending modified sdp', sdp);
+        logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendResumeCall({
           sdp : sdp.sdp
         });
@@ -440,7 +440,7 @@
     * End Call
     */
     endCall: function () {
-      logger.logTrace('endCall');
+      logger.logDebug('endCall');
 
       if (this.peerConnection) {
         this.peerConnection.close();

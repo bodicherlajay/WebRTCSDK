@@ -172,12 +172,12 @@
       if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
+      state = mainModule.CallStatus.RINGING;
       // grab the phone number
       from = event.from.split('@')[0].split(':')[1];
-      onIncomingCall({
-        type: mainModule.CallStatus.RINGING,
-        from: from
-      });
+      uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
+
+      onIncomingCall(uiEvent);
     };
 
     // Call is established
