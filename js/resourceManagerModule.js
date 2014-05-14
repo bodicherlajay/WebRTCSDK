@@ -34,7 +34,7 @@ Env = (function (app) {
     addPublicMethod;
 
   function init() {
-    logger.logTrace('initializing resource manager module');
+    logger.logDebug('initializing resource manager module');
     return {
       configure:          configure,
       getAPIObject:       getAPIObject,
@@ -47,7 +47,7 @@ Env = (function (app) {
   // Configure REST operations object and public API object.
 
   configure = function (config) {
-    logger.logTrace('configuring resource manager module');
+    logger.logDebug('configuring resource manager module');
     config = ((config && Object.keys(config).length > 0) && config) || app.APIConfigs;
 
     restOperationsConfig = config;
@@ -73,14 +73,14 @@ Env = (function (app) {
    * @param method
    */
   addPublicMethod = function (name, method) {
-    logger.logTrace('adding public method', name);
+    logger.logDebug('adding public method', name);
     var apiObj = getAPIObject();
 
     apiObj[name] = method;
   };
 
   module.getInstance = function () {
-    logger.logTrace('getInstance called');
+    logger.logDebug('getInstance called');
     if (!instance) {
       logger.logDebug('initializing instance');
       instance = init();
@@ -122,7 +122,7 @@ Env = (function (app) {
    * @param cb
    */
   module.doOperation = function (operationName, config) {
-    logger.logTrace('do operation', operationName);
+    logger.logDebug('do operation', operationName);
     try {
       var operation = module.getOperation(operationName, config);
 
@@ -229,7 +229,7 @@ Env = (function (app) {
 
     // create the configured rest operation and return.
     configuredRESTOperation = function (successCB, errorCB, onTimeout) {
-      logger.logTrace('configuring REST operation');
+      logger.logDebug('configuring REST operation');
       restConfig.success = successCB;
       restConfig.error = function (errResp) {
         if (errResp.getResponseStatus() === 0 && errResp.responseText === "") {

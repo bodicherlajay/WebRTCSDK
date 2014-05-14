@@ -236,7 +236,7 @@ cmgmt = (function () {
   };
 
   init = function () {
-    logger.logTrace('call management module init');
+    logger.logDebug('call management module init');
     return {
       getSessionContext: function () {
         return session_context;
@@ -254,7 +254,7 @@ cmgmt = (function () {
   Call.hold = function () {
     if (ATT.PeerConnectionService.peerConnection
         && session_context.getCallObject()) {
-      logger.logTrace('Putting call on hold...');
+      logger.logInfo('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
       logger.logWarning('Hold not possible...');
@@ -264,7 +264,7 @@ cmgmt = (function () {
   Call.resume = function () {
     if (ATT.PeerConnectionService.peerConnection
         && session_context.getCallObject()) {
-      logger.logTrace('Resuming call...');
+      logger.logInfo('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
       logger.logWarning('Resume not possible...');
@@ -274,7 +274,7 @@ cmgmt = (function () {
   Call.hangup = function () {
     if (ATT.PeerConnectionService.peerConnection
         && session_context.getCallObject()) {
-      logger.logTrace('Hanging up...');
+      logger.logInfo('Hanging up...');
       ATT.SignalingService.sendEndCall();
     } else {
       logger.logWarning('Hangup not possible...');
@@ -282,12 +282,12 @@ cmgmt = (function () {
   };
 
   Call.mute = function () {
-    logger.logTrace('putting call on mute');
+    logger.logInfo('putting call on mute');
     ATT.UserMediaService.muteStream();
   };
 
   Call.unmute = function () {
-    logger.logTrace('unmuting call');
+    logger.logInfo('unmuting call');
     ATT.UserMediaService.unmuteStream();
   };
 
