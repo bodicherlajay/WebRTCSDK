@@ -62,6 +62,7 @@
         // publish individually
         for (evt in events) {
           if (events.hasOwnProperty(evt)) {
+            events[evt].timestamp = new Date();
             channelConfig.publisher.publish(sessID + '.responseEvent', events[evt].eventObject);
             console.log(sessID + '.responseEvent', events[evt].eventObject);
           }
