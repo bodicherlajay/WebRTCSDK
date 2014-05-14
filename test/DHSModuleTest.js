@@ -6,7 +6,6 @@ describe('DHSModule', function () {
   "use strict";
 
   var resourceManager = Env.resourceManager.getInstance(),
-    apiObj = resourceManager.getAPIObject(),
     requests,
     xhr,
     backupAtt;
@@ -116,10 +115,9 @@ describe('DHSModule', function () {
 
   it('getE911Id should throw error if no id passed in.', function () {
     var spySuccess = sinon.spy(),
-      spyError = sinon.spy(),
-      boundCall;
+      spyError = sinon.spy();
 
-    boundCall = ATT.rtc.dhs.getE911Id.bind(null, {
+    ATT.rtc.dhs.getE911Id.bind(null, {
       data: {
         id: null
       },
