@@ -13,9 +13,8 @@ describe('ResourceManager', function () {
       'Content-Type': 'application/json',
       'Accept' : 'application/json'
     }
-  }, resourceManager, backupAtt;
+  }, resourceManager;
   beforeEach(function () {
-    backupAtt = ATT;
     resourceManager = Env.resourceManager.getInstance();
   });
   it('should be a singleton', function () {
@@ -186,23 +185,16 @@ describe('ResourceManager', function () {
 
     it('should create public sdk methods', function () {
       // Add API methods as you add to the APIConfig.js file.
-      [
+      [ 'answer',
+        'dial',
         'login',
         'logout',
-        'answer',
-        'dial',
+        'hangup',
         'hold',
         'resume',
-        'mute',
-        'unmute',
-        'hangup'
-      ].forEach(function (methodName) {
+        'mute'].forEach(function (methodName) {
         expect(apiObject[methodName]).is.a('function');
       });
     });
-  });
-
-  afterEach(function () {
-    ATT = backupAtt;
   });
 });

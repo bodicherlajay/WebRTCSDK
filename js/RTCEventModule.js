@@ -12,8 +12,8 @@ if (!ATT) {
     module = {},
     instance,
     RTCEvent,
-    interceptEventChannelCallback,
-    setupEventBasedCallbacks,
+    interceptingEventChannelCallback,
+    subscribeToEvents,
     eventRegistry,
     from = '',
     to = '',
@@ -23,8 +23,9 @@ if (!ATT) {
     data = {},
     uiEvent = {},
     init = function () {
+      eventRegistry = mainModule.utils.createEventRegistry(callManager.getSessionContext());
       return {
-        setupEventBasedCallbacks: setupEventBasedCallbacks,
+        hookupEventsToUICallbacks: subscribeToEvents,
         createEvent: module.createEvent
       };
     };
@@ -49,7 +50,7 @@ if (!ATT) {
       uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
       fn(uiEvent, data);
     } else {
-      console.log('No event handler defined for ' + event.state.NETWORK);
+      console.log('No event handler defined for ' + event.state);
     }
   }
 
@@ -58,7 +59,7 @@ if (!ATT) {
   * and triggers UI callbacks
   * @param {Object} event The event object
   */
-  interceptEventChannelCallback = function (event) {
+  interceptingEventChannelCallback = function (event) {
     if (!event) {
       return;
     }
@@ -72,22 +73,17 @@ if (!ATT) {
   };
 
   /**
-    This function subscribes to all events 
+    This function subscribes to all events
     being published by the event channel.
     It hands off the event to interceptingEventChannelCallback()
   */
-  setupEventBasedCallbacks = function () {
-    // get current session context
-    var session = callManager.getSessionContext(),
-      sessionId = session.getSessionId();
-
-    // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(session);
+  subscribeToEvents = function () {
+    var sessionId = callManager.getSessionContext().getSessionId();
 
     // unsubscribe first, to avoid double subscription from previous actions
-    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
+    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     // subscribe to published events from event channel
-    mainModule.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
+    mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
     console.log('Subscribed to events');
   };
 
@@ -113,7 +109,7 @@ if (!ATT) {
 
   module.createEvent = function (from, to, state, codec, error) {
     if (state.hasOwnProperty(ATT.CallStatus)) {
-      throw new Error('State must be of type ATT.CallStatus');
+      throw new Error("State must be of type ATT.CallStatus");
     }
     var evt = Object.create(RTCEvent);
     evt.from = from;

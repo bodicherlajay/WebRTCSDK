@@ -51,7 +51,7 @@ if (!ATT) {
             xState : obj.getResponseHeader('x-state')
           };
 
-          config.success.call(this, headers);
+          config.success.call(null, headers);
         },
         error: config.error.bind(this, config)
       });
@@ -171,8 +171,10 @@ if (!ATT) {
       logger.logTrace('doOperation: modifyCall');
       resourceManager.doOperation('modifyCall', {
         params: {
-          url: [ callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId() ],
+          url: [
+            callManager.getSessionContext().getSessionId(),
+            callManager.getSessionContext().getCurrentCallId()
+          ],
           headers: {
             'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
             'x-calls-action' : 'initiate-call-hold'
@@ -182,10 +184,18 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             logger.logTrace('Hold request sent...');
+            config.success();
+          } else {
+            if (typeof config.error === 'function') {
+              config.error();
+            }
           }
         },
         error: function (err) {
           logger.logError('CALL HOLD ERROR', err);
+          if (typeof config.error === 'function') {
+            config.error();
+          }
         }
       });
     },
@@ -204,8 +214,10 @@ if (!ATT) {
       logger.logTrace('sendResumeCall, doOperation: modifyCall');
       resourceManager.doOperation('modifyCall', {
         params: {
-          url: [ callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId() ],
+          url: [
+            callManager.getSessionContext().getSessionId(),
+            callManager.getSessionContext().getCurrentCallId()
+          ],
           headers: {
             'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken(),
             'x-calls-action' : 'initiate-call-resume'
@@ -215,12 +227,19 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             logger.logTrace('Resume request sent...');
+            config.success();   // testability
           } else {
             logger.logError('CALL RESUME ERROR, status', response.getResponseStatus());
+            if (typeof config.error === 'function') {
+              config.error();
+            }
           }
         },
         error: function (err) {
           logger.logError('CALL RESUME ERROR', err);
+          if (typeof config.error === 'function') {
+            config.error();
+          }
         }
       });
     },
@@ -229,12 +248,16 @@ if (!ATT) {
     * Send End Call
     * @param {Object} config the peer conn config
     */
-    sendEndCall: function () {
+    sendEndCall: function (config) {
+      config = config || {};
+
       logger.logTrace('ending call');
       resourceManager.doOperation('endCall', {
         params: {
-          url: [ callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId() ],
+          url: [
+            callManager.getSessionContext().getSessionId(),
+            callManager.getSessionContext().getCurrentCallId()
+          ],
           headers: {
             'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
           }
@@ -242,12 +265,21 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             logger.logTrace('Call termination success.');
+            if (typeof config.success === 'function') {
+              config.success();
+            }
           } else {
             logger.logError('CALL TERMINATION ERROR, status:', response.getResponseStatus());
+            if (typeof config.error === 'function') {
+              config.error();
+            }
           }
         },
         error: function (err) {
           logger.logError('CALL TERMINATION ERROR', err);
+          if (typeof config.error === 'function') {
+            config.error();
+          }
         }
       });
     }

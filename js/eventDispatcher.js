@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true, Env: true, cmgmt: true*/
 
-'use strict';
+"use strict";
 
 (function (mainModule, callManager, utils, PeerConnectionService) {
   var onSessionReady,
@@ -11,13 +11,18 @@
     onCallEnded,
     onCallError,
     onError,
-    eventRegistry = {};
+    eventRegistry = {},
+    logger;
+
+  ATT.logManager.getInstance().configureLogger('CallManagementModule',
+    ATT.logManager.getInstance().loggerType.CONSOLE, ATT.logManager.getInstance().logLevel.DEBUG);
+  logger = ATT.logManager.getInstance().getLogger('CallManagementModule');
 
   function createEventRegistry(sessionContext) {
     var callbacks = sessionContext.getUICallbacks();
 
     if (undefined === callbacks || 0 === Object.keys(callbacks).length) {
-      console.log('No callbacks to execute');
+      logger.logError('No callbacks to execute');
       return;
     }
 
@@ -181,7 +186,6 @@
     //     callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
     //   }
     };
-
     eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function (event) {
       event.type = ATT.CallStatus.CONNECTING;
       onConnecting(event);

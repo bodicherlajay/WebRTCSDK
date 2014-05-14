@@ -5,15 +5,32 @@ beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
 describe('SignalingService', function () {
   "use strict";
 
-  var resourceManager = Env.resourceManager.getInstance(),
-    apiObj = resourceManager.getAPIObject(),
+  var resourceManager,
+    apiObj,
     requests,
     xhr,
-    backupAtt,
-    callManager = cmgmt.CallManager.getInstance();
+    callManager,
+    sessionContext,
+    stubGetEventObject,
+    operationSpy;
 
   beforeEach(function () {
-    backupAtt = ATT;
+
+    // resource Manager
+    resourceManager = Env.resourceManager.getInstance();
+    apiObj = resourceManager.getAPIObject();
+    operationSpy = sinon.stub(resourceManager, 'doOperation');
+
+    // call manager
+    callManager = cmgmt.CallManager.getInstance();
+    sessionContext = callManager.getSessionContext();
+    stubGetEventObject = sinon.stub(sessionContext, 'getEventObject', function () {
+      return {
+        resourceURL: ''
+      };
+    });
+
+    // fake xhr setup.
     xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
 
@@ -23,6 +40,8 @@ describe('SignalingService', function () {
   });
 
   afterEach(function () {
+    stubGetEventObject.restore();
+    operationSpy.restore();
     xhr.restore();
   });
 
@@ -61,53 +80,50 @@ describe('SignalingService', function () {
     // setup
     apiObj.Session = {
       accessToken: 'access_token',
-      sessionId: 'webrtc_sessionid'
+      Id: 'webrtc_sessionid'
     };
 
-    var startCallSpy = sinon.spy(resourceManager, 'doOperation'),
-      operationPassedToStartCall,
+    var operationPassedToStartCall,
       configPassedToStartCall,
-      stub;
-
-    stub = sinon.stub(ATT.sdpFilter, "getInstance", function () {
-      return {
-        processChromeSDPOffer: function () {
-          return {
-            sdp: 'sdp'
-          };
-        }
-      };
-    });
+      stub = sinon.stub(ATT.sdpFilter, "getInstance", function () {
+        return {
+          processChromeSDPOffer: function () {
+            return {
+              sdp: 'sdp'
+            };
+          }
+        };
+      }),
+      successSpy = sinon.spy();
 
     ATT.SignalingService.sendOffer({
       calledParty: '123',
       sdp: 'sdp',
-      success: function () {},
-      error: function () {}
+      success: successSpy
     });
 
-    expect(startCallSpy.called).to.equal(true);
+    // Response to startCall
+    requests[0].respond(204, {}, "");
 
-    operationPassedToStartCall = startCallSpy.args[0][0];
-    configPassedToStartCall = startCallSpy.args[0][1];
+    expect(operationSpy.called).to.equal(true);
+
+    operationPassedToStartCall = operationSpy.args[0][0];
+    configPassedToStartCall = operationSpy.args[0][1];
 
     expect(operationPassedToStartCall).to.equal('startCall');
     expect(configPassedToStartCall.data.call).to.be.an('object');
     expect(configPassedToStartCall.data.call.sdp).to.equal('sdp');
     expect(configPassedToStartCall.data.call.calledParty).to.equal('sip:123@icmn.api.att.net');
 
-    startCallSpy.restore();
+    expect(successSpy.called).to.equal(true);
+    operationSpy.restore();
     stub.restore();
   });
 
 
   it('sendOffer should receive 201 and Location url and x-state: invitation-sent in header', function () {
-    // setup
-    apiObj.Session = {
-      accessToken: 'access_token',
-      sessionId: 'webrtc_sessionid'
-    };
 
+    // setup
     // fake xhr response headers
     var responseHeaders = {
         Location: '/RTC/v1/sessions/0045-ab42-89a2/calls/1234',
@@ -117,16 +133,14 @@ describe('SignalingService', function () {
       successSpy = sinon.spy(),
       errorSpy = sinon.spy(),
       sendSuccessArguments,
-      appConfig;
-
-    appConfig = {
-      DHSEndpoint: "http://localhost:9000",
-      RTCEndpoint: "http://wdev.code-api-att.com:8080/RTC/v1"
-    };
+      appConfig = {
+        DHSEndpoint: "http://localhost:9000",
+        RTCEndpoint: "http://wdev.code-api-att.com:8080/RTC/v1"
+      };
 
     ATT.configureAPIs(appConfig);
 
-    // call
+    // execute
     ATT.SignalingService.sendOffer({
       calledParty: '123',
       sdp: 'sdp',
@@ -134,9 +148,10 @@ describe('SignalingService', function () {
       error: errorSpy
     });
 
-    // Response to startCall (happy path)
+    // Response to startCall
     requests[0].respond(201, responseHeaders, "");
 
+    // verify
     // send callback should be called
     expect(successSpy.called).to.equal(true);
 
@@ -149,7 +164,7 @@ describe('SignalingService', function () {
 
     var operationName,
       configPassedToOperation,
-      spy = sinon.spy(resourceManager, 'doOperation'),
+      successSpy = sinon.spy(),
 
       // stubs for sendAnswer function.
       stub = sinon.stub(ATT.sdpFilter, "getInstance", function () {
@@ -160,34 +175,395 @@ describe('SignalingService', function () {
             };
           }
         };
-      }),
-
-      sessionContext = callManager.getSessionContext(),
-      stubGetEventObject = sinon.stub(sessionContext, 'getEventObject', function () {
-        return {
-          resourceURL: ''
-        };
       });
 
     ATT.SignalingService.sendAnswer({
-      sdp: 'sdp'
+      sdp: 'sdp',
+      success: successSpy
     });
 
-    expect(spy.called).to.equal(true);
+    // Response to operation call
+    requests[0].respond(204, {}, "");
 
-    operationName = spy.args[0][0];
-    configPassedToOperation = spy.args[0][1];
+    expect(operationSpy.called).to.equal(true);
+
+    operationName = operationSpy.args[0][0];
+    configPassedToOperation = operationSpy.args[0][1];
 
     expect(operationName).to.equal('answerCall');
     expect(configPassedToOperation.data.callsMediaModifications).to.be.an('object');
     expect(configPassedToOperation.data.callsMediaModifications.sdp).to.equal('sdp');
 
-    spy.restore();
+    expect(successSpy.called).to.equal(true);
     stub.restore();
-    stubGetEventObject.restore();
   });
 
-  afterEach(function () {
-    ATT = backupAtt;
+  it('sendAnswer should call error callback on 500', function () {
+
+    var successSpy = sinon.spy(),
+      errorSpy = sinon.spy(),
+
+    // stubs for sendAnswer function.
+      stub = sinon.stub(ATT.sdpFilter, "getInstance", function () {
+        return {
+          processChromeSDPOffer: function () {
+            return {
+              sdp: 'sdp'
+            };
+          }
+        };
+      });
+
+    ATT.SignalingService.sendAnswer({
+      sdp: 'sdp',
+      success: successSpy,
+      error: errorSpy
+    });
+
+    // Response to operation call
+    requests[0].respond(500, {}, "");
+
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
+
+    stub.restore();
+  });
+
+  it('sendAcceptMods should call success callback with xstate and location.', function () {
+
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {
+        Location: 'location',
+        'x-state': 'x-state',
+        "Content-Type": "content-type"
+      },
+      successSpy = sinon.spy(),
+
+      // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendAcceptMods',
+        inputConfig: {
+          sdp: 'sdp',
+          modId: 'modId',
+          success: successSpy
+        },
+        operation: 'acceptModifications',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(204, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+
+    // send callback should be called with location and xstate
+    expect(successSpy.called).to.equal(true);
+    expect(successSpy.calledWith({
+      location: 'location',
+      xState: 'x-state'
+    })).to.equal(true);
+  });
+
+  it('sendAcceptMods should call error callback.', function () {
+
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {
+        Location: 'location',
+        'x-state': 'x-state',
+        "Content-Type": "content-type"
+      },
+      successSpy = sinon.spy(),
+      errorSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendAcceptMods',
+        inputConfig: {
+          sdp: 'sdp',
+          modId: 'modId',
+          success: successSpy,
+          error: errorSpy
+        },
+        operation: 'acceptModifications',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(500, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    operationSpy.restore();
+  });
+
+  it('sendHoldCall should call success callback on 204 HTTP response code.', function () {
+
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendHoldCall',
+        inputConfig: {
+          sdp: 'sdp',
+          success: successSpy
+        },
+        operation: 'modifyCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(204, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(true);
+    operationSpy.restore();
+  });
+
+  it('sendHoldCall should call error callback if not 204 or 500+ HTTP response code.', function () {
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+      errorSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendHoldCall',
+        inputConfig: {
+          sdp: 'sdp',
+          success: successSpy,
+          error:  errorSpy
+        },
+        operation: 'modifyCall',
+        params: [],
+        data: {}
+      };
+
+    // execute (non 204 path)
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(200, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
+
+    // execute (500 path)
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[1].respond(500, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
+  });
+
+  it('sendResumeCall should call success callback on 204 HTTP response code.', function () {
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+
+      // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendResumeCall',
+        inputConfig: {
+          sdp: 'sdp',
+          success: successSpy
+        },
+        operation: 'modifyCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(204, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(true);
+  });
+
+  it('sendResumeCall should call error callback if not 204 HTTP response code.', function () {
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {
+        Location: '/RTC/v1/sessions/0045-ab42-89a2/calls/1234',
+        'x-state': 'invitation-sent',
+        "Content-Type": "application/json"
+      },
+      successSpy = sinon.spy(),
+      errorSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendResumeCall',
+        inputConfig: {
+          sdp: 'sdp',
+          success: successSpy,
+          error:  errorSpy
+        },
+        operation: 'modifyCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(200, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
+
+    // 500+ path
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[1].respond(500, responseHeaders, "");
+
+    // verify
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
+  });
+
+  it('sendEndCall should call endCall op with correct url & headers', function () {
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendEndCall',
+        inputConfig: {
+          success: successSpy
+        },
+        operation: 'endCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(204, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(true);
+  });
+
+  it('sendEndCall should call error callback if not 204 HTTP response code.', function () {
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+      errorSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendEndCall',
+        inputConfig: {
+          success: successSpy,
+          error: errorSpy
+        },
+        operation: 'endCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(200, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
+  });
+
+  it('sendEndCall should call error callback if 500 HTTP response code.', function () {
+    // setup
+
+    // fake xhr response headers
+    var responseHeaders = {},
+      successSpy = sinon.spy(),
+      errorSpy = sinon.spy(),
+
+    // test config to set up test inputs, etc.
+      testConfig = {
+        name: 'sendEndCall',
+        inputConfig: {
+          success: successSpy,
+          error: errorSpy
+        },
+        operation: 'endCall',
+        params: [],
+        data: {}
+      };
+
+    // execute
+    ATT.SignalingService[testConfig.name](testConfig.inputConfig);
+
+    // Response to operation call
+    requests[0].respond(500, responseHeaders, "");
+
+    // verify
+    // send callback should be called
+    expect(operationSpy.called).to.equal(true);
+    expect(successSpy.called).to.equal(false);
+    expect(errorSpy.called).to.equal(true);
   });
 });

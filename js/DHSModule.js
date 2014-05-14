@@ -18,7 +18,7 @@ if (!Env) {
   var dhsNamespace = {},
     resourceManager = Env.resourceManager.getInstance(),
     logManager = ATT.logManager.getInstance(),
-    logger,
+    log,
 
     // private methods
     init,
@@ -59,7 +59,7 @@ if (!Env) {
 
     logManager.configureLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
 
-    logger = logManager.getLogger('DHSModule');
+    log = logManager.getLogger('DHSModule');
 
     // create namespace.
     dhsNamespace = ATT.utils.createNamespace(app, 'rtc.dhs');
@@ -79,20 +79,53 @@ if (!Env) {
     dhsNamespace.updateE911Id = updateE911Id;
   };
 
-  handleSuccess = function (successHandler, responseObject) {
-    if (typeof successHandler === 'function') {
-      successHandler(responseObject.getJson());
+  handleSuccess = function (config, responseObject) {
+    if (typeof config.success === 'function') {
+      config.success(responseObject.getJson());
     }
   };
 
-  handleError = function (operation, errHandler, err) {
-    logger.logDebug('handleError: ' + operation);
-    logger.logInfo('There was an error performing operation ' + operation);
+  handleError = function (config, operation, errorResp) {
+    var errObj = errorResp.getJson(),
+      error;
 
-    var error = ATT.rtc.error.create(err, operation, 'DHS');
+    if (errObj.RequestError) {    // Known API errors
+      if (errObj.RequestError.ServiceException) { // API Service Exceptions
+        error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+      } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
+        error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+      } else if (errObj.RequestError.Exception) { // API Exceptions
+        error = ATT.errorDictionary.getDefaultError({
+          moduleID: 'DHS',
+          operationName: operation,
+          httpStatusCode: errorResp.getResponseStatus(),
+          errorDescription: 'Operation ' + operation + ' failed',
+          reasonText: errObj.RequestError.Exception.Text
+        });
+      } else {                      // Unknown API network errors
+        error = ATT.errorDictionary.getDefaultError({
+          moduleID: 'DHS',
+          operationName: operation,
+          httpStatusCode: errorResp.getResponseStatus(),
+          errorDescription: 'Operation ' + operation + ' failed',
+          reasonText: 'DHS operation ' + operation + ' failed due to unknown reason'
+        });
+      }
+    } else {
+      error = ATT.errorDictionary.getDHSError({ // DHS thrown errors
+        operationName: operation,
+        httpStatusCode: errorResp.getResponseStatus(),
+        reasonText: errObj.error || ''
+      });
+    }
+    if (!error) {
+      error = ATT.errorDictionary.getMissingError();
+    }
+    // log the error
+    log.logError(error.formatError());
 
-    if (typeof errHandler === 'function') {
-      ATT.rtc.error.publish(error, operation, errHandler);
+    if (typeof config.error === 'function') {
+      config.error(error);
     }
   };
 
@@ -158,41 +191,29 @@ if (!Env) {
   };
 
   session = function (config) {
-    try {
-      // Call DHS to check for a browser session.
-      resourceManager.doOperation('checkDhsSession', {
-        data:     config.data,
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'session', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'session', config.error, err);
-    }
+    // Call DHS to check for a browser session.
+    resourceManager.doOperation('checkDhsSession', {
+      data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'session')
+    });
   };
 
   register = function (config) {
-    try {
-      // Call DHS to register a new user on DHS
-      resourceManager.doOperation('registerUser', {
-        data:     config.data,
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'register', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'register', config.error, err);
-    }
+    // Call DHS to register a new user on DHS
+    resourceManager.doOperation('registerUser', {
+      data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'register')
+    });
   };
 
   vtnList = function (config) {
-    try {
-      // Call DHS to get a list of VTN phone numbers
-      resourceManager.doOperation('getVTNList', {
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'vtnList', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'vtnList', config.error, err);
-    }
+    // Call DHS to get a list of VTN phone numbers
+    resourceManager.doOperation('getVTNList', {
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'vtnList')
+    });
   };
 
   /**
@@ -200,16 +221,12 @@ if (!Env) {
    * @param {Object} config The usertype
    */
   authorize = function (config) {
-    try {
-      // Call DHS to get user consent url or access token, associate user to access token.
-      resourceManager.doOperation('oAuthAuthorize', {
-        data:     config.data,
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'authorize', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'authorize', config.error, err);
-    }
+    // Call DHS to get user consent url or access token, associate user to access token.
+    resourceManager.doOperation('oAuthAuthorize', {
+      data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'authorize')
+    });
   };
 
   /**
@@ -217,16 +234,12 @@ if (!Env) {
    * @param {Object} config The code
    */
   token = function (config) {
-    try {
-      // Call DHS to get token for user consent flow
-      resourceManager.doOperation('oAuthToken', {
-        data:     config.data,
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'token', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'token', config.error, err);
-    }
+    // Call DHS to get token for user consent flow
+    resourceManager.doOperation('oAuthToken', {
+      data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'token')
+    });
   };
 
   /**
@@ -234,16 +247,12 @@ if (!Env) {
    * @param {Object} config The usertype
    */
   login = function (config) {
-    try {
-      // Call DHS to authenticate user
-      resourceManager.doOperation('authenticateUser', {
-        data:     config.data,
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'login', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'login', config.error, err);
-    }
+    // Call DHS to authenticate user
+    resourceManager.doOperation('authenticateUser', {
+      data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'login')
+    });
   };
 
   /**
@@ -251,27 +260,23 @@ if (!Env) {
    * @param {Object} config The callbacks
    */
   logout = function (config) {
-    try {
-      // Call DHS to logout user by deleting browser session.
-      resourceManager.doOperation('logoutUser', {
-        success: function (response) {
-          var data;
-          if (response.getResponseStatus() === 204) {
-            data = {
-              message: "You have been successfully logged out."
-            };
-          } else {
-            data = response.getJson();
-          }
-          if (typeof config.success === 'function') {
-            config.success(data);
-          }
-        },
-        error: handleError.bind(this, 'logout', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'logout', config.error, err);
-    }
+    // Call DHS to logout user by deleting browser session.
+    resourceManager.doOperation('logoutUser', {
+      success: function (response) {
+        var data;
+        if (response.getResponseStatus() === 204) {
+          data = {
+            message: "You have been successfully logged out."
+          };
+        } else {
+          data = response.getJson();
+        }
+        if (typeof config.success === 'function') {
+          config.success(data);
+        }
+      },
+      error: handleError.bind(this, config, 'logout')
+    });
   };
 
   /**
@@ -279,27 +284,23 @@ if (!Env) {
    * @param {Object} config Unique id.
    */
   getE911Id = function (config) {
-    try {
-      if (!config) {
-        throw 'Cannot get e911 id. Configuration is required.';
-      }
-      if (!config.data) {
-        throw 'Cannot get e911 id. Configuration data is required.';
-      }
-      if (!config.data.id) {
-        throw 'Cannot get e911 id. Unique identifier is required.';
-      }
-
-      resourceManager.doOperation('getE911Id', {
-        params: {
-          url: config.data.id
-        },
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'getE911Id', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'getE911Id', config.error, err);
+    if (!config) {
+      return log.logError('Cannot get e911 id. Configuration is required.');
     }
+    if (!config.data) {
+      return log.logError('Cannot get e911 id. Configuration data is required.');
+    }
+    if (!config.data.id) {
+      return log.logError('Cannot get e911 id. Unique identifier is required.');
+    }
+
+    resourceManager.doOperation('getE911Id', {
+      params: {
+        url: config.data.id
+      },
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'getE911Id')
+    });
   };
 
   /**
@@ -308,26 +309,22 @@ if (!Env) {
    * @member {Object} address The user's physical address object.
    */
   createE911Id = function (config) {
-    try {
-      if (!config) {
-        throw 'Cannot create e911 id. Configuration is required.';
-      }
-      if (!config.data) {
-        throw 'Cannot create e911 id. Configuration data is required.';
-      }
-      if (!validateAddress(config.data.address)) {
-        throw 'Cannot create e911 id. Address did not validate.';
-      }
-
-      // Call DHS to create an e911 id linked address for the user
-      resourceManager.doOperation('createE911Id', {
-        data:     config.data,
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'createE911Id', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'createE911Id', config.error, err);
+    if (!config) {
+      return log.logError('Cannot create e911 id. Configuration is required.');
     }
+    if (!config.data) {
+      return log.logError('Cannot create e911 id. Configuration data is required.');
+    }
+    if (!validateAddress(config.data.address)) {
+      return log.logError('Cannot create e911 id. Address did not validate.');
+    }
+
+    // Call DHS to create an e911 id linked address for the user
+    resourceManager.doOperation('createE911Id', {
+      data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'createE911Id')
+    });
   };
 
   /**
@@ -336,26 +333,22 @@ if (!Env) {
    * @member {Object} address The user's physical address object.
    */
   updateE911Id = function (config) {
-    try {
-      if (!config) {
-        throw 'Cannot update e911 id. Configuration is required.';
-      }
-      if (!config.data) {
-        throw 'Cannot update e911 id. Configuration data is required.';
-      }
-      if (!validateAddress(config.data.address)) {
-        throw 'Cannot update e911 id. Address did not validate.';
-      }
-
-      // Call DHS to create an e911 id linked address for the user
-      resourceManager.doOperation('updateE911Id', {
-        data:     config.data,
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'updateE911Id', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'updateE911Id', config.error, err);
+    if (!config) {
+      return log.logError('Cannot update e911 id. Configuration is required.');
     }
+    if (!config.data) {
+      return log.logError('Cannot update e911 id. Configuration data is required.');
+    }
+    if (!validateAddress(config.data.address)) {
+      return log.logError('Cannot update e911 id. Address did not validate.');
+    }
+
+    // Call DHS to create an e911 id linked address for the user
+    resourceManager.doOperation('updateE911Id', {
+      data:     config.data,
+      success:  handleSuccess.bind(this, config),
+      error:    handleError.bind(this, config, 'updateE911Id')
+    });
   };
 
   init();

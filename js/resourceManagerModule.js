@@ -3,19 +3,31 @@
 
 // Dependency:  need to load ATT apiconfig module first before this can run.
 
+
 if (!Env) {
   var Env = {};
 }
-
-var logMgr = ATT.logManager.getInstance(), logger;
-logMgr.configureLogger('resourceManagerModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-logger = logMgr.getLogger('resourceManagerModule');
-
-
 Env = (function (app) {
   "use strict";
 
-  var module = {},
+  var
+    loggers = [],
+    newLogger = function (moduleName) {
+      var logMgr = ATT.logManager.getInstance(), lgr;
+      logMgr.configureLogger(moduleName, logMgr.loggerType.CONSOLE, logMgr.logLevel.INFO);
+      lgr = logMgr.getLogger(moduleName);
+      loggers[moduleName] = lgr;
+      return loggers[moduleName];
+    },
+    getLogger = function getLogger(moduleName) {
+      var lgr = loggers[moduleName];
+      if (lgr === undefined) {
+        return newLogger(moduleName);
+      }
+      return lgr;
+    },
+    logger = getLogger("resourceManagerModule"),
+    module = {},
     instance,
     apiObject,  // the object that public methods are placed on
     restOperationsConfig = {},
@@ -33,21 +45,31 @@ Env = (function (app) {
 
     addPublicMethod;
 
+
+  function updateLogLevel(moduleName, level) {
+    var lgr = getLogger(moduleName);
+    if (!lgr) {
+      lgr.setLevel(level);
+    }
+  }
+
   function init() {
-    logger.logDebug('initializing resource manager module');
+    logger.logTrace('initializing resource manager module');
     return {
       configure:          configure,
       getAPIObject:       getAPIObject,
       getOperationsAPI:   getOperationsAPI,
       addPublicMethod:    addPublicMethod,
       getOperation:       module.getOperation,
-      doOperation:        module.doOperation
+      doOperation:        module.doOperation,
+      getLogger:          getLogger,
+      updateLogLevel:     updateLogLevel
     };
   }
   // Configure REST operations object and public API object.
 
   configure = function (config) {
-    logger.logDebug('configuring resource manager module');
+    logger.logInfo('configuring resource manager module');
     config = ((config && Object.keys(config).length > 0) && config) || app.APIConfigs;
 
     restOperationsConfig = config;
@@ -73,14 +95,14 @@ Env = (function (app) {
    * @param method
    */
   addPublicMethod = function (name, method) {
-    logger.logDebug('adding public method', name);
+    logger.logTrace('adding public method', name);
     var apiObj = getAPIObject();
 
     apiObj[name] = method;
   };
 
   module.getInstance = function () {
-    logger.logDebug('getInstance called');
+    logger.logTrace('getInstance called');
     if (!instance) {
       logger.logDebug('initializing instance');
       instance = init();
@@ -122,7 +144,7 @@ Env = (function (app) {
    * @param cb
    */
   module.doOperation = function (operationName, config) {
-    logger.logDebug('do operation', operationName);
+    logger.logTrace('do operation', operationName);
     try {
       var operation = module.getOperation(operationName, config);
 
@@ -229,7 +251,7 @@ Env = (function (app) {
 
     // create the configured rest operation and return.
     configuredRESTOperation = function (successCB, errorCB, onTimeout) {
-      logger.logDebug('configuring REST operation');
+      logger.logTrace('configuring REST operation');
       restConfig.success = successCB;
       restConfig.error = function (errResp) {
         if (errResp.getResponseStatus() === 0 && errResp.responseText === "") {
