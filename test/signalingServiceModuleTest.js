@@ -61,7 +61,7 @@ describe('SignalingService', function () {
     // setup
     apiObj.Session = {
       accessToken: 'access_token',
-      Id: 'webrtc_sessionid'
+      sessionId: 'webrtc_sessionid'
     };
 
     var startCallSpy = sinon.spy(resourceManager, 'doOperation'),
@@ -81,7 +81,9 @@ describe('SignalingService', function () {
 
     ATT.SignalingService.sendOffer({
       calledParty: '123',
-      sdp: 'sdp'
+      sdp: 'sdp',
+      success: function () {},
+      error: function () {}
     });
 
     expect(startCallSpy.called).to.equal(true);
@@ -103,7 +105,7 @@ describe('SignalingService', function () {
     // setup
     apiObj.Session = {
       accessToken: 'access_token',
-      Id: 'webrtc_sessionid'
+      sessionId: 'webrtc_sessionid'
     };
 
     // fake xhr response headers

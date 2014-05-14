@@ -186,15 +186,17 @@ describe('ResourceManager', function () {
 
     it('should create public sdk methods', function () {
       // Add API methods as you add to the APIConfig.js file.
-      [ 'answer',
-        'dial',
+      [
         'login',
         'logout',
-        'init',
-        'hangup',
+        'answer',
+        'dial',
         'hold',
         'resume',
-        'mute'].forEach(function (methodName) {
+        'mute',
+        'unmute',
+        'hangup'
+      ].forEach(function (methodName) {
         expect(apiObject[methodName]).is.a('function');
       });
     });

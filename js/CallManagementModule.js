@@ -71,8 +71,8 @@ cmgmt = (function () {
   * @param {String} sessionId The sessionId
   * @param {String} state 'Incoming' or 'Outgoing'
   */
-  SessionContext = function (token, e9Id, sessionId, state) {
-    var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
+  SessionContext = function (token, e9Id, id, state) {
+    var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, sessionId = id,
       currentCallId, UICbks = {}, currentCall = null;
     return {
       getCurrentCall: function () {
@@ -94,10 +94,10 @@ cmgmt = (function () {
         e911Id = id;
       },
       getSessionId: function () {
-        return currSessionId;
+        return sessionId;
       },
       setSessionId: function (id) {
-        currSessionId = id;
+        sessionId = id;
       },
       getCallState: function () {
         return currState;

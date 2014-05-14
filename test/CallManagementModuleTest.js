@@ -37,6 +37,7 @@ describe('Call Management', function () {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
       };
+      ATT.UserMediaService.startCall = sinon.spy();
       callmgr.CreateOutgoingCall(config);
       sessionContext = callmgr.getSessionContext();
       expect(sessionContext.getCallObject()).to.be.an('object');

@@ -51,7 +51,7 @@ if (!ATT) {
             xState : obj.getResponseHeader('x-state')
           };
 
-          config.success.call(null, headers);
+          config.success.call(this, headers);
         },
         error: config.error.bind(this, config)
       });
