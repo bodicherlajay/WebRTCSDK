@@ -65,7 +65,6 @@
 
       var self = this,
         rm = cmgmt.CallManager.getInstance(),
-        session = rm.getSessionContext(),
         pc;
 
       try {
@@ -108,16 +107,8 @@
                 SignalingService.sendOffer({
                   calledParty: self.calledParty,
                   sdp: self.localDescription,
-                  success: function (headers) {
+                  success: function () {
                     logger.logInfo('success for offer sent, outgoing call');
-
-                    if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
-                      // publish the UI callback for invitation sent event
-                      logger.logInfo('invitation sent');
-                      app.event.publish(session.getSessionId() + '.responseEvent', {
-                        state : app.RTCCallEvents.INVITATION_SENT
-                      });
-                    }
                   },
                   error: function (error) {
                     ATT.rtc.error.publish(error);

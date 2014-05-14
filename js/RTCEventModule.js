@@ -15,6 +15,13 @@ if (!ATT) {
     interceptEventChannelCallback,
     setupEventBasedCallbacks,
     eventRegistry,
+    from = '',
+    to = '',
+    state = '',
+    codec = '',
+    error,
+    data = {},
+    uiEvent = {},
     init = function () {
       return {
         setupEventBasedCallbacks: setupEventBasedCallbacks,
@@ -29,11 +36,20 @@ if (!ATT) {
   */
   function dispatchEventToHandler(event) {
     console.log('dispatching event: ' + event.state);
+    from = event.from ? event.from.split('@')[0].split(':')[1] : '';
+    to = callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : '';
+    state = event.state;
+    error = event.reason || '';
+    data.sdp = event.sdp || '';
+    data.resource = event.resourceURL || '';
+    data.modId = event.modId || '';
+
     if (eventRegistry[event.state]) {
       var fn = eventRegistry[event.state];
-      fn(event);
+      uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
+      fn(uiEvent, data);
     } else {
-      console.log('No event handler defined for ' + event.event);
+      console.log('No event handler defined for ' + event.state.NETWORK);
     }
   }
 
@@ -91,6 +107,7 @@ if (!ATT) {
     timeStamp: '',
     state: '',
     codec: '',
+    data: '',
     error: ''
   };
 
@@ -105,7 +122,8 @@ if (!ATT) {
     evt.error = error;
     evt.timestamp = new Date();
     evt.codec = codec;
-    Object.freeze(evt);
+    // need to discuss. placed to appease sample app.
+    evt.data = '1234';
     return evt;
   };
 

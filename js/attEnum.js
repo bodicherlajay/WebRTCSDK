@@ -97,7 +97,6 @@ if (!ATT) {
     SESSION_MODIFIED:         'session-modified',
     SESSION_TERMINATED:       'session-terminated',
     CALL_CONNECTING:          'call-connecting',
-    INVITATION_SENT:          'invitation-sent',
     INVITATION_RECEIVED:      'invitation-received',
     MODIFICATION_RECEIVED:    'mod-received',
     MODIFICATION_TERMINATED:  'mod-terminated',

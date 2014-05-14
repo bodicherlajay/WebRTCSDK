@@ -1,7 +1,7 @@
 /*jslint indent:2*/
 /*global assert,cmgmt, event, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, console, window*/
 
-describe('Event Dispatcher Tests', function () {
+describe.only('Event Dispatcher Tests', function () {
   'use strict';
 
   var utils = ATT.utils, eventRegistry,
