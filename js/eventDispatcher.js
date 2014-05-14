@@ -4,9 +4,7 @@
 'use strict';
 
 (function (mainModule, callManager, utils, PeerConnectionService) {
-  var kaller,
-    timestamp,
-    onSessionReady,
+  var onSessionReady,
     onIncomingCall,
     onConnecting,
     onInProgress,
@@ -16,7 +14,12 @@
     onCallError,
     onError,
     eventRegistry = {},
-    callingParty;
+    from = callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().caller() : null,
+    to = callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().callee() : null,
+    state = null,
+    codec = null,
+    error = null,
+    uiEvent = {};
 
   function createEventRegistry(sessionContext) {
     var callbacks = sessionContext.getUICallbacks();
@@ -170,10 +173,10 @@
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
       // grab the phone number
-      kaller = event.from.split('@')[0].split(':')[1];
+      from = event.from.split('@')[0].split(':')[1];
       onIncomingCall({
         type: mainModule.CallStatus.RINGING,
-        caller: kaller
+        from: from
       });
     };
 
@@ -187,10 +190,8 @@
       callManager.getSessionContext().setCurrentCallId(event.resourceURL);
 
       // call established
-      timestamp = new Date();
       onInProgress({
-        type: mainModule.CallStatus.INPROGRESS,
-        time: timestamp
+        type: mainModule.CallStatus.INPROGRESS
       });
     };
 
@@ -237,15 +238,10 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
-      if (callManager.getSessionContext().getCallObject()) {
-        callingParty = callManager.getSessionContext().getCallObject().callee();
-      } else {
-        callingParty = '';
-      }
-      onConnecting({
-        type: mainModule.CallStatus.CONNECTING,
-        callee: callingParty
-      });
+      state = mainModule.CallStatus.CONNECTING;
+      uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
+
+      onConnecting(uiEvent);
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
