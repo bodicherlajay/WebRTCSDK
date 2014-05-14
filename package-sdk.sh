@@ -12,7 +12,7 @@ function checkout_version {
   git reset --hard HEAD
 
   echo "Checking out branch $GIT_HASH ... at $REPO_DIR"
-  git checkout -b package-$GIT_HASH $GIT_HASH
+  git checkout $GIT_HASH
 
   # Remove untracked files
   git clean -f
@@ -32,13 +32,13 @@ function git_latest {
   REPO_DIR=$1
   GIT_HASH=$2
   echo "Enter $REPO_DIR ..."
-  echo "Getting hash $GIT_HASH"
   cd $REPO_DIR
 
   # Clean dir before anything else
   git reset --hard HEAD
 
   # fetch the latest from origin remote
+  echo "Fetching the latest from $REPO_DIR"
   git fetch origin
   echo "Exit $REPO_DIR ..."
   cd $START_DIR
@@ -53,6 +53,7 @@ function gen_jsdoc {
   cd $SRC_DIR
   # install NPM dependencies to generate JSDocs
   npm install
+  echo "Generating JSDoc API documentation ..."
   grunt jsdoc
   cp -Rf doc $OUT_DIR/html-docs
   echo "Exit $REPO_DIR ..."
@@ -94,13 +95,13 @@ echo "**************************"
 # Github base URL
 GITHUB_ROOT=git@github.com:attdevsupport
 
-if [[ -d $SDKKIT_DIR ]]; then
+if [[ -d $SDKKIT_DIR && -d $DHS_DIR ]]; then
+  
   # if the repos already exist, just update to the latest commit
-  if [[ -d $DHS_DIR ]]; then
-    echo "DHS Repo exist, fetch latest ..."
-    # fetch the latest, then update to the given revision
-    git_latest $DHS_DIR $GIT_HASH
-  fi
+  echo "DHS Repo exist, fetch latest ..."
+  # fetch the latest, then update to the given revision
+  git_latest $DHS_DIR $GIT_HASH
+
 else # Repo doesn't exist, create the directories
 
   echo "Cleaning WebRTC SDK Kit dir: $SDKKIT_DIR"
