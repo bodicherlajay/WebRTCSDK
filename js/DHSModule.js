@@ -85,42 +85,12 @@ if (!Env) {
     }
   };
 
-  handleError = function (config, operation, errorResp) {
-    var errObj = errorResp.getJson(),
-      error;
+  handleError = function (config, operation, err) {
+    logger.logDebug('handleError: ' + operation);
+    logger.logInfo('There was an error performing operation ' + operation);
 
-    if (errObj.RequestError) {    // Known API errors
-      if (errObj.RequestError.ServiceException) { // API Service Exceptions
-        error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
-      } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
-        error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
-      } else if (errObj.RequestError.Exception) { // API Exceptions
-        error = ATT.errorDictionary.getDefaultError({
-          moduleID: 'DHS',
-          operationName: operation,
-          httpStatusCode: errorResp.getResponseStatus(),
-          errorDescription: 'Operation ' + operation + ' failed',
-          reasonText: errObj.RequestError.Exception.Text
-        });
-      } else {                      // Unknown API network errors
-        error = ATT.errorDictionary.getDefaultError({
-          moduleID: 'DHS',
-          operationName: operation,
-          httpStatusCode: errorResp.getResponseStatus(),
-          errorDescription: 'Operation ' + operation + ' failed',
-          reasonText: 'DHS operation ' + operation + ' failed due to unknown reason'
-        });
-      }
-    } else {
-      error = ATT.errorDictionary.getDHSError({ // DHS thrown errors
-        operationName: operation,
-        httpStatusCode: errorResp.getResponseStatus(),
-        reasonText: errObj.error || ''
-      });
-    }
-    if (!error) {
-      error = ATT.errorDictionary.getMissingError();
-    }
+    var error = ATT.rtc.error.create (err, operation, 'DHS');
+
     // log the error
     log.logError(error.formatError());
 
