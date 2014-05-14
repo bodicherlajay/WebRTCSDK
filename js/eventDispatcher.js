@@ -14,8 +14,8 @@
     onCallError,
     onError,
     eventRegistry = {},
-    from = callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().caller() : null,
-    to = callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().callee() : null,
+    from = null,
+    to = null,
     state = null,
     codec = null,
     error = null,
@@ -239,6 +239,8 @@
 
     eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
       state = mainModule.CallStatus.CONNECTING;
+      from = callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().caller() : null;
+      to = callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().callee() : null;
       uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
 
       onConnecting(uiEvent);
