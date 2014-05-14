@@ -15,11 +15,13 @@
     logger;
 
   ATT.logManager.getInstance().configureLogger('CallManagementModule',
-    ATT.logManager.getInstance().loggerType.CONSOLE, ATT.logManager.getInstance().logLevel.DEBUG);
+  ATT.logManager.getInstance().loggerType.CONSOLE, ATT.logManager.getInstance().logLevel.DEBUG);
+
   logger = ATT.logManager.getInstance().getLogger('CallManagementModule');
 
   function createEventRegistry(sessionContext) {
-    var callbacks = sessionContext.getUICallbacks();
+    var rtcEvent = ATT.RTCEvent.getInstance(),
+      callbacks = sessionContext.getUICallbacks();
 
     if (undefined === callbacks || 0 === Object.keys(callbacks).length) {
       logger.logError('No callbacks to execute');
@@ -109,25 +111,26 @@
     // Also, accept `data` object with some relevant info as needed
     // `data` not useful for UI
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
-      event.type = ATT.CallStatus.READY;
-      onSessionReady(event);
+      onSessionReady(rtcEvent.createEvent(event));
     };
 
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_ERROR] = function (event) {
-      onError(event);
+      onError(rtcEvent.createEvent(event));
     };
 
     eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
-      event.type = ATT.CallStatus.ERROR;
-      onCallError(event);
+      onCallError(rtcEvent.createEvent(event));
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
-      // if (data.sdp && data.sdp.indexOf('sendonly') !== -1) {
-      //   data.sdp = data.sdp.replace(/sendonly/g, 'sendrecv');
-      // }
-      event.type = ATT.CallStatus.RINGING;
-      onIncomingCall(event);
+      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
+        event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
+      }
+
+      onIncomingCall(rtcEvent.createEvent({
+        state: mainModule.CallStatus.RINGING,
+        from: event.from.split('@')[0].split(':')[1] // grab the phone number
+      }));
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
@@ -135,10 +138,14 @@
         PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
       if (data.resource) {
+        // set callID in the call object
+        // TODO: switch to setCurrentCall
         callManager.getSessionContext().setCurrentCallId(data.resource);
       }
-      event.type = ATT.CallStatus.INPROGRESS;
-      onInProgress(event);
+      // call established
+      onInProgress(rtcEvent.createEvent({
+        state: mainModule.CallStatus.INPROGRESS
+      }));
     };
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (data) {
@@ -147,17 +154,17 @@
       }
       // hold request received
       // if (sdp && sdp.indexOf('sendonly') !== -1) {
-      //   onCallHold({
-      //     type: mainModule.CallStatus.HOLD
-      //   });
+      //   onCallHold(rtcEvent.createEvent({
+      //     state: mainModule.CallStatus.HOLD
+      //   }));
       //   callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
       // }
 
       // // resume request received
       // if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
-      //   onCallResume({
-      //     type: mainModule.CallStatus.RESUMED
-      //   });
+      //   onCallResume(rtcEvent.createEvent({
+      //     state: mainModule.CallStatus.RESUMED
+      //   }));
       //   callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
       // }
     };
@@ -173,40 +180,48 @@
 
     // // hold request successful
     // if (sdp && sdp.indexOf('recvonly') !== -1 && sdp.indexOf('sendrecv') !== -1) {
-    //   onCallHold({
-    //     type: mainModule.CallStatus.HOLD
-    //   });
+    //   onCallHold(rtcEvent.createEvent({
+    //     state: mainModule.CallStatus.HOLD
+    //   }));
     //   callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
     // } else if (sdp && sdp.indexOf('sendrecv') !== -1) {
     //   if (callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
     //     // resume request successful
-    //     onCallResume({
-    //       type: mainModule.CallStatus.RESUMED
-    //     });
+    //     onCallResume(rtcEvent.createEvent({
+    //       state: mainModule.CallStatus.RESUMED
+    //     }));
     //     callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
     //   }
     };
-    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function (event) {
-      event.type = ATT.CallStatus.CONNECTING;
-      onConnecting(event);
+
+    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
+      onConnecting(rtcEvent.createEvent({
+        state: mainModule.CallStatus.CONNECTING,
+        from: (callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().caller() : null),
+        to: (callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().callee() : null)
+      }));
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
-      if (event.error) {
-        event.type = ATT.CallStatus.ENDED;
-        onCallError(event);
+      if (event.reason) {
+        onCallError(rtcEvent.createEvent({
+          state: mainModule.CallStatus.ERROR,
+          error: ATT.rtc.error.create (event.reason)
+        }));
       } else {
-        event.type = ATT.CallStatus.ERROR;
-        onCallEnded(event);
+        onCallEnded(rtcEvent.createEvent({
+          state: mainModule.CallStatus.ENDED
+        }));
       }
       callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
       callManager.getSessionContext().setCallObject(null);
       PeerConnectionService.endCall();
     };
 
-    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function (event) {
-      event.type = ATT.CallStatus.ERROR;
-      onCallError(event);
+    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function () {
+      onCallError(rtcEvent.createEvent({
+        state: mainModule.CallStatus.ERROR
+      }));
     };
 
     return eventRegistry;

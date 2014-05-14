@@ -9,23 +9,16 @@ if (!ATT) {
   'use strict';
 
   var callManager = cmgmt.CallManager.getInstance(),
+    session = callManager.getSessionContext(),
     module = {},
     instance,
     RTCEvent,
-    interceptingEventChannelCallback,
-    subscribeToEvents,
+    interceptEventChannelCallback,
+    setupEventBasedCallbacks,
     eventRegistry,
-    from = '',
-    to = '',
-    state = '',
-    codec = '',
-    error,
-    data = {},
-    uiEvent = {},
     init = function () {
-      eventRegistry = mainModule.utils.createEventRegistry(callManager.getSessionContext());
       return {
-        hookupEventsToUICallbacks: subscribeToEvents,
+        setupEventBasedCallbacks: setupEventBasedCallbacks,
         createEvent: module.createEvent
       };
     };
@@ -37,18 +30,18 @@ if (!ATT) {
   */
   function dispatchEventToHandler(event) {
     console.log('dispatching event: ' + event.state);
-    from = event.from ? event.from.split('@')[0].split(':')[1] : '';
-    to = callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : '';
-    state = event.state;
-    error = event.reason || '';
-    data.sdp = event.sdp || '';
-    data.resource = event.resourceURL || '';
-    data.modId = event.modId || '';
 
     if (eventRegistry[event.state]) {
-      var fn = eventRegistry[event.state];
-      uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
-      fn(uiEvent, data);
+      eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
+        from: event.from ? event.from.split('@')[0].split(':')[1] : '',
+        to: session && session.getCallObject() ? session.getCallObject().callee() : '',
+        state: event.state,
+        error: event.reason || ''
+      }), {
+        sdp: event.sdp || '',
+        resource: event.resourceURL || '',
+        modId: event.modId || ''
+      });
     } else {
       console.log('No event handler defined for ' + event.state);
     }
@@ -59,7 +52,7 @@ if (!ATT) {
   * and triggers UI callbacks
   * @param {Object} event The event object
   */
-  interceptingEventChannelCallback = function (event) {
+  interceptEventChannelCallback = function (event) {
     if (!event) {
       return;
     }
@@ -73,17 +66,22 @@ if (!ATT) {
   };
 
   /**
-    This function subscribes to all events
+    This function subscribes to all events 
     being published by the event channel.
     It hands off the event to interceptingEventChannelCallback()
   */
-  subscribeToEvents = function () {
-    var sessionId = callManager.getSessionContext().getSessionId();
+  setupEventBasedCallbacks = function () {
+    // get current session context
+    var session = callManager.getSessionContext(),
+      sessionId = session.getSessionId();
+
+    // setup events registry
+    eventRegistry = mainModule.utils.createEventRegistry(session);
 
     // unsubscribe first, to avoid double subscription from previous actions
-    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
+    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
     // subscribe to published events from event channel
-    mainModule.event.subscribe(sessionId + '.responseEvent', interceptingEventChannelCallback);
+    mainModule.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
     console.log('Subscribed to events');
   };
 
@@ -98,28 +96,28 @@ if (!ATT) {
    * @type {{from: string, to: string, timeStamp: string, state: string, error: string}}
    */
   RTCEvent = {
+    state: '',
     from: '',
     to: '',
     timeStamp: '',
-    state: '',
     codec: '',
-    data: '',
-    error: ''
+    data: null,
+    error: null
   };
 
-  module.createEvent = function (from, to, state, codec, error) {
-    if (state.hasOwnProperty(ATT.CallStatus)) {
-      throw new Error("State must be of type ATT.CallStatus");
+  module.createEvent = function (arg) {
+    if (arg.state.hasOwnProperty(ATT.CallStatus)) {
+      throw new Error('State must be of type ATT.CallStatus');
     }
     var evt = Object.create(RTCEvent);
-    evt.from = from;
-    evt.to = to;
-    evt.state = state;
-    evt.error = error;
+    evt.state = arg.state;
+    evt.from = arg.from;
+    evt.to = arg.to;
     evt.timestamp = new Date();
-    evt.codec = codec;
-    // need to discuss. placed to appease sample app.
-    evt.data = '1234';
+    evt.codec = arg.codec;
+    evt.data = arg.data;
+    evt.error = arg.error;
+    Object.freeze(evt);
     return evt;
   };
 
