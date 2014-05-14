@@ -5,8 +5,8 @@ describe.only('Event Dispatcher Tests', function () {
   'use strict';
 
   var backupAtt, utils = ATT.utils, eventRegistry,
-    onSessionReady, onError, onIncomingCall, onOutgoingCall,
-    onInProgress, onCallError, onCallEnded, event;
+    onSessionReady, onError, onIncomingCall, onConnecting,
+    onInProgress, onCallError, onCallEnded, event = {state: 'foo'};
   beforeEach(function () {
     backupAtt = window.ATT;
   });
@@ -40,8 +40,8 @@ describe.only('Event Dispatcher Tests', function () {
           onIncomingCall: function () {
             onIncomingCall = true;
           },
-          onOutgoingCall: function () {
-            onOutgoingCall = true;
+          onConnecting: function () {
+            onConnecting = true;
           },
           onInProgress: function () {
             onInProgress = true;
@@ -63,22 +63,22 @@ describe.only('Event Dispatcher Tests', function () {
     it('should invoke onSessionReady when RTC_SESSION_CREATED happens', function () {
       onSessionReady = false;
       eventRegistry = utils.createEventRegistry(goodContext);
-      eventRegistry[ATT.SessionEvents.RTC_SESSION_CREATED]();
+      eventRegistry[ATT.SessionEvents.RTC_SESSION_CREATED](event);
       assert.isTrue(onSessionReady);
     });
 
     it('should invoke onError when RTC_SESSION_ERROR happens', function () {
       onError = false;
       eventRegistry = utils.createEventRegistry(goodContext);
-      eventRegistry[ATT.SessionEvents.RTC_SESSION_ERROR]();
+      eventRegistry[ATT.SessionEvents.RTC_SESSION_ERROR](event);
       assert.isTrue(onError);
     });
 
     it('should invoke onInProgress when SESSION_OPEN happens', function () {
-      onError = false;
-      event = {reason: 'the aliens took it'};
-      eventRegistry = utils.createEventRegistry(event);
-      eventRegistry[ATT.SessionEvents.SESSION_OPEN]();
+      onInProgress = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      var data = {sdp: 'sendonly'};
+      eventRegistry[ATT.RTCCallEvents.SESSION_OPEN](event, data);
       assert.isTrue(onInProgress);
     });
 
@@ -90,14 +90,6 @@ describe.only('Event Dispatcher Tests', function () {
       assert.isTrue(onCallEnded);
     });
 
-    it('should invoke onCallError when SESSION_TERMINATED happens WITH event.reason', function () {
-      onCallError = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
-      event = {reason: 'the aliens took it'};
-      eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
-      assert.isTrue(onCallError);
-    });
-
     it('should invoke onIncomingCall when INVITATION_RECEIVED happens', function () {
       onIncomingCall = false;
       eventRegistry = utils.createEventRegistry(goodContext);
@@ -106,25 +98,17 @@ describe.only('Event Dispatcher Tests', function () {
       assert.isTrue(onIncomingCall);
     });
 
-    it('should invoke onInProgress when SESSION_OPEN happens', function () {
-      onInProgress = false;
+    it('should invoke onConnecting when CALL_CONNECTING happens', function () {
+      onConnecting = false;
       eventRegistry = utils.createEventRegistry(goodContext);
-      event = {sdp: 'sendonly', resourceURL: 'aaa-bbb-123'};
-      eventRegistry[ATT.RTCCallEvents.SESSION_OPEN](event);
-      assert.isTrue(onInProgress);
-    });
-
-    it('should invoke onOutgoingCall when INVITATION_SENT happens', function () {
-      onOutgoingCall = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
-      eventRegistry[ATT.RTCCallEvents.INVITATION_SENT](event);
-      assert.isTrue(onOutgoingCall);
+      eventRegistry[ATT.RTCCallEvents.CALL_CONNECTING](event);
+      assert.isTrue(onConnecting);
     });
 
     it('should invoke onCallError when UNKNOWN happens', function () {
       onCallError = false;
       eventRegistry = utils.createEventRegistry(goodContext);
-      eventRegistry[ATT.RTCCallEvents.UNKNOWN]();
+      eventRegistry[ATT.RTCCallEvents.UNKNOWN](event);
       assert.isTrue(onCallError);
     });
   });

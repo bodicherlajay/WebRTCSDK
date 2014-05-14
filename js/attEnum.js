@@ -35,7 +35,7 @@ if (!ATT) {
 * @memberof ATT.rtc.Phone
 * @constant {number} 
  */
-    CALLING:    1,
+    CONNECTING:    1,
        /**
 * @memberof ATT.rtc.Phone
 * @constant {number} 

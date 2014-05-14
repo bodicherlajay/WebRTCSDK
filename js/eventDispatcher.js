@@ -197,8 +197,8 @@
     eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
       onConnecting(rtcEvent.createEvent({
         state: mainModule.CallStatus.CONNECTING,
-        from: (callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().caller() : null),
-        to: (callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().callee() : null)
+        from: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().caller() : null),
+        to: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : null)
       }));
     };
 
