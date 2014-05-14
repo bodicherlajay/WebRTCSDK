@@ -23,7 +23,7 @@
     errorNamespace.create = create;
     errorNamespace.publish = publish;
   };
-  
+
   create = function (err, operation, moduleId) {
     logger.logDebug('error.create');
     logger.logTrace('raw error', err);
@@ -91,7 +91,7 @@
     }
 
     logger.logError(error.formatError());
-    logger.logTrace(error);
+    logger.logTrace('The error object is: ', error);
 
     if (typeof handler === 'function') {
       return handler(error);

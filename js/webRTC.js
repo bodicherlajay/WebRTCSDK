@@ -66,7 +66,7 @@ if (Env === undefined) {
     logger.logDebug('handleError: ' + operation);
     logger.logInfo('There was an error performing operation ' + operation);
 
-    var error = ATT.rtc.error.create (err, operation);
+    var error = ATT.rtc.error.create(err, operation);
 
     if (typeof errHandler === 'function') {
       ATT.rtc.error.publish(error, operation, errHandler);
@@ -160,6 +160,11 @@ if (Env === undefined) {
    */
   function login(config) {
     logger.logDebug('createWebRTCSession');
+    var token,
+      e911Id,
+      session,
+      services = ['ip_voice_call', 'ip_video_call'],
+      errorHandler;
 
     if (config.callbacks && config.callbacks.onError && typeof config.callbacks.onError === 'function') {
       errorHandler = config.callbacks.onError;
@@ -178,11 +183,8 @@ if (Env === undefined) {
         logger.logWarning('No UI callbacks specified');
       }
 
-      var token = config.token,
-        e911Id = config.e911Id || null,
-        session,
-        services = ['ip_voice_call', 'ip_video_call'],
-        errorHandler;
+      token = config.token;
+      e911Id = config.e911Id || null;
 
       //remove video service for audio only service
       if (config.audioOnly) {
