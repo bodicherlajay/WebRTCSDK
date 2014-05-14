@@ -1,3 +1,7 @@
+# Updates
+
+* Removes the `Unable to retrieve RTC Session ID.`
+
 # Purpose
 This release is primarily meant for use by members of SVT team.
 
