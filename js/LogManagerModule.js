@@ -7,7 +7,8 @@
   var typeofWindow,
     logManager = {},
     instance,
-    loggersCollection = [];
+    loggersCollection = [],
+    getLogStatementFilePosition;
 
   // types of loggers
   logManager.LOGGER_TYPE = {
@@ -25,12 +26,43 @@
 
   function log(type, toLog) {
     if (typeof toLog === 'object') {
-      console.log(type);
-      console.log(toLog);
+      console.log(type, toLog, '[' + getLogStatementFilePosition() + ']');
     } else {
-      console.log(type + ' ' + toLog);
+      console.log(type + ' ' + toLog + ' [' + getLogStatementFilePosition() + ']');
     }
   }
+
+  /**
+   * Private method to return the filename and position as <filename>:<position> of log statement.  Does this by throwing
+   * an exception and parsing its stack trace.
+   * @returns {string} Returns <filename>:<position>
+   */
+  getLogStatementFilePosition = function () {
+    var fileName = '',
+      lineNumber,
+      stackLocationString = '',
+      splitstr = [],
+      rawfile = '',
+      splitrawfile = [];
+
+    try {
+      throw new Error();
+    } catch (err) {
+      stackLocationString = err.stack.split('\n')[4];
+      splitstr = stackLocationString.split(':');
+      rawfile = splitstr[2];
+      splitrawfile = rawfile.split('/');
+      fileName = splitrawfile[splitrawfile.length - 1];
+
+      // strip off timestamp if it's present.
+      if (fileName.indexOf('?') > -1) {
+        fileName = fileName.split('?')[0];
+      }
+
+      lineNumber = splitstr[3];
+      return fileName + ':' + lineNumber;
+    }
+  };
 
   function createConsoleLogger(spec) {
     var level = spec.level, type = spec.type;
