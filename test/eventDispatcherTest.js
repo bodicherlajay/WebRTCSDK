@@ -4,15 +4,13 @@
 describe('Event Dispatcher Tests', function () {
   'use strict';
 
-  var backupAtt, utils = ATT.utils, eventRegistry,
-    onSessionReady, onError, onIncomingCall, onOutgoingCall,
-    onInProgress, onCallError, onCallEnded, event;
-  beforeEach(function () {
-    backupAtt = window.ATT;
-  });
+  var utils = ATT.utils, eventRegistry,
+    onSessionReady, onError, onIncomingCall, onConnecting,
+    onInProgress, onCallError, onCallEnded, event,
+    backupATT = ATT;
 
-  afterEach(function () {
-    window.ATT = backupAtt;
+  beforeEach(function () {
+    window.ATT = backupATT;
   });
 
   describe('Event registry', function () {
@@ -40,8 +38,8 @@ describe('Event Dispatcher Tests', function () {
           onIncomingCall: function () {
             onIncomingCall = true;
           },
-          onOutgoingCall: function () {
-            onOutgoingCall = true;
+          onConnecting: function () {
+            onConnecting = true;
           },
           onInProgress: function () {
             onInProgress = true;
@@ -74,20 +72,11 @@ describe('Event Dispatcher Tests', function () {
       assert.isTrue(onError);
     });
 
-    it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
-      onCallEnded = false;
+    it('should invoke onConnecting when CALL_CONNECTING happens', function () {
+      onConnecting = false;
       eventRegistry = utils.createEventRegistry(goodContext);
-      event = {reason: ''};
-      eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
-      assert.isTrue(onCallEnded);
-    });
-
-    it('should invoke onCallError when SESSION_TERMINATED happens WITH event.reason', function () {
-      onCallError = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
-      event = {reason: 'the aliens took it'};
-      eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
-      assert.isTrue(onCallError);
+      eventRegistry[ATT.RTCCallEvents.CALL_CONNECTING]();
+      assert.isTrue(onConnecting);
     });
 
     it('should invoke onIncomingCall when INVITATION_RECEIVED happens', function () {
@@ -106,11 +95,20 @@ describe('Event Dispatcher Tests', function () {
       assert.isTrue(onInProgress);
     });
 
-    it('should invoke onOutgoingCall when INVITATION_SENT happens', function () {
-      onOutgoingCall = false;
+    it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
+      onCallEnded = false;
       eventRegistry = utils.createEventRegistry(goodContext);
-      eventRegistry[ATT.RTCCallEvents.INVITATION_SENT](event);
-      assert.isTrue(onOutgoingCall);
+      event = {reason: ''};
+      eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
+      assert.isTrue(onCallEnded);
+    });
+
+    it('should invoke onCallError when SESSION_TERMINATED happens WITH event.reason', function () {
+      onCallError = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      event = {reason: 'the aliens took it'};
+      eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
+      assert.isTrue(onCallError);
     });
 
     it('should invoke onCallError when UNKNOWN happens', function () {
@@ -119,5 +117,9 @@ describe('Event Dispatcher Tests', function () {
       eventRegistry[ATT.RTCCallEvents.UNKNOWN]();
       assert.isTrue(onCallError);
     });
+  });
+
+  afterEach(function () {
+    window.ATT = backupATT;
   });
 });
