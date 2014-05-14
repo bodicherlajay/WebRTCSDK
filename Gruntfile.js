@@ -113,5 +113,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-jslint');
   grunt.loadNpmTasks('grunt-jsdoc');
 
-  grunt.registerTask('default', ['karma:jenkins', 'karma:unit', 'jslint']);
+  grunt.registerTask('default', ['karma:jenkins', 'jslint']);
+  grunt.registerTask('unit', ['karma:unit']);
 };
