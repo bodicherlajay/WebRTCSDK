@@ -22,7 +22,7 @@
     var callbacks = sessionContext.getUICallbacks();
 
     if (undefined === callbacks || 0 === Object.keys(callbacks).length) {
-      console.log('No callbacks to execute');
+      logger.logError('No callbacks to execute');
       return;
     }
   /**
@@ -172,6 +172,7 @@
 
     // Call is established
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event) {
+      logger.logInfo('session open event received at', event.timestamp);
       if (event.sdp) {
         PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
       }
