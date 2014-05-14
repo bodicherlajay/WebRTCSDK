@@ -200,10 +200,10 @@ if (!ATT) {
           },
           timeout: 30000,
           headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
             'Content-Type': 'application/json',
-            'Accept' : 'application/json'
+            'Accept' : 'application/json',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           }
         },
         /**
