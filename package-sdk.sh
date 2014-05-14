@@ -77,8 +77,8 @@ SDK_DIR_NAME=webrtc-sdk
 SAMPLE_APP_DIR_NAME=sample-app
 
 SDKKIT_DIR=$DIST_DIR/webrtc-sdk-kit
-SDK_DIR=$DHS_DIR/SAMPLE_APP_DIR_NAME/lib/webrtc-sdk
 DHS_DIR=$SDKKIT_DIR/$DHS_DIR_NAME
+SDK_DIR=$DHS_DIR/$SAMPLE_APP_DIR_NAME/lib/webrtc-sdk
 
 # Github base URL
 GITHUB_ROOT=git@github.com:attdevsupport
@@ -103,7 +103,7 @@ else # Create the directories
 fi
 
 # checkout the given hash
-checkout_version $DHS_DIR $HASH
+checkout_version $DHS_DIR $GIT_HASH
 
 # Generate JSDocs from the SDK and place them at the root level of the SDK Kit dir.
 gen_jsdoc $SDK_DIR $SDKKIT_DIR
