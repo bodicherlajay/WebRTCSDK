@@ -6,8 +6,12 @@ function checkout_version {
   REPO_DIR=$1
   GIT_HASH=$2
   cd $REPO_DIR
+
+  # Clean dir before anything else
+  git reset --hard HEAD
+
   echo "Checking out branch $GIT_HASH ... at $REPO_DIR"
-  git checkout -b package-$(git rev-parse --short HEAD) --track  $GIT_HASH
+  git checkout -b package-$GIT_HASH $GIT_HASH
 
   # Remove untracked files
   git clean -f
@@ -19,6 +23,24 @@ function checkout_version {
   echo "Finished checkout... moving to $START_DIR"
   cd $START_DIR
 }
+
+# pull the latest changes from repo $1 for branch ($2)
+function git_latest {
+  START_DIR=$(pwd)
+  REPO_DIR=$1
+  GIT_HASH=$2
+  echo "Getting hash $GIT_HASH from $REPO_DIR..."
+  cd $REPO_DIR
+
+  # Clean dir before anything else
+  git reset --hard HEAD
+
+  # fetch the latest from origin remote
+  git fetch origin
+
+  cd $START_DIR
+}
+
 
 function gen_jsdoc {
   START_DIR=$(pwd)
@@ -61,14 +83,24 @@ DHS_DIR=$SDKKIT_DIR/$DHS_DIR_NAME
 # Github base URL
 GITHUB_ROOT=git@github.com:attdevsupport
 
-# Clear previous package & an create ouput dir
-echo "Creating dir $SDKKIT_DIR..."
-rm -rf $SDKKIT_DIR
-mkdir -p $SDKKIT_DIR
+echo "Cleaning WebRTC SDK Kit dir at $SDKKIT_DIR"
+if [[ -d $SDKKIT_DIR ]]; then
+  # if the repos already exist, just update to the latest commit
+  if [[ -d $DHS_DIR ]]; then
+    # fetch the latest, then update to the given revision
+    git_latest $DHS_DIR $GIT_HASH
+  fi
+else # Create the directories
 
-# Download DHS component
-echo "Getting sources for the DHS..."
-git clone $GITHUB_ROOT/$DHS_DIR_NAME.git $DHS_DIR
+  # Clear previous package & an create ouput dir
+  echo "Creating dir $SDKKIT_DIR..."
+  mkdir -p $SDKKIT_DIR
+
+  # Download DHS component
+  echo "Getting sources for the DHS..."
+  git clone $GITHUB_ROOT/$DHS_DIR_NAME.git $DHS_DIR
+
+fi
 
 # checkout the given hash
 checkout_version $DHS_DIR $HASH
