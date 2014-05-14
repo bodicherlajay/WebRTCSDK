@@ -34,7 +34,7 @@ if (!ATT) {
       var fn = eventRegistry[event.state];
       fn(event);
     } else {
-      console.log("No event handler defined for " + event.event);
+      console.log('No event handler defined for ' + event.event);
     }
   }
 
@@ -82,16 +82,17 @@ if (!ATT) {
    * @type {{from: string, to: string, timeStamp: string, state: string, error: string}}
    */
   RTCEvent = {
-    from: "",
-    to: "",
-    timeStamp: "",
-    state: "",
-    error: ""
+    from: '',
+    to: '',
+    timeStamp: '',
+    state: '',
+    codec: '',
+    error: ''
   };
 
   module.createEvent = function (from, to, state, codec, error) {
     if (state.hasOwnProperty(ATT.CallStatus)) {
-      throw new Error("State must be of type ATT.CallStatus");
+      throw new Error('State must be of type ATT.CallStatus');
     }
     var evt = Object.create(RTCEvent);
     evt.from = from;
