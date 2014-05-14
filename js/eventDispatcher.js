@@ -16,7 +16,13 @@
     onCallError,
     onError,
     eventRegistry = {},
-    callingParty;
+    callingParty,
+    logger;
+
+  ATT.logManager.getInstance().configureLogger('CallManagementModule',
+    ATT.logManager.getInstance().loggerType.CONSOLE, ATT.logManager.getInstance().logLevel.DEBUG);
+  logger = ATT.logManager.getInstance().getLogger('CallManagementModule');
+
 
   function createEventRegistry(sessionContext) {
     var callbacks = sessionContext.getUICallbacks();
