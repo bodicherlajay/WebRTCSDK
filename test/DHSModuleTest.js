@@ -2,7 +2,7 @@
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
 before: true, sinon: true, expect: true, xit: true, xdescribe: true*/
 
-describe.only('DHSModule', function () {
+describe('DHSModule', function () {
   "use strict";
 
   var resourceManager = Env.resourceManager.getInstance(),
@@ -223,7 +223,7 @@ describe.only('DHSModule', function () {
     expect(boundCall).to.throw('userId required.');
   });
 
-  xit('createE911Id should throw error if address fails validation.', function () {
+  it('createE911Id should throw error if address fails validation.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       boundCall;
