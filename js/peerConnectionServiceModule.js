@@ -120,7 +120,7 @@
                     }
                   },
                   error: function (error) {
-                    ATT.rtc.error.publish('Error sending offer: ' + error);
+                    ATT.rtc.error.publish(error);
                   }
                 });
               } catch (e) {
