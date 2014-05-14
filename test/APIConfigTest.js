@@ -54,7 +54,7 @@ describe('APIConfig', function () {
     expect(ATT.APIConfigs.getEvents.method).to.equal('get');
     expect(ATT.APIConfigs.getEvents.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionidendpoint');
     expect(ATT.APIConfigs.getEvents.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
-    expect(ATT.APIConfigs.getEvents.headers['Pragma']).to.equal('no-cache');
+    expect(ATT.APIConfigs.getEvents.headers.Pragma).to.equal('no-cache');
     expect(ATT.APIConfigs.getEvents.headers['Cache-Control']).to.equal('no-cache');
   });
 

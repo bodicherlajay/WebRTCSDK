@@ -74,6 +74,14 @@ describe('Event Dispatcher Tests', function () {
       assert.isTrue(onError);
     });
 
+    it('should invoke onInProgress when SESSION_OPEN happens', function () {
+      onError = false;
+      event = {reason: 'the aliens took it'};
+      eventRegistry = utils.createEventRegistry(event);
+      eventRegistry[ATT.SessionEvents.SESSION_OPEN]();
+      assert.isTrue(onInProgress);
+    });
+
     it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
       onCallEnded = false;
       eventRegistry = utils.createEventRegistry(goodContext);
