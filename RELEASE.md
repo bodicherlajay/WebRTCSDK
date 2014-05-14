@@ -1,6 +1,8 @@
-# Updates
+# Updates/Changes
 
-* Removes the `Unable to retrieve RTC Session ID.`
+* Removes the error messages: `Failed to retrieve RTC Session Id. Cannot start making calls.`
+* Updates directory structure now the sample application lives inside the DHS which makes for
+easier setup.
 
 # Purpose
 This release is primarily meant for use by members of SVT team.

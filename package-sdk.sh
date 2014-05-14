@@ -5,6 +5,7 @@ function checkout_version {
   START_DIR=$(pwd)
   REPO_DIR=$1
   GIT_HASH=$2
+  echo "Enter $REPO_DIR ..."
   cd $REPO_DIR
 
   # Clean dir before anything else
@@ -21,6 +22,7 @@ function checkout_version {
 
   # return to original dir
   echo "Finished checkout... moving to $START_DIR"
+  echo "Exit $REPO_DIR ..."
   cd $START_DIR
 }
 
@@ -29,7 +31,8 @@ function git_latest {
   START_DIR=$(pwd)
   REPO_DIR=$1
   GIT_HASH=$2
-  echo "Getting hash $GIT_HASH from $REPO_DIR..."
+  echo "Enter $REPO_DIR ..."
+  echo "Getting hash $GIT_HASH"
   cd $REPO_DIR
 
   # Clean dir before anything else
@@ -37,7 +40,7 @@ function git_latest {
 
   # fetch the latest from origin remote
   git fetch origin
-
+  echo "Exit $REPO_DIR ..."
   cd $START_DIR
 }
 
@@ -46,11 +49,13 @@ function gen_jsdoc {
   START_DIR=$(pwd)
   SRC_DIR=$1
   OUT_DIR=$2
+  echo "Enter $SRC_DIR ..."
   cd $SRC_DIR
   # install NPM dependencies to generate JSDocs
   npm install
   grunt jsdoc
   cp -Rf doc $OUT_DIR/html-docs
+  echo "Exit $REPO_DIR ..."
   cd $START_DIR
 }
 
@@ -80,19 +85,25 @@ SDKKIT_DIR=$DIST_DIR/webrtc-sdk-kit
 DHS_DIR=$SDKKIT_DIR/$DHS_DIR_NAME
 SDK_DIR=$DHS_DIR/$SAMPLE_APP_DIR_NAME/lib/webrtc-sdk
 
+echo "**************************"
+echo "SDKKIT_DIR = $SDKKIT_DIR"
+echo "DHS_DIR = $DHS_DIR"
+echo "SDK_DIR = $SDK_DIR"
+echo "**************************"
+
 # Github base URL
 GITHUB_ROOT=git@github.com:attdevsupport
 
-echo "Cleaning WebRTC SDK Kit dir at $SDKKIT_DIR"
 if [[ -d $SDKKIT_DIR ]]; then
   # if the repos already exist, just update to the latest commit
   if [[ -d $DHS_DIR ]]; then
+    echo "DHS Repo exist, fetch latest ..."
     # fetch the latest, then update to the given revision
     git_latest $DHS_DIR $GIT_HASH
   fi
-else # Create the directories
+else # Repo doesn't exist, create the directories
 
-  # Clear previous package & an create ouput dir
+  echo "Cleaning WebRTC SDK Kit dir: $SDKKIT_DIR"
   echo "Creating dir $SDKKIT_DIR..."
   mkdir -p $SDKKIT_DIR
 
@@ -102,7 +113,8 @@ else # Create the directories
 
 fi
 
-# checkout the given hash
+# checkout the given hash of the DHS
+echo "Checking out $GIT_HASH for the DHS: $DHS_DIR ..."
 checkout_version $DHS_DIR $GIT_HASH
 
 # Generate JSDocs from the SDK and place them at the root level of the SDK Kit dir.
