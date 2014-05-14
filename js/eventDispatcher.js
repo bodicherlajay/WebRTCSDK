@@ -8,18 +8,10 @@
     onIncomingCall,
     onConnecting,
     onInProgress,
-    //onCallHold,
-    //onCallResume,
     onCallEnded,
     onCallError,
     onError,
-    eventRegistry = {},
-    from = null,
-    to = null,
-    state = null,
-    codec = null,
-    error = null,
-    uiEvent = {};
+    eventRegistry = {};
 
   function createEventRegistry(sessionContext) {
     var callbacks = sessionContext.getUICallbacks();
@@ -28,120 +20,91 @@
       console.log('No callbacks to execute');
       return;
     }
-  /**
+
+   /**
    * OnSessionReady
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
+   * @param {Object} the UI Event Object
    */
     onSessionReady = function (evt) {
       if (callbacks.onSessionReady) {
         callbacks.onSessionReady(evt);
       }
     };
- /**
+
+   /**
    * onIncomingCall
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} callID
-   * @attribute {String} Time stamp
+   * @param {Object} the UI Event Object
    */
     onIncomingCall = function (evt) {
       if (callbacks.onIncomingCall) {
         callbacks.onIncomingCall(evt);
       }
     };
- /**
+
+   /**
    * onConnecting
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
+   * @param {Object} the UI Event Object
    */
     onConnecting = function (evt) {
       if (callbacks.onConnecting) {
         callbacks.onConnecting(evt);
       }
     };
- // *
- //   * onInProgress
- //   * @memberof ATT.rtc.Phone
- //   * @param {Object} config Dial configuration object.
- //   * @attribute {String} callStatus
- //   * @attribute {String} Time stamp
 
+    /**
+    * onInProgress
+    * @param {Object} the UI Event Object
+    */
     onInProgress = function (evt) {
       if (callbacks.onInProgress) {
         callbacks.onInProgress(evt);
       }
     };
- /**
-   * onCallHold
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
-   */
-  // onCallHold = function (evt) {
-  //   if (callbacks.onCallHold) {
-  //     callbacks.onCallHold(evt);
-  //   }
-  // };
- /**
-   * onCallResume
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
-   */
-  // onCallResume = function (evt) {
-  //   if (callbacks.onCallResume) {
-  //     callbacks.onCallResume(evt);
-  //   }
-  // };
- /**
-   * onCallEnded
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} callID
-   * @attribute {String} Time stamp
-   */
+
+    /**
+    * onCallEnded
+    * @param {Object} the UI Event Object
+    */
     onCallEnded = function (evt) {
       if (callbacks.onCallEnded) {
         callbacks.onCallEnded(evt);
       }
     };
- /**
-   * onCallError
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-    * @attribute {String} callID
-   * @attribute {String} Time stamp
-   */
+
+    /**
+    * onCallError
+    * @param {Object} the UI Event Object
+    */
     onCallError = function (evt) {
       if (callbacks.onCallError) {
         callbacks.onCallError(evt);
       }
     };
- /**
-   * onError
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-    * @attribute {String} callID
-   * @attribute {String} Time stamp
-   */
+
+    /**
+    * onError
+    * @param {Object} the UI Event Object
+    */
     onError = function (evt) {
       if (callbacks.onError) {
         callbacks.onError(evt);
       }
     };
 
+    // Each Event Registry function accepts an `event` object
+    // Here is the structure:
+    // ======================
+    // from: '',
+    // to: '',
+    // timeStamp: '',
+    // state: '',
+    // codec: '',
+    // error: ''
+    // ======================
+    // Also, accept `data` object with some relevant info as needed
+    // `data` not useful for UI
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
+      event.type = ATT.CallStatus.READY;
       onSessionReady(event);
     };
 
@@ -150,53 +113,33 @@
     };
 
     eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
-      onCallError({
-        type: event.state,
-        reason: event.data
-      });
-    };
-
-    eventRegistry[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
-    // registers UI functions for incomming IIP states
-      if (event.reason) {
-        onCallError({ type: mainModule.CallStatus.ERROR, reason: event.reason });
-      } else {
-        onCallEnded({ type: mainModule.CallStatus.ENDED });
-      }
-      callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
-      callManager.getSessionContext().DeleteCallObject();
-      PeerConnectionService.endCall();
+      event.type = ATT.CallStatus.ERROR;
+      onCallError(event);
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
-      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
-        event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
-      }
-      state = mainModule.CallStatus.RINGING;
-      // grab the phone number
-      from = event.from.split('@')[0].split(':')[1];
-      uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
-
-      onIncomingCall(uiEvent);
+      // if (data.sdp && data.sdp.indexOf('sendonly') !== -1) {
+      //   data.sdp = data.sdp.replace(/sendonly/g, 'sendrecv');
+      // }
+      event.type = ATT.CallStatus.RINGING;
+      onIncomingCall(event);
     };
 
-    // Call is established
-    eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event) {
-      if (event.sdp) {
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
+    eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
+      if (data.sdp) {
+        PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
-      // set callID in the call object
-      // TODO: switch to setCurrentCall
-      callManager.getSessionContext().setCurrentCallId(event.resourceURL);
-
-      // call established
-      onInProgress({
-        type: mainModule.CallStatus.INPROGRESS
-      });
+      if (data.resource) {
+        callManager.getSessionContext().setCurrentCallId(data.resource);
+      }
+      event.type = ATT.CallStatus.INPROGRESS;
+      onInProgress(event);
     };
 
-    eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (event) {
-      PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
+    eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (data) {
+      if (data.sdp && data.modId) {
+        PeerConnectionService.setRemoteAndCreateAnswer(data.sdp, data.modId);
+      }
       // hold request received
       // if (sdp && sdp.indexOf('sendonly') !== -1) {
       //   onCallHold({
@@ -214,11 +157,13 @@
       // }
     };
 
-    eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (event) {
-      PeerConnectionService.setModificationId(event.modId);
+    eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (data) {
+      if (data.modId) {
+        PeerConnectionService.setModificationId(data.modId);
+      }
 
-      if (event.sdp) {
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
+      if (data.sdp) {
+        PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
 
     // // hold request successful
@@ -237,28 +182,27 @@
     //   }
     };
 
-    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
-      state = mainModule.CallStatus.CONNECTING;
-      from = callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().caller() : null;
-      to = callManager.getSessionContext() ? callManager.getSessionContext().getCallObject().callee() : null;
-      uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
-
-      onConnecting(uiEvent);
+    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function (event) {
+      event.type = ATT.CallStatus.CONNECTING;
+      onConnecting(event);
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
-      if (event.reason) {
-        onCallError({ type: mainModule.CallStatus.ERROR, reason: event.reason });
+      if (event.error) {
+        event.type = ATT.CallStatus.ENDED;
+        onCallError(event);
       } else {
-        onCallEnded({ type: mainModule.CallStatus.ENDED });
+        event.type = ATT.CallStatus.ERROR;
+        onCallEnded(event);
       }
       callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
       callManager.getSessionContext().setCallObject(null);
       PeerConnectionService.endCall();
     };
 
-    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function () {
-      onCallError({ type: mainModule.CallStatus.ERROR });
+    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function (event) {
+      event.type = ATT.CallStatus.ERROR;
+      onCallError(event);
     };
 
     return eventRegistry;
