@@ -32,7 +32,7 @@ if (!ATT) {
     * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
     */
     startCall: function (config) {
-      logger.logDebug('starting call');
+      logger.logTrace('starting call');
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
 
@@ -47,7 +47,7 @@ if (!ATT) {
     showStream: function (localOrRemote, stream) {   // 'local' or 'remote'
       var videoStreamEl;
 
-      logger.logDebug('showing ' + localOrRemote + ' stream...');
+      logger.logTrace('showing ' + localOrRemote + ' stream...');
       if (localOrRemote === 'remote') {
         this.remoteStream = stream;
         videoStreamEl = this.remoteVideoElement;
@@ -68,7 +68,7 @@ if (!ATT) {
     * Removes all media streams from the DOM
     */
     stopStream: function () {
-      logger.logDebug('stopping streams...');
+      logger.logTrace('stopping streams...');
       if (this.localVideoElement) {
         this.localVideoElement.src = '';
       }
@@ -90,7 +90,7 @@ if (!ATT) {
     * Mute Stream
     */
     muteStream: function () {
-      logger.logDebug('muting stream...');
+      logger.logTrace('muting stream...');
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
           i,
@@ -106,7 +106,7 @@ if (!ATT) {
     * Unmute Stream
     */
     unmuteStream: function () {
-      logger.logDebug('unmuting stream...');
+      logger.logTrace('unmuting stream...');
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
           i,

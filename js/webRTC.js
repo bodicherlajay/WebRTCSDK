@@ -30,7 +30,7 @@ if (Env === undefined) {
   logger = logMgr.getLogger('WebRTC');
 
   setupEventChannel = function () {
-    logger.logDebug('setupEventChannel');
+    logger.logTrace('setupEventChannel');
 
     var session = callManager.getSessionContext(),
 
@@ -57,19 +57,62 @@ if (Env === undefined) {
   };
 
   shutdownEventChannel = function () {
-    logger.logDebug('shutdownEventChannel');
+    logger.logTrace('shutdownEventChannel');
     ATT.utils.eventChannel.stopListening();
     logger.logInfo('Event channel shutdown successfully');
   };
 
-  handleError = function (operation, errHandler, err) {
-    logger.logDebug('handleError: ' + operation);
+  handleError = function (config, operation, errorResp) {
+    logger.logTrace('handleError: ' + operation);
     logger.logInfo('There was an error performing operation ' + operation);
 
-    var error = ATT.rtc.error.create(err, operation);
+    var error,
+      errObj;
 
-    if (typeof errHandler === 'function') {
-      ATT.rtc.error.publish(error, operation, errHandler);
+    if (typeof errorResp === 'string') { // String Errors
+      error = ATT.errorDictionary.getDefaultError({
+        moduleID: 'RTC',
+        operationName: operation,
+        errorDescription: 'Operation ' + operation + ' failed',
+        reasonText: errorResp
+      });
+    } else if (errorResp.isSdkErr) { // Previously thrown SDK Errors
+      error = errorResp;
+    } else if (errorResp.getJson) { // Errors from Network/API
+      errObj = errorResp.getJson();
+      if (errObj.RequestError) {    // Known API errors
+        if (errObj.RequestError.ServiceException) { // API Service Exceptions
+          error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+        } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
+          error = ATT.errorDictionary.getErrorByOpStatus(operation, errorResp.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+        } else if (errObj.RequestError.Exception) { // API Exceptions
+          error = ATT.errorDictionary.getDefaultError({
+            moduleID: 'RTC',
+            operationName: operation,
+            httpStatusCode: errorResp.getResponseStatus(),
+            errorDescription: 'Operation ' + operation + ' failed',
+            reasonText: errObj.RequestError.Exception.Text
+          });
+        }
+      } else {                      // Unknown API network errors
+        error = ATT.errorDictionary.getDefaultError({
+          moduleID: 'RTC',
+          operationName: operation,
+          httpStatusCode: errorResp.getResponseStatus(),
+          errorDescription: 'Operation ' + operation + ' failed',
+          reasonText: 'WebRTC operation ' + operation + ' failed due to unknown reason'
+        });
+      }
+    }
+    if (!error) { // Unknown errors
+      error = ATT.errorDictionary.getMissingError();
+    }
+
+    logger.logError(error.formatError());
+    logger.logDebug(error);
+
+    if (typeof config.onError === 'function') {
+      config.onError(error);
     }
   };
 
@@ -84,7 +127,7 @@ if (Env === undefined) {
    * ATT.rtc.Phone.initSDK(“e911id”,”access token”)
    */
   function initSession(accessToken, e911Id) {
-    logger.logDebug('initSession');
+    logger.logTrace('initSession');
 
     try {
       if (!accessToken) {
@@ -105,47 +148,38 @@ if (Env === undefined) {
   }
 
   createWebRTCSessionSuccess = function (config, responseObject) {
-    logger.logDebug('createWebRTCSessionSuccess');
+    logger.logTrace('createWebRTCSessionSuccess');
 
-    var sessionId = null,
-      errorHandler;
+    var session = callManager.getSessionContext(),
+      sessionId = responseObject && responseObject.getResponseHeader('Location') ? responseObject.getResponseHeader('Location').split('/')[4] : null;
 
-    if (config.callbacks && config.callbacks.onError && typeof config.callbacks.onError === 'function') {
-      errorHandler = config.callbacks.onError;
-    }
-
-    try {
-      if (responseObject && responseObject.getResponseHeader('Location')) {
-        sessionId = responseObject.getResponseHeader('Location').split('/')[4];
-      }
-
-      if (!sessionId) {
-        throw 'Failed to retrieve session id';
-      }
-
+    if (sessionId) {
       logger.logInfo('Successfully created web rtc session, the session id is:' + sessionId);
 
       // Set WebRTC.Session data object that will be needed downstream.
+      session.setSessionId(sessionId);
       // Also setup UI callbacks
-      callManager.UpdateSession({
-        sessionId: sessionId,
-        callbacks: config.callbacks
-      });
+      session.setUICallbacks(config);
 
+      // setting up event callbacks using RTC Events
+      app.RTCEvent.getInstance().hookupEventsToUICallbacks();
       // publish the UI callback for ready state
       app.event.publish(sessionId + '.responseEvent', {
         state:  app.SessionEvents.RTC_SESSION_CREATED,
         data: {
-          sessionId: sessionId
+          webRtcSessionId: sessionId
         }
       });
 
       // fire up the event channel after successfult create session
       logger.logInfo("Setting up event channel...");
       setupEventChannel();
-
-    } catch (err) {
-      handleError.call(this, 'CreateSession', errorHandler, err);
+      //Invoke the UI callback to indicate we are ready to receive or make calls
+      config.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
+    } else {
+      //todo fix me create new error description ?
+      logger.logError('Failed to retrieve session id');
+      handleError.call(this, config, 'CreateSession', "Unable to create session");
     }
   };
 
@@ -159,16 +193,7 @@ if (Env === undefined) {
    * @attribute {Boolean} audioOnly
    */
   function login(config) {
-    logger.logDebug('createWebRTCSession');
-    var token,
-      e911Id,
-      session,
-      services = ['ip_voice_call', 'ip_video_call'],
-      errorHandler;
-
-    if (config.callbacks && config.callbacks.onError && typeof config.callbacks.onError === 'function') {
-      errorHandler = config.callbacks.onError;
-    }
+    logger.logTrace('createWebRTCSession');
 
     try {
       if (!config) {
@@ -178,14 +203,10 @@ if (Env === undefined) {
         throw 'Cannot login to web rtc, no access token';
       }
 
-      // todo: need to decide if callbacks should be mandatory
-      if (!config.callbacks || Object.keys(config.callbacks) <= 0) {
-        logger.logWarning('No UI callbacks specified');
-      }
-
-      token = config.token;
-      e911Id = config.e911Id || null;
-
+      var token = config.token,
+        e911Id = config.e911Id || null,
+        session,
+        services = ['ip_voice_call', 'ip_video_call'];
       //remove video service for audio only service
       if (config.audioOnly) {
         services = services.slice(0, 1);
@@ -196,6 +217,14 @@ if (Env === undefined) {
       session = callManager.getSessionContext();
       token = session.getAccessToken();
       e911Id = session.getE911Id();
+
+      // todo: need to decide if callbacks should be mandatory
+      if (typeof config.onSessionReady !== 'function') {
+        logger.logWarning('No UI success callback specified');
+      }
+      if (typeof config.onError !== 'function') {
+        logger.logWarning('No UI error callback specified');
+      }
 
       resourceManager.doOperation('createWebRTCSession', {
         data: {
@@ -213,10 +242,10 @@ if (Env === undefined) {
           }
         },
         success: createWebRTCSessionSuccess.bind(this, config),
-        error: handleError.bind(this, 'CreateSession', errorHandler)
+        error: handleError.bind(this, config, 'CreateSession')
       });
     } catch (err) {
-      handleError.call(this, 'CreateSession', errorHandler, err);
+      handleError.call(this, config, 'CreateSession', err);
     }
   }
 
@@ -230,7 +259,7 @@ if (Env === undefined) {
   ATT.rtc.Phone.logout();
   */
   function logout(config) {
-    logger.logDebug('deleteWebRTCSession');
+    logger.logTrace('deleteWebRTCSession');
 
     try {
 
@@ -262,7 +291,7 @@ if (Env === undefined) {
             config.success();
           }
         },
-        error: handleError.bind(this, 'DeleteSession', config.error)
+        error: handleError.bind(this, config, 'DeleteSession')
       };
 
     // Call BF to delete WebRTC Session.
@@ -270,7 +299,7 @@ if (Env === undefined) {
       callManager.DeleteSession();
     } catch (err) {
       callManager.DeleteSession();
-      handleError.call(this, 'DeleteSession', config.error, err);
+      handleError.call(this, config, 'DeleteSession', err);
     }
   }
 
@@ -337,11 +366,9 @@ if (Env === undefined) {
 
    */
   function dial(config) {
-    try {
-      callManager.CreateOutgoingCall(config);
-    } catch (e) {
-      ATT.rtc.error.publish(e);
-    }
+    callManager.CreateOutgoingCall(config);
+    // setting up event callbacks using RTC Events
+    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
 
   /**
@@ -396,11 +423,9 @@ if (Env === undefined) {
 
    */
   function answer(config) {
-    try {
-      callManager.CreateIncomingCall(config);
-    } catch (e) {
-      callManager.PublishError(e);
-    }
+    callManager.CreateIncomingCall(config);
+    // setting up event callbacks using RTC Events
+    app.RTCEvent.getInstance().hookupEventsToUICallbacks();
   }
 
   /**

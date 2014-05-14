@@ -9,6 +9,7 @@ if (!ATT) {
   'use strict';
 
   var callManager = cmgmt.CallManager.getInstance(),
+    session = callManager.getSessionContext(),
     module = {},
     instance,
     RTCEvent,
@@ -29,9 +30,18 @@ if (!ATT) {
   */
   function dispatchEventToHandler(event) {
     console.log('dispatching event: ' + event.state);
+
     if (eventRegistry[event.state]) {
-      var fn = eventRegistry[event.state];
-      fn(event);
+      eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
+        from: event.from ? event.from.split('@')[0].split(':')[1] : '',
+        to: session && session.getCallObject() ? session.getCallObject().callee() : '',
+        state: event.state,
+        error: event.reason || ''
+      }), {
+        sdp: event.sdp || '',
+        resource: event.resourceURL || '',
+        modId: event.modId || ''
+      });
     } else {
       console.log('No event handler defined for ' + event.state);
     }

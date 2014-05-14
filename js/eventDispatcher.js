@@ -1,141 +1,115 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true, Env: true, cmgmt: true*/
 
-'use strict';
+"use strict";
 
 (function (mainModule, callManager, utils, PeerConnectionService) {
   var onSessionReady,
     onIncomingCall,
     onConnecting,
     onInProgress,
-    //onCallHold,
-    //onCallResume,
     onCallEnded,
     onCallError,
     onError,
-    eventRegistry = {};
+    eventRegistry = {},
+    logger;
+
+  ATT.logManager.getInstance().configureLogger('CallManagementModule',
+  ATT.logManager.getInstance().loggerType.CONSOLE, ATT.logManager.getInstance().logLevel.DEBUG);
+
+  logger = ATT.logManager.getInstance().getLogger('CallManagementModule');
 
   function createEventRegistry(sessionContext) {
     var rtcEvent = ATT.RTCEvent.getInstance(),
       callbacks = sessionContext.getUICallbacks();
 
     if (undefined === callbacks || 0 === Object.keys(callbacks).length) {
-      console.log('No callbacks to execute');
+      logger.logError('No callbacks to execute');
       return;
     }
-  /**
+
+   /**
    * OnSessionReady
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
+   * @param {Object} the UI Event Object
    */
     onSessionReady = function (evt) {
       if (callbacks.onSessionReady) {
         callbacks.onSessionReady(evt);
       }
     };
- /**
+
+   /**
    * onIncomingCall
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} callID
-   * @attribute {String} Time stamp
+   * @param {Object} the UI Event Object
    */
     onIncomingCall = function (evt) {
       if (callbacks.onIncomingCall) {
         callbacks.onIncomingCall(evt);
       }
     };
- /**
+
+   /**
    * onConnecting
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
+   * @param {Object} the UI Event Object
    */
     onConnecting = function (evt) {
       if (callbacks.onConnecting) {
         callbacks.onConnecting(evt);
       }
     };
- // *
- //   * onInProgress
- //   * @memberof ATT.rtc.Phone
- //   * @param {Object} config Dial configuration object.
- //   * @attribute {String} callStatus
- //   * @attribute {String} Time stamp
 
+    /**
+    * onInProgress
+    * @param {Object} the UI Event Object
+    */
     onInProgress = function (evt) {
       if (callbacks.onInProgress) {
         callbacks.onInProgress(evt);
       }
     };
- /**
-   * onCallHold
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
-   */
-  // onCallHold = function (evt) {
-  //   if (callbacks.onCallHold) {
-  //     callbacks.onCallHold(evt);
-  //   }
-  // };
- /**
-   * onCallResume
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} Time stamp
-   */
-  // onCallResume = function (evt) {
-  //   if (callbacks.onCallResume) {
-  //     callbacks.onCallResume(evt);
-  //   }
-  // };
- /**
-   * onCallEnded
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-   * @attribute {String} callID
-   * @attribute {String} Time stamp
-   */
+
+    /**
+    * onCallEnded
+    * @param {Object} the UI Event Object
+    */
     onCallEnded = function (evt) {
       if (callbacks.onCallEnded) {
         callbacks.onCallEnded(evt);
       }
     };
- /**
-   * onCallError
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-    * @attribute {String} callID
-   * @attribute {String} Time stamp
-   */
+
+    /**
+    * onCallError
+    * @param {Object} the UI Event Object
+    */
     onCallError = function (evt) {
       if (callbacks.onCallError) {
         callbacks.onCallError(evt);
       }
     };
- /**
-   * onError
-   * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} callStatus
-    * @attribute {String} callID
-   * @attribute {String} Time stamp
-   */
+
+    /**
+    * onError
+    * @param {Object} the UI Event Object
+    */
     onError = function (evt) {
       if (callbacks.onError) {
         callbacks.onError(evt);
       }
     };
 
+    // Each Event Registry function accepts an `event` object
+    // Here is the structure:
+    // ======================
+    // from: '',
+    // to: '',
+    // timeStamp: '',
+    // state: '',
+    // codec: '',
+    // error: ''
+    // ======================
+    // Also, accept `data` object with some relevant info as needed
+    // `data` not useful for UI
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
       onSessionReady(rtcEvent.createEvent(event));
     };
@@ -159,23 +133,25 @@
       }));
     };
 
-    // Call is established
-    eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event) {
-      if (event.sdp) {
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
+    eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
+      if (data.sdp) {
+        PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
-      // set callID in the call object
-      // TODO: switch to setCurrentCall
-      callManager.getSessionContext().setCurrentCallId(event.resourceURL);
-
+      if (data.resource) {
+        // set callID in the call object
+        // TODO: switch to setCurrentCall
+        callManager.getSessionContext().setCurrentCallId(data.resource);
+      }
       // call established
       onInProgress(rtcEvent.createEvent({
         state: mainModule.CallStatus.INPROGRESS
       }));
     };
 
-    eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (event) {
-      PeerConnectionService.setRemoteAndCreateAnswer(event.sdp, event.modId);
+    eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (data) {
+      if (data.sdp && data.modId) {
+        PeerConnectionService.setRemoteAndCreateAnswer(data.sdp, data.modId);
+      }
       // hold request received
       // if (sdp && sdp.indexOf('sendonly') !== -1) {
       //   onCallHold(rtcEvent.createEvent({
@@ -193,11 +169,13 @@
       // }
     };
 
-    eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (event) {
-      PeerConnectionService.setModificationId(event.modId);
+    eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (data) {
+      if (data.modId) {
+        PeerConnectionService.setModificationId(data.modId);
+      }
 
-      if (event.sdp) {
-        PeerConnectionService.setTheRemoteDescription(event.sdp, 'answer');
+      if (data.sdp) {
+        PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
 
     // // hold request successful

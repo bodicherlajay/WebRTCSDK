@@ -9,10 +9,7 @@
 (function (app, UserMediaService, SignalingService) {
   'use strict';
 
-  var module,
-    logMgr = ATT.logManager.getInstance(),
-    logger = null;
-
+  var module, logMgr = ATT.logManager.getInstance(), logger = null;
   logMgr.configureLogger('PeerConnectionService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   logger = logMgr.getLogger('PeerConnectionService');
 
@@ -61,44 +58,43 @@
     * @param {String} callState 'Outgoing' or 'Incoming'
     */
     createPeerConnection: function (callState) {
-      logger.logDebug('createPeerConnection');
+      logger.logTrace('createPeerConnection');
 
       var self = this,
         rm = cmgmt.CallManager.getInstance(),
-        session = rm.getSessionContext(),
         pc;
 
       try {
         pc = new RTCPeerConnection(self.pcConfig);
         self.peerConnection = pc;
       } catch (e) {
-        ATT.rtc.error.publish('Failed to create PeerConnection. Exception: ' + e.message);
+        logger.logError('Failed to create PeerConnection. Exception: ' + e.message);
       }
 
       // ICE candidate trickle
       pc.onicecandidate = function (evt) {
-        logger.logDebug('pc.onicecandidate');
+        logger.logTrace('pc.onicecandidate');
         if (evt.candidate) {
-          logger.logTrace('ICE candidate', evt.candidate);
+          logger.logDebug('ICE candidate', evt.candidate);
         } else {
           if (self.peerConnection !== null) {
             var sdp = pc.localDescription;
-            logger.logTrace('callState', callState);
+            logger.logDebug('callState', callState);
             // fix SDP
             try {
               ATT.sdpFilter.getInstance().processChromeSDPOffer(sdp);
               logger.logInfo('processed Chrome offer SDP');
             } catch (e) {
-              ATT.rtc.error.publish('Could not process Chrome offer SDP. Exception: ' + e.message);
+              logger.logError('Could not process Chrome offer SDP. Exception: ' + e.message);
             }
 
-            logger.logTrace('local description', sdp);
+            logger.logDebug('local description', sdp);
            // set local description
             try {
               self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
             } catch (e) {
-              ATT.rtc.error.publish('Could not set local description. Exception: ' + e.message);
+              logger.logError('Could not set local description. Exception: ' + e.message);
             }
 
             if (callState === rm.SessionState.OUTGOING_CALL) {
@@ -108,23 +104,15 @@
                 SignalingService.sendOffer({
                   calledParty: self.calledParty,
                   sdp: self.localDescription,
-                  success: function (headers) {
+                  success: function () {
                     logger.logInfo('success for offer sent, outgoing call');
-
-                    if (headers.xState === app.RTCCallEvents.INVITATION_SENT) {
-                      // publish the UI callback for invitation sent event
-                      logger.logInfo('invitation sent');
-                      app.event.publish(session.getSessionId() + '.responseEvent', {
-                        state : app.RTCCallEvents.INVITATION_SENT
-                      });
-                    }
                   },
                   error: function (error) {
-                    ATT.rtc.error.publish(error);
+                    logger.logError('Error sending offer: ' + error);
                   }
                 });
               } catch (e) {
-                ATT.rtc.error.publish('Could not send offer: ' + e);
+                logger.logError('Could not send offer');
               }
 
             } else if (callState === rm.SessionState.INCOMING_CALL) {
@@ -135,11 +123,11 @@
                   sdp : self.localDescription
                 });
               } catch (e) {
-                ATT.rtc.error.publish('incoming call, could not send answer. Exception: ' + e.message);
+                logger.logError('incoming call, could not send answer. Exception: ' + e.message);
               }
             }
           } else {
-            ATT.rtc.error.publish('peerConnection is null!');
+            logger.logError('peerConnection is null!');
           }
         }
       };
@@ -149,16 +137,16 @@
       try {
         pc.addStream(this.localStream);
       } catch (e) {
-        ATT.rtc.error.publish('Failed to add local stream. Exception: ' + e.message);
+        logger.logError('Failed to add local stream. Exception: ' + e.message);
       }
 
       // add remote stream
       pc.onaddstream =  function (evt) {
-        logger.logDebug('pc.onaddstream');
+        logger.logTrace('pc.onaddstream');
 
         self.remoteStream = evt.stream;
 
-        logger.logTrace('Adding Remote Stream...', evt.stream);
+        logger.logDebug('Adding Remote Stream...', evt.stream);
         UserMediaService.showStream('remote', evt.stream);
       };
     },
@@ -169,20 +157,20 @@
      * 
      */
     start: function (config) {
-      logger.logDebug('peerConnectionService:start');
+      logger.logTrace('peerConnectionService:start');
 
       this.callingParty = config.from;
       this.calledParty = config.to;
       this.mediaConstraints = config.mediaConstraints;
 
-      logger.logTrace('calling party', config.from);
-      logger.logTrace('called party', config.to);
-      logger.logTrace('media constraints', config.mediaConstraints);
+      logger.logDebug('calling party', config.from);
+      logger.logDebug('called party', config.to);
+      logger.logDebug('media constraints', config.mediaConstraints);
 
       // send any ice candidates to the other peer
       // get a local stream, show it in a self-view and add it to be sent
       getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), function () {
-        ATT.rtc.error.publish('Get user media failed');
+        logger.logError('Get User Media Fail');
       });
     },
 
@@ -191,7 +179,7 @@
     * @param {Object} stream The media stream
     */
     getUserMediaSuccess: function (stream) {
-      logger.logDebug('getUserMediaSuccess');
+      logger.logTrace('getUserMediaSuccess');
 
       // set local stream
       this.localStream = stream;
@@ -206,15 +194,15 @@
       // Create peer connection
       self.createPeerConnection(callState);
 
-      logger.logTrace('session state', callState);
+      logger.logDebug('session state', callState);
 
       if (callState === rm.SessionState.OUTGOING_CALL) {
         // call the user media service to show stream
         UserMediaService.showStream('local', this.localStream);
 
-        logger.logInfo('creating offer for outgoing call');
+        logger.logTrace('creating offer for outgoing call');
         this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
-          ATT.rtc.error.publish('Create offer failed');
+          logger.logError('Create offer failed');
         }, {'mandatory': {
           'OfferToReceiveAudio': this.mediaConstraints.audio,
           'OfferToReceiveVideo': this.mediaConstraints.video
@@ -235,11 +223,11 @@
     * Create Answer
     */
     createAnswer: function () {
-      logger.logDebug('createAnswer');
+      logger.logTrace('createAnswer');
       try {
         if (this.userAgent().indexOf('Chrome') < 0) {
           this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function () {
-            ATT.rtc.error.publish('Create answer failed.');
+            logger.logError('Create answer failed.');
           }, {
             'mandatory' : {
               'OfferToReceiveAudio': this.mediaConstraints.audio,
@@ -250,7 +238,7 @@
           this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this));
         }
       } catch (e) {
-        ATT.rtc.error.publish('Create answer failed');
+        logger.logError('Create answer failed');
       }
     },
 
@@ -261,7 +249,7 @@
     * @param {String} type 'answer' or 'offer'
     */
     setTheRemoteDescription: function (description, type) {
-      logger.logDebug('setTheRemoteDescription');
+      logger.logTrace('setTheRemoteDescription');
       this.remoteDescription = {
         'sdp' : description,
         'type' : type
@@ -274,10 +262,10 @@
           if (typeof err === 'object') {
             err = err.message;
           }
-          ATT.rtc.error.publish('Set Remote Description Fail: ' + err);
+          logger.logError('Set Remote Description Fail: ' + err);
         });
       } catch (err) {
-        ATT.rtc.error.publish('Set Remote Description Fail: ' + err.message);
+        logger.logError('Set Remote Description Fail: ' + err.message);
       }
     },
 
@@ -288,7 +276,7 @@
     * @param {String} modId modification id
     */
     setRemoteAndCreateAnswer: function (sdp, modId) {
-      logger.logDebug('Creating answer.');
+      logger.logTrace('Creating answer.');
       logger.logDebug('modId', modId);
       this.modificationId = modId;
       this.incrementModCount();
@@ -302,9 +290,9 @@
     * @param {Object} description SDP
     */
     setLocalAndSendMessage : function (description) {
-      logger.logDebug('setLocalAndSendMessage');
+      logger.logTrace('setLocalAndSendMessage');
       // fix SDP
-      logger.logTrace('Fixing SDP for Chrome', description);
+      logger.logDebug('Fixing SDP for Chrome', description);
       ATT.sdpFilter.getInstance().processChromeSDPOffer(description);
 
       this.localDescription = description;
@@ -313,7 +301,7 @@
       try {
         this.peerConnection.setLocalDescription(this.localDescription);
       } catch (e) {
-        ATT.rtc.error.publish('Could not set local description. Exception: ' + e.message);
+        logger.logError('Could not set local description. Exception: ' + e.message);
       }
 
       // send accept modifications...
@@ -325,7 +313,7 @@
             modId: this.modificationId
           });
         } catch (e) {
-          ATT.rtc.error.publish('Accepting modification failed. Exception: ' + e.message);
+          logger.logError('Accepting modification failed. Exception: ' + e.message);
         }
       }
     },
@@ -360,11 +348,11 @@
     *
     */
     holdCall: function () {
-      logger.logDebug('holdCall');
+      logger.logTrace('holdCall');
 
       var sdp = this.localDescription;
 
-      logger.logTrace('holding call', sdp);
+      logger.logDebug('holding call', sdp);
 
       // adjust SDP for hold request
       sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
@@ -374,24 +362,24 @@
       try {
         ATT.sdpFilter.getInstance().incrementSDP(sdp, this.modificationCount);
       } catch (e) {
-        ATT.rtc.error.publish('Could not increment SDP. Exception: ' + e.message);
+        logger.logError('Could not increment SDP. Exception: ' + e.message);
       }
 
       try {
         // set local description
         this.peerConnection.setLocalDescription(sdp);
       } catch (e) {
-        ATT.rtc.error.publish('Could not set local description. Exception: ' + e.message);
+        logger.logError('Could not set local description. Exception: ' + e.message);
       }
 
       try {
         // send hold signal...
-        logger.logTrace('sending modified sdp', sdp);
+        logger.logDebug('sending modified sdp', sdp);
         SignalingService.sendHoldCall({
           sdp : sdp.sdp
         });
       } catch (e) {
-        ATT.rtc.error.publish('Send hold signal fail: ' + e.message);
+        logger.logError('Send hold signal fail: ' + e.message);
       }
     },
 
@@ -400,11 +388,11 @@
     * Resume Call
     */
     resumeCall: function () {
-      logger.logDebug('resumeCall');
+      logger.logTrace('resumeCall');
 
       var sdp = this.localDescription;
 
-      logger.logTrace('resuming call', sdp);
+      logger.logDebug('resuming call', sdp);
 
       // adjust SDP for resume request
       sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
@@ -414,24 +402,24 @@
       try {
         ATT.sdpFilter.getInstance().incrementSDP(sdp, this.modificationCount);
       } catch (e) {
-        ATT.rtc.error.publish('Could not increment SDP. Exception: ' + e.message);
+        logger.logError('Could not increment SDP. Exception: ' + e.message);
       }
 
       try {
         // set local description
         this.peerConnection.setLocalDescription(sdp);
       } catch (e) {
-        ATT.rtc.error.publish('Could not set local description. Exception: ' + e.message);
+        logger.logError('Could not set local description. Exception: ' + e.message);
       }
 
       try {
         // send resume signal...
-        logger.logTrace('sending modified sdp', sdp);
+        logger.logDebug('sending modified sdp', sdp);
         SignalingService.sendResumeCall({
           sdp : sdp.sdp
         });
       } catch (e) {
-        ATT.rtc.error.publish('Send resume call Fail: ' + e.message);
+        logger.logError('Send resume call Fail: ' + e.message);
       }
     },
 
@@ -440,7 +428,7 @@
     * End Call
     */
     endCall: function () {
-      logger.logDebug('endCall');
+      logger.logTrace('endCall');
 
       if (this.peerConnection) {
         this.peerConnection.close();
@@ -450,7 +438,7 @@
       try {
         UserMediaService.stopStream();
       } catch (e) {
-        ATT.rtc.error.publish('Could not stop stream: ' + e.message);
+        logger.logError('Could not stop stream: ' + e.message);
       }
     },
 

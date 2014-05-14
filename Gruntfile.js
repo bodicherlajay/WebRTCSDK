@@ -16,7 +16,6 @@ module.exports = function (grunt) {
       'js/ErrorDictionaryModule.js',
       'js/appConfigModule.js',
       'js/adapter.js',
-      'js/error.js',
       'js/APIConfigs.js',
       'js/userMediaServiceModule.js',
       'js/peerConnectionServiceModule.js',
@@ -32,9 +31,9 @@ module.exports = function (grunt) {
       'js/webRTC.js',
       'js/DHSModule.js',
       'js/ATTMain.js',
-      'js/sdkErrors.js',
+//      'js/sdkErrors.js',
       'test/**/*.js'],
-    logLevel: 'DEBUG',
+    logLevel: 'INFO',
     port: 9876,
     browsers: ['Chrome'],
     captureTimeout: 60000
@@ -114,5 +113,4 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('default', ['karma:jenkins', 'jslint']);
-  grunt.registerTask('unit', ['karma:unit']);
 };

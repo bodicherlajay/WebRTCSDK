@@ -37,7 +37,6 @@ describe('Call Management', function () {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
       };
-      ATT.UserMediaService.startCall = sinon.spy();
       callmgr.CreateOutgoingCall(config);
       sessionContext = callmgr.getSessionContext();
       expect(sessionContext.getCallObject()).to.be.an('object');
@@ -108,12 +107,13 @@ describe('Call Management', function () {
       var config = {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
-      };
+      },
+        spy = sinon.spy(ATT.SignalingService, 'sendEndCall');
+
       callmgr.CreateOutgoingCall(config);
       ATT.PeerConnectionService.peerConnection = {foo: 'bar'};
-      ATT.SignalingService.sendEndCall = sinon.spy();
       callmgr.getSessionContext().getCallObject().end();
-      expect(ATT.SignalingService.sendEndCall.called).to.equal(true);
+      expect(spy.called).to.equal(true);
     });
 
     it('should ATT.UserMediaService.muteStream() to mute the call', function () {
