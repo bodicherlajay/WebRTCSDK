@@ -9,6 +9,7 @@
     create,
     publish,
     callManager,
+    rtcEvent,
     logMgr = ATT.logManager.getInstance(),
     logger;
 
@@ -100,6 +101,10 @@
     if (!callManager) {
       callManager = cmgmt.CallManager.getInstance();
     }
+    
+    if (!rtcEvent) {
+      rtcEvent = ATT.RTCEvent.getInstance();
+    }
 
     var session = callManager.getSessionContext(),
       sessionId,
@@ -110,23 +115,23 @@
       if (sessionId) {
         // publish the UI callback event for call fail state
         return ATT.event.publish(sessionId + '.responseEvent', {
-          state:  ATT.CallStatus.ERROR,
-          data: error
+          state: ATT.CallStatus.ERROR,
+          error: error
         });
       }
       callbacks = session.getUICallbacks();
       if (callbacks) {
         if (typeof callbacks.onError === 'function') {
-          return callbacks.onError({
+          return callbacks.onError(rtcEvent.createEvent({
             state: ATT.CallState.ERROR,
-            data: error
-          });
+            error: error
+          }));
         }
         if (typeof callbacks.onCallError === 'function') {
-          return callbacks.onCallError({
+          return callbacks.onCallError(rtcEvent.createEvent({
             state: ATT.CallState.ERROR,
-            data: error
-          });
+            error: error
+          }));
         }
       }
     }
