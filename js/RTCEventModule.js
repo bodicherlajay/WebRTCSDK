@@ -9,6 +9,7 @@ if (!ATT) {
   'use strict';
 
   var callManager = cmgmt.CallManager.getInstance(),
+    session = callManager.getSessionContext(),
     module = {},
     instance,
     RTCEvent,
@@ -36,20 +37,20 @@ if (!ATT) {
   */
   function dispatchEventToHandler(event) {
     console.log('dispatching event: ' + event.state);
-    from = event.from ? event.from.split('@')[0].split(':')[1] : '';
-    to = callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : '';
-    state = event.state;
-    error = event.reason || '';
-    data.sdp = event.sdp || '';
-    data.resource = event.resourceURL || '';
-    data.modId = event.modId || '';
 
     if (eventRegistry[event.state]) {
-      var fn = eventRegistry[event.state];
-      uiEvent = ATT.RTCEvent.getInstance().createEvent(from, to, state, codec, error);
-      fn(uiEvent, data);
+      eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
+        from: event.from ? event.from.split('@')[0].split(':')[1] : '',
+        to: session && session.getCallObject() ? session.getCallObject().callee() : '',
+        state: event.state,
+        error: event.reason || ''
+      }), {
+        sdp: event.sdp || '',
+        resource: event.resourceURL || '',
+        modId: event.modId || ''
+      });
     } else {
-      console.log('No event handler defined for ' + event.state.NETWORK);
+      console.log('No event handler defined for ' + event.state);
     }
   }
 
@@ -101,10 +102,10 @@ if (!ATT) {
    * @type {{from: string, to: string, timeStamp: string, state: string, error: string}}
    */
   RTCEvent = {
+    state: '',
     from: '',
     to: '',
     timeStamp: '',
-    state: '',
     codec: '',
     data: null,
     error: null
