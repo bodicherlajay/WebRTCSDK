@@ -137,7 +137,7 @@
 
       onIncomingCall(rtcEvent.createEvent({
         state: mainModule.CallStatus.RINGING,
-        from: event.from.split('@')[0].split(':')[1] // grab the phone number
+        //from: event.from.split('@')[0].split(':')[1] // Rtc Eventmodule extracts the from number 
       }));
     };
 
