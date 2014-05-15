@@ -15,6 +15,10 @@ describe('Event Dispatcher Tests', function () {
     window.ATT = backupAtt;
   });
 
+  afterEach(function () {
+    window.ATT = backupAtt;
+  });
+
   describe('Event registry', function () {
     it('should have a createEventRegistry method', function () {
       assert.isFunction(utils.createEventRegistry);
@@ -96,6 +100,13 @@ describe('Event Dispatcher Tests', function () {
       event = {sdp: 'sendonly', from: '@mc:hammer'};
       eventRegistry[ATT.RTCCallEvents.INVITATION_RECEIVED](event);
       assert.isTrue(onIncomingCall);
+    });
+
+    it('should invoke onConnecting when CALL_CONNECTING happens', function () {
+      onConnecting = false;
+      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry[ATT.RTCCallEvents.CALL_CONNECTING](event);
+      assert.isTrue(onConnecting);
     });
 
     it('should invoke onConnecting when CALL_CONNECTING happens', function () {

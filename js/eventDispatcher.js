@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true, Env: true, cmgmt: true*/
 
-"use strict";
+'use strict';
 
 (function (mainModule, callManager, utils, PeerConnectionService) {
   var onSessionReady,
@@ -33,7 +33,6 @@
    * @param {Object} the UI Event Object
    */
     onSessionReady = function (evt) {
-      callbacks = sessionContext.getUICallbacks().callbacks;
       if (callbacks.onSessionReady) {
         callbacks.onSessionReady(evt);
       }
@@ -54,7 +53,6 @@
    * @param {Object} the UI Event Object
    */
     onConnecting = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onConnecting) {
         callbacks.onConnecting(evt);
       }
@@ -65,7 +63,6 @@
     * @param {Object} the UI Event Object
     */
     onInProgress = function (evt) {
-      callbacks = sessionContext.getUICallbacks().callbacks;
       if (callbacks.onInProgress) {
         callbacks.onInProgress(evt);
       }
@@ -76,7 +73,6 @@
     * @param {Object} the UI Event Object
     */
     onCallEnded = function (evt) {
-      callbacks = sessionContext.getUICallbacks().callbacks;
       if (callbacks.onCallEnded) {
         callbacks.onCallEnded(evt);
       }
@@ -97,7 +93,6 @@
     * @param {Object} the UI Event Object
     */
     onError = function (evt) {
-      callbacks = sessionContext.getUICallbacks().callbacks;
       if (callbacks.onError) {
         callbacks.onError(evt);
       }
@@ -115,11 +110,8 @@
     // ======================
     // Also, accept `data` object with some relevant info as needed
     // `data` not useful for UI
-    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function () {
-      onSessionReady(rtcEvent.createEvent({
-        state: mainModule.CallStatus.READY,
-        data: '1234'
-      }));
+    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
+      onSessionReady(rtcEvent.createEvent(event));
     };
 
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_ERROR] = function (event) {
@@ -142,7 +134,6 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
-      console.log(event);
       if (data.sdp) {
         PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }

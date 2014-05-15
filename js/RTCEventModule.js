@@ -16,6 +16,13 @@ if (!ATT) {
     interceptEventChannelCallback,
     setupEventBasedCallbacks,
     eventRegistry,
+    from = '',
+    to = '',
+    state = '',
+    codec = '',
+    error,
+    data = {},
+    uiEvent = {},
     init = function () {
       return {
         setupEventBasedCallbacks: setupEventBasedCallbacks,
@@ -71,12 +78,11 @@ if (!ATT) {
     It hands off the event to interceptingEventChannelCallback()
   */
   setupEventBasedCallbacks = function () {
-    var sessionContext = callManager.getSessionContext(),
     // get current session context
-      sessionId = sessionContext.getSessionId();
+    var sessionId = session.getSessionId();
 
     // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(sessionContext);
+    eventRegistry = mainModule.utils.createEventRegistry(session);
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
@@ -106,6 +112,7 @@ if (!ATT) {
   };
 
   module.createEvent = function (arg) {
+    console.log(arg.state);
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error('State must be of type ATT.CallStatus');
     }

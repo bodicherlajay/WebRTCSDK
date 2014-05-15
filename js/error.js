@@ -101,6 +101,10 @@
     if (!callManager) {
       callManager = cmgmt.CallManager.getInstance();
     }
+    
+    if (!rtcEvent) {
+      rtcEvent = ATT.RTCEvent.getInstance();
+    }
 
     if (!rtcEvent) {
       rtcEvent = ATT.RTCEvent.getInstance();
