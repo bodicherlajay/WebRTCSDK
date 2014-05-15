@@ -16,13 +16,6 @@ if (!ATT) {
     interceptEventChannelCallback,
     setupEventBasedCallbacks,
     eventRegistry,
-    from = '',
-    to = '',
-    state = '',
-    codec = '',
-    error,
-    data = {},
-    uiEvent = {},
     init = function () {
       return {
         setupEventBasedCallbacks: setupEventBasedCallbacks,
@@ -79,10 +72,11 @@ if (!ATT) {
   */
   setupEventBasedCallbacks = function () {
     // get current session context
-    var sessionId = session.getSessionId();
+    var sessionContext = callManager.getSessionContext(),
+      sessionId = sessionContext.getSessionId();
 
     // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(session);
+    eventRegistry = mainModule.utils.createEventRegistry(sessionContext);
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
