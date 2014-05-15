@@ -7,7 +7,7 @@
   var onSessionReady,
     onIncomingCall,
     onConnecting,
-    onInProgress,
+    onCallInProgress,
     onCallEnded,
     onCallError,
     onError,
@@ -61,13 +61,13 @@
     };
 
     /**
-    * onInProgress
+    * onCallInProgress
     * @param {Object} the UI Event Object
     */
-    onInProgress = function (evt) {
-      callbacks = sessionContext.getUICallbacks().callbacks;
-      if (callbacks.onInProgress) {
-        callbacks.onInProgress(evt);
+    onCallInProgress = function (evt) {
+      callbacks = sessionContext.getUICallbacks();
+      if (callbacks.onCallInProgress) {
+        callbacks.onCallInProgress(evt);
       }
     };
 
@@ -152,7 +152,7 @@
         callManager.getSessionContext().setCurrentCallId(data.resource);
       }
       // call established
-      onInProgress(rtcEvent.createEvent({
+      onCallInProgress(rtcEvent.createEvent({
         state: mainModule.CallStatus.INPROGRESS
       }));
     };
@@ -206,6 +206,14 @@
     eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
       onConnecting(rtcEvent.createEvent({
         state: mainModule.CallStatus.CONNECTING,
+        from: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().caller() : null),
+        to: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : null)
+      }));
+    };
+
+    eventRegistry[mainModule.RTCCallEvents.CALL_IN_PROGRESS] = function () {
+      onCallInProgress(rtcEvent.createEvent({
+        state: mainModule.CallStatus.INPROGRESS,
         from: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().caller() : null),
         to: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : null)
       }));

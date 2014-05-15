@@ -47,6 +47,8 @@
 
     modificationCount: 2,
 
+    callManager: cmgmt.CallManager.getInstance(),
+
     configureICEServers: function (servers) {
       this.pcConfig.iceServers = servers;
     },
@@ -142,12 +144,21 @@
 
       // add remote stream
       pc.onaddstream =  function (evt) {
+        var session_context = self.callManager.getSessionContext();
+
         logger.logTrace('pc.onaddstream');
 
         self.remoteStream = evt.stream;
 
         logger.logDebug('Adding Remote Stream...', evt.stream);
-        UserMediaService.showStream('remote', evt.stream);
+
+        if (UserMediaService.showStream('remote', evt.stream)) {
+          // Here, we publish `onCallInProgress`
+          // event hook for the UI
+          ATT.event.publish(session_context.getSessionId() + '.responseEvent', {
+            state : ATT.RTCCallEvents.CALL_IN_PROGRESS
+          });
+        }
       };
     },
 
