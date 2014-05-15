@@ -106,7 +106,6 @@ if (!ATT) {
   };
 
   module.createEvent = function (arg) {
-    console.log(arg.state);
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error('State must be of type ATT.CallStatus');
     }
