@@ -162,7 +162,7 @@ if (Env === undefined) {
       session.setUICallbacks(config);
 
       // setting up event callbacks using RTC Events
-      app.RTCEvent.getInstance().hookupEventsToUICallbacks();
+      app.RTCEvent.getInstance().setupEventBasedCallbacks();
       // publish the UI callback for ready state
       app.event.publish(sessionId + '.responseEvent', {
         state:  app.SessionEvents.RTC_SESSION_CREATED,

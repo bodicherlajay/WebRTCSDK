@@ -71,11 +71,12 @@ if (!ATT) {
     It hands off the event to interceptingEventChannelCallback()
   */
   setupEventBasedCallbacks = function () {
+    var sessionContext = callManager.getSessionContext(),
     // get current session context
-    var sessionId = session.getSessionId();
+      sessionId = sessionContext.getSessionId();
 
     // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(session);
+    eventRegistry = mainModule.utils.createEventRegistry(sessionContext);
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
