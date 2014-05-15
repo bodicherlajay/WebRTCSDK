@@ -174,8 +174,8 @@ if (Env === undefined) {
       // fire up the event channel after successfult create session
       logger.logInfo("Setting up event channel...");
       setupEventChannel();
-      //Invoke the UI callback to indicate we are ready to receive or make calls
-      config.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
+      // //Invoke the UI callback to indicate we are ready to receive or make calls
+      // config.callbacks.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
     } else {
       //todo fix me create new error description ?
       logger.logError('Failed to retrieve session id');
