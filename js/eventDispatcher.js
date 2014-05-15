@@ -137,7 +137,7 @@
 
       onIncomingCall(rtcEvent.createEvent({
         state: mainModule.CallStatus.RINGING,
-        from: event.from // Rtc Eventmodule extracts the from number 
+        from: event.from
       }));
     };
 
@@ -151,10 +151,6 @@
         // TODO: switch to setCurrentCall
         callManager.getSessionContext().setCurrentCallId(data.resource);
       }
-      // call established
-      onCallInProgress(rtcEvent.createEvent({
-        state: mainModule.CallStatus.INPROGRESS
-      }));
     };
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (data) {
@@ -206,7 +202,6 @@
     eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
       onConnecting(rtcEvent.createEvent({
         state: mainModule.CallStatus.CONNECTING,
-        from: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().caller() : null),
         to: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : null)
       }));
     };
