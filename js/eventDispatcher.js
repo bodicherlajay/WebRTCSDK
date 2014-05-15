@@ -142,7 +142,7 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
-      console.log(event);
+      logger.logInfo('session open event received at', event.timestamp);
       if (data.sdp) {
         PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
