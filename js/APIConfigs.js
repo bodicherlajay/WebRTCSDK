@@ -202,8 +202,8 @@ if (!ATT) {
           headers: {
             'Content-Type': 'application/json',
             'Accept' : 'application/json',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
+            'Cache-Control': 'no-cache'
+            //'Pragma': 'no-cache',
           }
         },
         /**
