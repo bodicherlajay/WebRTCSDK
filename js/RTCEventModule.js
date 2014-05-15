@@ -78,8 +78,7 @@ if (!ATT) {
   */
   setupEventBasedCallbacks = function () {
     // get current session context
-    var session = callManager.getSessionContext(),
-      sessionId = session.getSessionId();
+    var sessionId = session.getSessionId();
 
     // setup events registry
     eventRegistry = mainModule.utils.createEventRegistry(session);
@@ -107,23 +106,24 @@ if (!ATT) {
     timeStamp: '',
     state: '',
     codec: '',
-    data: '',
-    error: ''
+    data: null,
+    error: null
   };
 
-  module.createEvent = function (from, to, state, codec, error) {
-    if (state.hasOwnProperty(ATT.CallStatus)) {
+  module.createEvent = function (arg) {
+    console.log(arg.state);
+    if (arg.state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error('State must be of type ATT.CallStatus');
     }
     var evt = Object.create(RTCEvent);
-    evt.from = from;
-    evt.to = to;
-    evt.state = state;
-    evt.error = error;
+    evt.state = arg.state;
+    evt.from = arg.from;
+    evt.to = arg.to;
     evt.timestamp = new Date();
-    evt.codec = codec;
-    // need to discuss. placed to appease sample app.
-    evt.data = '1234';
+    evt.codec = arg.codec;
+    evt.data = arg.data;
+    evt.error = arg.error;
+    Object.freeze(evt);
     return evt;
   };
 
