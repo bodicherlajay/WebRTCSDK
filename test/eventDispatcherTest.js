@@ -6,7 +6,7 @@ describe('Event Dispatcher Tests', function () {
 
   var backupAtt, utils = ATT.utils, eventRegistry,
     onSessionReady, onError, onIncomingCall, onConnecting,
-    onInProgress, onCallError, onCallEnded, event = {state: 'foo'};
+    onCallInProgress, onCallError, onCallEnded, event = {state: 'foo'};
   beforeEach(function () {
     backupAtt = window.ATT;
   });
@@ -43,8 +43,8 @@ describe('Event Dispatcher Tests', function () {
           onConnecting: function () {
             onConnecting = true;
           },
-          onInProgress: function () {
-            onInProgress = true;
+          onCallInProgress: function () {
+            onCallInProgress = true;
           }
         };
       }
@@ -74,12 +74,11 @@ describe('Event Dispatcher Tests', function () {
       assert.isTrue(onError);
     });
 
-    it('should invoke onInProgress when SESSION_OPEN happens', function () {
-      onInProgress = false;
+    it('should invoke onCallInProgress when CALL_IN_PROGRESS happens', function () {
+      onCallInProgress = false;
       eventRegistry = utils.createEventRegistry(goodContext);
-      var data = {sdp: 'sendonly'};
-      eventRegistry[ATT.RTCCallEvents.SESSION_OPEN](event, data);
-      assert.isTrue(onInProgress);
+      eventRegistry[ATT.RTCCallEvents.CALL_IN_PROGRESS]();
+      assert.isTrue(onCallInProgress);
     });
 
     it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
