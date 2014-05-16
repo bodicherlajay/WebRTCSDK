@@ -18,7 +18,7 @@ if (!Env) {
   var dhsNamespace = {},
     resourceManager = Env.resourceManager.getInstance(),
     logManager = ATT.logManager.getInstance(),
-    log,
+    logger,
 
     // private methods
     init,
@@ -120,7 +120,7 @@ if (!Env) {
       error = ATT.errorDictionary.getMissingError();
     }
     // log the error
-    log.logError(error.formatError());
+    logger.logError(error.formatError());
 
     if (typeof config.error === 'function') {
       config.error(error);
@@ -283,13 +283,13 @@ if (!Env) {
    */
   getE911Id = function (config) {
     if (!config) {
-      return log.logError('Cannot get e911 id. Configuration is required.');
+      return logger.logError('Cannot get e911 id. Configuration is required.');
     }
     if (!config.data) {
-      return log.logError('Cannot get e911 id. Configuration data is required.');
+      return logger.logError('Cannot get e911 id. Configuration data is required.');
     }
     if (!config.data.id) {
-      return log.logError('Cannot get e911 id. Unique identifier is required.');
+      return logger.logError('Cannot get e911 id. Unique identifier is required.');
     }
 
     resourceManager.doOperation('getE911Id', {
@@ -308,13 +308,13 @@ if (!Env) {
    */
   createE911Id = function (config) {
     if (!config) {
-      return log.logError('Cannot create e911 id. Configuration is required.');
+      return logger.logError('Cannot create e911 id. Configuration is required.');
     }
     if (!config.data) {
-      return log.logError('Cannot create e911 id. Configuration data is required.');
+      return logger.logError('Cannot create e911 id. Configuration data is required.');
     }
     if (!validateAddress(config.data.address)) {
-      return log.logError('Cannot create e911 id. Address did not validate.');
+      return logger.logError('Cannot create e911 id. Address did not validate.');
     }
 
     // Call DHS to create an e911 id linked address for the user
@@ -332,13 +332,13 @@ if (!Env) {
    */
   updateE911Id = function (config) {
     if (!config) {
-      return log.logError('Cannot update e911 id. Configuration is required.');
+      return logger.logError('Cannot update e911 id. Configuration is required.');
     }
     if (!config.data) {
-      return log.logError('Cannot update e911 id. Configuration data is required.');
+      return logger.logError('Cannot update e911 id. Configuration data is required.');
     }
     if (!validateAddress(config.data.address)) {
-      return log.logError('Cannot update e911 id. Address did not validate.');
+      return logger.logError('Cannot update e911 id. Address did not validate.');
     }
 
     // Call DHS to create an e911 id linked address for the user
