@@ -37,14 +37,31 @@ if (!ATT) {
       this.remoteVideoElement = config.remoteVideo;
 
       ATT.PeerConnectionService.start(config);
+      // set up listener for remote video start
+      this.onRemoteVideoStart(config.remoteVideo);
     },
 
+    /**
+    * Listen for start of remote video
+    * @param {HTMLElement} remoteVideo The remote video element
+    */
+    onRemoteVideoStart: function (remoteVideo) {
+      remoteVideo.addEventListener('playing', function () {
+        var callMgr = window.cmgmt.CallManager.getInstance(),
+          sessionId = callMgr.getSessionContext().getSessionId();
+
+        ATT.event.publish(sessionId + '.responseEvent', {
+          state : ATT.RTCCallEvents.CALL_IN_PROGRESS
+        });
+      });
+    },
     /**
      * Attaches media stream to DOM and plays video.
      * @param localOrRemote  Specify either 'local' or 'remote'
      * @param stream The media stream.
+     * @param {Object} callManager The call manager
      */
-    showStream: function (localOrRemote, stream) {   // 'local' or 'remote'
+    showStream: function (localOrRemote, stream) {
       var videoStreamEl;
 
       logger.logTrace('showing ' + localOrRemote + ' stream...');
@@ -64,7 +81,6 @@ if (!ATT) {
     },
 
     /**
-    *
     * Removes all media streams from the DOM
     */
     stopStream: function () {
@@ -86,7 +102,6 @@ if (!ATT) {
     },
 
     /**
-    *
     * Mute Stream
     */
     muteStream: function () {
@@ -102,7 +117,6 @@ if (!ATT) {
     },
 
    /**
-    *
     * Unmute Stream
     */
     unmuteStream: function () {
