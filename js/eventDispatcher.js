@@ -111,10 +111,10 @@
     // timeStamp: '',
     // state: '',
     // codec: '',
+    // data: '',
     // error: ''
     // ======================
     // Also, accept `data` object with some relevant info as needed
-    // `data` not useful for UI
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function () {
       onSessionReady(rtcEvent.createEvent({
         state: mainModule.CallStatus.READY,
@@ -135,7 +135,7 @@
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
-      //TODO have to pass the object as a single parameter as event object has all the data 
+      //TODO have to pass the object as a single parameter as event object has all the data
       onIncomingCall(rtcEvent.createEvent({
         state: mainModule.CallStatus.RINGING,
         from: event.from,
@@ -150,8 +150,6 @@
         PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
       if (data.resource) {
-        // set callID in the call object
-        // TODO: switch to setCurrentCall
         callManager.getSessionContext().setCurrentCallId(data.resource);
       }
     };
