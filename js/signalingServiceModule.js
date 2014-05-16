@@ -85,7 +85,7 @@ if (!ATT) {
         },
         data : data,
         success : function (obj) {
-          console.log('answer sent successfully');
+          logger.logInfo('answer sent successfully');
 
           var headers = {
             location : obj.getResponseHeader('Location'),
@@ -97,7 +97,7 @@ if (!ATT) {
           }
         },
         error : function (err) {
-          console.error(err.message);
+          logger.logError(err.message);
 
           if (typeof config.error === 'function') {
             config.error.call(null);
