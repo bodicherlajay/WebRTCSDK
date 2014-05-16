@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true*/
 
-//todo this module does not need tobe exposed
+//todo this module does not need to be exposed
 if (!ATT) {
   var ATT = {};
 }
