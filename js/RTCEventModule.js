@@ -31,11 +31,24 @@ if (!ATT) {
   function dispatchEventToHandler(event) {
     console.log('dispatching event: ' + event.state);
 
+    var CODEC = [];
+    if (event.sdp) {
+        var SDP = ATT.sdpParser.getInstance().parse(event.sdp);
+        for (var i = 0; i < SDP.media.length; i++) {
+            var media = {
+                rtp: SDP.media[i].rtp,
+                type: SDP.media[i].type
+            };
+            CODEC.push(media);
+        }
+    }
+
     if (eventRegistry[event.state]) {
       eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
         from: event.from ? event.from.split('@')[0].split(':')[1] : '',
         to: session && session.getCallObject() ? session.getCallObject().callee() : '',
         state: event.state,
+        codec: CODEC,
         error: event.reason || ''
       }), {
         sdp: event.sdp || '',
@@ -93,14 +106,14 @@ if (!ATT) {
    * @param state Call State
    * @param codec Audio/Video Codec
    * @param error Error Description
-   * @type {{from: string, to: string, timeStamp: string, state: string, error: string}}
+   * @type {{from: string, to: string, timeStamp: string, state: string, codec: array, error: string}}
    */
   RTCEvent = {
-    state: '',
     from: '',
     to: '',
     timeStamp: '',
-    codec: '',
+    state: '',
+    codec: [],
     data: null,
     error: null
   };
