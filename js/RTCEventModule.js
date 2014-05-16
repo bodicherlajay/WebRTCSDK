@@ -9,6 +9,7 @@ if (!ATT) {
   'use strict';
 
   var callManager = cmgmt.CallManager.getInstance(),
+    logger = Env.resourceManager.getInstance().getLogger("RTCEventModule"),
     session = callManager.getSessionContext(),
     module = {},
     instance,
@@ -29,21 +30,23 @@ if (!ATT) {
   *
   */
   function dispatchEventToHandler(event) {
-    console.log('dispatching event: ' + event.state);
+    var CODEC = [], media, sdp, idx;
+    logger.logDebug('dispatching event: ' + event.state);
 
-    var CODEC = [];
     if (event.sdp) {
-        var SDP = ATT.sdpParser.getInstance().parse(event.sdp);
-        for (var i = 0; i < SDP.media.length; i++) {
-            var media = {
-                rtp: SDP.media[i].rtp,
-                type: SDP.media[i].type
-            };
-            CODEC.push(media);
-        }
+      sdp = ATT.sdpParser.getInstance().parse(event.sdp);
+      logger.logDebug("Parsed SDP " + sdp);
+      for (idx = 0; idx < sdp.media.length; idx = idx + 1) {
+        media = {
+          rtp: sdp.media[idx].rtp,
+          type: sdp.media[idx].type
+        };
+        CODEC.push(media);
+      }
     }
-
+    logger.logDebug("Codec from the event, " + CODEC);
     if (eventRegistry[event.state]) {
+      logger.logDebug("Processing the registered event " + event.state);
       eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
         from: event.from ? event.from.split('@')[0].split(':')[1] : '',
         to: session && session.getCallObject() ? session.getCallObject().callee() : '',
@@ -56,7 +59,7 @@ if (!ATT) {
         modId: event.modId || ''
       });
     } else {
-      console.log('No event handler defined for ' + event.state);
+      logger.logError('No event handler defined for ' + event.state);
     }
   }
 
@@ -67,10 +70,11 @@ if (!ATT) {
   */
   interceptEventChannelCallback = function (event) {
     if (!event) {
+      logger.logError("Not able to consume null event...");
       return;
     }
 
-    console.log('New Event: ', JSON.stringify(event));
+    logger.logDebug('Cosnume event from event channel', JSON.stringify(event));
 
     dispatchEventToHandler(event);
 
@@ -87,15 +91,16 @@ if (!ATT) {
     // get current session context
     var sessionContext = callManager.getSessionContext(),
       sessionId = sessionContext.getSessionId();
-
+    logger.logDebug("Creating event registry...");
     // setup events registry
     eventRegistry = mainModule.utils.createEventRegistry(sessionContext);
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
+    logger.logDebug("Unsubscribe event " +  sessionId + '.responseEvent' + "successful");
     // subscribe to published events from event channel
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    console.log('Subscribed to events');
+    logger.logInfo("Subscribed to event " +  sessionId + '.responseEvent');
   };
 
   //Event structure for RTCEvent
@@ -119,7 +124,7 @@ if (!ATT) {
   };
 
   module.createEvent = function (arg) {
-    console.log(arg.state);
+    logger.logDebug("Creating event " + arg.state);
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error('State must be of type ATT.CallStatus');
     }
