@@ -35,7 +35,10 @@
       isListening = false,
       ws, // socket to use in case we're using WebSockets
       locationForSocket,
-      eventData;
+      eventData,
+      onSuccess,
+      onError,
+      onTimeOut;
 
     if (undefined === channelConfig || 0 === Object.keys(channelConfig)
         || undefined === channelConfig.accessToken
@@ -68,7 +71,7 @@
      * @param {Object} messages The messages
      **/
     function processMessages(messages) {
-      logger.logTrace("processing events")
+      logger.logTrace("processing events");
       // Using Long Polling
       if (true === channelConfig.usesLongPolling) {
         eventData = JSON.parse(messages.responseText);
@@ -93,7 +96,7 @@
     }
 
     // setup success and error callbacks
-    function onSuccess(response) {
+    onSuccess =  function (response) {
       logger.logTrace("on success");
       logger.logTrace(response);
       if (!isListening) {
@@ -102,11 +105,16 @@
       }
       if (true === channelConfig.usesLongPolling) { // long-polling
         logger.logTrace("Before processing messages");
-        processMessages(response);
-
-        logger.logTrace("Processed messages, repolling again...");
-        // continue polling
-        channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+        if (response.getResponseStatus() === 204) {
+          logger.logInfo("No event response content, repolling again...");
+          // continue polling
+          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+        } else {
+          processMessages(response);
+          logger.logTrace("Processed messages, repolling again...");
+          // continue polling
+          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+        }
         return;
       }
 
@@ -119,21 +127,21 @@
           processMessages(message);
         };
       }
-    }
+    };
 
-    function onError(error) { // only used for Long Polling
+    onError =  function (error) { // only used for Long Polling
       logger.logError('ERROR: Network Error: ' + error);
       return;
-    }
+    };
 
-    function onTimeOut() {
+    onTimeOut = function () {
       logger.logInfo("Request timed out " + channelConfig.endpoint);
       // try again
       if (isListening) {
         logger.logInfo("Repolling again...");
         channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
       }
-    }
+    };
 
     function startListening() {
       isListening = true;
