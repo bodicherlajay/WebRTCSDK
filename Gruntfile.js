@@ -13,23 +13,24 @@ module.exports = function (grunt) {
       },
       'js/att.js',
       'lib/js-shared/js/*.js',
-      'js/ErrorDictionaryModule.js',
-      'js/appConfigModule.js',
       'js/adapter.js',
-      'js/APIConfigs.js',
-      'js/userMediaServiceModule.js',
-      'js/peerConnectionServiceModule.js',
-      'js/CallManagementModule.js',
-      'js/eventChannel.js',
-      'js/RTCEventModule.js',
-      'js/eventDispatcher.js',
+      'js/error.js',
       'js/resourceManagerModule.js',
+      'js/CallManagementModule.js',
+      'js/DHSModule.js',
+      'js/userMediaServiceModule.js',
       'js/signalingServiceModule.js',
+      'js/peerConnectionServiceModule.js',
+      'js/webRTC.js',
+      'js/eventChannel.js',
       'js/attEnum.js',
       'js/SDPFilterModule.js',
+      'js/SDPParser.js',
+      'js/eventDispatcher.js',
       'js/RTCEventModule.js',
-      'js/webRTC.js',
-      'js/DHSModule.js',
+      'js/appConfigModule.js',
+      'js/APIConfigs.js',
+      'js/ErrorDictionaryModule.js',
       'js/ATTMain.js',
       'js/sdkErrors.js',
       'test/**/*.js'],
@@ -112,5 +113,5 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-jslint');
   grunt.loadNpmTasks('grunt-jsdoc');
 
-  grunt.registerTask('default', ['karma:jenkins', 'jslint']);
+  grunt.registerTask('default', ['jslint', 'karma:jenkins']);
 };
