@@ -33,7 +33,7 @@
    * @param {Object} the UI Event Object
    */
     onSessionReady = function (evt) {
-      callbacks = sessionContext.getUICallbacks().callbacks;
+      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onSessionReady) {
         callbacks.onSessionReady(evt);
       }
@@ -76,7 +76,7 @@
     * @param {Object} the UI Event Object
     */
     onCallEnded = function (evt) {
-      callbacks = sessionContext.getUICallbacks().callbacks;
+      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallEnded) {
         callbacks.onCallEnded(evt);
       }
@@ -97,7 +97,7 @@
     * @param {Object} the UI Event Object
     */
     onError = function (evt) {
-      callbacks = sessionContext.getUICallbacks().callbacks;
+      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onError) {
         callbacks.onError(evt);
       }
@@ -131,11 +131,9 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
-        logger.logInfo('Incoming call received at ', event.timestamp);
-        logger.logInfo('Codec: ');
-        console.log(event.codec);
-
-        if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
+      logger.logInfo('Incoming call received at ', event.timestamp);
+      logger.logInfo('Codec: ');
+      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
