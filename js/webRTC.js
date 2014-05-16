@@ -112,7 +112,9 @@ if (Env === undefined) {
     logger.logDebug(error);
 
     if (typeof config.onError === 'function') {
-      config.onError(error);
+      logger.logError("Invoking onError user callback...");
+      //todo fixme - invoke this function asynchronously
+      config.onError(ATT.RTCEvent.getInstance().createEvent({state : ATT.CallStatus.ERROR, error: error}));
     }
   };
 
@@ -159,6 +161,7 @@ if (Env === undefined) {
       // Set WebRTC.Session data object that will be needed downstream.
       session.setSessionId(sessionId);
       // Also setup UI callbacks
+      //todo fix me filter only call back functions
       session.setUICallbacks(config);
 
       // setting up event callbacks using RTC Events
@@ -170,12 +173,11 @@ if (Env === undefined) {
           webRtcSessionId: sessionId
         }
       });
-
       // fire up the event channel after successfult create session
       logger.logInfo("Setting up event channel...");
       setupEventChannel();
       // //Invoke the UI callback to indicate we are ready to receive or make calls
-      // config.callbacks.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
+      config.onSessionReady({type: app.CallStatus.READY, sessionId: sessionId});
     } else {
       //todo fix me create new error description ?
       logger.logError('Failed to retrieve session id');
@@ -191,10 +193,12 @@ if (Env === undefined) {
    * @attribute {String} token
    * @attribute {String} e911Locations
    * @attribute {Boolean} audioOnly
+   * @example
+   *
    */
   function login(config) {
     logger.logTrace('createWebRTCSession');
-
+    logger.logDebug(config);
     try {
       if (!config) {
         throw 'Cannot login to web rtc, no configuration';
