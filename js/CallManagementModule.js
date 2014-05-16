@@ -153,6 +153,10 @@ cmgmt = (function () {
     session_context.setCallState(SessionState.SDK_READY);
   };
 
+  /**
+  * Update the session context
+  * @param {Object} config Session context variables
+  */
   UpdateSession = function (config) {
     if (config.sessionId) {
       session_context.setSessionId(config.sessionId);
