@@ -2,4 +2,14 @@
 /*global ATT:true*/
 
 // Define the Global ATT namespace
-var ATT = {};
+
+(function () {
+  'use strict';
+
+  // export global ATT namespace
+  window.ATT = {
+    utils: {
+    }
+  };
+
+}());

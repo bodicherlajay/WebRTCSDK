@@ -11,8 +11,9 @@ module.exports = function (grunt) {
         pattern: 'fixtures/**/*.html',
         included: true
       },
-      'js/att.js',
+      'js/att.init.js',
       'lib/js-shared/js/*.js',
+      'js/att.utils.sdk-error-store.js',
       'js/adapter.js',
       'js/error.js',
       'js/resourceManagerModule.js',
@@ -32,7 +33,6 @@ module.exports = function (grunt) {
       'js/APIConfigs.js',
       'js/ErrorDictionaryModule.js',
       'js/ATTMain.js',
-      'js/sdkErrors.js',
       'test/**/*.js'],
     logLevel: 'INFO',
     port: 9876,
