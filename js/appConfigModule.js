@@ -42,8 +42,7 @@ if (!ATT) {
     logMgr = ATT.logManager.getInstance(),
     logger;
 
-  logMgr.configureLogger('appConfigModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-  logger = logMgr.getLogger('appConfigModule');
+  logger = logMgr.getLogger('appConfigModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
   function configure(key, useWebSockets) { // useWebSockets is optional, default to long-polling
     try {

@@ -13,8 +13,7 @@
     logMgr = ATT.logManager.getInstance(),
     logger;
 
-  logMgr.configureLogger('ERROR', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-  logger = logMgr.getLogger('ERROR');
+  logger = logMgr.getLogger('ERROR', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
   init = function () {
     logger.logDebug('Error module init');

@@ -57,9 +57,7 @@ if (!Env) {
   // implementions
   init = function () {
 
-    logManager.configureLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
-
-    log = logManager.getLogger('DHSModule');
+    logger = logManager.getLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
 
     // create namespace.
     dhsNamespace = ATT.utils.createNamespace(app, 'rtc.dhs');
