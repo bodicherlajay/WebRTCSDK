@@ -135,9 +135,12 @@
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
+      //TODO have to pass the object as a single parameter as event object has all the data 
       onIncomingCall(rtcEvent.createEvent({
         state: mainModule.CallStatus.RINGING,
-        from: event.from
+        from: event.from,
+        codec: event.codec,
+        to: event.to
       }));
     };
 
