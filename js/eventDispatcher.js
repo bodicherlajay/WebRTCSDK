@@ -110,7 +110,7 @@
     // to: '',
     // timeStamp: '',
     // state: '',
-    // codec: '',
+    // codec: [],
     // data: '',
     // error: ''
     // ======================
@@ -131,7 +131,11 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
-      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
+        logger.logInfo('Incoming call received at ', event.timestamp);
+        logger.logInfo('Codec: ');
+        console.log(event.codec);
+
+        if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
         event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
       }
 
@@ -145,7 +149,7 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
-      logger.logInfo('session open event received at', event.timestamp);
+      logger.logInfo('session open event received at ', event.timestamp);
       if (data.sdp) {
         PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
