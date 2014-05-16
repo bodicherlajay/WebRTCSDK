@@ -27,8 +27,7 @@
    *   * headers: {Object}
    */
   function createEventChannel(channelConfig) {
-    logger.logInfo("About to create event channel");
-    logger.logTrace(channelConfig);
+    //logger.logDebug(channelConfig);
     // to appease the JSLint gods
     var channel = {}, // the channel to be configured and returned.
       httpConfig = {},
@@ -40,6 +39,8 @@
       onError,
       onTimeOut;
 
+    logger.logInfo("About to create event channel");
+
     if (undefined === channelConfig || 0 === Object.keys(channelConfig)
         || undefined === channelConfig.accessToken
         || undefined === channelConfig.endpoint
@@ -50,35 +51,21 @@
         || undefined === channelConfig.publisher) {
       throw new Error('Invalid Options. Cannot create channel with options:' + JSON.stringify(channelConfig));
     }
-
-    //setup httpConfig for REST call
-    httpConfig = {
-      params: {
-        url: {sessionId: channelConfig.sessionId, endpoint: channelConfig.endpoint},
-        headers: {
-          'Authorization' : 'Bearer ' + channelConfig.accessToken
-        }
-      },
-      success: onSuccess,
-      error: onError,
-      ontimeout: onTimeOut
-    };
-
-    logger.logTrace(httpConfig);
+    //logger.logDebug(httpConfig);
 
     /**
      * Process Events
      * @param {Object} messages The messages
      **/
     function processMessages(messages) {
-      logger.logTrace("processing events");
+      logger.logDebug("processing events");
       // Using Long Polling
       if (true === channelConfig.usesLongPolling) {
         eventData = JSON.parse(messages.responseText);
       } else { // using websockets
         eventData = JSON.parse(messages.data);
       }
-      logger.logTrace("Event data from event channel...");
+      logger.logDebug("Event data from event channel...");
       logger.logDebug(eventData);
       if (eventData.events) {
         var sessID = eventData.events.eventList[0].eventObject.resourceURL.split('/')[4],
@@ -89,7 +76,7 @@
           if (events.hasOwnProperty(evt)) {
             events[evt].timestamp = new Date();
             channelConfig.publisher.publish(sessID + '.responseEvent', events[evt].eventObject);
-            logger.logTrace("Published event " + sessID + '.responseEvent', events[evt].eventObject);
+            logger.logDebug("Published event " + sessID + '.responseEvent', events[evt].eventObject);
           }
         }
       }
@@ -97,21 +84,25 @@
 
     // setup success and error callbacks
     onSuccess =  function (response) {
-      logger.logTrace("on success");
-      logger.logTrace(response);
+      logger.logDebug("on success");
+      logger.logDebug(response);
       if (!isListening) {
-        logger.logTrace("Not processing response because event channel is not running");
+        logger.logDebug("Not processing response because event channel is not running");
         return;
       }
       if (true === channelConfig.usesLongPolling) { // long-polling
-        logger.logTrace("Before processing messages");
+        logger.logDebug("Before processing messages");
         if (response.getResponseStatus() === 204) {
           logger.logInfo("No event response content, repolling again...");
           // continue polling
           channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
-        } else {
+        } else if (response.getResponseStatus() === 200) {
           processMessages(response);
-          logger.logTrace("Processed messages, repolling again...");
+          logger.logDebug("Processed messages, repolling again...");
+          // continue polling
+          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+        } else {
+          logger.logDebug("Response code was:" + response.getResponseStatus() + " repolling again...");
           // continue polling
           channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
         }
@@ -146,6 +137,18 @@
     function startListening() {
       isListening = true;
       logger.logInfo("Starting the event channel");
+      //setup httpConfig for REST call
+      httpConfig = {
+        params: {
+          url: {sessionId: channelConfig.sessionId, endpoint: channelConfig.endpoint},
+          headers: {
+            'Authorization' : 'Bearer ' + channelConfig.accessToken
+          }
+        },
+        success: onSuccess,
+        error: onError,
+        ontimeout: onTimeOut
+      };
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
