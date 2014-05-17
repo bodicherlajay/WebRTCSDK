@@ -20,7 +20,8 @@
 (function () {
   'use strict';
   var logMgr = ATT.logManager.getInstance(),
-    logger;
+    logger,
+    sdkErrors, idx;
 
   logger = logMgr.getLogger('ATTMain', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   // Fail if ATT is not defined. Everything else depends on it.
@@ -58,5 +59,11 @@
   }, ATT.utils);
   logger.logTrace("created dictionary");
 
-  // Load all SKD errors in the dictionary
+  // Load all SDK errors in the dictionary
+  sdkErrors = ATT.utils.SDKErrorStore.getAllErrors();
+  // adds all the errors in the list to the Dictionary
+  for (idx = 0; idx < sdkErrors.length; idx = idx + 1) {
+    ATT.errorDictionary.createError(sdkErrors[idx]);
+  }
+
 }());
