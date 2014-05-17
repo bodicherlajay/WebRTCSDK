@@ -30,7 +30,7 @@ if (!ATT) {
   *
   */
   function dispatchEventToHandler(event) {
-    setTimeout(function ({
+    setTimeout(function () {
       var CODEC = [], media, sdp, idx;
       logger.logDebug('dispatching event: ' + event.state);
 
@@ -53,6 +53,7 @@ if (!ATT) {
           to: session && session.getCallObject() ? session.getCallObject().callee() : '',
           state: event.state,
           codec: CODEC,
+          calltype: (CODEC.length > 0 && CODEC.length === 1) ? 'audio' : 'video',
           error: event.reason || ''
         }), {
           sdp: event.sdp || '',
@@ -62,7 +63,7 @@ if (!ATT) {
       } else {
         logger.logError('No event handler defined for ' + event.state);
       }
-    }), 0);
+    }, 0);
   }
 
   /*
@@ -121,6 +122,7 @@ if (!ATT) {
     timeStamp: '',
     state: '',
     codec: [],
+    calltype: '',
     data: null,
     error: null
   };
@@ -136,6 +138,7 @@ if (!ATT) {
     evt.to = arg.to;
     evt.timestamp = new Date();
     evt.codec = arg.codec;
+    evt.calltype = arg.calltype;
     evt.data = arg.data;
     evt.error = arg.error;
     Object.freeze(evt);

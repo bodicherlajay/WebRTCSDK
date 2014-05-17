@@ -142,7 +142,8 @@
         state: mainModule.CallStatus.RINGING,
         from: event.from,
         codec: event.codec,
-        to: event.to
+        to: event.to,
+        calltype: event.calltype
       }));
     };
 
@@ -209,11 +210,13 @@
       }));
     };
 
-    eventRegistry[mainModule.RTCCallEvents.CALL_IN_PROGRESS] = function () {
+    eventRegistry[mainModule.RTCCallEvents.CALL_IN_PROGRESS] = function (event) {
       onCallInProgress(rtcEvent.createEvent({
         state: mainModule.CallStatus.INPROGRESS,
         from: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().caller() : null),
-        to: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : null)
+        to: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : null),
+        calltype: event.calltype,
+        codec: event.codec
       }));
     };
 
