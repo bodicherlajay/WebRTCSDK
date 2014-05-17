@@ -291,9 +291,4 @@
     throw new Error('Cannot export ATT.utils.SDKErrorStore.'
       + '\n ATT: ' + JSON.stringify(window.ATT));
   }
-  // } else {
-  //   throw new Error('Cannot export ATT.utils.SDKErrorStore.'
-  //     + '\n ATT: ' + JSON.stringify(window.ATT));
-  // }
-
 }());
