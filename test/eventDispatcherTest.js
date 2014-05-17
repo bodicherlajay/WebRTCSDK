@@ -50,6 +50,69 @@ describe('Event Dispatcher Tests', function () {
         };
       }
     };
+
+    function SessionContext (token, e9Id, sessionId, state) {
+      var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
+        currentCallId, UICbks = {}, currentCall = null;
+      return {
+        getCurrentCall: function () {
+          return currentCall;
+        },
+        setCurrentCall: function (callObj) {
+          currentCall = callObj;
+        },
+        getAccessToken: function () {
+          return accessToken;
+        },
+        setAccessToken: function (token) {
+          accessToken = token;
+        },
+        getE911Id: function () {
+          return e911Id;
+        },
+        setE911Id: function (id) {
+          e911Id = id;
+        },
+        getSessionId: function () {
+          return currSessionId;
+        },
+        setSessionId: function (id) {
+          currSessionId = id;
+        },
+        getCallState: function () {
+          return currState;
+        },
+        setCallState: function (state) {
+          currState = state;
+        },
+        getCallObject: function () {
+          return callObject;
+        },
+        setCallObject: function (callObj) {
+          callObject = callObj;
+        },
+        getEventObject: function () {
+          return event;
+        },
+        setEventObject: function (eventObject) {
+          event = eventObject;
+        },
+        setUICallbacks: function (callbacks) {
+          UICbks = ATT.utils.extend(UICbks, callbacks);
+        },
+        getUICallbacks: function () {
+          return UICbks;
+        },
+        setCurrentCallId: function (event) {
+          currentCallId = event.split('/')[6] || null;
+        },
+        getCurrentCallId: function () {
+          return currentCallId;
+        }
+      };
+    };
+
+
     it('should not create a registry if called without callbacks', function () {
       var badContext = { getUICallbacks: function () { return; } };
       eventRegistry = utils.createEventRegistry(badContext,RTCEventModule);
@@ -76,41 +139,46 @@ describe('Event Dispatcher Tests', function () {
     });
 
     it('should invoke onCallInProgress when CALL_IN_PROGRESS happens', function () {
-      onCallInProgress = false;
-      eventRegistry = sinon.spy(utils.createEventRegistry); //(goodContext,RTCEventModule));
-      eventRegistry[ATT.RTCCallEvents.CALL_IN_PROGRESS]();
-      assert.isTrue(onCallInProgress);
-      sinon.restore(eventRegistry);
+      var callMgr = sinon.stub(), peerConn = sinon.stub(), called = false;
+      var context = new SessionContext("token","e911id",ATT.RTCCallEvents.CALL_IN_PROGRESS);
+      context.setUICallbacks({onCallInProgress: function() { called = true; }});
+      eventRegistry = utils.createEventRegistry(context,RTCEventModule, callMgr , peerConn);
+      eventRegistry[ATT.RTCCallEvents.CALL_IN_PROGRESS]({calltype: "", codec: ""});
+      assert.isTrue(called);
     });
 
     it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
-      onCallEnded = false;
-      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
+      var context = new SessionContext("token","e911id",ATT.RTCCallEvents.SESSION_TERMINATED), called = false;
+      context.setUICallbacks({onCallEnded: function() { called = true; }});
+      eventRegistry = utils.createEventRegistry(context,RTCEventModule, cmgmt.CallManager.getInstance(), ATT.PeerConnectionService);
       event = {reason: ''};
       eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
-      assert.isTrue(onCallEnded);
+      assert.isTrue(called);
     });
 
     it('should invoke onIncomingCall when INVITATION_RECEIVED happens', function () {
-      onIncomingCall = false;
-      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
+      var context = new SessionContext("token","e911id",ATT.RTCCallEvents.INVITATION_RECEIVED), called = false;
+      context.setUICallbacks({onIncomingCall: function() { called = true; }});
+      eventRegistry = utils.createEventRegistry(context,RTCEventModule, cmgmt.CallManager.getInstance(), ATT.PeerConnectionService);
       event = {sdp: 'sendonly', from: '@mc:hammer'};
       eventRegistry[ATT.RTCCallEvents.INVITATION_RECEIVED](event);
-      assert.isTrue(onIncomingCall);
+      assert.isTrue(called);
     });
 
     it('should invoke onConnecting when CALL_CONNECTING happens', function () {
-      onConnecting = false;
-      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
-      eventRegistry[ATT.RTCCallEvents.CALL_CONNECTING](event);
-      assert.isTrue(onConnecting);
+     var context = new SessionContext("token","e911id",ATT.RTCCallEvents.CALL_CONNECTING), called = false;
+     context.setUICallbacks({onConnecting: function() { called = true; }});
+     eventRegistry = utils.createEventRegistry(context,RTCEventModule, cmgmt.CallManager.getInstance(), ATT.PeerConnectionService);
+     eventRegistry[ATT.RTCCallEvents.CALL_CONNECTING](event);
+     assert.isTrue(called);
     });
 
     it('should invoke onCallError when UNKNOWN happens', function () {
-      onCallError = false;
-      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
-      eventRegistry[ATT.RTCCallEvents.UNKNOWN](event);
-      assert.isTrue(onCallError);
+     var context = new SessionContext("token","e911id",ATT.RTCCallEvents.UNKNOWN), called = false;
+     context.setUICallbacks({onCallError: function() { called = true; }});
+     eventRegistry = utils.createEventRegistry(context,RTCEventModule, cmgmt.CallManager.getInstance(), ATT.PeerConnectionService);
+     eventRegistry[ATT.RTCCallEvents.UNKNOWN](event);
+     assert.isTrue(called);
     });
   });
 });

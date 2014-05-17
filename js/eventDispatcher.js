@@ -4,7 +4,9 @@
 'use strict';
 
 (function (mainModule, callManager, utils, PeerConnectionService) {
-  var onSessionReady,
+  var callMgr = callManager,
+    peerConnService = PeerConnectionService,
+    onSessionReady,
     onIncomingCall,
     onConnecting,
     onCallInProgress,
@@ -14,7 +16,24 @@
     eventRegistry = {},
     logger = Env.resourceManager.getInstance().getLogger("eventDispatcher");
 
-  function createEventRegistry(sessionContext, rtcEvent) {
+  function setCallManager(depCallMgr) {
+    callMgr = depCallMgr;
+  }
+
+  function setPeerConnService(depPeerConnService) {
+    peerConnService = depPeerConnService;
+  }
+
+  function createEventRegistry(sessionContext, rtcEvent, depCallMgr, depPeerConn) {
+    if (depCallMgr !== undefined) {
+      callMgr = depCallMgr;
+    }
+    if (depPeerConn !== undefined) {
+      peerConnService = depPeerConn;
+    }
+    logger.logInfo("Call Manager dependency:" + callMgr);
+    logger.logInfo("Peer Conn Service:" + peerConnService);
+
     var callbacks = sessionContext.getUICallbacks();
 
     if (undefined === callbacks || 0 === Object.keys(callbacks).length) {
@@ -109,7 +128,7 @@
     // error: ''
     // ======================
     // Also, accept `data` object with some relevant info as needed
-    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function () {
+    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
       onSessionReady(rtcEvent.createEvent({
         state: mainModule.CallStatus.READY,
         data: '1234'
@@ -120,7 +139,7 @@
       onError(rtcEvent.createEvent(event));
     };
 
-    eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
+    eventRegistry[mainModule.CallStatus.ERROR] = function (event, sessionContext) {
       onCallError(rtcEvent.createEvent(event));
     };
 
@@ -144,23 +163,23 @@
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
       logger.logInfo('session open event received at ', event.timestamp);
       if (data.sdp) {
-        PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
+        peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
       if (data.resource) {
-        callManager.getSessionContext().setCurrentCallId(data.resource);
+        callMgr.getSessionContext().setCurrentCallId(data.resource);
       }
     };
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (data) {
       if (data.sdp && data.modId) {
-        PeerConnectionService.setRemoteAndCreateAnswer(data.sdp, data.modId);
+        peerConnService.setRemoteAndCreateAnswer(data.sdp, data.modId);
       }
       // hold request received
       // if (sdp && sdp.indexOf('sendonly') !== -1) {
       //   onCallHold(rtcEvent.createEvent({
       //     state: mainModule.CallStatus.HOLD
       //   }));
-      //   callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+      //   callMgr.getSessionContext().setCallState(callMgr.SessionState.HOLD_CALL);
       // }
 
       // // resume request received
@@ -168,17 +187,17 @@
       //   onCallResume(rtcEvent.createEvent({
       //     state: mainModule.CallStatus.RESUMED
       //   }));
-      //   callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+      //   callMgr.getSessionContext().setCallState(callMgr.SessionState.RESUMED_CALL);
       // }
     };
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (data) {
       if (data.modId) {
-        PeerConnectionService.setModificationId(data.modId);
+        peerConnService.setModificationId(data.modId);
       }
 
       if (data.sdp) {
-        PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
+        peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
 
     // // hold request successful
@@ -186,29 +205,30 @@
     //   onCallHold(rtcEvent.createEvent({
     //     state: mainModule.CallStatus.HOLD
     //   }));
-    //   callManager.getSessionContext().setCallState(callManager.SessionState.HOLD_CALL);
+    //   callMgr.getSessionContext().setCallState(callMgr.SessionState.HOLD_CALL);
     // } else if (sdp && sdp.indexOf('sendrecv') !== -1) {
-    //   if (callManager.getSessionContext().getCallState() === callManager.SessionState.HOLD_CALL) {
+    //   if (callMgr.getSessionContext().getCallState() === callMgr.SessionState.HOLD_CALL) {
     //     // resume request successful
     //     onCallResume(rtcEvent.createEvent({
     //       state: mainModule.CallStatus.RESUMED
     //     }));
-    //     callManager.getSessionContext().setCallState(callManager.SessionState.RESUMED_CALL);
+    //     callMgr.getSessionContext().setCallState(callMgr.SessionState.RESUMED_CALL);
     //   }
     };
 
-    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
+    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function (event) {
+      console.log("connecting:" + sessionContext.getCallObject());
       onConnecting(rtcEvent.createEvent({
         state: mainModule.CallStatus.CONNECTING,
-        to: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : null)
+        to: (sessionContext.getCallObject() ? sessionContext.getCallObject().callee() : null)
       }));
     };
 
     eventRegistry[mainModule.RTCCallEvents.CALL_IN_PROGRESS] = function (event) {
       onCallInProgress(rtcEvent.createEvent({
         state: mainModule.CallStatus.INPROGRESS,
-        from: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().caller() : null),
-        to: (callManager.getSessionContext().getCallObject() ? callManager.getSessionContext().getCallObject().callee() : null),
+        from: (sessionContext.getCallObject() ? sessionContext.getCallObject().caller() : null),
+        to: (sessionContext.getCallObject() ? sessionContext.getCallObject().callee() : null),
         calltype: event.calltype,
         codec: event.codec
       }));
@@ -225,12 +245,12 @@
           state: mainModule.CallStatus.ENDED
         }));
       }
-      callManager.getSessionContext().setCallState(callManager.SessionState.ENDED_CALL);
-      callManager.getSessionContext().setCallObject(null);
-      PeerConnectionService.endCall();
+      sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
+      sessionContext.setCallObject(null);
+      peerConnService.endCall();
     };
 
-    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function () {
+    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function (event) {
       onCallError(rtcEvent.createEvent({
         state: mainModule.CallStatus.ERROR
       }));
