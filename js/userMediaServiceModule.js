@@ -44,6 +44,7 @@ if (!ATT) {
     /**
     * Listen for start of remote video
     * @param {HTMLElement} remoteVideo The remote video element
+    * @returns {HTMLElement} remoteVideo
     */
     onRemoteVideoStart: function (remoteVideo) {
       remoteVideo.addEventListener('playing', function () {

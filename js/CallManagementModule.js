@@ -64,7 +64,7 @@ cmgmt = (function () {
   };
 
   /**
-  * Session Context Protype
+  * Session Context Prototype
   * @param {String} token The access token
   * @param {String} e9Id The e911Id
   * @param {String} sessionId The sessionId
@@ -131,6 +131,12 @@ cmgmt = (function () {
     };
   };
 
+  /**
+  * Sets various call-related variables on the session-context
+  * @param {Object} call The call instance
+  * @param {String} 'Incoming' or 'Outgoing'
+  * @param {Object} uiCallbacks The UI callbacks
+  */
   function updateCallSession(call, callState, uiCallbacks) {
     session_context.setCallObject(call);
     session_context.setCallState(callState);
