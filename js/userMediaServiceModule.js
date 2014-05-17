@@ -54,6 +54,10 @@ if (!ATT) {
           state : ATT.RTCCallEvents.CALL_IN_PROGRESS
         });
       });
+
+      remoteVideo.src = '';
+
+      return remoteVideo;
     },
     /**
      * Attaches media stream to DOM and plays video.

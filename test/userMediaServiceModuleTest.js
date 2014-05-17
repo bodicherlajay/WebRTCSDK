@@ -23,6 +23,13 @@ describe('UserMediaService', function () {
     stub.restore();
   });
 
+  it.only('should add `playing` event listener to remoteVideo', function () {
+    var vidElement = document.createElement('video');
+    ATT.UserMediaService.onRemoteVideoStart(vidElement);
+
+    assert.ok(ATT.UserMediaService.onRemoteVideoStart(vidElement).src);
+  });
+
   it('should set local stream', function () {
     var createObjectURLStub = sinon.stub(URL, "createObjectURL", function () {});
 
