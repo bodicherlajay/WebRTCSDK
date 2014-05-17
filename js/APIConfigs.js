@@ -186,8 +186,9 @@ if (!ATT) {
         * Get WebRTC events from RTCEndpoint
         * @memberof ATT.APIConfigs
         */
+        //ATT.appConfig.EventChannelConfig.method
         getEvents: {
-          method: ATT.appConfig.EventChannelConfig.method,
+          method: 'get',
           formatters: {
             url: function (params) {
               return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + params.endpoint;
@@ -202,8 +203,8 @@ if (!ATT) {
           headers: {
             'Content-Type': 'application/json',
             'Accept' : 'application/json',
-            'Cache-Control': 'no-cache'
-            //'Pragma': 'no-cache',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           }
         },
         /**

@@ -4,6 +4,8 @@
 * Application configuration file.  This must be loaded first.
 *
 */
+//Exposes Namespace: ATT.appConfig, ATT.configure()
+//Dependency: Env.resourceManager, ATT.logManager
 
 if (!ATT) {
   var ATT = {};

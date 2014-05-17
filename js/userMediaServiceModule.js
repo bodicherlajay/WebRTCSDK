@@ -1,26 +1,37 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true */
+/*global ATT:true, Env:true */
 
+//Dependency: Env.resourceManager
+//Runtime: cmgmt.CallManager, ATT.peerConnectionService
+
+/*
 if (!ATT) {
   var ATT = {};
 }
+*/
 
 (function (app) {
   'use strict';
 
-  var module, logMgr = ATT.logManager.getInstance(), logger = null;
-  logMgr.configureLogger('UserMediaService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-  logger = logMgr.getLogger('UserMediaService');
+  var module,
+    callManager,
+    peerConnectionService,
+    logger = Env.resourceManager.getInstance().getLogger("UserMediaService");
 
   module = {
 
     localVideoElement: null,
-
     remoteVideoElement: null,
-
     localStream: null,
-
     remoteStream: null,
+
+    setCallManager: function (callMgr) {
+      callManager = callMgr;
+    },
+
+    setPeerConnectionService: function (peerConnService) {
+      peerConnectionService = peerConnService;
+    },
 
     /**
     * Start Call

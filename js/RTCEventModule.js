@@ -1,9 +1,13 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true, Env:true, cmgmt:true, EventDispatcher:true*/
 
+//Dependency: Env.resourceManager, utils.eventDispatcher (cyclic), utils.sdpParser, cmgmt.CallManager
+
+/*
 if (!ATT) {
   var ATT = {};
 }
+*/
 
 (function (mainModule) {
   'use strict';
@@ -96,14 +100,14 @@ if (!ATT) {
       sessionId = sessionContext.getSessionId();
     logger.logDebug("Creating event registry...");
     // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(sessionContext);
+    eventRegistry = mainModule.utils.createEventRegistry(sessionContext, module.getInstance());
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
     logger.logDebug("Unsubscribe event " +  sessionId + '.responseEvent' + "successful");
     // subscribe to published events from event channel
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logInfo("Subscribed to event " +  sessionId + '.responseEvent');
+    logger.logDebug("Subscribed to event " +  sessionId + '.responseEvent');
   };
 
   //Event structure for RTCEvent

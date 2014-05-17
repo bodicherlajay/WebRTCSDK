@@ -6,7 +6,8 @@ describe('Event Dispatcher Tests', function () {
 
   var backupAtt, utils = ATT.utils, eventRegistry,
     onSessionReady, onError, onIncomingCall, onConnecting,
-    onCallInProgress, onCallError, onCallEnded, event = {state: 'foo'};
+    onCallInProgress, onCallError, onCallEnded, event = {state: 'foo'},
+    RTCEventModule = ATT.RTCEvent.getInstance();
   beforeEach(function () {
     backupAtt = window.ATT;
   });
@@ -51,39 +52,40 @@ describe('Event Dispatcher Tests', function () {
     };
     it('should not create a registry if called without callbacks', function () {
       var badContext = { getUICallbacks: function () { return; } };
-      eventRegistry = utils.createEventRegistry(badContext);
+      eventRegistry = utils.createEventRegistry(badContext,RTCEventModule);
       assert.notOk(eventRegistry);
     });
 
     it('should create a registry if called with callbacks', function () {
-      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
       assert.ok(eventRegistry);
     });
 
     it('should invoke onSessionReady when RTC_SESSION_CREATED happens', function () {
       onSessionReady = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
       eventRegistry[ATT.SessionEvents.RTC_SESSION_CREATED](event);
       assert.isTrue(onSessionReady);
     });
 
     it('should invoke onError when RTC_SESSION_ERROR happens', function () {
       onError = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
       eventRegistry[ATT.SessionEvents.RTC_SESSION_ERROR](event);
       assert.isTrue(onError);
     });
 
     it('should invoke onCallInProgress when CALL_IN_PROGRESS happens', function () {
       onCallInProgress = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry = sinon.spy(utils.createEventRegistry); //(goodContext,RTCEventModule));
       eventRegistry[ATT.RTCCallEvents.CALL_IN_PROGRESS]();
       assert.isTrue(onCallInProgress);
+      sinon.restore(eventRegistry);
     });
 
     it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
       onCallEnded = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
       event = {reason: ''};
       eventRegistry[ATT.RTCCallEvents.SESSION_TERMINATED](event);
       assert.isTrue(onCallEnded);
@@ -91,7 +93,7 @@ describe('Event Dispatcher Tests', function () {
 
     it('should invoke onIncomingCall when INVITATION_RECEIVED happens', function () {
       onIncomingCall = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
       event = {sdp: 'sendonly', from: '@mc:hammer'};
       eventRegistry[ATT.RTCCallEvents.INVITATION_RECEIVED](event);
       assert.isTrue(onIncomingCall);
@@ -99,14 +101,14 @@ describe('Event Dispatcher Tests', function () {
 
     it('should invoke onConnecting when CALL_CONNECTING happens', function () {
       onConnecting = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
       eventRegistry[ATT.RTCCallEvents.CALL_CONNECTING](event);
       assert.isTrue(onConnecting);
     });
 
     it('should invoke onCallError when UNKNOWN happens', function () {
       onCallError = false;
-      eventRegistry = utils.createEventRegistry(goodContext);
+      eventRegistry = utils.createEventRegistry(goodContext,RTCEventModule);
       eventRegistry[ATT.RTCCallEvents.UNKNOWN](event);
       assert.isTrue(onCallError);
     });

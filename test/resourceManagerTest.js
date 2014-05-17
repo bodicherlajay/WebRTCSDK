@@ -6,6 +6,9 @@
 
 describe('ResourceManager', function () {
 
+  //Need to invoke configure first
+  ATT.configure();
+
   var DEFAULTS = {
     DHSEndpoint: ATT.appConfig.DHSEndpoint,
     RTCEndpoint: ATT.appConfig.RTCEndpoint,

@@ -12,16 +12,10 @@
     onCallError,
     onError,
     eventRegistry = {},
-    logger;
+    logger = Env.resourceManager.getInstance().getLogger("eventDispatcher");
 
-  ATT.logManager.getInstance().configureLogger('CallManagementModule',
-    ATT.logManager.getInstance().loggerType.CONSOLE, ATT.logManager.getInstance().logLevel.DEBUG);
-
-  logger = ATT.logManager.getInstance().getLogger('CallManagementModule');
-
-  function createEventRegistry(sessionContext) {
-    var rtcEvent = ATT.RTCEvent.getInstance(),
-      callbacks = sessionContext.getUICallbacks();
+  function createEventRegistry(sessionContext, rtcEvent) {
+    var callbacks = sessionContext.getUICallbacks();
 
     if (undefined === callbacks || 0 === Object.keys(callbacks).length) {
       logger.logError('No callbacks to execute');

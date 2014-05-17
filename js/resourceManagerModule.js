@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global Env:true, ATT: true*/
 
-// Dependency:  need to load ATT apiconfig module first before this can run.
+// Dependency:  utils, LogManager, ATT.errorDictionary(loaded by ATTMain.js) - Dependency att.utils.sdk-error-store
 
 
 if (!Env) {

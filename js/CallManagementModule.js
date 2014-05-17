@@ -1,5 +1,9 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global cmgmt:true, Logger:true, ATT:true*/
+/*global cmgmt:true, Logger:true, ATT:true, Env:true*/
+
+//Dependency: Runtime - ATT.UserMediaService, ATT.PeerConnectionService, ATT.RTCEvent
+//Dependency: ATT.logManager
+
 
 cmgmt = (function () {
   'use strict';
@@ -7,8 +11,7 @@ cmgmt = (function () {
   var module = {},
     instance,
     init,
-    logMgr = ATT.logManager.getInstance(),
-    logger,
+    logger = Env.resourceManager.getInstance().getLogger("CallManagementModule"),
     Call,
     SessionState,
     SessionContext,
@@ -18,9 +21,10 @@ cmgmt = (function () {
     DeleteSession,
     CreateOutgoingCall,
     CreateIncomingCall,
-    DeleteCallObject;
-
-  logger = logMgr.getLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
+    DeleteCallObject,
+    userMediaService,
+    peerConnectionService,
+    rtcEventModule;
 
   /**
   * Call Prototype

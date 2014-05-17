@@ -1,6 +1,8 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global cmgmt:true, Logger:true, ATT:true*/
 
+//Dependency: ATT.logManager, cmgmt.CallManager, ATT.errorDictionary, ATT.RTCEvent, ATT.CallStatus
+
 (function (app) {
   'use strict';
 
@@ -16,7 +18,7 @@
   logger = logMgr.getLogger('ERROR', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
   init = function () {
-    logger.logDebug('Error module init');
+    logger.logDebug('Initializing error module');
 
     // create namespace.
     errorNamespace = ATT.utils.createNamespace(app, 'rtc.error');

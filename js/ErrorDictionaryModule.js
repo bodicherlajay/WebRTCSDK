@@ -64,7 +64,7 @@
   }
 
   function createErrorDictionary(spec, utils) {
-    var allErrors = [], // collection of all errors in this dictionary
+    var allErrors = ATT.utils.SDKErrorStore.getAllErrors(), // collection of all errors in this dictionary
       // `modules` is an immutable of abbreviations for the modules of this `app`
       modules = Object.freeze(spec.modules),
       newError = null,
@@ -93,7 +93,7 @@
         return allErrors['SDK-00000'];
       },
       getDefaultError: function (errSpec) {
-        var err = utils.extend(allErrors['SDK-00001']);
+        var err = utils.extend({}, allErrors['SDK-00001']);
         err.operationName = errSpec.operationName || err.operationName;
         err.httpStatusCode = errSpec.httpStatusCode || err.httpStatusCode;
         err.reasonText = errSpec.reasonText || err.reasonText;
@@ -101,7 +101,7 @@
         return err;
       },
       getDHSError: function (dhsErrSpec) {
-        var err = utils.extend(allErrors['SDK-50000']);
+        var err = utils.extend({}, allErrors['SDK-50000']);
         err.operationName = dhsErrSpec.operationName;
         err.httpStatusCode = dhsErrSpec.httpStatusCode;
         err.reasonText = dhsErrSpec.reasonText;

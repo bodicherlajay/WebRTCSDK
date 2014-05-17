@@ -16,7 +16,7 @@
  * - ATT.WebRTC
  * - ATT.WebRTC.Session
 */
-
+//todo fixme - this file needs to be renamed to something else ? errorDictionaryloader or delete this
 (function () {
   'use strict';
   var logMgr = ATT.logManager.getInstance(),
@@ -29,11 +29,13 @@
     logger.logTrace('ATT is not defined.');
     return;
   }
+/*
   if (!ATT.configure) {
     logger.logTrace('ATT doesn\'t have a configure method defined.');
     return;
   }
   ATT.configure();
+*/
 
   // Create an Error Dictionary
   if (undefined === ATT.utils.createErrorDictionary) {
@@ -66,4 +68,6 @@
     ATT.errorDictionary.createError(sdkErrors[idx]);
   }
 
+  // Load all SKD errors in the dictionary
 }());
+console.log("Loading complete ATTMain.js, ATT.errorDictionary available");
