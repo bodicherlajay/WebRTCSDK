@@ -23,11 +23,11 @@ describe('UserMediaService', function () {
     stub.restore();
   });
 
-  it.only('should add `playing` event listener to remoteVideo', function () {
+  it('should add `playing` event listener to remoteVideo', function () {
     var vidElement = document.createElement('video');
     ATT.UserMediaService.onRemoteVideoStart(vidElement);
 
-    assert.ok(ATT.UserMediaService.onRemoteVideoStart(vidElement).src);
+    assert.ok(vidElement.src);
   });
 
   it('should set local stream', function () {
