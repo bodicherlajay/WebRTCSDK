@@ -11,8 +11,9 @@ module.exports = function (grunt) {
         pattern: 'fixtures/**/*.html',
         included: true
       },
-      'js/att.js',
+      'js/att.init.js',
       'lib/js-shared/js/*.js',
+      'js/att.utils.sdk-error-store.js',
       'js/adapter.js',
       'js/error.js',
       'js/resourceManagerModule.js',
@@ -32,25 +33,29 @@ module.exports = function (grunt) {
       'js/APIConfigs.js',
       'js/ErrorDictionaryModule.js',
       'js/ATTMain.js',
-      'js/sdkErrors.js',
       'test/**/*.js'],
     logLevel: 'INFO',
     port: 9876,
     browsers: ['Chrome'],
     captureTimeout: 60000
   },
-    karmaConfigUnit = {
+    karmaConfigCoverage = {
       preprocessors: {
         'js/**/*.js': 'coverage'
       },
-      reporters: ['spec', 'coverage'],
-      colors: true,
+      reporters: [ 'coverage' ],
       singleRun: false,
       usePolling: true,  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
       coverageReporter : {
         type : 'html',
         dir : 'coverage/'
       }
+    },
+    karmaConfigUnit = {
+      reporters: ['spec'],
+      colors: true,
+      singleRun: false,
+      usePolling: true,  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
     },
     karmaConfigJenkins = {
       preprocessors: {
@@ -78,6 +83,8 @@ module.exports = function (grunt) {
       karmaConfigJenkins[attrname] = karmaConfig[attrname];
       // copy all properties from the Global config to the Unit Testing config
       karmaConfigUnit[attrname] = karmaConfig[attrname];
+      // copy all properties from the Global config to the Coverage config
+      karmaConfigCoverage[attrname] = karmaConfig[attrname];
     }
   }
 
@@ -87,7 +94,8 @@ module.exports = function (grunt) {
     // equivalent to `karma start <config file>
     karma: {
       unit: { options: karmaConfigUnit },
-      jenkins: { options: karmaConfigJenkins }
+      jenkins: { options: karmaConfigJenkins },
+      coverage: { options: karmaConfigCoverage }
     },
     jslint: {
       // lint your project's server code

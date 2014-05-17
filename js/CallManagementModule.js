@@ -20,8 +20,7 @@ cmgmt = (function () {
     CreateIncomingCall,
     DeleteCallObject;
 
-  logMgr.configureLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
-  logger = logMgr.getLogger('CallManagementModule');
+  logger = logMgr.getLogger('CallManagementModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.DEBUG);
 
   /**
   * Call Prototype

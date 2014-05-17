@@ -95,16 +95,16 @@
         if (response.getResponseStatus() === 204) {
           logger.logInfo("No event response content, repolling again...");
           // continue polling
-          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+          setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);},5);
         } else if (response.getResponseStatus() === 200) {
           processMessages(response);
           logger.logDebug("Processed messages, repolling again...");
           // continue polling
-          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+          setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);},5);
         } else {
           logger.logDebug("Response code was:" + response.getResponseStatus() + " repolling again...");
           // continue polling
-          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+          setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);},5);
         }
         return;
       }
@@ -130,7 +130,7 @@
       // try again
       if (isListening) {
         logger.logInfo("Repolling again...");
-        channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+        setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);},5);
       }
     };
 
@@ -149,7 +149,7 @@
         error: onError,
         ontimeout: onTimeOut
       };
-      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+      setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);},5);
     }
 
     function stopListening() {

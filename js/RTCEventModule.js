@@ -30,37 +30,39 @@ if (!ATT) {
   *
   */
   function dispatchEventToHandler(event) {
-    var CODEC = [], media, sdp, idx;
-    logger.logDebug('dispatching event: ' + event.state);
+    setTimeout(function ({
+      var CODEC = [], media, sdp, idx;
+      logger.logDebug('dispatching event: ' + event.state);
 
-    if (event.sdp) {
-      sdp = ATT.sdpParser.getInstance().parse(event.sdp);
-      logger.logDebug("Parsed SDP " + sdp);
-      for (idx = 0; idx < sdp.media.length; idx = idx + 1) {
-        media = {
-          rtp: sdp.media[idx].rtp,
-          type: sdp.media[idx].type
-        };
-        CODEC.push(media);
+      if (event.sdp) {
+        sdp = ATT.sdpParser.getInstance().parse(event.sdp);
+        logger.logDebug("Parsed SDP " + sdp);
+        for (idx = 0; idx < sdp.media.length; idx = idx + 1) {
+          media = {
+            rtp: sdp.media[idx].rtp,
+            type: sdp.media[idx].type
+          };
+          CODEC.push(media);
+        }
       }
-    }
-    logger.logDebug("Codec from the event, " + CODEC);
-    if (eventRegistry[event.state]) {
-      logger.logDebug("Processing the registered event " + event.state);
-      eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
-        from: event.from ? event.from.split('@')[0].split(':')[1] : '',
-        to: session && session.getCallObject() ? session.getCallObject().callee() : '',
-        state: event.state,
-        codec: CODEC,
-        error: event.reason || ''
-      }), {
-        sdp: event.sdp || '',
-        resource: event.resourceURL || '',
-        modId: event.modId || ''
-      });
-    } else {
-      logger.logError('No event handler defined for ' + event.state);
-    }
+      logger.logDebug("Codec from the event, " + CODEC);
+      if (eventRegistry[event.state]) {
+        logger.logDebug("Processing the registered event " + event.state);
+        eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
+          from: event.from ? event.from.split('@')[0].split(':')[1] : '',
+          to: session && session.getCallObject() ? session.getCallObject().callee() : '',
+          state: event.state,
+          codec: CODEC,
+          error: event.reason || ''
+        }), {
+          sdp: event.sdp || '',
+          resource: event.resourceURL || '',
+          modId: event.modId || ''
+        });
+      } else {
+        logger.logError('No event handler defined for ' + event.state);
+      }
+    }), 0);
   }
 
   /*

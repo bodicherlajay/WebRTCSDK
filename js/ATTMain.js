@@ -22,8 +22,7 @@
   var logMgr = ATT.logManager.getInstance(),
     logger;
 
-  logMgr.configureLogger('ATTMain', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-  logger = logMgr.getLogger('ATTMain');
+  logger = logMgr.getLogger('ATTMain', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   // Fail if ATT is not defined. Everything else depends on it.
   if (undefined === window.ATT) {
     logger.logTrace('ATT is not defined.');
@@ -58,4 +57,6 @@
     }
   }, ATT.utils);
   logger.logTrace("created dictionary");
+
+  // Load all SKD errors in the dictionary
 }());
