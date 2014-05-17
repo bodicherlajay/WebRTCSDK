@@ -57,4 +57,6 @@
     }
   }, ATT.utils);
   logger.logTrace("created dictionary");
+
+  // Load all SKD errors in the dictionary
 }());
