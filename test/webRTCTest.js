@@ -11,7 +11,6 @@ describe('webRTC', function () {
     backupAtt;
 
   beforeEach(function () {
-    console.log("before each");
     backupAtt = ATT;
     this.xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
@@ -24,7 +23,6 @@ describe('webRTC', function () {
 
 
   afterEach(function () {
-    console.log("aftereach");
     this.xhr.restore();
     doOperation.restore();
     ATT = backupAtt;
