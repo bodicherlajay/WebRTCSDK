@@ -31,8 +31,6 @@
     if (depPeerConn !== undefined) {
       peerConnService = depPeerConn;
     }
-    logger.logInfo("Call Manager dependency:" + callMgr);
-    logger.logInfo("Peer Conn Service:" + peerConnService);
 
     var callbacks = sessionContext.getUICallbacks();
 

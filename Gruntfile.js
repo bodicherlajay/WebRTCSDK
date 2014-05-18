@@ -45,7 +45,7 @@ module.exports = function (grunt) {
       'js/appConfigModule.js',
       'js/CallManagementModule.js',
       'js/eventDispatcher.js',
-      'js/vendor/SDPParser.js',
+      'lib/vendor/SDPParser.js',
       'js/RTCEventModule.js',
       'js/adapter.js',
       'js/userMediaServiceModule.js',
@@ -64,7 +64,8 @@ module.exports = function (grunt) {
       'test/ATTMainTest.js',
       'test/resourceManagerTest.js',
       'test/RTCEventModuleTest.js',
-      'test/eventDispatcherTest.js'
+      'test/eventDispatcherTest.js',
+      'test/SDPParserTest.js'
     ],
     logLevel: 'INFO',
     port: 9876,
