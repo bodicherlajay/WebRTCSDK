@@ -223,10 +223,10 @@ if (Env === undefined) {
       e911Id = session.getE911Id();
 
       // todo: need to decide if callbacks should be mandatory
-      if (typeof config.onSessionReady !== 'function') {
+      if (typeof config.callbacks.onSessionReady !== 'function') {
         logger.logWarning('No UI success callback specified');
       }
-      if (typeof config.onError !== 'function') {
+      if (typeof config.callbacks.onError !== 'function') {
         logger.logWarning('No UI error callback specified');
       }
 
