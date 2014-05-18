@@ -18,7 +18,7 @@ describe('UserMediaService', function () {
 
   it('should call PeerConnectionService.start', function () {
     var stub = sinon.stub(ATT.PeerConnectionService, 'start', function () { });
-    ATT.UserMediaService.startCall({});
+    ATT.UserMediaService.startCall(sinon.spy());
     expect(stub.called).to.equal(true);
     stub.restore();
   });

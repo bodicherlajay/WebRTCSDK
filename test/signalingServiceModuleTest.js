@@ -7,7 +7,7 @@ describe('SignalingService', function () {
 
   var resourceManager,
     apiObj,
-    requests,
+    requests = [],
     xhr,
     callManager,
     sessionContext,
@@ -23,12 +23,17 @@ describe('SignalingService', function () {
 
     // call manager
     callManager = cmgmt.CallManager.getInstance();
+    callManager.CreateSession({token:"",e911Id: "", sessionId:""});
     sessionContext = callManager.getSessionContext();
-    stubGetEventObject = sinon.stub(sessionContext, 'getEventObject', function () {
+    sessionContext.setEventObject({resourceURL: ''});
+
+/*
+    stubGetEventObject = sinon.stub(sessionContext, 'getEventObject').withArgs().returns(function () {
       return {
         resourceURL: ''
       };
     });
+*/
 
     // fake xhr setup.
     xhr = sinon.useFakeXMLHttpRequest();
@@ -40,7 +45,7 @@ describe('SignalingService', function () {
   });
 
   afterEach(function () {
-    stubGetEventObject.restore();
+//    stubGetEventObject.restore();
     operationSpy.restore();
     xhr.restore();
   });
@@ -94,12 +99,14 @@ describe('SignalingService', function () {
           }
         };
       }),
-      successSpy = sinon.spy();
+      successSpy = sinon.spy(),
+      errorSpy = sinon.spy();
 
     ATT.SignalingService.sendOffer({
       calledParty: '123',
       sdp: 'sdp',
-      success: successSpy
+      success: successSpy,
+      error: errorSpy
     });
 
     // Response to startCall
