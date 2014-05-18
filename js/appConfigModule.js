@@ -15,10 +15,17 @@ if (!ATT) {
   'use strict';
 
   // DHS endpoint
-  var DHSConf = 'http://localhost:9000',
+  var DHSConf = 'http://localhost:9000';
+
+  if (DHSConf.indexOf(window.location.hostname) == -1) {
+      DHSConf = window.location.href;
+      if (DHSConf.lastIndexOf('/') == DHSConf.length - 1) {
+          DHSConf = DHSConf.slice(0, DHSConf.lastIndexOf('/'));
+      }
+  }
 
   // API Platform Endpoints
-    EnvConf = {
+  var EnvConf = {
       AMS: 'http://wdev.code-api-att.com:8080/RTC/v1',
       F6UAT: 'https://api-stage.mars.bf.sl.attcompute.com/RTC/v1',
       PROD: 'https://api.att.com/RTC/v1'
