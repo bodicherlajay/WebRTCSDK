@@ -65,7 +65,8 @@ module.exports = function (grunt) {
       'test/resourceManagerTest.js',
       'test/RTCEventModuleTest.js',
       'test/eventDispatcherTest.js',
-      'test/SDPParserTest.js'
+      'test/SDPParserTest.js',
+      'test/SDPFilterModuleTest.js'
     ],
     logLevel: 'INFO',
     port: 9876,
