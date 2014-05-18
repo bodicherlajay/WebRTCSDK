@@ -57,7 +57,6 @@ module.exports = function (grunt) {
       'js/eventChannel.js',
       'js/webRTC.js',
       //test load order
-      //'test/**/*.js'
       'test/test.att.utils.sdk-error-store.js',
       'test/attEnumTest.js',
       'test/APIConfigTest.js',
@@ -71,7 +70,6 @@ module.exports = function (grunt) {
       //'test/userMediaServiceModuletest.js'
       //'test/peerConnectionServiceModuleUnitTest.js'
       'test/webRTCTest.js'
-
     ],
     logLevel: 'INFO',
     port: 9876,
