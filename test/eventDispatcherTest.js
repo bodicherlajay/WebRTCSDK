@@ -6,7 +6,7 @@ describe('Event Dispatcher Tests', function () {
 
   var backupAtt, utils = ATT.utils, eventRegistry,
     onSessionReady, onError, onCallEnded, onCallError,
-    onIncomingCall, onConnecting, onCallInProgress,
+    onIncomingCall, onConnecting, onCallInProgress, event,
     RTCEventModule = ATT.RTCEvent.getInstance();
   beforeEach(function () {
     backupAtt = window.ATT;
@@ -53,7 +53,6 @@ describe('Event Dispatcher Tests', function () {
 
     function SessionContext(token, e9Id, sessionId, state) {
       var currState = state, callObject = null,
-        event = null,
         accessToken = token, e911Id = e9Id, currSessionId = sessionId,
         currentCallId, UICbks = {}, currentCall = null;
       return {
