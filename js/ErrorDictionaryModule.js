@@ -1,4 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
+/*global ATT: true,sdkErrorCollection:true */
 
 /** ErrorDictinaryModule will extend ATT.utils with a factory method to create Error Dictionaries.
  *  @warning Assumes ATT.utils is already defined.
