@@ -21,10 +21,10 @@ cmgmt = (function () {
     DeleteSession,
     CreateOutgoingCall,
     CreateIncomingCall,
-    DeleteCallObject,
-    userMediaService,
-    peerConnectionService,
-    rtcEventModule;
+    DeleteCallObject;
+    //userMediaService,
+    //peerConnectionService,
+    //rtcEventModule
 
   /**
   * Call Prototype

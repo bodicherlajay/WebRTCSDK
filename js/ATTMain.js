@@ -21,7 +21,8 @@
   'use strict';
   var logMgr = ATT.logManager.getInstance(),
     logger,
-    sdkErrors, idx;
+    sdkErrors,
+    idx;
 
   logger = logMgr.getLogger('ATTMain', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
   // Fail if ATT is not defined. Everything else depends on it.
