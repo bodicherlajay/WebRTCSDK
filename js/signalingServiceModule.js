@@ -13,8 +13,7 @@ if (!ATT) {
   'use strict';
 
   var logMgr = ATT.logManager.getInstance(), logger = null, resourceManager, callManager;
-  logMgr.configureLogger('SignalingService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-  logger = logMgr.getLogger('SignalingService');
+  logger = logMgr.getLogger('SignalingService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
   resourceManager = Env.resourceManager.getInstance();
   callManager = cmgmt.CallManager.getInstance();

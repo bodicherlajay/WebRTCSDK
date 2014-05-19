@@ -26,8 +26,7 @@ if (Env === undefined) {
     logMgr = ATT.logManager.getInstance(),
     logger;
 
-  logMgr.configureLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
-  logger = logMgr.getLogger('WebRTC');
+  logger = logMgr.getLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
   setupEventChannel = function () {
     logger.logTrace('setupEventChannel');
