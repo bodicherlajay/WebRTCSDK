@@ -254,7 +254,7 @@
       if (event.reason) {
         onCallError(rtcEvent.createEvent({
           state: mainModule.CallStatus.ERROR,
-          error: ATT.Error.create(event.reason);
+          error: ATT.Error.create(event.reason)
         }));
       } else {
         onCallEnded(rtcEvent.createEvent({
