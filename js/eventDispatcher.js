@@ -9,12 +9,13 @@
     onSessionReady,
     onIncomingCall,
     onConnecting,
+    onCallEstablished,
     onCallInProgress,
     onCallEnded,
     onCallError,
     onError,
     eventRegistry = {},
-    logger = Env.resourceManager.getInstance().getLogger("eventDispatcher");
+    logger = Env.resourceManager.getInstance().getLogger('eventDispatcher');
 
   function setCallManager(depCallMgr) {
     callMgr = depCallMgr;
@@ -68,6 +69,17 @@
       callbacks = sessionContext.getUICallbacks();
       if (callbacks.onConnecting) {
         callbacks.onConnecting(evt);
+      }
+    };
+
+    /**
+    * onCallEstablished
+    * @param {Object} the UI Event Object
+    */
+    onCallEstablished = function (evt) {
+      callbacks = sessionContext.getUICallbacks();
+      if (callbacks.onCallEstablished) {
+        callbacks.onCallEstablished(evt);
       }
     };
 
@@ -126,7 +138,7 @@
     // error: ''
     // ======================
     // Also, accept `data` object with some relevant info as needed
-    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
+    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function () {
       onSessionReady(rtcEvent.createEvent({
         state: mainModule.CallStatus.READY,
         data: '1234'
@@ -137,7 +149,7 @@
       onError(rtcEvent.createEvent(event));
     };
 
-    eventRegistry[mainModule.CallStatus.ERROR] = function (event, sessionContext) {
+    eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
       onCallError(rtcEvent.createEvent(event));
     };
 
@@ -159,7 +171,13 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
-      logger.logInfo('session open event received at ', event.timestamp);
+      onCallEstablished(rtcEvent.createEvent({
+        state: mainModule.CallStatus.ESTABLISHED,
+        from: event.from,
+        codec: event.codec,
+        to: event.to,
+        calltype: event.calltype
+      }));
       if (data.sdp) {
         peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
@@ -214,7 +232,7 @@
     //   }
     };
 
-    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function (event) {
+    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
       console.log("connecting:" + sessionContext.getCallObject());
       onConnecting(rtcEvent.createEvent({
         state: mainModule.CallStatus.CONNECTING,
@@ -248,7 +266,7 @@
       peerConnService.endCall();
     };
 
-    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function (event) {
+    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function () {
       onCallError(rtcEvent.createEvent({
         state: mainModule.CallStatus.ERROR
       }));

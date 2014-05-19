@@ -6,7 +6,7 @@ describe('Event Dispatcher Tests', function () {
 
   var backupAtt, utils = ATT.utils, eventRegistry,
     onSessionReady, onError, onCallEnded, onCallError,
-    onIncomingCall, onConnecting, onCallInProgress,
+    onIncomingCall, onConnecting, onCallInProgress, event,
     RTCEventModule = ATT.RTCEvent.getInstance();
   beforeEach(function () {
     backupAtt = window.ATT;
@@ -53,7 +53,6 @@ describe('Event Dispatcher Tests', function () {
 
     function SessionContext(token, e9Id, sessionId, state) {
       var currState = state, callObject = null,
-        event = null,
         accessToken = token, e911Id = e9Id, currSessionId = sessionId,
         currentCallId, UICbks = {}, currentCall = null;
       return {
@@ -136,10 +135,12 @@ describe('Event Dispatcher Tests', function () {
     });
 
     it('should invoke onError when RTC_SESSION_ERROR happens', function () {
-      onError = false;
-      eventRegistry = utils.createEventRegistry(goodContext, RTCEventModule);
+      var context = new SessionContext("token", "e911id", ATT.RTCCallEvents.RTC_SESSION_ERROR), called = false;
+      context.setUICallbacks({onError: function () { called = true; }});
+      eventRegistry = utils.createEventRegistry(context, RTCEventModule, cmgmt.CallManager.getInstance(), ATT.PeerConnectionService);
+      event = {reason: '', state: 'foo'};
       eventRegistry[ATT.SessionEvents.RTC_SESSION_ERROR](event);
-      assert.isTrue(onError);
+      assert.isTrue(called);
     });
 
     it('should invoke onCallInProgress when CALL_IN_PROGRESS happens', function () {
