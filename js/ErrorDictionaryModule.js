@@ -24,7 +24,7 @@
         reasonText: '',       //High level reason text, invalid input, forbidden
         errorDescription: '', //Error Description
         moduleID: '',
-        isSdkErr: true
+        isSdkErr: ''
       },
       newError;
 
@@ -56,6 +56,7 @@
       return error;
     }
     newError = Object.create(prototypeError);
+    newError.isSdkErr = true; // set this as SDK generated error
     // extend with the properties in the spec
     newError = utils.extend(newError, spec);
     newError = addFormatter(newError);// add `formatMethod`

@@ -245,8 +245,8 @@
       moduleID: 'RTC'
     },
 
-    // range SDK-50000 is reserverd for SDK errors
-    // SDK-50000 is reserverd for all error thrown within SDK (not API through DHS)
+    // range SDK-50000 is reserverd for DHS errors
+    // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
     {
       userErrorCode: "SDK-50000",
       moduleID: "DHS",
