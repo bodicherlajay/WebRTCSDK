@@ -59,4 +59,69 @@ describe('webRTC', function () {
 
   });
 
+  describe('hold', function () {
+    var stubSessionContext, fakeSessionContext, instanceFunction, holdCalled = false,
+      myCallManager = cmgmt.CallManager.getInstance();
+    it('will call hold if callObject is defined', function () {
+      instanceFunction = function () { return { hold: function () { holdCalled = true; } }; };
+      fakeSessionContext = {getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.hold();
+      expect(holdCalled).equals(true);
+      stubSessionContext.restore();
+    });
+    it('will not call hold if calledObject is null', function () {
+      instanceFunction = function () { return null; };
+      fakeSessionContext = {getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.hold();
+      stubSessionContext.restore();
+    });
+  });
+
+  describe('resume', function () {
+    var stubSessionContext, fakeSessionContext, instanceFunction, resumeCalled = false,
+      myCallManager = cmgmt.CallManager.getInstance();
+    it('will call resume if callObject is defined', function () {
+      instanceFunction = function () { return { resume: function () { resumeCalled = true; } }; };
+      fakeSessionContext = { getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.resume();
+      expect(resumeCalled).equals(true);
+      stubSessionContext.restore();
+    });
+    it('will not call resume if calledObject is null', function () {
+      instanceFunction = function () { return null; };
+      fakeSessionContext = {getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.resume();
+      stubSessionContext.restore();
+    });
+  });
+  describe('hangup', function () {
+    var stubSessionContext, fakeSessionContext, instanceFunction, hangupCalled = false,
+      myCallManager = cmgmt.CallManager.getInstance();
+    it('will call hangup if callObject is defined', function () {
+      instanceFunction = function () { return { end: function () { hangupCalled = true; } }; };
+      fakeSessionContext = { getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.hangup();
+      expect(hangupCalled).equals(true);
+      stubSessionContext.restore();
+    });
+    it('will not call hangup if calledObject is null', function () {
+      instanceFunction = function () { return null; };
+      fakeSessionContext = {getCallObject: instanceFunction };
+      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
+      stubSessionContext.returns(fakeSessionContext);
+      ATT.rtc.Phone.hangup();
+      stubSessionContext.restore();
+    });
+  });
+
 });
