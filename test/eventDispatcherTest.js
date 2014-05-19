@@ -135,10 +135,12 @@ describe('Event Dispatcher Tests', function () {
     });
 
     it('should invoke onError when RTC_SESSION_ERROR happens', function () {
-      onError = false;
-      eventRegistry = utils.createEventRegistry(goodContext, RTCEventModule);
+      var context = new SessionContext("token", "e911id", ATT.RTCCallEvents.RTC_SESSION_ERROR), called = false;
+      context.setUICallbacks({onError: function () { called = true; }});
+      eventRegistry = utils.createEventRegistry(context, RTCEventModule, cmgmt.CallManager.getInstance(), ATT.PeerConnectionService);
+      event = {reason: '', state: 'foo'};
       eventRegistry[ATT.SessionEvents.RTC_SESSION_ERROR](event);
-      assert.isTrue(onError);
+      assert.isTrue(called);
     });
 
     it('should invoke onCallInProgress when CALL_IN_PROGRESS happens', function () {
