@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT:true, Env: true, cmgmt: true, setCallManager: true*/
+/*global ATT:true, Env: true, cmgmt: true*/
 
 'use strict';
 
@@ -171,7 +171,6 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
-      logger.logInfo('session open event received at ', event.timestamp);
       onCallEstablished(rtcEvent.createEvent({
         state: mainModule.CallStatus.ESTABLISHED,
         from: event.from,

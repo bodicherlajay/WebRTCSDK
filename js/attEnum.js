@@ -83,6 +83,11 @@ if (!ATT) {
 * @constant {number} 
  */
     UNMUTED: 10,
+        /**
+* @memberof ATT.rtc.Phone
+* @constant {number} 
+ */
+    ESTABLISHED: 11,
        /**
 * @memberof ATT.rtc.Phone
 * @constant {number} 
