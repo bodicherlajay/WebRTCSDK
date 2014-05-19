@@ -24,7 +24,7 @@
     sdkErrors,
     idx;
 
-  logger = logMgr.getLogger('ATTMain', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
+  logger = logMgr.getLogger('ATTMain');
   // Fail if ATT is not defined. Everything else depends on it.
   if (undefined === window.ATT) {
     logger.logTrace('ATT is not defined.');
