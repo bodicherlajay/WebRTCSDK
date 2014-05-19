@@ -6,7 +6,7 @@
 (function (app) {
   'use strict';
 
-  var errorNamespace = {},
+  var module = {},
     init,
     create,
     publish,
@@ -20,10 +20,11 @@
   init = function () {
     logger.logDebug('Initializing error module');
 
-    // create namespace.
-    errorNamespace = ATT.utils.createNamespace(app, 'rtc.error');
-    errorNamespace.create = create;
-    errorNamespace.publish = publish;
+    module.create = create;
+    module.publish = publish;
+    
+    // add to the global namespace
+    app.Error = module;
   };
 
   create = function (err, operation, moduleId) {
@@ -101,10 +102,6 @@
 
     if (!callManager) {
       callManager = cmgmt.CallManager.getInstance();
-    }
-
-    if (!rtcEvent) {
-      rtcEvent = ATT.RTCEvent.getInstance();
     }
 
     if (!rtcEvent) {
