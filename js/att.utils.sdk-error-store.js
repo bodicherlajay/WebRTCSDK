@@ -36,7 +36,7 @@
       httpStatusCode: '',           //HTTP Status code
       errorDescription: 'XHR request error', //Error Description
       reasonText: 'There was an error in sending the XHR request',//High level reason text, invalid input, forbidden
-      helpText: 'Unable to complete requested operation'         //Help text which can be displayed on UI
+      helpText: 'Please look at tracelog for further information'         //Help text which can be displayed on UI
     },
     //SDK-20000 range reserved for webRTC module
     {
