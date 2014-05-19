@@ -16,13 +16,6 @@ describe('UserMediaService', function () {
     expect(ATT.UserMediaService.stopStream).to.be.a('function');
   });
 
-  it('should call PeerConnectionService.start', function () {
-    var stub = sinon.stub(ATT.PeerConnectionService, 'start', function () { });
-    ATT.UserMediaService.startCall(sinon.spy());
-    expect(stub.called).to.equal(true);
-    stub.restore();
-  });
-
   it('should add `playing` event listener to remoteVideo', function () {
     var vidElement = document.createElement('video');
     ATT.UserMediaService.onRemoteVideoStart(vidElement);
