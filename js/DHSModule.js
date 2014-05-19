@@ -87,10 +87,10 @@ if (!Env) {
     logger.logDebug('handleError: ' + operation);
     logger.logInfo('There was an error performing operation ' + operation);
 
-    var error = ATT.rtc.error.create(err, operation, 'DHS');
+    var error = ATT.Error.create(err, operation, 'DHS');
 
     if (typeof errHandler === 'function') {
-      ATT.rtc.error.publish(error, operation, errHandler);
+      ATT.Error.publish(error, operation, errHandler);
     }
   };
 
