@@ -51,7 +51,7 @@ describe('Event Dispatcher Tests', function () {
       }
     };
 
-    function SessionContext (token, e9Id, sessionId, state) {
+    function SessionContext(token, e9Id, sessionId, state) {
       var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
         currentCallId, UICbks = {}, currentCall = null;
       return {
@@ -145,6 +145,7 @@ describe('Event Dispatcher Tests', function () {
       eventRegistry = utils.createEventRegistry(context,RTCEventModule, callMgr , peerConn);
       eventRegistry[ATT.RTCCallEvents.CALL_IN_PROGRESS]({calltype: "", codec: ""});
       assert.isTrue(called);
+
     });
 
     it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {

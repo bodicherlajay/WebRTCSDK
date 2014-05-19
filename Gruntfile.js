@@ -66,9 +66,9 @@ module.exports = function (grunt) {
       'test/eventDispatcherTest.js',
       'test/SDPParserTest.js',
       'test/SDPFilterModuleTest.js',
-      //'test/signalingServiceModuleTest.js',
-      //'test/userMediaServiceModuletest.js'
-      //'test/peerConnectionServiceModuleUnitTest.js'
+      'test/signalingServiceModuleTest.js',
+      'test/userMediaServiceModuletest.js',
+      //'test/peerConnectionServiceModuleUnitTest.js',
       'test/webRTCTest.js'
     ],
     logLevel: 'INFO',

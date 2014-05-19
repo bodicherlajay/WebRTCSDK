@@ -5,27 +5,23 @@
 
 describe('webRTC', function () {
   'use strict';
-  var resourceManager = Env.resourceManager.getInstance(), doOperation,
-    apiObj = resourceManager.getAPIObject(),
-    requests,
-    backupAtt;
+  var resourceManager = Env.resourceManager.getInstance(),
+    doOperation,
+    requests;
 
   beforeEach(function () {
-    backupAtt = ATT;
     this.xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
 
     this.xhr.onCreate = function (xhr) {
       requests.push(xhr);
     };
-    doOperation = sinon.stub(resourceManager, "doOperation");
+    doOperation = sinon.spy(resourceManager, "doOperation");
   });
-
 
   afterEach(function () {
     this.xhr.restore();
-    doOperation.restore();
-    ATT = backupAtt;
+    resourceManager.doOperation.restore();
   });
 
   it('ATT namespace should exist and contain utils', function () {
@@ -33,9 +29,11 @@ describe('webRTC', function () {
     expect(ATT.utils).to.be.an('object');
   });
 
-  it ('login with audio only service', function () {
+  it('login with audio only service', function () {
+
     ATT.rtc.Phone.login({token: "token", e911Id: "e911id", audioOnly: true, callbacks: {onSessionReady: function () {}, onError : function () {}}});
     expect(doOperation.calledOnce).equals(true);
+
     var opData = {
       data: {
         'session': {

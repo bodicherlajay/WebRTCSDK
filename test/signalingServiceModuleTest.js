@@ -11,7 +11,6 @@ describe('SignalingService', function () {
     xhr,
     callManager,
     sessionContext,
-    stubGetEventObject,
     operationSpy;
 
   beforeEach(function () {
@@ -19,21 +18,17 @@ describe('SignalingService', function () {
     // resource Manager
     resourceManager = Env.resourceManager.getInstance();
     apiObj = resourceManager.getAPIObject();
-    operationSpy = sinon.stub(resourceManager, 'doOperation');
+    operationSpy = sinon.spy(resourceManager, 'doOperation');
 
     // call manager
     callManager = cmgmt.CallManager.getInstance();
-    callManager.CreateSession({token:"",e911Id: "", sessionId:""});
+    callManager.CreateSession({
+      token: "",
+      e911Id: "",
+      sessionId: ""
+    });
     sessionContext = callManager.getSessionContext();
     sessionContext.setEventObject({resourceURL: ''});
-
-/*
-    stubGetEventObject = sinon.stub(sessionContext, 'getEventObject').withArgs().returns(function () {
-      return {
-        resourceURL: ''
-      };
-    });
-*/
 
     // fake xhr setup.
     xhr = sinon.useFakeXMLHttpRequest();
@@ -45,8 +40,7 @@ describe('SignalingService', function () {
   });
 
   afterEach(function () {
-//    stubGetEventObject.restore();
-    operationSpy.restore();
+    resourceManager.doOperation.restore();
     xhr.restore();
   });
 
@@ -121,9 +115,8 @@ describe('SignalingService', function () {
     expect(configPassedToStartCall.data.call).to.be.an('object');
     expect(configPassedToStartCall.data.call.sdp).to.equal('sdp');
     expect(configPassedToStartCall.data.call.calledParty).to.equal('sip:123@icmn.api.att.net');
-
+    expect(errorSpy.called).to.equal(false);
     expect(successSpy.called).to.equal(true);
-    operationSpy.restore();
     stub.restore();
   });
 
@@ -221,6 +214,7 @@ describe('SignalingService', function () {
         };
       });
 
+
     ATT.SignalingService.sendAnswer({
       sdp: 'sdp',
       success: successSpy,
@@ -317,7 +311,6 @@ describe('SignalingService', function () {
     // send callback should be called
     expect(operationSpy.called).to.equal(true);
     expect(successSpy.called).to.equal(false);
-    operationSpy.restore();
   });
 
   it('sendHoldCall should call success callback on 204 HTTP response code.', function () {
@@ -350,7 +343,6 @@ describe('SignalingService', function () {
     // send callback should be called
     expect(operationSpy.called).to.equal(true);
     expect(successSpy.called).to.equal(true);
-    operationSpy.restore();
   });
 
   it('sendHoldCall should call error callback if not 204 or 500+ HTTP response code.', function () {
