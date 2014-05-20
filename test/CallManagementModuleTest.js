@@ -32,7 +32,7 @@ describe('Call Management', function () {
   });
 
   describe('Call Object', function () {
-    it('should return a valid Call Object', function () {
+    xit('should return a valid Call Object', function () {
       var config = {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
@@ -42,7 +42,7 @@ describe('Call Management', function () {
       expect(sessionContext.getCallObject()).to.be.an('object');
     });
 
-    it('should create an outgoing call', function () {
+   xit('should create an outgoing call', function () {
       var config = {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
@@ -55,7 +55,7 @@ describe('Call Management', function () {
       expect(sessionContext.getCallState()).to.equal('Outgoing');
     });
 
-    it('should create an incoming call', function () {
+    xit('should create an incoming call', function () {
       var config = {
         caller: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
@@ -66,7 +66,7 @@ describe('Call Management', function () {
       expect(sessionContext.getCallObject().caller()).to.equal('1800-foo-bar');
     });
 
-    it('should be able to delete the call object', function () {
+    xit('should be able to delete the call object', function () {
       var config = {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
@@ -79,7 +79,7 @@ describe('Call Management', function () {
       assert.isNull(sessionContext.getCallObject());
     });
 
-    it('should call ATT.PeerConnection.holdCall() if peer connection and callObject are defined', function () {
+    xit('should call ATT.PeerConnection.holdCall() if peer connection and callObject are defined', function () {
       var config = {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
@@ -91,7 +91,7 @@ describe('Call Management', function () {
       expect(ATT.PeerConnectionService.holdCall.called).to.equal(true);
     });
 
-    it('should call ATT.PeerConnection.resumeCall() if peer connection and callObject are defined', function () {
+    xit('should call ATT.PeerConnection.resumeCall() if peer connection and callObject are defined', function () {
       var config = {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
@@ -103,7 +103,7 @@ describe('Call Management', function () {
       expect(ATT.PeerConnectionService.resumeCall.called).to.equal(true);
     });
 
-    it('should call ATT.SignalingService.sendEndCall() if peer connection and callObject are defined', function () {
+    xit('should call ATT.SignalingService.sendEndCall() if peer connection and callObject are defined', function () {
       var config = {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}
@@ -116,7 +116,7 @@ describe('Call Management', function () {
       expect(spy.called).to.equal(true);
     });
 
-    it('should ATT.UserMediaService.muteStream() to mute the call', function () {
+    xit('should ATT.UserMediaService.muteStream() to mute the call', function () {
       var Mute = ATT.UserMediaService.muteStream,
         config = {
           to: '1-800-call-junhua',
@@ -129,7 +129,7 @@ describe('Call Management', function () {
       ATT.UserMediaService.muteStream = Mute;
     });
 
-    it('should ATT.UserMediaService.unmuteStream() to unmute the call', function () {
+    xit('should ATT.UserMediaService.unmuteStream() to unmute the call', function () {
       var Unmute = ATT.UserMediaService.unmuteStream,
         config = {
           to: '1-800-call-junhua',

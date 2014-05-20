@@ -50,9 +50,11 @@
       errObj = err.getJson();
       if (errObj.RequestError) {    // Known API errors
         if (errObj.RequestError.ServiceException) { // API Service Exceptions
-          error = ATT.errorDictionary.getErrorByOpStatus(operation, err.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+          error = ATT.errorDictionary.getErrorByOpStatus(operation,
+            err.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
         } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
-          error = ATT.errorDictionary.getErrorByOpStatus(operation, err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+          error = ATT.errorDictionary.getErrorByOpStatus(operation,
+            err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
         } else if (errObj.RequestError.Exception) { // API Exceptions
           error = ATT.errorDictionary.getDefaultError({
             moduleID: moduleId,

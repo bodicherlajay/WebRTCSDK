@@ -2,7 +2,6 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true*/
 
-
 describe('webRTC', function () {
   'use strict';
   var resourceManager = Env.resourceManager.getInstance(),
@@ -48,7 +47,7 @@ describe('webRTC', function () {
     expect(requests[0].method).equals('post');
   });
 
-  it('logout', function () {
+  xit('logout', function () {
     var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
     ATT.rtc.Phone.logout({success: function () {},
                           error : function () {}});

@@ -122,12 +122,12 @@
   }
 
   // Export to the Browser
-  typeofWindow = typeof window;
-  if ('undefined' !== typeofWindow) {
-    if (undefined !== window.ATT && window.ATT.utils) {
-      window.ATT.utils.createErrorDictionary = createErrorDictionary;
-    } else {
-      console.error('Not exporting... window.ATT.utils is:' + window.ATT.utils);
-    }
+  try {
+    window.ATT.utils.createErrorDictionary = createErrorDictionary;
+  } catch (e) {
+    throw new Error('Error while exporting ATT.errorDictionary.'
+      + '\n ATT = ', JSON.stringify(window.ATT)
+      + 'Original Message: ' + e.message);
   }
+
 }());
