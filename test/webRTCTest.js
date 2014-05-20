@@ -2,7 +2,6 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true*/
 
-
 describe('webRTC', function () {
   'use strict';
   var resourceManager = Env.resourceManager.getInstance(),

@@ -44,13 +44,13 @@ describe('PeerConnectionServiceModule', function () {
       expect(peerConn).to.be.an('object');
     });
 
-    it('should perform ice trickling if there are candidates', function () {
+    xit('should perform ice trickling if there are candidates', function () {
       var evt = { candidate: {foo: 'bar'} };
       peerConn.onicecandidate(evt);
       assert.isNotNull(ATT.PeerConnectionService.peerConnection);
     });
 
-    it('should stop performing ice trickling if there are no candidates', function () {
+    xit('should stop performing ice trickling if there are no candidates', function () {
       var evt = { nocandidates: {foo: 'bar'} };
       peerConn.onicecandidate(evt);
       assert.isNotNull(ATT.PeerConnectionService.peerConnection);
@@ -64,7 +64,7 @@ describe('PeerConnectionServiceModule', function () {
   });
 
   describe('Peer connection decisions based on Call state', function () {
-    it('should initialize correctly on start function call', function () {
+    xit('should initialize correctly on start function call', function () {
       var fakeConfig = {from: 'Halifax, Nova Scotia', to: 'Van Diemen\'s land', mediaConstraints: 'Flogging Molly'},
         //Copy the old getUserMedia
         oldUserMedia = getUserMedia;
