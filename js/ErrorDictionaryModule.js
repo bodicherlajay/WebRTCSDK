@@ -7,7 +7,7 @@
 
 (function () {
   "use strict";
-  var typeofWindow, typeofModule;
+  var typeofModule;
   /** Will create an error object using a prototype and will append
    *  all the properties in `spec`
    *  @param spec An object specifying the properties that need to be added to
