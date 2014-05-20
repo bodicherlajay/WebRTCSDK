@@ -118,6 +118,30 @@ if (!ATT) {
     UNKNOWN:                  'Unknown'
   };
 
+
+  module.EventsMapping = {
+    SESSION_OPEN:             module.CallStatus.ESTABLISHED,
+    SESSION_MODIFIED:         module.CallStatus.SESSION_MODIFIED,
+    SESSION_TERMINATED:       module.CallStatus.ERROR,
+    CALL_CONNECTING:          module.CallStatus.CONNECTING,
+    CALL_IN_PROGRESS:         module.CallStatus.INPROGRESS,
+    INVITATION_RECEIVED:      module.CallStatus.RINGING,
+    MODIFICATION_RECEIVED:    module.CallStatus.MODIFICATION_RECEIVED,
+    MODIFICATION_TERMINATED:  module.CallStatus.MODIFICATION_TERMINATED,
+    TRANSFER_INITIATED:       module.CallStatus.TRANSFER_INITIATED,
+    TRANSFER_TERMINATED:      module.CallStatus.TRANSFER_TERMINATED,
+    ADD_FAILED:               module.CallStatus.ADD_FAILED,
+    REMOVE_FAILED:            module.CallStatus.REMOVE_FAILED,
+    MOVE_TERMINATED:          module.CallStatus.MOVE_TERMINATED,
+    MUTED:                    module.CallStatus.MUTED,
+    RTC_SESSION_CREATED:      module.CallStatus.READY,
+    RTC_SESSION_DELETED:      module.SessionEvents.RTC_SESSION_DELETED,
+    RTC_SESSION_ERROR:        module.SessionEvents.RTC_SESSION_ERROR,
+    UNMUTED:                  module.CallStatus.UNMUTED,
+    UNKNOWN:                  module.CallStatus.ERROR,
+
+  };
+
   module.MediaTypes = {
     AUDIO_VIDEO:      'audiovideo',
     MEDIA_CONFERENCE: 'media-conference',
