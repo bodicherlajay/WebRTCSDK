@@ -113,7 +113,7 @@
                     logger.logInfo('success for offer sent, outgoing call');
                   },
                   error: function (error) {
-                    ATT.Error.publish(error);
+                    ATT.Error.publish(error, 'SendOffer');
                   }
                 });
               } catch (e) {

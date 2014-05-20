@@ -56,7 +56,7 @@ if (!ATT) {
 
           config.success.call(null, headers);
         },
-        error: config.error.bind(this, config)
+        error: config.error
       });
     },
 

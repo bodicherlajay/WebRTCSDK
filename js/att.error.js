@@ -77,7 +77,7 @@
             operationName: operation,
             httpStatusCode: err.getResponseStatus(),
             errorDescription: 'Operation ' + operation + ' failed',
-            reasonText: 'WebRTC operation ' + operation + ' failed due to unknown reason'
+            reasonText: errObj.reason || 'WebRTC operation ' + operation + ' failed due to unknown reason'
           });
         }
       }
@@ -117,6 +117,7 @@
     if (session) {
       sessionId = session.getSessionId();
       if (sessionId) {
+        logger.logTrace('Publishing the error as an event');
         // publish the UI callback event for call fail state
         return ATT.event.publish(sessionId + '.responseEvent', {
           state: ATT.CallStatus.ERROR,
@@ -126,12 +127,14 @@
       callbacks = session.getUICallbacks();
       if (callbacks) {
         if (typeof callbacks.onError === 'function') {
+          logger.logTrace('Publishing the error through on error UI callback');
           return callbacks.onError(rtcEvent.createEvent({
             state: ATT.CallState.ERROR,
             error: error
           }));
         }
         if (typeof callbacks.onCallError === 'function') {
+          logger.logTrace('Publishing the error through on call error UI callback');
           return callbacks.onCallError(rtcEvent.createEvent({
             state: ATT.CallState.ERROR,
             error: error

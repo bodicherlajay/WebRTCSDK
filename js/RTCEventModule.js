@@ -58,7 +58,7 @@ if (!ATT) {
           state: event.state,
           codec: CODEC,
           calltype: (CODEC.length === 1) ? 'audio' : 'video',
-          error: event.reason || ''
+          error: event.error || event.reason || ''
         }), {
           sdp: event.sdp || '',
           resource: event.resourceURL || '',
