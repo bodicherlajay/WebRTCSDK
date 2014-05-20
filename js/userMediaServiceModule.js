@@ -143,6 +143,7 @@
 
   //When this modules gets loaded, we should have the following services available to consume
   function init() {
+    logger.logInfo("Initializing User Media Service...");
     logger.logDebug("Setting the call manager");
     module.setCallManager(window.cmgmt.CallManager.getInstance());
     logger.logDebug("Setting the peer connection service");
