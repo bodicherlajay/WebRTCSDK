@@ -27,7 +27,24 @@ if (!ATT) {
         createEvent: module.createEvent
       };
     };
+   /* Mapping the event state to the UI event object
+   * @param {Object} event object
+   * mapps the values from attEnum.js
+   */
 
+  function mappingEventState(event) {
+    var eventstate = event.state;
+    switch (eventstate) {
+    case mainModule.RTCCallEvents.SESSION_TERMINATED:
+      if (event.reason) {
+        return mainModule.CallStatus.ERROR;
+      }
+      return mainModule.CallStatus.ENDED;
+    default:
+      return event.state;
+    }
+
+  }
   /**
   * Dispatch Event to Registry
   * @param {Object} event The event object
@@ -55,7 +72,7 @@ if (!ATT) {
         eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
           from: event.from ? event.from.split('@')[0].split(':')[1] : '',
           to: session && session.getCallObject() ? session.getCallObject().callee() : '',
-          state: event.state,
+          state: mappingEventState(event),
           codec: CODEC,
           calltype: (CODEC.length === 1) ? 'audio' : 'video',
           error: event.reason || ''
@@ -69,7 +86,6 @@ if (!ATT) {
       }
     }, 0);
   }
-
   /*
   * Subscribes to all Event Channel announcements
   * and triggers UI callbacks
