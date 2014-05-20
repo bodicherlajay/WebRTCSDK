@@ -2,7 +2,7 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true*/
 
-describe.only('webRTC', function () {
+describe('webRTC', function () {
   'use strict';
   var resourceManager = Env.resourceManager.getInstance(),
     doOperation,
@@ -47,16 +47,20 @@ describe.only('webRTC', function () {
     expect(requests[0].method).equals('post');
   });
 
-  it('logout', function () {
-    var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
-    ATT.rtc.Phone.logout({success: function () {},
-                          error : function () {}});
-    expect(doOperation.calledOnce).equals(true);
-    requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
-    expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
-    expect(requests[0].method).equals('delete');
-    var hdr = requests[0].url.indexOf(expectedLocationHeader) !== -1 ?true: false;
-    expect(hdr).equals(true);
+  describe('logout', function () {
+    it('logout', function () {
+      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204", userMedia = ATT.UserMediaService, stub;
+      stub = sinon.stub(ATT.UserMediaService,"stopStream");
+      ATT.rtc.Phone.logout({success: function () {},
+        error : function () {}});
+      expect(doOperation.calledOnce).equals(true);
+      requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
+      expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
+      expect(requests[0].method).equals('delete');
+      var hdr = requests[0].url.indexOf(expectedLocationHeader) !== -1 ?true: false;
+      expect(hdr).equals(true);
+      //todo ? no need to call restore on stub
+    });
   });
 
   describe('hold', function () {
