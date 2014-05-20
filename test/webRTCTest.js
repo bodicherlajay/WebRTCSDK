@@ -35,6 +35,7 @@ describe('webRTC', function () {
     requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
     expect(requests[0].requestBody).equals('{"session":{"mediaType":"dtls-srtp","ice":"true","services":["ip_voice_call"]}}');
     expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
+    expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
   });
 
   it('login with audio and video service', function () {
@@ -45,6 +46,7 @@ describe('webRTC', function () {
     expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
     expect(requests[0].requestBody).equals('{"session":{"mediaType":"dtls-srtp","ice":"true","services":["ip_voice_call","ip_video_call"]}}');
     expect(requests[0].method).equals('post');
+    expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
   });
 
   describe('logout', function () {
@@ -58,6 +60,7 @@ describe('webRTC', function () {
       expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
       expect(requests[0].method).equals('delete');
       var hdr = requests[0].url.indexOf(expectedLocationHeader) !== -1 ?true: false;
+      expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
       expect(hdr).equals(true);
       //todo ? no need to call restore on stub
     });
