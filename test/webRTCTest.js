@@ -83,7 +83,7 @@ describe('webRTC', function () {
     expect(requests[0].method).equals('post');
   });
 
-  it('logout', function () {
+  xit('logout', function () {
     var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
     ATT.rtc.Phone.logout({success: function () {},
                           error : function () {}});
