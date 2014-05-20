@@ -92,7 +92,9 @@ describe('webRTC', function () {
     var opData = {
       params: {
         headers: {
-          'Authorization': "token"
+          'Authorization': "token",
+          'x-e911Id': "e911Id",
+          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
         }
       },
       success: sinon.spy(),
