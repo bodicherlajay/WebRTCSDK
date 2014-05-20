@@ -66,7 +66,6 @@
 
       var self = this,
         rm = cmgmt.CallManager.getInstance(),
-        session = rm.getSessionContext(),
         pc;
 
       try {
