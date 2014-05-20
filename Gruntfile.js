@@ -51,7 +51,7 @@ module.exports = function (grunt) {
       'js/userMediaServiceModule.js',
       'js/SDPFilterModule.js',
       'js/signalingServiceModule.js',
-      'js/peerConnectionServiceModule.js',
+      'js/att.peer-connection-service.js',
       'js/att.error.js',
       'js/att.rtc.dhs.js',
       'js/eventChannel.js',
@@ -66,7 +66,7 @@ module.exports = function (grunt) {
       'test/ErrorDictionaryModuleTest.js',
       'test/eventChannelTest.js',
       'test/eventDispatcherTest.js',
-      'test/peerConnectionServiceModuleUnitTest.js',
+      'test/test.att.peer-connection-service.js',
 
       'test/RTCEventModuleTest.js',
       'test/signalingServiceModuleTest.js',
