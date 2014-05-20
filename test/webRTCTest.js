@@ -58,7 +58,7 @@ describe('webRTC', function () {
 
   it('login with audio and video service', function () {
     var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
-    ATT.rtc.Phone.login({token: "token", e911Id: "e911id", audioOnly: true, callbacks: {onSessionReady: function () {}, onError : function () {}}});
+    ATT.rtc.Phone.login({token: "token", e911Id: "e911id", callbacks: {onSessionReady: function () {}, onError : function () {}}});
     expect(doOperation.calledOnce).equals(true);
     var opData = {
       data: {
@@ -81,8 +81,30 @@ describe('webRTC', function () {
     doOperation.calledWithMatch(opData);
     requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
     expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
+    expect(requests[0].method).equals('post');
   });
 
+  it('logout', function () {
+    var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
+    ATT.rtc.Phone.logout({success: function () {},
+                          error : function () {}});
+    expect(doOperation.calledOnce).equals(true);
+    var opData = {
+      params: {
+        headers: {
+          'Authorization': "token",
+          'x-e911Id': "e911Id",
+          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
+        }
+      },
+      success: sinon.spy(),
+      error: sinon.spy()
+    };
+    doOperation.calledWithMatch(opData);
+    requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
+    expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
+    expect(requests[0].method).equals('delete');
+  });
 
   describe('hold', function () {
     var stubSessionContext, fakeSessionContext, instanceFunction, holdCalled = false,
