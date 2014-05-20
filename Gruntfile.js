@@ -52,8 +52,8 @@ module.exports = function (grunt) {
       'js/SDPFilterModule.js',
       'js/signalingServiceModule.js',
       'js/peerConnectionServiceModule.js',
-      'js/error.js',
-      'js/DHSModule.js',
+      'js/att.error.js',
+      'js/att.rtc.dhs.js',
       'js/eventChannel.js',
       'js/webRTC.js',
       //test load order
