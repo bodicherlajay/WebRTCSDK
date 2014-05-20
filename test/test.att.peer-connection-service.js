@@ -35,10 +35,17 @@ describe('PeerConnectionServiceModule', function () {
   });
 
   describe('Creation of the actual peer connection', function () {
-    var iceServers = [{ 'url': 'STUN:74.125.133.127:19302' }], peerConn;
-    ATT.PeerConnectionService.configureICEServers(iceServers);
-    ATT.PeerConnectionService.createPeerConnection();
-    peerConn = ATT.PeerConnectionService.peerConnection;
+
+    var iceServers,
+      peerConn;
+
+    beforeEach(function () {
+      iceServers = [{ 'url': 'STUN:74.125.133.127:19302' }];
+
+      ATT.PeerConnectionService.configureICEServers(iceServers);
+      ATT.PeerConnectionService.createPeerConnection();
+      peerConn = ATT.PeerConnectionService.peerConnection;
+    });
 
     it('should create a PeerConnection using the ICE server', function () {
       expect(peerConn).to.be.an('object');
