@@ -69,6 +69,7 @@ describe('Event Channel', function () {
         eventChannel = ATT.utils.createEventChannel(channelConfig);
         expect(eventChannel.startListening).to.be.a('function');
       });
+
       xit('should call resourceManager.doOperation on `startListening` and change `isListening` flag to true', function () {
         channelConfig.resourceManager.doOperation = sinon.spy();
         eventChannel = ATT.utils.createEventChannel(channelConfig);
