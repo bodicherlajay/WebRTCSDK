@@ -19,16 +19,27 @@ if (Env === undefined) {
 
   var resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance(),
+    handleError,
     setupEventChannel,
     shutdownEventChannel,
-    handleError,
     createWebRTCSessionSuccess,
     logMgr = ATT.logManager.getInstance(),
     logger;
 
   logger = logMgr.getLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
-  setupEventChannel = function () {
+  handleError = function (operation, errHandler, err) {
+    logger.logDebug('handleError: ' + operation);
+    logger.logInfo('There was an error performing operation ' + operation);
+
+    var error = ATT.Error.create(err, operation);
+
+    if (typeof errHandler === 'function') {
+      ATT.Error.publish(error, operation, errHandler);
+    }
+  };
+
+  setupEventChannel = function (config) {
     logger.logDebug('setupEventChannel');
 
     var session = callManager.getSessionContext(),
@@ -48,8 +59,12 @@ if (Env === undefined) {
 
     ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
     if (ATT.utils.eventChannel) {
-      ATT.utils.eventChannel.startListening();
-      logger.logInfo('Event channel setup and running...');
+      logger.logInfo('Event channel up and running');
+
+      ATT.utils.eventChannel.startListening({
+        success: config.success,
+        error: config.error
+      });
     } else {
       throw 'Event channel setup failed';
     }
@@ -59,17 +74,6 @@ if (Env === undefined) {
     logger.logDebug('shutdownEventChannel');
     ATT.utils.eventChannel.stopListening();
     logger.logInfo('Event channel shutdown successfully');
-  };
-
-  handleError = function (operation, errHandler, err) {
-    logger.logDebug('handleError: ' + operation);
-    logger.logInfo('There was an error performing operation ' + operation);
-
-    var error = ATT.Error.create(err, operation);
-
-    if (typeof errHandler === 'function') {
-      ATT.Error.publish(error, operation, errHandler);
-    }
   };
 
   /**
@@ -141,7 +145,12 @@ if (Env === undefined) {
 
       // fire up the event channel after successfult create session
       logger.logInfo("Setting up event channel...");
-      setupEventChannel();
+      setupEventChannel({
+        success: function (msg) {
+          logger.logInfo(msg);
+        },
+        error: handleError.bind(this, 'EventChannel', errorHandler)
+      });
 
     } catch (err) {
       handleError.call(this, 'CreateSession', errorHandler, err);

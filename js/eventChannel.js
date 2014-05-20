@@ -83,9 +83,14 @@
     }
 
     // setup success and error callbacks
-    onSuccess =  function (response) {
+    onSuccess =  function (config, response) {
       logger.logDebug("on success");
       logger.logDebug(response);
+
+      if (typeof config.success === 'function') {
+        config.success('Sucessfully got response from event channel');
+      }
+
       if (!isListening) {
         logger.logDebug("Not processing response because event channel is not running");
         return;
@@ -120,9 +125,8 @@
       }
     };
 
-    onError =  function (error) { // only used for Long Polling
-      logger.logError('ERROR: Network Error: ' + error);
-      return;
+    onError =  function (config, error) { // only used for Long Polling
+      config.error(error);
     };
 
     onTimeOut = function () {
@@ -134,9 +138,9 @@
       }
     };
 
-    function startListening() {
+    function startListening(config) {
       isListening = true;
-      logger.logInfo("Starting the event channel");
+      logger.logInfo("Listening to event channel");
       //setup httpConfig for REST call
       httpConfig = {
         params: {
@@ -145,8 +149,8 @@
             'Authorization' : 'Bearer ' + channelConfig.accessToken
           }
         },
-        success: onSuccess,
-        error: onError,
+        success: onSuccess.bind(this, config),
+        error: onError.bind(this, config),
         ontimeout: onTimeOut
       };
       setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 5);
@@ -154,7 +158,7 @@
 
     function stopListening() {
       //todo fix me, properly cancel the xhr request to end the channel
-      logger.logInfo("Event channel stopped");
+      logger.logInfo("Stopped listening to event channel");
       isListening = false;
     }
 
