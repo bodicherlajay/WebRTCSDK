@@ -56,6 +56,34 @@ describe('webRTC', function () {
     expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
   });
 
+  it('login with audio and video service', function () {
+    var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
+    ATT.rtc.Phone.login({token: "token", e911Id: "e911id", audioOnly: true, callbacks: {onSessionReady: function () {}, onError : function () {}}});
+    expect(doOperation.calledOnce).equals(true);
+    var opData = {
+      data: {
+        'session': {
+          'mediaType': 'dtls-srtp',
+          'ice': 'true',
+          'services': ['ip_voice_call','ip_video_call']
+        }
+      },
+      params: {
+        headers: {
+          'Authorization': "token",
+          'x-e911Id': "e911Id",
+          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
+        }
+      },
+      success: sinon.spy(),
+      error: sinon.spy()
+    };
+    doOperation.calledWithMatch(opData);
+    requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
+    expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
+  });
+
+
   describe('hold', function () {
     var stubSessionContext, fakeSessionContext, instanceFunction, holdCalled = false,
       myCallManager = cmgmt.CallManager.getInstance();
