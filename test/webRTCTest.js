@@ -51,18 +51,18 @@ describe('webRTC', function () {
 
   describe('logout', function () {
     it('logout', function () {
-      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204", userMedia = ATT.UserMediaService, stub;
-      stub = sinon.stub(ATT.UserMediaService,"stopStream");
+      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204", stub, hdr;
+      stub = sinon.stub(ATT.UserMediaService, "stopStream");
       ATT.rtc.Phone.logout({success: function () {},
         error : function () {}});
       expect(doOperation.calledOnce).equals(true);
       requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
       expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
       expect(requests[0].method).equals('delete');
-      var hdr = requests[0].url.indexOf(expectedLocationHeader) !== -1 ?true: false;
+      hdr = requests[0].url.indexOf(expectedLocationHeader) !== -1 ? true : false;
       expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
       expect(hdr).equals(true);
-      //todo ? no need to call restore on stub
+      stub.restore();
     });
   });
 
