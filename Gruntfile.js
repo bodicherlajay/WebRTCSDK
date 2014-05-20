@@ -59,6 +59,7 @@ module.exports = function (grunt) {
       //test load order
       'test/test.att.utils.sdk-error-store.js',
       'test/APIConfigTest.js',
+      'test/resourceManagerTest.js',
       'test/attEnumTest.js',
       'test/ATTMainTest.js',
       'test/CallManagementModuleTest.js',
@@ -66,13 +67,14 @@ module.exports = function (grunt) {
       'test/eventChannelTest.js',
       'test/eventDispatcherTest.js',
       'test/peerConnectionServiceModuleUnitTest.js',
-      'test/resourceManagerTest.js',
+
       'test/RTCEventModuleTest.js',
+      'test/signalingServiceModuleTest.js',
       'test/SDPParserTest.js',
       'test/SDPFilterModuleTest.js',
-      'test/signalingServiceModuleTest.js',
       'test/userMediaServiceModuletest.js',
       'test/webRTCTest.js'
+
     ],
     logLevel: 'INFO',
     port: 9876,

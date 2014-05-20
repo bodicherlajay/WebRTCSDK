@@ -57,7 +57,7 @@ if (!ATT) {
           to: session && session.getCallObject() ? session.getCallObject().callee() : '',
           state: event.state,
           codec: CODEC,
-          calltype: (CODEC.length > 0 && CODEC.length === 1) ? 'audio' : 'video',
+          calltype: (CODEC.length === 1) ? 'audio' : 'video',
           error: event.reason || ''
         }), {
           sdp: event.sdp || '',
