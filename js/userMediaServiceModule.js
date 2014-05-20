@@ -4,12 +4,6 @@
 //Dependency: Env.resourceManager
 //Runtime: cmgmt.CallManager, ATT.peerConnectionService
 
-/*
-if (!ATT) {
-  var ATT = {};
-}
-*/
-
 (function (app) {
   'use strict';
 
@@ -47,7 +41,7 @@ if (!ATT) {
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
 
-      ATT.PeerConnectionService.start(config);
+      peerConnectionService.start(config);
       // set up listener for remote video start
       this.onRemoteVideoStart(config.remoteVideo);
     },
@@ -59,8 +53,7 @@ if (!ATT) {
     */
     onRemoteVideoStart: function (remoteVideo) {
       remoteVideo.addEventListener('playing', function () {
-        var callMgr = window.cmgmt.CallManager.getInstance(),
-          sessionId = callMgr.getSessionContext().getSessionId();
+        var sessionId = callManager.getSessionContext().getSessionId();
 
         ATT.event.publish(sessionId + '.responseEvent', {
           state : ATT.RTCCallEvents.CALL_IN_PROGRESS
@@ -148,5 +141,14 @@ if (!ATT) {
     }
   };
 
+  //When this modules gets loaded, we should have the following services available to consume
+  function init() {
+    logger.logDebug("Setting the call manager");
+    module.setCallManager(window.cmgmt.CallManager.getInstance());
+    logger.logDebug("Setting the peer connection service");
+    module.setPeerConnectionService(app.PeerConnectionService);
+  }
+  init();
+
   app.UserMediaService = module;
-}(ATT || {}));
+}(ATT));

@@ -26,11 +26,12 @@
   }
 
   function createEventRegistry(sessionContext, rtcEvent, depCallMgr, depPeerConn) {
+    //Call set methods for jslint
     if (depCallMgr !== undefined) {
-      callMgr = depCallMgr;
+      setCallManager(depCallMgr);
     }
     if (depPeerConn !== undefined) {
-      peerConnService = depPeerConn;
+      setPeerConnService(depPeerConn);
     }
 
     var callbacks = sessionContext.getUICallbacks();
