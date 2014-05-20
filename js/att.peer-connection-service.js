@@ -9,9 +9,7 @@
 (function (app) {
   'use strict';
 
-  var module,
-    logger, resourceManager, Error,
-    UserMediaService, SignalingService, CallManager, SDPFilter;
+  var module, logger, resourceManager, Error, UserMediaService, SignalingService, CallManager, SDPFilter;
 
   function setResourceManager(service) {
     resourceManager = service;
@@ -106,7 +104,7 @@
     createPeerConnection: function (callState) {
       logger.logDebug('createPeerConnection');
 
-      var self = this, session = CallManager.getSessionContext(), pc;
+      var self = this, pc;
 
       try {
         pc = new RTCPeerConnection(self.pcConfig);
@@ -406,7 +404,7 @@
 
       // adjust SDP for hold request
       sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
-     SDPFilter.processChromeSDPOffer(sdp);
+      SDPFilter.processChromeSDPOffer(sdp);
       this.incrementModCount();
 
       try {
