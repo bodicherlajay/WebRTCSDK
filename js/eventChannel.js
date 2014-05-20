@@ -87,7 +87,9 @@
       logger.logDebug("on success");
       logger.logDebug(response);
 
-      config.success ('Sucessfully got response from event channel');
+      if (typeof config.success === 'function') {
+        config.success('Sucessfully got response from event channel');
+      }
 
       if (!isListening) {
         logger.logDebug("Not processing response because event channel is not running");

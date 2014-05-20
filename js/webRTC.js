@@ -38,7 +38,7 @@ if (Env === undefined) {
       ATT.Error.publish(error, operation, errHandler);
     }
   };
-  
+
   setupEventChannel = function (config) {
     logger.logDebug('setupEventChannel');
 

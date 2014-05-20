@@ -22,7 +22,7 @@
 
     module.create = create;
     module.publish = publish;
-    
+
     // add to the global namespace
     app.Error = module;
   };
