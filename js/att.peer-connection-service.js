@@ -40,17 +40,19 @@
   }
 
   //Initialize dependency services
-  function init() {
-    setUserMediaService(app.UserMediaService);
-    setSignalingService(app.SignalingService);
-    setCallManager(window.cmgmt.CallManager.getInstance());
-    setSDPFilter(app.sdpFilter.getInstance());
-    setResourceManager(Env.resourceManager.getInstance());
-    setLogger(resourceManager.getLogger("PeerConnectionService"));
-    setError(app.Error);
-  }
-  //explicitly initialize as part of loading
-  init();
+  (function init() {
+    try {
+      setUserMediaService(app.UserMediaService);
+      setSignalingService(app.SignalingService);
+      setCallManager(window.cmgmt.CallManager.getInstance());
+      setSDPFilter(app.sdpFilter.getInstance());
+      setResourceManager(Env.resourceManager.getInstance());
+      setLogger(resourceManager.getLogger("PeerConnectionService"));
+      setError(app.Error);
+    } catch(e) {
+      console.log("Unable to initialize dependencies for PeerConnectionService module");
+    }
+  }());
 
   module = {
 
@@ -503,6 +505,15 @@
   module.createSession = function () {
     module.start();
   };
+
+  //Expose the dependencies
+  module.setResourceManager = setResourceManager;
+  module.setUserMediaService = setUserMediaService;
+  module.setError = setError;
+  module.setSignalingService = setSignalingService;
+  module.setCallManager = setCallManager;
+  module.setSDPFilter = setSDPFilter;
+  module.setLogger = setLogger;
 
   //Name of the module
   app.PeerConnectionService = module;
