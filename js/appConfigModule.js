@@ -15,8 +15,10 @@ if (!ATT) {
   'use strict';
 
   // DHS endpoint
-  var DHSConf = 'http://localhost:9000',
-
+  var DHSConf = {
+      HTTP: 'http://localhost:9000',
+      HTTPS: 'https://localhost:9001'
+    },
   // API Platform Endpoints
     EnvConf = {
       AMS: 'http://wdev.code-api-att.com:8080/RTC/v1',
@@ -41,18 +43,11 @@ if (!ATT) {
       DHSEndpoint: null,
       EventChannelConfig: null
     },
+    protocol = (window.location.protocol).replace(':', '').toUpperCase(),
+
     logMgr = ATT.logManager.getInstance(),
-    logger;
 
-
-
-  if (DHSConf.indexOf(window.location.hostname) === -1) {
-    DHSConf = window.location.href;
-    if (DHSConf.lastIndexOf('/') === DHSConf.length - 1) {
-      DHSConf = DHSConf.slice(0, DHSConf.lastIndexOf('/'));
-    }
-  }
-  logger = logMgr.getLogger('appConfigModule');
+    logger = logMgr.getLogger('appConfigModule');
 
   function configure(key, useWebSockets) { // useWebSockets is optional, default to long-polling
     try {
@@ -64,8 +59,8 @@ if (!ATT) {
         logger.logTrace('User Configured ENVIRNOMENT: ' + key);
         logger.logTrace('url: ' + EnvConf[key]);
       }
-      appConfig.RTCEndpoint = EnvConf[key];
-      appConfig.DHSEndpoint = DHSConf;
+      appConfig.RTCEndpoint = EnvConf[key] || EnvConf.PROD;
+      appConfig.DHSEndpoint = DHSConf[protocol] || DHSConf.HTTP;
       appConfig.EventChannelConfig = EventChannelConf[(useWebSockets ? 'WebSockets' : 'LongPolling')];
       app.appConfig = appConfig;
 
