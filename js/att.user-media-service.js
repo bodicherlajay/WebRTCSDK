@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, Env:true */
+/*global ATT:true, Env:true, getUserMedia*/
 
 //Dependency: Env.resourceManager
 //Runtime: cmgmt.CallManager, ATT.peerConnectionService
@@ -9,8 +9,20 @@
 
   var module,
     callManager,
-    peerConnectionService,
     logger = Env.resourceManager.getInstance().getLogger("UserMediaService");
+
+  function setCallManager(callMgr) {
+    callManager = callMgr;
+  }
+
+
+  //When this modules gets loaded, we should have the following services available to consume
+  function init() {
+    logger.logInfo("Initializing User Media Service...");
+    logger.logDebug("Setting the call manager");
+
+    setCallManager(window.cmgmt.CallManager.getInstance());
+  }
 
   module = {
 
@@ -18,14 +30,6 @@
     remoteVideoElement: null,
     localStream: null,
     remoteStream: null,
-
-    setCallManager: function (callMgr) {
-      callManager = callMgr;
-    },
-
-    setPeerConnectionService: function (peerConnService) {
-      peerConnectionService = peerConnService;
-    },
 
     /**
     * Start Call
@@ -38,12 +42,40 @@
     */
     startCall: function (config) {
       logger.logTrace('starting call');
+
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
 
-      peerConnectionService.start(config);
+      var args = {
+        from: config.from,
+        to: config.to,
+        mediaConstraints: config.mediaConstraints
+      };
+
+      // send any ice candidates to the other peer
+      // get a local stream, show it in a self-view and add it to be sent
+      getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function () {
+        Error.publish('Get user media failed');
+      });
+
       // set up listener for remote video start
       this.onRemoteVideoStart(config.remoteVideo);
+    },
+
+    /**
+    * getUserMediaSuccess
+    * @param {Object} stream The media stream
+    */
+    getUserMediaSuccess: function (args, stream) {
+      logger.logDebug('getUserMediaSuccess');
+
+      // call the user media service to show stream
+      this.showStream('local', stream);
+
+      // set local stream
+      args.localStream = stream;
+
+      ATT.event.publish(ATT.SdkEvents.USER_MEDIA_INITIALIZED, args);
     },
 
     /**
@@ -141,14 +173,6 @@
     }
   };
 
-  //When this modules gets loaded, we should have the following services available to consume
-  function init() {
-    logger.logInfo("Initializing User Media Service...");
-    logger.logDebug("Setting the call manager");
-    module.setCallManager(window.cmgmt.CallManager.getInstance());
-    logger.logDebug("Setting the peer connection service");
-    module.setPeerConnectionService(app.PeerConnectionService);
-  }
   init();
 
   app.UserMediaService = module;

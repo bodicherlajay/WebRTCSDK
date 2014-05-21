@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RTCPeerConnection, RTCSessionDescription, getUserMedia, Env, cmgmt */
+/*global ATT:true, RTCPeerConnection, RTCSessionDescription, Env, cmgmt */
 
 /**
  * PeerConnection Service
@@ -40,19 +40,21 @@
   }
 
   //Initialize dependency services
-  (function init() {
+  function init() {
     try {
-      setUserMediaService(app.UserMediaService);
+      //setUserMediaService(app.UserMediaService);
       setSignalingService(app.SignalingService);
       setCallManager(window.cmgmt.CallManager.getInstance());
       setSDPFilter(app.sdpFilter.getInstance());
       setResourceManager(Env.resourceManager.getInstance());
       setLogger(resourceManager.getLogger("PeerConnectionService"));
       setError(app.Error);
+
+      ATT.event.subscribe(ATT.SdkEvents.USER_MEDIA_INITIALIZED, module.initPeerConnection, module);
     } catch (e) {
       console.log("Unable to initialize dependencies for PeerConnectionService module");
     }
-  }());
+  }
 
   module = {
 
@@ -97,6 +99,45 @@
 
     getICEServers: function () {
       return this.pcConfig.iceServers;
+    },
+
+    initPeerConnection: function (config) {
+      logger.logDebug('initPeerConnection');
+
+      this.callingParty = config.from;
+      this.calledParty = config.to;
+      this.mediaConstraints = config.mediaConstraints;
+      this.localStream = config.localStream;
+
+      logger.logTrace('calling party', config.from);
+      logger.logTrace('called party', config.to);
+      logger.logTrace('media constraints', config.mediaConstraints);
+
+      var session = CallManager.getSessionContext(),
+        event = session.getEventObject(),
+        callState = session.getCallState();
+
+      logger.logInfo('creating peer connection');
+      // Create peer connection
+      this.createPeerConnection(callState);
+
+      logger.logTrace('session state', callState);
+
+      if (callState === CallManager.SessionState.OUTGOING_CALL) {
+        logger.logInfo('creating offer for outgoing call');
+        this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
+          Error.publish('Create offer failed');
+        }, {'mandatory': {
+          'OfferToReceiveAudio': this.mediaConstraints.audio,
+          'OfferToReceiveVideo': this.mediaConstraints.video
+        }});
+
+      } else if (callState === CallManager.SessionState.INCOMING_CALL) {
+        logger.logInfo('Responding to incoming call');
+
+        this.setTheRemoteDescription(event.sdp, 'offer');
+        this.createAnswer();
+      }
     },
 
     /**
@@ -200,72 +241,6 @@
 
       logger.logTrace('Adding Remote Stream...', module.remoteStream);
       UserMediaService.showStream('remote', module.remoteStream);
-    },
-
-    /**
-     * Start Call.
-     * @param {Object} config The UI config object
-     * 
-     */
-    start: function (config) {
-      logger.logDebug('peerConnectionService:start');
-
-      this.callingParty = config.from;
-      this.calledParty = config.to;
-      this.mediaConstraints = config.mediaConstraints;
-
-      logger.logTrace('calling party', config.from);
-      logger.logTrace('called party', config.to);
-      logger.logTrace('media constraints', config.mediaConstraints);
-
-      // send any ice candidates to the other peer
-      // get a local stream, show it in a self-view and add it to be sent
-      getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this), function () {
-        Error.publish('Get user media failed');
-      });
-    },
-
-    /**
-    * getUserMediaSuccess
-    * @param {Object} stream The media stream
-    */
-    getUserMediaSuccess: function (stream) {
-      logger.logDebug('getUserMediaSuccess');
-
-      // set local stream
-      this.localStream = stream;
-
-      var self = this,
-        session = CallManager.getSessionContext(),
-        event = session.getEventObject(),
-        callState = session.getCallState();
-
-      logger.logInfo('creating peer connection');
-      // Create peer connection
-      self.createPeerConnection(callState);
-
-      logger.logTrace('session state', callState);
-
-      if (callState === CallManager.SessionState.OUTGOING_CALL) {
-        // call the user media service to show stream
-        UserMediaService.showStream('local', this.localStream);
-
-        logger.logInfo('creating offer for outgoing call');
-        this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
-          Error.publish('Create offer failed');
-        }, {'mandatory': {
-          'OfferToReceiveAudio': this.mediaConstraints.audio,
-          'OfferToReceiveVideo': this.mediaConstraints.video
-        }});
-
-      } else if (callState === CallManager.SessionState.INCOMING_CALL) {
-        logger.logInfo('Responding to incoming call');
-        // call the user media service to show stream
-        UserMediaService.showStream('local', this.localStream);
-
-        this.setTheRemoteDescription(event.sdp, 'offer');
-        this.createAnswer();
-      }
     },
 
     /**
@@ -517,5 +492,7 @@
 
   //Name of the module
   app.PeerConnectionService = module;
+
+  init();
 
 }(ATT));

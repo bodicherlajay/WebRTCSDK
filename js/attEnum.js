@@ -19,7 +19,8 @@ if (!ATT) {
   };
 
   module.SdkEvents = {
-    SDK_READY: 'SDK Ready'
+    SDK_READY: 'SdkReady',
+    USER_MEDIA_INITIALIZED: 'UserMediaInitialized'
   };
 
   module.SessionEvents = {
