@@ -26,7 +26,6 @@ describe('Event Dispatcher Tests', function () {
     var goodContext = {
       getUICallbacks: function () {
         return {
-            /*
           onSessionReady: function () {
             onSessionReady = true;
           },
@@ -47,7 +46,7 @@ describe('Event Dispatcher Tests', function () {
           },
           onCallInProgress: function () {
             onCallInProgress = true;
-          }*/
+          }
         };
       }
     };
