@@ -139,19 +139,20 @@
     // error: ''
     // ======================
     // Also, accept `data` object with some relevant info as needed
-    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function () {
-      onSessionReady(rtcEvent.createEvent({
+    eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
+      onSessionReady(event);
+      /*onSessionReady(rtcEvent.createEvent({
         state: mainModule.CallStatus.READY,
         data: '1234'
-      }));
+      }));*/
     };
 
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_ERROR] = function (event) {
-      onError(rtcEvent.createEvent(event));
+      onError(event);
     };
 
     eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
-      onCallError(rtcEvent.createEvent(event));
+      onCallError(event);
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
@@ -162,23 +163,11 @@
       }
 
       //TODO have to pass the object as a single parameter as event object has all the data
-      onIncomingCall(rtcEvent.createEvent({
-        state: mainModule.CallStatus.RINGING,
-        from: event.from,
-        codec: event.codec,
-        to: event.to,
-        calltype: event.calltype
-      }));
+      onIncomingCall(event);
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
-      onCallEstablished(rtcEvent.createEvent({
-        state: mainModule.CallStatus.ESTABLISHED,
-        from: event.from,
-        codec: event.codec,
-        to: event.to,
-        calltype: event.calltype
-      }));
+      onCallEstablished(event);
       if (data.sdp) {
         peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
@@ -191,6 +180,7 @@
       if (data.sdp && data.modId) {
         peerConnService.setRemoteAndCreateAnswer(data.sdp, data.modId);
       }
+
       // hold request received
       // if (sdp && sdp.indexOf('sendonly') !== -1) {
       //   onCallHold(rtcEvent.createEvent({
@@ -233,44 +223,27 @@
     //   }
     };
 
-    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function () {
-      console.log("connecting:" + sessionContext.getCallObject());
-      onConnecting(rtcEvent.createEvent({
-        state: mainModule.CallStatus.CONNECTING,
-        to: (sessionContext.getCallObject() ? sessionContext.getCallObject().callee() : null)
-      }));
+    eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function (event) {
+      onConnecting(event);
     };
 
     eventRegistry[mainModule.RTCCallEvents.CALL_IN_PROGRESS] = function (event) {
-      onCallInProgress(rtcEvent.createEvent({
-        state: mainModule.CallStatus.INPROGRESS,
-        from: (sessionContext.getCallObject() ? sessionContext.getCallObject().caller() : null),
-        to: (sessionContext.getCallObject() ? sessionContext.getCallObject().callee() : null),
-        calltype: event.calltype,
-        codec: event.codec
-      }));
+      onCallInProgress(event);
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
       if (event.reason) {
-        onCallError(rtcEvent.createEvent({
-          state: mainModule.CallStatus.ERROR,
-          error: ATT.Error.create(event.reason)
-        }));
+        onCallError(event);
       } else {
-        onCallEnded(rtcEvent.createEvent({
-          state: mainModule.CallStatus.ENDED
-        }));
+        onCallEnded(event);
       }
       sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
       sessionContext.setCallObject(null);
       peerConnService.endCall();
     };
 
-    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function () {
-      onCallError(rtcEvent.createEvent({
-        state: mainModule.CallStatus.ERROR
-      }));
+    eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function (event) {
+      onCallError(event);
     };
 
     return eventRegistry;
