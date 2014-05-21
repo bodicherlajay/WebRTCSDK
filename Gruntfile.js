@@ -21,7 +21,6 @@ module.exports = function (grunt) {
       'js/resourceManagerModule.js',
       'js/appConfigModule.js',
       'js/attEnum.js',
-      'js/appConfigModule.js',
       'js/CallManagementModule.js',
       'js/eventDispatcher.js',
       'js/RTCEventModule.js',
@@ -33,8 +32,8 @@ module.exports = function (grunt) {
       'js/att.peer-connection-service.js',
       'js/att.rtc.dhs.js',
       'js/eventChannel.js',
-      // TESTS
       'js/webRTC.js',
+      // TESTS
       'test/test.att.utils.sdk-error-store.js',
       'test/APIConfigTest.js',
       'test/resourceManagerTest.js',
