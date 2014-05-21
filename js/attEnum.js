@@ -138,7 +138,7 @@ if (!ATT) {
     RTC_SESSION_DELETED:      module.SessionEvents.RTC_SESSION_DELETED,
     RTC_SESSION_ERROR:        module.SessionEvents.RTC_SESSION_ERROR,
     UNMUTED:                  module.CallStatus.UNMUTED,
-    UNKNOWN:                  module.CallStatus.ERROR,
+    UNKNOWN:                  module.CallStatus.ERROR
 
   };
 

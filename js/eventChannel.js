@@ -24,7 +24,7 @@
     try {
       setResourceManager(Env.resourceManager.getInstance());
       setLogger(resourceManager.getLogger("eventChannel"));
-    } catch(e) {
+    } catch (e) {
       console.log("Unable to initialize dependencies for Event Channel");
     }
   }());
@@ -111,7 +111,11 @@
         }
       }
     }
-
+    function stopListening() {
+       //todo fix me, properly cancel the xhr request to end the channel
+      logger.logInfo("Stopped listening to event channel");
+      isListening = false;
+    }
     // setup success and error callbacks
     onSuccess =  function (config, response) {
       logger.logDebug("on success");
@@ -191,12 +195,6 @@
         ontimeout: onTimeOut
       };
       setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 5);
-    }
-
-    function stopListening() {
-      //todo fix me, properly cancel the xhr request to end the channel
-      logger.logInfo("Stopped listening to event channel");
-      isListening = false;
     }
 
     channel = {

@@ -42,7 +42,7 @@ describe('Call Management', function () {
       expect(sessionContext.getCallObject()).to.be.an('object');
     });
 
-   xit('should create an outgoing call', function () {
+    xit('should create an outgoing call', function () {
       var config = {
         to: '1-800-call-junhua',
         mediaContraints: {audio: true, video: true}

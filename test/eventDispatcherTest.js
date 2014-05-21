@@ -5,8 +5,7 @@ describe('Event Dispatcher Tests', function () {
   'use strict';
 
   var backupAtt, utils = ATT.utils, eventRegistry,
-    onSessionReady, onError, onCallEnded, onCallError,
-    onIncomingCall, onConnecting, onCallInProgress, event = {},
+    onSessionReady, event = {},
     data = {},
     RTCEventModule = ATT.RTCEvent.getInstance();
   beforeEach(function () {
@@ -27,6 +26,7 @@ describe('Event Dispatcher Tests', function () {
     var goodContext = {
       getUICallbacks: function () {
         return {
+            /*
           onSessionReady: function () {
             onSessionReady = true;
           },
@@ -47,7 +47,7 @@ describe('Event Dispatcher Tests', function () {
           },
           onCallInProgress: function () {
             onCallInProgress = true;
-          }
+          }*/
         };
       }
     };

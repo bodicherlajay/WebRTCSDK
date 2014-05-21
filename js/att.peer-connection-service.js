@@ -49,7 +49,7 @@
       setResourceManager(Env.resourceManager.getInstance());
       setLogger(resourceManager.getLogger("PeerConnectionService"));
       setError(app.Error);
-    } catch(e) {
+    } catch (e) {
       console.log("Unable to initialize dependencies for PeerConnectionService module");
     }
   }());
