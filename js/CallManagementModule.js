@@ -46,7 +46,6 @@ cmgmt = (function () {
       getSDP: function () {
         return localSDP;
       },
-      start: Call.start,
       hold: Call.hold,
       resume: Call.resume,
       mute: Call.mute,
