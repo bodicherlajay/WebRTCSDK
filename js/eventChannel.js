@@ -6,11 +6,28 @@
  * Event channel objects can be used to listen to a given `channel` continuously.
  */
 
-(function () {
+(function (app) {
   'use strict';
 
-  var utils = {},
-    logger = Env.resourceManager.getInstance().getLogger("eventChannel");
+  var utils = {}, logger, resourceManager;
+
+  function setLogger(lgr) {
+    logger = lgr;
+  }
+
+  function setResourceManager(resMgr) {
+    resourceManager = resMgr;
+  }
+
+  //Initialize dependencies
+  (function init() {
+    try {
+      setResourceManager(Env.resourceManager.getInstance());
+      setLogger(resourceManager.getLogger("eventChannel"));
+    } catch(e) {
+      console.log("Unable to initialize dependencies for Event Channel");
+    }
+  }());
 
   /**
    * Creates an Event Channel with the given configuration:
@@ -37,7 +54,9 @@
       eventData,
       onSuccess,
       onError,
-      onTimeOut;
+      onTimeOut,
+      interval = 2000,
+      maxPollingTime = 64000;
 
     logger.logInfo("About to create event channel");
 
@@ -51,6 +70,17 @@
         || undefined === channelConfig.publisher) {
       throw new Error('Invalid Options. Cannot create channel with options:' + JSON.stringify(channelConfig));
     }
+
+    if (channelConfig.interval !== undefined) {
+      logger.logInfo("Configuring interval to " + channelConfig.interval);
+      interval = channelConfig.interval;
+    }
+
+    if (channelConfig.maxPollingTime !== undefined) {
+      logger.logInfo("Configuring maximum polling time to " + channelConfig.maxPollingTime);
+      maxPollingTime = channelConfig.maxPollingTime;
+    }
+
     //logger.logDebug(httpConfig);
 
     /**
@@ -107,9 +137,16 @@
           // continue polling
           setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 5);
         } else {
-          logger.logDebug("Response code was:" + response.getResponseStatus() + " repolling again...");
-          // continue polling
-          setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 5);
+          //Increment by 2 times
+          interval = interval * 2;
+          if (interval > maxPollingTime) {
+            logger.logError("Stopping Event Channel, maximum polling time reached");
+            stopListening();
+          } else {
+            logger.logError("[FATAL] Response code was:" + response.getResponseStatus() + " repolling again...");
+            // continue polling
+            setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 5);
+          }
         }
         return;
       }
@@ -175,9 +212,12 @@
 
   utils.createEventChannel = createEventChannel;
   // export method to ATT.createEventChannel
-  if (ATT.utils === undefined) {
-    ATT.utils = utils;
+  if (app.utils === undefined) {
+    app.utils = utils;
   } else {
-    ATT.utils.createEventChannel = createEventChannel;
+    app.utils.createEventChannel = createEventChannel;
+    //Expose dependency modules
+    app.utils.setResourceManager = setResourceManager;
+    app.utils.setLogger = setLogger;
   }
-}());
+}(ATT));
