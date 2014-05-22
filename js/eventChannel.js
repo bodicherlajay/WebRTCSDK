@@ -113,7 +113,6 @@
     }
 
     function stopListening() {
-       //todo fix me, properly cancel the xhr request to end the channel
       logger.logInfo("Stopped listening to event channel");
       isListening = false;
     }
