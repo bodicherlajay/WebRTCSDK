@@ -129,11 +129,13 @@
       } else {
         if (response.httpStatusCode !== undefined) {
           logger.logError("[FATAL] Response code was:" + response.httpStatusCode + " repolling again...");
+        } else if (response.type === "timeout") {
+          logger.logInfo("Request timed out, repolling again");
         } else {
-          logger.logError("[FATAL] Response code was:" + response.getResponseStatus() + " repolling again...");
+          logger.logError("[FATAL] Response code was:" + response + " repolling again...");
         }
         // continue polling
-        setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 0);
+        channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
       }
     }
 
@@ -155,12 +157,12 @@
         if (response.getResponseStatus() === 204) {
           logger.logInfo("No event response content, repolling again...");
           // continue polling
-          setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 0);
+          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
         } else if (response.getResponseStatus() === 200) {
           processMessages(response);
           logger.logDebug("Processed messages, repolling again...");
           // continue polling
-          setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 0);
+          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
         } else {
           retry();
         }
@@ -205,7 +207,6 @@
         error: onError.bind(this, config),
         ontimeout: onTimeOut.bind(this, config)
       };
-      //setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 0);
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
