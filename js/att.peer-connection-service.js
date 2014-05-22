@@ -9,7 +9,7 @@
 (function (app) {
   'use strict';
 
-  var module, logger, resourceManager, Error, UserMediaService, SignalingService, CallManager, SDPFilter;
+  var module, logger, resourceManager, Error, SignalingService, CallManager, SDPFilter, eventEmitter;
 
   function setResourceManager(service) {
     resourceManager = service;
@@ -17,10 +17,6 @@
 
   function setError(service) {
     Error = service;
-  }
-
-  function setUserMediaService(service) {
-    UserMediaService = service;
   }
 
   function setSignalingService(service) {
@@ -39,6 +35,14 @@
     logger = service;
   }
 
+  function setEventEmitter(service) {
+    eventEmitter = service;
+  }
+
+  // function setApp(application) {
+    // app = application;
+  // }
+
   //Initialize dependency services
   function init() {
     try {
@@ -49,8 +53,17 @@
       setResourceManager(Env.resourceManager.getInstance());
       setLogger(resourceManager.getLogger("PeerConnectionService"));
       setError(app.Error);
+      setEventEmitter(app.event);
+      // setApp ({
+        // SignalingService: {
+//           
+        // },
+        // Error: {
+//           
+        // }
+      // });
 
-      ATT.event.subscribe(ATT.SdkEvents.USER_MEDIA_INITIALIZED, module.initPeerConnection, module);
+      eventEmitter.subscribe(ATT.SdkEvents.USER_MEDIA_INITIALIZED, module.initPeerConnection, module);
     } catch (e) {
       console.log("Unable to initialize dependencies for PeerConnectionService module");
     }
@@ -78,8 +91,6 @@
     remoteDescription: {},
 
     localStream: null,
-
-    remoteStream: null,
 
     peerConnection: null,
 
@@ -119,6 +130,7 @@
 
       logger.logInfo('creating peer connection');
       // Create peer connection
+      // send any ice candidates to the other peer
       this.createPeerConnection(callState);
 
       logger.logTrace('session state', callState);
@@ -237,10 +249,12 @@
     onRemoteStreamAdded: function (evt) {
       logger.logDebug('onRemoteStreamAdded');
 
-      module.remoteStream = evt.stream;
+      logger.logTrace('Adding Remote Stream...', evt.remoteStream);
 
-      logger.logTrace('Adding Remote Stream...', module.remoteStream);
-      UserMediaService.showStream('remote', module.remoteStream);
+      eventEmitter.publish(ATT.SdkEvents.REMOTE_STREAM_ADDED, {
+        localOrRemote: 'remote',
+        stream: evt.stream
+      });
     },
 
     /**
@@ -460,11 +474,7 @@
       }
       this.peerConnection = null;
       this.resetModCount();
-      try {
-        UserMediaService.stopStream();
-      } catch (e) {
-        Error.publish('Could not stop stream: ' + e.message);
-      }
+
     },
 
     /**
@@ -483,7 +493,6 @@
 
   //Expose the dependencies
   module.setResourceManager = setResourceManager;
-  module.setUserMediaService = setUserMediaService;
   module.setError = setError;
   module.setSignalingService = setSignalingService;
   module.setCallManager = setCallManager;

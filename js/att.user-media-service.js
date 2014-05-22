@@ -9,12 +9,21 @@
 
   var module,
     callManager,
+    Error,
+    eventEmitter,
     logger = Env.resourceManager.getInstance().getLogger("UserMediaService");
 
   function setCallManager(callMgr) {
     callManager = callMgr;
   }
 
+  function setError(service) {
+    Error = service;
+  }
+
+  function setEventEmitter(service) {
+    eventEmitter = service;
+  }
 
   //When this modules gets loaded, we should have the following services available to consume
   function init() {
@@ -22,6 +31,10 @@
     logger.logDebug("Setting the call manager");
 
     setCallManager(window.cmgmt.CallManager.getInstance());
+    setError(app.Error);
+    setEventEmitter(app.event);
+
+    eventEmitter.subscribe(ATT.SdkEvents.REMOTE_STREAM_ADDED, module.showStream, module);
   }
 
   module = {
@@ -52,7 +65,6 @@
         mediaConstraints: config.mediaConstraints
       };
 
-      // send any ice candidates to the other peer
       // get a local stream, show it in a self-view and add it to be sent
       getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function () {
         Error.publish('Get user media failed');
@@ -70,12 +82,15 @@
       logger.logDebug('getUserMediaSuccess');
 
       // call the user media service to show stream
-      this.showStream('local', stream);
+      this.showStream({
+        localOrRemote: 'local',
+        stream: stream
+      });
 
       // set local stream
       args.localStream = stream;
 
-      ATT.event.publish(ATT.SdkEvents.USER_MEDIA_INITIALIZED, args);
+      eventEmitter.publish(ATT.SdkEvents.USER_MEDIA_INITIALIZED, args);
     },
 
     /**
@@ -87,7 +102,7 @@
       remoteVideo.addEventListener('playing', function () {
         var sessionId = callManager.getSessionContext().getSessionId();
 
-        ATT.event.publish(sessionId + '.responseEvent', {
+        eventEmitter.publish(sessionId + '.responseEvent', {
           state : ATT.RTCCallEvents.CALL_IN_PROGRESS
         });
       });
@@ -96,28 +111,34 @@
 
       return remoteVideo;
     },
+
     /**
      * Attaches media stream to DOM and plays video.
      * @param localOrRemote  Specify either 'local' or 'remote'
      * @param stream The media stream.
      * @param {Object} callManager The call manager
      */
-    showStream: function (localOrRemote, stream) {
+    showStream: function (args) {
       var videoStreamEl;
 
-      logger.logTrace('showing ' + localOrRemote + ' stream...');
-      if (localOrRemote === 'remote') {
-        this.remoteStream = stream;
-        videoStreamEl = this.remoteVideoElement;
-      } else {
-        this.localStream = stream;
-        videoStreamEl = this.localVideoElement;
-        videoStreamEl.setAttribute('muted', '');
-      }
+      logger.logTrace('showing ' + args.localOrRemote + ' stream...');
 
-      if (videoStreamEl) {
-        videoStreamEl.src = window.URL.createObjectURL(stream);
-        videoStreamEl.play();
+      try {
+        if (args.localOrRemote === 'remote') {
+          this.remoteStream = args.stream;
+          videoStreamEl = this.remoteVideoElement;
+        } else {
+          this.localStream = args.stream;
+          videoStreamEl = this.localVideoElement;
+          videoStreamEl.setAttribute('muted', '');
+        }
+
+        if (videoStreamEl) {
+          videoStreamEl.src = window.URL.createObjectURL(args.stream);
+          videoStreamEl.play();
+        }
+      } catch (e) {
+        Error.publish('Could not start stream: ' + e.message);
       }
     },
 
@@ -126,19 +147,23 @@
     */
     stopStream: function () {
       logger.logTrace('stopping streams...');
-      if (this.localVideoElement) {
-        this.localVideoElement.src = '';
-      }
-      if (this.remoteVideoElement) {
-        this.remoteVideoElement.src = '';
-      }
-      if (this.localStream) {
-        this.localStream.stop();
-        this.localStream = null;
-      }
-      if (this.remoteStream) {
-        this.remoteStream.stop();
-        this.remoteStream = null;
+      try {
+        if (this.localVideoElement) {
+          this.localVideoElement.src = '';
+        }
+        if (this.remoteVideoElement) {
+          this.remoteVideoElement.src = '';
+        }
+        if (this.localStream) {
+          this.localStream.stop();
+          this.localStream = null;
+        }
+        if (this.remoteStream) {
+          this.remoteStream.stop();
+          this.remoteStream = null;
+        }
+      } catch (e) {
+        Error.publish('Could not stop stream: ' + e.message);
       }
     },
 

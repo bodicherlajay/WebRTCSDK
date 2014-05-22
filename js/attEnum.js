@@ -20,7 +20,8 @@ if (!ATT) {
 
   module.SdkEvents = {
     SDK_READY: 'SdkReady',
-    USER_MEDIA_INITIALIZED: 'UserMediaInitialized'
+    USER_MEDIA_INITIALIZED: 'UserMediaInitialized',
+    REMOTE_STREAM_ADDED: 'RemoteStreamAdded'
   };
 
   module.SessionEvents = {
