@@ -109,6 +109,7 @@ describe('PeerConnectionServiceModule', function () {
     });
   });
 
+/*
   describe('Get user media success', function () {
     var stream = {blob: 'foo'};
     ATT.PeerConnectionService.getUserMediaSuccess(stream);
@@ -117,6 +118,7 @@ describe('PeerConnectionServiceModule', function () {
       expect(ATT.PeerConnectionService.localStream).equals(stream);
     });
   });
+*/
 
   describe('Peer connection call-flow decisions', function () {
     it('should set modificationID when setRemoteAndCreateAnswer() is called', function () {
