@@ -124,7 +124,7 @@
       //Increment by 2 times
       interval = interval * 2;
       if (interval > maxPollingTime) {
-        logger.logError("Stopping Event Channel, maximum polling time reached");
+        logger.logInfo("Stopping Event Channel, maximum polling time reached, interval=" + interval +",maximum polling time=" + maxPollingTime);
         stopListening();
       } else {
         if (response.httpStatusCode !== undefined) {
