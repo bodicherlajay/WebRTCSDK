@@ -60,7 +60,10 @@
       GENERAL: 'GENERAL'
     }
   }, ATT.utils);
-  logger.logTrace("created dictionary");
+
+  if (undefined !== ATT.errorDictionary) {
+    logger.logTrace("Error Dictionary created.");
+  }
 
   // Load all SDK errors in the dictionary
   sdkErrors = ATT.utils.SDKErrorStore.getAllErrors();
@@ -68,7 +71,6 @@
   for (idx = 0; idx < sdkErrors.length; idx = idx + 1) {
     ATT.errorDictionary.createError(sdkErrors[idx]);
   }
+  logger.logTrace("SDK Errors loaded into the Dictionary.");
 
-  // Load all SKD errors in the dictionary
 }());
-console.log("Loading complete ATTMain.js, ATT.errorDictionary available");

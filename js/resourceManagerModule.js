@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global Env:true, ATT: true*/
 
-// Dependency:  utils, LogManager, ATT.errorDictionary(loaded by ATTMain.js) - Dependency att.utils.sdk-error-store
+// Dependency:  utils, LogManager, ATT.errorDictionary(loaded by att.main.js) - Dependency att.utils.sdk-error-store
 
 
 if (!Env) {
@@ -156,7 +156,7 @@ Env = (function (app) {
 
   /**
    * Method to return a configured rest operation configured in the
-   * APIConfigs.js file.
+   * att.config.configure-apis.js file.
    * @param operationName
    * @param config
    * @returns {Function}
