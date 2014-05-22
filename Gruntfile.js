@@ -25,7 +25,7 @@ module.exports = function (grunt) {
       'js/eventDispatcher.js',
       'js/RTCEventModule.js',
       'js/adapter.js',
-      'js/userMediaServiceModule.js',
+      'js/att.user-media-service.js',
       'js/SDPFilterModule.js',
       'js/signalingServiceModule.js',
       'js/att.error.js',
