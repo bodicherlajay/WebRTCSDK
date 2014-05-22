@@ -41,7 +41,7 @@ if (!ATT) {
       }
       return mainModule.CallStatus.ENDED;
     default:
-      return event.state;
+      return mainModule.EventsMapping[event.state];
     }
 
   }
