@@ -101,4 +101,37 @@ describe('Event Channel', function () {
     expect(channelConfig.publisher.publish.calledOnce).equals(false);
     expect(eventChannel.isListening()).to.equal(false);
   });
+
+  it('should continue to poll after timeout', function () {
+    channelConfig.resourceManager.getAPIObject = sinon.spy(function () {
+      return {
+        method: 'get',
+        formatters: {
+          url: function (params) {
+            return "http://localhost" + '/sessions/' + params.sessionId + params.endpoint;
+          },
+          headers: {
+            'Authorization': function (param) {
+              return param;
+            }
+          }
+        },
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept' : 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      };
+    });
+
+    var eventChannel = ATT.utils.createEventChannel(channelConfig);
+    eventChannel.startListening(httpConfig);
+    expect(eventChannel.isListening()).to.equal(true);
+    requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(response));
+    expect(channelConfig.publisher.publish.calledOnce).equals(true);
+    expect(eventChannel.isListening()).to.equal(true);
+  });
+
 });

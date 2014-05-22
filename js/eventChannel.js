@@ -127,7 +127,11 @@
         logger.logError("Stopping Event Channel, maximum polling time reached");
         stopListening();
       } else {
-        logger.logError("[FATAL] Response code was:" + response.getResponseStatus() + " repolling again...");
+        if (response.httpStatusCode !== undefined) {
+          logger.logError("[FATAL] Response code was:" + response.httpStatusCode + " repolling again...");
+        } else {
+          logger.logError("[FATAL] Response code was:" + response.getResponseStatus() + " repolling again...");
+        }
         // continue polling
         setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 0);
       }
@@ -176,13 +180,13 @@
 
     onError =  function (config, error) { // only used for Long Polling
       if (isListening) {
-        logger.logDebug("onError - Repolling again...");
+        logger.logInfo("onError - Repolling again...");
         retry(config, error);
       }
     };
 
     onTimeOut = function (config, error) {
-      logger.logDebug("Request timed out " + channelConfig.endpoint);
+      logger.logInfo("Request timed out " + channelConfig.endpoint);
       retry(config, error);
     };
 
@@ -199,7 +203,7 @@
         },
         success: onSuccess.bind(this, config),
         error: onError.bind(this, config),
-        ontimeout: onTimeOut.bind(this.config)
+        ontimeout: onTimeOut.bind(this, config)
       };
       //setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 0);
       channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
