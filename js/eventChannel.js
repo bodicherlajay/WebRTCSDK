@@ -111,11 +111,28 @@
         }
       }
     }
+
     function stopListening() {
        //todo fix me, properly cancel the xhr request to end the channel
       logger.logInfo("Stopped listening to event channel");
       isListening = false;
     }
+
+    function retry(config, response) {
+      logger.logDebug(config);
+      logger.logInfo("Repolling again...");
+      //Increment by 2 times
+      interval = interval * 2;
+      if (interval > maxPollingTime) {
+        logger.logError("Stopping Event Channel, maximum polling time reached");
+        stopListening();
+      } else {
+        logger.logError("[FATAL] Response code was:" + response.getResponseStatus() + " repolling again...");
+        // continue polling
+        setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 0);
+      }
+    }
+
     // setup success and error callbacks
     onSuccess =  function (config, response) {
       logger.logDebug("on success");
@@ -157,20 +174,6 @@
       }
     };
 
-    function retry(config,response) {
-      logger.logInfo("Repolling again...");
-      //Increment by 2 times
-      interval = interval * 2;
-      if (interval > maxPollingTime) {
-        logger.logError("Stopping Event Channel, maximum polling time reached");
-        stopListening();
-      } else {
-        logger.logError("[FATAL] Response code was:" + response.getResponseStatus() + " repolling again...");
-        // continue polling
-        setTimeout(function () {channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig); }, 0);
-      }
-    };
-
     onError =  function (config, error) { // only used for Long Polling
       if (isListening) {
         logger.logDebug("onError - Repolling again...");
@@ -178,9 +181,9 @@
       }
     };
 
-    onTimeOut = function (config,error) {
+    onTimeOut = function (config, error) {
       logger.logDebug("Request timed out " + channelConfig.endpoint);
-      retry();
+      retry(config, error);
     };
 
     function startListening(config) {
