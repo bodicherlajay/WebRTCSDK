@@ -168,6 +168,14 @@
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
       onCallEstablished(event);
+      /*  onCallEstablished(rtcEvent.createEvent({
+        state: mainModule.CallStatus.ESTABLISHED,
+        from: event.from,
+        codec: event.codec,
+        to: event.to,
+        calltype: event.calltype
+      }));
+*/
       if (data.sdp) {
         peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
