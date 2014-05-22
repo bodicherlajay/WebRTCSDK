@@ -39,5 +39,5 @@
   peerConnectionService.js
   CallManagementModule.js
   DHSModule.js
-  webRTC.js
+  att.rtc.phone.js
  */

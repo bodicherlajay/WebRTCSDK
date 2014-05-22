@@ -32,7 +32,7 @@ module.exports = function (grunt) {
       'js/att.peer-connection-service.js',
       'js/att.rtc.dhs.js',
       'js/eventChannel.js',
-      'js/webRTC.js',
+      'js/att.rtc.phone.js',
       // TESTS
       'test/test.att.utils.sdk-error-store.js',
       'test/APIConfigTest.js',
