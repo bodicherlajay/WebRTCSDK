@@ -174,18 +174,6 @@
       if (data.sdp && data.modId) {
         peerConnService.setRemoteAndCreateAnswer(data.sdp, data.modId);
       }
-
-      // hold request received
-      // if (sdp && sdp.indexOf('sendonly') !== -1) {
-      //   onCallHold(event);
-      //   callMgr.getSessionContext().setCallState(callMgr.SessionState.HOLD_CALL);
-      // }
-
-      // // resume request received
-      // if (sdp && sdp.indexOf('sendrecv') !== -1 && sdp.indexOf('recvonly') !== -1) {
-      //   onCallResume(event);
-      //   callMgr.getSessionContext().setCallState(callMgr.SessionState.RESUMED_CALL);
-      // }
     };
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (event, data) {
@@ -198,17 +186,6 @@
       if (data.sdp) {
         peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
-
-    // // hold request successful
-    // if (sdp && sdp.indexOf('recvonly') !== -1 && sdp.indexOf('sendrecv') !== -1) {
-    //   onCallHold(event);
-    //   callMgr.getSessionContext().setCallState(callMgr.SessionState.HOLD_CALL);
-    // } else if (sdp && sdp.indexOf('sendrecv') !== -1) {
-    //   if (callMgr.getSessionContext().getCallState() === callMgr.SessionState.HOLD_CALL) {
-    //     // resume request successful
-    //     onCallResume(event);
-    //     callMgr.getSessionContext().setCallState(callMgr.SessionState.RESUMED_CALL);
-    //   }
     };
 
     eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function (event) {
