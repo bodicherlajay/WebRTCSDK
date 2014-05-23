@@ -76,16 +76,6 @@ if (Env === undefined) {
     logger.logInfo('Event channel shutdown successfully');
   };
 
-  /**
-   * Initializes SDK with Oauth access token and e911Id. E911Id is an optional parameter which is needed for ICMN and VTN customers
-   * @memberof ATT.rtc.Phone
-   * @function initSession
-   * @param {String} accessToken
-   * @param {String} e911Id
-   * @example Preconditions: Developer hosts the login page and obtained user credentials, 
-   * invoked the API endpoint to obtain access token and e911 id.
-   * ATT.rtc.Phone.initSDK(“e911id”,”access token”)
-   */
   function initSession(accessToken, e911Id) {
     logger.logDebug('initSession');
 
@@ -160,13 +150,39 @@ if (Env === undefined) {
   /**
    * Used to establish webRTC session so that the user can place webRTC calls. 
    * The service parameter indicates the desired service such as audio or video call
-   * @memberof ATT.rtc
-   * @param {Object} data The required login form data from the UI.
-   * @attribute {String} token
-   * @attribute {String} e911Locations
-   * @attribute {Boolean} audioOnly
+   * @memberof ATT.rtc.Phone
+   * @param {Object} loginObject Login Object
+   * @param {String} loginObject.token  Access token
+   * @param {String} [loginObject.e911Id] E911 Id. Optional parameter for NoTN users and required for ICMN and VTN users
+   * @param {Boolean} [loginObject.audioOnly] Set this value to true for audio service.
+   *        Optional parameter to indicate only audio service is needed for the session
+   * @param {function} loginObject.onSessionReady
+   * @param {function} loginObject.onIncomingCall
+   * @param {function} loginObject.onCallEnded
+   * @param {function} loginObject.onCallError
+   * @param {function} loginObject.onError
+   * @example
+   *
+   * ATT.rtc.Phone.login({
+   *       token: 'accessToken',
+   *       e911Id: 'e911Identifer',
+   *       audioOnly: true,
+   *       onSessionReady : function (event) {
+   *
+   *       },
+   *       onIncomingCall : function (event) {
+   *       },
+   *       onCallEnded : function (event) {
+   *       },
+   *       onCallError :  function (event) {
+   *       ,
+   *       onError : function (error) {
+   *         error.userErrorCode
+   *         error.helpText
+   *         error.errorDescription);
+   *     }
    */
-  function login(config) {
+  function login(loginObject) {
     logger.logDebug('createWebRTCSession');
     var token,
       e911Id,
@@ -174,28 +190,28 @@ if (Env === undefined) {
       services = ['ip_voice_call', 'ip_video_call'],
       errorHandler;
 
-    if (config.callbacks && config.callbacks.onError && typeof config.callbacks.onError === 'function') {
-      errorHandler = config.callbacks.onError;
+    if (loginObject.callbacks && loginObject.callbacks.onError && typeof loginObject.callbacks.onError === 'function') {
+      errorHandler = loginObject.callbacks.onError;
     }
 
     try {
-      if (!config) {
+      if (!loginObject) {
         throw 'Cannot login to web rtc, no configuration';
       }
-      if (!config.token) {
+      if (!loginObject.token) {
         throw 'Cannot login to web rtc, no access token';
       }
 
       // todo: need to decide if callbacks should be mandatory
-      if (!config.callbacks || Object.keys(config.callbacks) <= 0) {
+      if (!loginObject.callbacks || Object.keys(loginObject.callbacks) <= 0) {
         logger.logWarning('No UI callbacks specified');
       }
 
-      token = config.token;
-      e911Id = config.e911Id || null;
+      token = loginObject.token;
+      e911Id = loginObject.e911Id || null;
 
       //remove video service for audio only service
-      if (config.audioOnly) {
+      if (loginObject.audioOnly) {
         services = services.slice(0, 1);
       }
       // create new session with token and optional e911id
@@ -220,7 +236,7 @@ if (Env === undefined) {
             'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
           }
         },
-        success: createWebRTCSessionSuccess.bind(this, config),
+        success: createWebRTCSessionSuccess.bind(this, loginObject),
         error: handleError.bind(this, 'CreateSession', errorHandler)
       });
     } catch (err) {
