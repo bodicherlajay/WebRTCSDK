@@ -14,17 +14,17 @@ if (!ATT) {
 
   var callManager = cmgmt.CallManager.getInstance(),
     logger = Env.resourceManager.getInstance().getLogger("RTCEventModule"),
-    session = callManager.getSessionContext(),
+    session,
     module = {},
     instance,
+    createEvent,
     RTCEvent,
-    interceptEventChannelCallback,
     setupEventBasedCallbacks,
     eventRegistry,
     init = function () {
       return {
         setupEventBasedCallbacks: setupEventBasedCallbacks,
-        createEvent: module.createEvent
+        createEvent: createEvent
       };
     };
    /* Mapping the event state to the UI event object
@@ -32,25 +32,28 @@ if (!ATT) {
    * mapps the values from attEnum.js
    */
 
-  function mappingEventState(event) {
-    var eventstate = event.state;
-    switch (eventstate) {
-    case mainModule.RTCCallEvents.SESSION_TERMINATED:
-      if (event.reason) {
-        return mainModule.CallStatus.ERROR;
+  function setUIEventState(event) {
+    if (event.state) {
+      if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED) {
+        if (event.reason) {
+          return mainModule.CallStatus.ERROR;
+        }
+        return mainModule.CallStatus.ENDED;
+      } else if (mainModule.EventsMapping[event.state]) {
+        return mainModule.EventsMapping[event.state];
       }
-      return mainModule.CallStatus.ENDED;
-    default:
-      return mainModule.EventsMapping[event.state];
     }
-
+    return event.state;
   }
+
   /**
   * Dispatch Event to Registry
   * @param {Object} event The event object
   *
   */
   function dispatchEventToHandler(event) {
+    session = callManager.getSessionContext();
+
     setTimeout(function () {
       var CODEC = [], media, sdp, idx;
       logger.logDebug('dispatching event: ' + event.state);
@@ -69,12 +72,13 @@ if (!ATT) {
       logger.logDebug("Codec from the event, " + CODEC);
       if (eventRegistry[event.state]) {
         logger.logDebug("Processing the registered event " + event.state);
-        eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
+        eventRegistry[event.state](createEvent({
           from: event.from ? event.from.split('@')[0].split(':')[1] : '',
           to: session && session.getCallObject() ? session.getCallObject().callee() : '',
-          state: mappingEventState(event),
+          state: setUIEventState(event),
           codec: CODEC,
           calltype: (CODEC.length === 1) ? 'audio' : 'video',
+          data: event.data,
           error: event.error || event.reason || ''
         }), {
           sdp: event.sdp || '',
@@ -91,7 +95,7 @@ if (!ATT) {
   * and triggers UI callbacks
   * @param {Object} event The event object
   */
-  interceptEventChannelCallback = function (event) {
+  function interceptEventChannelCallback (event) {
     if (!event) {
       logger.logError("Not able to consume null event...");
       return;
@@ -112,11 +116,13 @@ if (!ATT) {
   */
   setupEventBasedCallbacks = function () {
     // get current session context
-    var sessionContext = callManager.getSessionContext(),
-      sessionId = sessionContext.getSessionId();
+    session = callManager.getSessionContext();
+
+    var sessionId = session.getSessionId();
+
     logger.logDebug("Creating event registry...");
     // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(sessionContext, module.getInstance());
+    eventRegistry = mainModule.utils.createEventRegistry(session, module.getInstance());
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
@@ -147,7 +153,7 @@ if (!ATT) {
     error: null
   };
 
-  module.createEvent = function (arg) {
+  createEvent = function (arg) {
     logger.logDebug("Creating event " + arg.state);
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error('State must be of type ATT.CallStatus');
@@ -162,6 +168,8 @@ if (!ATT) {
     evt.data = arg.data;
     evt.error = arg.error;
     Object.freeze(evt);
+    
+    logger.logTrace('Created event object', evt);
     return evt;
   };
 
