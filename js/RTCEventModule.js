@@ -13,8 +13,8 @@ if (!ATT) {
   'use strict';
 
   var callManager = cmgmt.CallManager.getInstance(),
-    logger = Env.resourceManager.getInstance().getLogger("RTCEventModule"),
-    session = callManager.getSessionContext(),
+    logger = Env.resourceManager.getInstance().getLogger('RTCEventModule'),
+    sessionContext = {},
     module = {},
     instance,
     RTCEvent,
@@ -48,16 +48,18 @@ if (!ATT) {
   /**
   * Dispatch Event to Registry
   * @param {Object} event The event object
+  * @param {Object} callManager Instance of Call Manager
   *
   */
-  function dispatchEventToHandler(event) {
+  function dispatchEventToHandler(event, callManager) {
     setTimeout(function () {
       var CODEC = [], media, sdp, idx;
+      sessionContext = callManager.getSessionContext();
       logger.logDebug('dispatching event: ' + event.state);
 
       if (event.sdp) {
         sdp = ATT.sdpParser.getInstance().parse(event.sdp);
-        logger.logDebug("Parsed SDP " + sdp);
+        logger.logDebug('Parsed SDP ' + sdp);
         for (idx = 0; idx < sdp.media.length; idx = idx + 1) {
           media = {
             rtp: sdp.media[idx].rtp,
@@ -66,12 +68,12 @@ if (!ATT) {
           CODEC.push(media);
         }
       }
-      logger.logDebug("Codec from the event, " + CODEC);
+      logger.logDebug('Codec from the event, ' + CODEC);
       if (eventRegistry[event.state]) {
-        logger.logDebug("Processing the registered event " + event.state);
+        logger.logDebug('Processing the registered event ' + event.state);
         eventRegistry[event.state](ATT.RTCEvent.getInstance().createEvent({
           from: event.from ? event.from.split('@')[0].split(':')[1] : '',
-          to: session && session.getCallObject() ? session.getCallObject().callee() : '',
+          to: sessionContext && sessionContext.getCallObject() ? sessionContext.getCallObject().callee() : '',
           state: mappingEventState(event),
           codec: CODEC,
           calltype: (CODEC.length === 1) ? 'audio' : 'video',
@@ -93,13 +95,13 @@ if (!ATT) {
   */
   interceptEventChannelCallback = function (event) {
     if (!event) {
-      logger.logError("Not able to consume null event...");
+      logger.logError('Not able to consume null event...');
       return;
     }
 
-    logger.logDebug('Cosnume event from event channel', JSON.stringify(event));
+    logger.logDebug('Consume event from event channel', JSON.stringify(event));
 
-    dispatchEventToHandler(event);
+    dispatchEventToHandler(event, callManager);
 
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
@@ -112,18 +114,20 @@ if (!ATT) {
   */
   setupEventBasedCallbacks = function () {
     // get current session context
-    var sessionContext = callManager.getSessionContext(),
-      sessionId = sessionContext.getSessionId();
-    logger.logDebug("Creating event registry...");
+    var sessionId;
+    sessionContext = callManager.getSessionContext();
+    sessionId = sessionContext.getSessionId();
+
+    logger.logDebug('Creating event registry...');
     // setup events registry
     eventRegistry = mainModule.utils.createEventRegistry(sessionContext, module.getInstance());
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logDebug("Unsubscribe event " +  sessionId + '.responseEvent' + "successful");
+    logger.logDebug('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
     // subscribe to published events from event channel
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logDebug("Subscribed to event " +  sessionId + '.responseEvent');
+    logger.logDebug('Subscribed to event ' +  sessionId + '.responseEvent');
   };
 
   //Event structure for RTCEvent
@@ -148,7 +152,7 @@ if (!ATT) {
   };
 
   module.createEvent = function (arg) {
-    logger.logDebug("Creating event " + arg.state);
+    logger.logDebug('Creating event ' + arg.state);
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error('State must be of type ATT.CallStatus');
     }
