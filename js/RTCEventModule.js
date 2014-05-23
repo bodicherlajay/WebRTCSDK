@@ -3,12 +3,6 @@
 
 //Dependency: Env.resourceManager, utils.eventDispatcher (cyclic), utils.sdpParser, cmgmt.CallManager
 
-/*
-if (!ATT) {
-  var ATT = {};
-}
-*/
-
 (function (mainModule) {
   'use strict';
 
@@ -27,11 +21,12 @@ if (!ATT) {
         createEvent: createEvent
       };
     };
-   /* Mapping the event state to the UI event object
-   * @param {Object} event object
-   * mapps the values from attEnum.js
-   */
 
+   /* Mapping the event state to the UI event object
+    * maps the values from attEnum.js
+    * @param {Object} event object
+    * @returns {Number} event state
+    */
   function setUIEventState(event) {
     if (event.state) {
       if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED) {
@@ -51,7 +46,6 @@ if (!ATT) {
   * Dispatch Event to Registry
   * @param {Object} event The event object
   * @param {Object} callManager Instance of Call Manager
-  *
   */
   function dispatchEventToHandler(event) {
     session = callManager.getSessionContext();
