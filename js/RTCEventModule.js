@@ -74,7 +74,7 @@
           to: session && session.getCallObject() ? session.getCallObject().callee() : '',
           state: setUIEventState(event),
           codec: CODEC,
-          calltype: (CODEC.length === 1) ? 'audio' : 'video',
+          calltype: event.sdp ? ((CODEC.length === 1) ? 'audio' : 'video') : '',
           data: event.data,
           error: event.error || event.reason || ''
         }), {
