@@ -39,7 +39,8 @@ if (!ATT) {
           return mainModule.CallStatus.ERROR;
         }
         return mainModule.CallStatus.ENDED;
-      } else if (mainModule.EventsMapping[event.state]) {
+      }
+      if (mainModule.EventsMapping[event.state]) {
         return mainModule.EventsMapping[event.state];
       }
     }
@@ -49,6 +50,7 @@ if (!ATT) {
   /**
   * Dispatch Event to Registry
   * @param {Object} event The event object
+  * @param {Object} callManager Instance of Call Manager
   *
   */
   function dispatchEventToHandler(event) {
@@ -56,11 +58,12 @@ if (!ATT) {
 
     setTimeout(function () {
       var CODEC = [], media, sdp, idx;
+
       logger.logDebug('dispatching event: ' + event.state);
 
       if (event.sdp) {
         sdp = ATT.sdpParser.getInstance().parse(event.sdp);
-        logger.logDebug("Parsed SDP " + sdp);
+        logger.logDebug('Parsed SDP ' + sdp);
         for (idx = 0; idx < sdp.media.length; idx = idx + 1) {
           media = {
             rtp: sdp.media[idx].rtp,
@@ -69,7 +72,7 @@ if (!ATT) {
           CODEC.push(media);
         }
       }
-      logger.logDebug("Codec from the event, " + CODEC);
+      logger.logDebug('Codec from the event, ' + CODEC);
       if (eventRegistry[event.state]) {
         logger.logDebug("Processing the registered event " + event.state);
         eventRegistry[event.state](createEvent({
@@ -95,19 +98,19 @@ if (!ATT) {
   * and triggers UI callbacks
   * @param {Object} event The event object
   */
-  function interceptEventChannelCallback (event) {
+  function interceptEventChannelCallback(event) {
     if (!event) {
-      logger.logError("Not able to consume null event...");
+      logger.logError('Not able to consume null event...');
       return;
     }
 
-    logger.logDebug('Cosnume event from event channel', JSON.stringify(event));
+    logger.logDebug('Consume event from event channel', JSON.stringify(event));
 
-    dispatchEventToHandler(event);
+    dispatchEventToHandler(event, callManager);
 
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
-  };
+  }
 
   /**
     This function subscribes to all events 
@@ -115,21 +118,25 @@ if (!ATT) {
     It hands off the event to interceptingEventChannelCallback()
   */
   setupEventBasedCallbacks = function () {
+    logger.logDebug("setupEventBasedCallbacks");
+
     // get current session context
     session = callManager.getSessionContext();
 
     var sessionId = session.getSessionId();
 
-    logger.logDebug("Creating event registry...");
+    logger.logInfo("Creating event registry...");
+
     // setup events registry
     eventRegistry = mainModule.utils.createEventRegistry(session, module.getInstance());
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logDebug("Unsubscribe event " +  sessionId + '.responseEvent' + "successful");
+    logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
+
     // subscribe to published events from event channel
     mainModule.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logDebug("Subscribed to event " +  sessionId + '.responseEvent');
+    logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
   };
 
   //Event structure for RTCEvent
@@ -155,9 +162,11 @@ if (!ATT) {
 
   createEvent = function (arg) {
     logger.logDebug("Creating event " + arg.state);
+
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error('State must be of type ATT.CallStatus');
     }
+
     var evt = Object.create(RTCEvent);
     evt.state = arg.state;
     evt.from = arg.from;
@@ -168,7 +177,7 @@ if (!ATT) {
     evt.data = arg.data;
     evt.error = arg.error;
     Object.freeze(evt);
-    
+
     logger.logTrace('Created event object', evt);
     return evt;
   };
