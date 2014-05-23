@@ -152,8 +152,6 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
-      logger.logInfo('Incoming call received at ', event.timestamp);
-      logger.logInfo('Codec: ');
       onIncomingCall(event);
     };
 
