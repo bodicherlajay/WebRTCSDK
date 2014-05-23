@@ -224,7 +224,7 @@
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_TERMINATED] = function (event) {
-      if (event.reason) {
+      if (event.error) {
         onCallError(event);
       } else {
         onCallEnded(event);
