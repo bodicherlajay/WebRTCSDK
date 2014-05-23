@@ -122,7 +122,7 @@
     logger.logInfo("Creating event registry...");
 
     // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(session, module.getInstance());
+    eventRegistry = mainModule.utils.createEventRegistry(session);
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
