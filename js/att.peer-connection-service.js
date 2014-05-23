@@ -147,6 +147,10 @@
       } else if (callState === CallManager.SessionState.INCOMING_CALL) {
         logger.logInfo('Responding to incoming call');
 
+        //Check if invite is an announcement
+        if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
+          event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
+        }
         this.setTheRemoteDescription(event.sdp, 'offer');
         this.createAnswer();
       }

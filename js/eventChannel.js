@@ -120,22 +120,15 @@
     function retry(config, response) {
       logger.logDebug(config);
       logger.logInfo("Repolling again...");
-      //Increment by 2 times
-      interval = interval * 2;
-      if (interval > maxPollingTime) {
-        logger.logInfo("Stopping Event Channel, maximum polling time reached, interval=" + interval +",maximum polling time=" + maxPollingTime);
-        stopListening();
+      if (response.httpStatusCode !== undefined) {
+        logger.logError("[FATAL] Response code was:" + response.httpStatusCode + " repolling again...");
+      } else if (response.type === "timeout") {
+        logger.logInfo("Request timed out, repolling again");
       } else {
-        if (response.httpStatusCode !== undefined) {
-          logger.logError("[FATAL] Response code was:" + response.httpStatusCode + " repolling again...");
-        } else if (response.type === "timeout") {
-          logger.logInfo("Request timed out, repolling again");
-        } else {
-          logger.logError("[FATAL] Response code was:" + response + " repolling again...");
-        }
-        // continue polling
-        channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+        logger.logError("[FATAL] Response code was:" + response + " repolling again...");
       }
+      // continue polling
+      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
     }
 
     // setup success and error callbacks
@@ -182,13 +175,26 @@
     onError =  function (config, error) { // only used for Long Polling
       if (isListening) {
         logger.logInfo("onError - Repolling again...");
-        retry(config, error);
+        //Increment by 2 times
+        interval = interval * 2;
+        if (interval > maxPollingTime) {
+          logger.logInfo("Stopping Event Channel, maximum polling time reached, interval = "
+            + interval + ", maximum polling time = " + maxPollingTime);
+          stopListening();
+        } else {
+          retry(config, error);
+        }
+      } else {
+        logger.logError("Event channel is not running...");
+        logger.logError(error);
       }
     };
 
     onTimeOut = function (config, error) {
-      logger.logInfo("Request timed out " + channelConfig.endpoint);
-      retry(config, error);
+      if (isListening) {
+        logger.logInfo("Request timed out " + channelConfig.endpoint);
+        retry(config, error);
+      }
     };
 
     function startListening(config) {

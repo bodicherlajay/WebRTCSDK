@@ -141,10 +141,6 @@
     // Also, accept `data` object with some relevant info as needed
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_CREATED] = function (event) {
       onSessionReady(event);
-      /*onSessionReady(rtcEvent.createEvent({
-        state: mainModule.CallStatus.READY,
-        data: '1234'
-      }));*/
     };
 
     eventRegistry[mainModule.SessionEvents.RTC_SESSION_ERROR] = function (event) {
@@ -158,26 +154,14 @@
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
       logger.logInfo('Incoming call received at ', event.timestamp);
       logger.logInfo('Codec: ');
-      if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
-        event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
-      }
-
-      //TODO have to pass the object as a single parameter as event object has all the data
       onIncomingCall(event);
     };
 
     eventRegistry[mainModule.RTCCallEvents.SESSION_OPEN] = function (event, data) {
       onCallEstablished(event);
-      /*  onCallEstablished(rtcEvent.createEvent({
-        state: mainModule.CallStatus.ESTABLISHED,
-        from: event.from,
-        codec: event.codec,
-        to: event.to,
-        calltype: event.calltype
-      }));
-*/
+
       if (data.sdp) {
-        peerConnService.setTheRemoteDescription(data.sdp, 'answer');
+        ATT.PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
       if (data.resource) {
         callMgr.getSessionContext().setCurrentCallId(data.resource);
@@ -186,7 +170,7 @@
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (data) {
       if (data.sdp && data.modId) {
-        peerConnService.setRemoteAndCreateAnswer(data.sdp, data.modId);
+        ATT.PeerConnectionService.setRemoteAndCreateAnswer(data.sdp, data.modId);
       }
 
       // hold request received
@@ -208,11 +192,11 @@
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (data) {
       if (data.modId) {
-        peerConnService.setModificationId(data.modId);
+        ATT.PeerConnectionService.setModificationId(data.modId);
       }
 
       if (data.sdp) {
-        peerConnService.setTheRemoteDescription(data.sdp, 'answer');
+        ATT.PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
 
     // // hold request successful
@@ -247,7 +231,7 @@
       }
       sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
       sessionContext.setCallObject(null);
-      peerConnService.endCall();
+      ATT.PeerConnectionService.endCall();
     };
 
     eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function (event) {
