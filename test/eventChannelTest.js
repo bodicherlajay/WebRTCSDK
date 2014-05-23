@@ -11,6 +11,7 @@ describe('Event Channel', function () {
     response,
     channelConfig,
     httpConfig;
+
   beforeEach(function () {
     this.xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
@@ -62,6 +63,16 @@ describe('Event Channel', function () {
     });
   });
 
+  it('createEventChannel should throw error if channelConfig is undefined', function () {
+    channelConfig = undefined;
+    expect(ATT.utils.createEventChannel.bind(ATT.utils, channelConfig)).to.throw(Error);
+  });
+
+  it('createEventChannel should throw error if channelConfig.resourceManager is undefined', function () {
+    channelConfig.resourceManager = undefined;
+    expect(ATT.utils.createEventChannel.bind(ATT.utils, channelConfig)).to.throw(Error);
+  });
+
   it('should `startListening` and change `isListening` flag to true', function () {
     var eventChannel = ATT.utils.createEventChannel(channelConfig);
     eventChannel.startListening(httpConfig);
@@ -71,9 +82,28 @@ describe('Event Channel', function () {
   it('should process successful response', function () {
     var eventChannel = ATT.utils.createEventChannel(channelConfig);
     eventChannel.startListening(httpConfig);
-    expect(eventChannel.isListening()).to.equal(true);
     requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(response));
     expect(channelConfig.publisher.publish.calledOnce).equals(true);
+  });
+
+  it('should create new WebSocket if usesLongPolling false', function () {
+    var eventChannel,
+      spyOnCreateWebSocket = sinon.spy(function (ws) {
+        expect(ws.onmessage).to.be.a('function');
+      }),
+      stub = sinon.stub(window, 'WebSocket', function () {});
+
+
+    channelConfig.usesLongPolling = false;
+    channelConfig.success = undefined;
+    response.location = 'ws://location';
+    channelConfig.onCreateWebSocket = spyOnCreateWebSocket;
+
+    eventChannel = ATT.utils.createEventChannel(channelConfig);
+    eventChannel.startListening(httpConfig);
+    requests[0].respond(200, response, JSON.stringify(response));
+    expect(spyOnCreateWebSocket.called).to.equal(true);
+    stub.restore();
   });
 
   it('should continue to poll for No content response', function () {

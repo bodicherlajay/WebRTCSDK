@@ -44,8 +44,6 @@
    *   * headers: {Object}
    */
   function createEventChannel(channelConfig) {
-    //logger.logDebug(channelConfig);
-    // to appease the JSLint gods
     var channel = {}, // the channel to be configured and returned.
       httpConfig = {},
       isListening = false,
@@ -169,6 +167,7 @@
         ws.onmessage = function (message) {
           processMessages(message);
         };
+        channelConfig.onCreateWebSocket(ws); // testability
       }
     };
 
