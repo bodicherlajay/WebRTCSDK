@@ -177,7 +177,7 @@
       }));
 */
       if (data.sdp) {
-        peerConnService.setTheRemoteDescription(data.sdp, 'answer');
+        ATT.PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
       if (data.resource) {
         callMgr.getSessionContext().setCurrentCallId(data.resource);
@@ -186,7 +186,7 @@
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_RECEIVED] = function (data) {
       if (data.sdp && data.modId) {
-        peerConnService.setRemoteAndCreateAnswer(data.sdp, data.modId);
+        ATT.PeerConnectionService.setRemoteAndCreateAnswer(data.sdp, data.modId);
       }
 
       // hold request received
@@ -208,11 +208,11 @@
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (data) {
       if (data.modId) {
-        peerConnService.setModificationId(data.modId);
+        ATT.PeerConnectionService.setModificationId(data.modId);
       }
 
       if (data.sdp) {
-        peerConnService.setTheRemoteDescription(data.sdp, 'answer');
+        ATT.PeerConnectionService.setTheRemoteDescription(data.sdp, 'answer');
       }
 
     // // hold request successful
@@ -247,7 +247,7 @@
       }
       sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
       sessionContext.setCallObject(null);
-      peerConnService.endCall();
+      ATT.PeerConnectionService.endCall();
     };
 
     eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function (event) {
