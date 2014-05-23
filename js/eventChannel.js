@@ -178,7 +178,8 @@
         //Increment by 2 times
         interval = interval * 2;
         if (interval > maxPollingTime) {
-          logger.logInfo("Stopping Event Channel, maximum polling time reached, interval=" + interval +",maximum polling time=" + maxPollingTime);
+          logger.logInfo("Stopping Event Channel, maximum polling time reached, interval = "
+            + interval + ", maximum polling time = " + maxPollingTime);
           stopListening();
         } else {
           retry(config, error);
