@@ -100,10 +100,10 @@
 
     logger.logDebug('Consume event from event channel', JSON.stringify(event));
 
-    dispatchEventToHandler(event, callManager);
-
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
+
+    dispatchEventToHandler(event, callManager);
   }
 
   /**
