@@ -187,7 +187,9 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             logger.logTrace('Hold request sent...');
-            config.success();
+            if (typeof config.success === 'function') {
+              config.success();
+            }
           } else {
             if (typeof config.error === 'function') {
               config.error();
@@ -230,7 +232,9 @@ if (!ATT) {
         success: function (response) {
           if (response.getResponseStatus() === 204) {
             logger.logTrace('Resume request sent...');
-            config.success();   // testability
+            if (typeof config.success === 'function') {
+              config.success();   // testability
+            }
           } else {
             logger.logError('CALL RESUME ERROR, status', response.getResponseStatus());
             if (typeof config.error === 'function') {
