@@ -20,7 +20,7 @@ module.exports = function (grunt) {
       'js/att.config.api.js',
       'js/resourceManagerModule.js',
       'js/att.config.app.js',
-      'js/attEnum.js',
+      'js/att.enum.js',
       'js/CallManagementModule.js',
       'js/eventDispatcher.js',
       'js/RTCEventModule.js',

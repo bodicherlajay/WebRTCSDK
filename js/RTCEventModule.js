@@ -23,7 +23,7 @@
     };
 
    /* Mapping the event state to the UI event object
-    * maps the values from attEnum.js
+    * maps the values from att.enum.js
     * @param {Object} event object
     * @returns {Number} event state
     */

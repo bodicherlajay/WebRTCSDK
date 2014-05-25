@@ -28,7 +28,7 @@
   att.main.js
   att.config.api.js
   resourceManagerModule.js
-  attEnum.js
+  att.enum.js
   att.config.app.js
   eventDispatcher.js
   RTCEventModule.js
