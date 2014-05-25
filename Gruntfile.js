@@ -23,7 +23,7 @@ module.exports = function (grunt) {
       'js/att.enum.js',
       'js/att.call-manager.js',
       'js/eventDispatcher.js',
-      'js/RTCEventModule.js',
+      'js/att.rtc.event.js',
       'js/adapter.js',
       'js/att.user-media-service.js',
       'js/SDPFilterModule.js',

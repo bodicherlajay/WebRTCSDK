@@ -31,7 +31,7 @@
   att.enum.js
   att.config.app.js
   eventDispatcher.js
-  RTCEventModule.js
+  att.rtc.event.js
   adapter.js
   userMediaService.js
   SDPFilterModule.js
