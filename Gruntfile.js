@@ -19,7 +19,7 @@ module.exports = function (grunt) {
       'js/att.main.js',
       'js/att.config.configure-apis.js',
       'js/resourceManagerModule.js',
-      'js/appConfigModule.js',
+      'js/att.config.app.js',
       'js/attEnum.js',
       'js/CallManagementModule.js',
       'js/eventDispatcher.js',

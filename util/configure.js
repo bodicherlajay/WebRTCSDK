@@ -32,6 +32,6 @@ var config = (function() {
 
 var param = 'DHSEndpoint';
 var newValue = 'http://localhost:9001';
-var sourceFile = 'js/appConfigModule.js';
+var sourceFile = 'js/att.config.app.js';
 
 config.updateConfigParameter(param, newValue, sourceFile);

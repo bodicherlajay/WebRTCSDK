@@ -29,7 +29,7 @@
   att.config.configure-apis.js
   resourceManagerModule.js
   attEnum.js
-  appConfigModule.js
+  att.config.app.js
   eventDispatcher.js
   RTCEventModule.js
   adapter.js
