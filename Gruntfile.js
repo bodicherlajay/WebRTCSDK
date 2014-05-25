@@ -18,7 +18,7 @@ module.exports = function (grunt) {
       'js/att.utils.error-dictionary.js',
       'js/att.main.js',
       'js/att.config.api.js',
-      'js/resourceManagerModule.js',
+      'js/att.resource-manager.js',
       'js/att.config.app.js',
       'js/att.enum.js',
       'js/att.call-manager.js',
@@ -31,7 +31,7 @@ module.exports = function (grunt) {
       'js/att.error.js',
       'js/att.peer-connection-service.js',
       'js/att.rtc.dhs.js',
-      'js/eventChannel.js',
+      'js/att.utils.event-channel.js',
       'js/att.rtc.phone.js',
       // TESTS
       'test/test.att.utils.sdk-error-store.js',

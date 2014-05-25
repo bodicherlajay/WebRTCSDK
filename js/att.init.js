@@ -27,7 +27,7 @@
   att.utils.error-dictionary.js
   att.main.js
   att.config.api.js
-  resourceManagerModule.js
+  att.resource-manager.js
   att.enum.js
   att.config.app.js
   eventDispatcher.js
