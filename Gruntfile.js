@@ -15,7 +15,7 @@ module.exports = function (grunt) {
       'lib/vendor/SDPParser.js',
       'lib/js-shared/js/*.js',
       'js/att.utils.sdk-error-store.js',
-      'js/ErrorDictionaryModule.js',
+      'js/att.utils.error-dictionary.js',
       'js/att.main.js',
       'js/att.config.api.js',
       'js/resourceManagerModule.js',

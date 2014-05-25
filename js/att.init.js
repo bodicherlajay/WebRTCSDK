@@ -24,7 +24,7 @@
 /** Load order
 
   att.utils.sdk-error-store.js
-  ErrorDictionaryModule.js
+  att.utils.error-dictionary.js
   att.main.js
   att.config.api.js
   resourceManagerModule.js
