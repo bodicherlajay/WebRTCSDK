@@ -21,7 +21,7 @@ module.exports = function (grunt) {
       'js/resourceManagerModule.js',
       'js/att.config.app.js',
       'js/att.enum.js',
-      'js/CallManagementModule.js',
+      'js/att.call-manager.js',
       'js/eventDispatcher.js',
       'js/RTCEventModule.js',
       'js/adapter.js',

@@ -37,7 +37,7 @@
   SDPFilterModule.js
   signalingService.js
   peerConnectionService.js
-  CallManagementModule.js
+  att.call-manager.js
   DHSModule.js
   att.rtc.phone.js
  */
