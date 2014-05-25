@@ -17,7 +17,7 @@ module.exports = function (grunt) {
       'js/att.utils.sdk-error-store.js',
       'js/ErrorDictionaryModule.js',
       'js/att.main.js',
-      'js/att.config.configure-apis.js',
+      'js/att.config.api.js',
       'js/resourceManagerModule.js',
       'js/att.config.app.js',
       'js/attEnum.js',

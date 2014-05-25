@@ -26,7 +26,7 @@
   att.utils.sdk-error-store.js
   ErrorDictionaryModule.js
   att.main.js
-  att.config.configure-apis.js
+  att.config.api.js
   resourceManagerModule.js
   attEnum.js
   att.config.app.js

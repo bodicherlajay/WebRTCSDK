@@ -156,7 +156,7 @@ Env = (function (app) {
 
   /**
    * Method to return a configured rest operation configured in the
-   * att.config.configure-apis.js file.
+   * att.config.api.js file.
    * @param operationName
    * @param config
    * @returns {Function}
