@@ -34,7 +34,7 @@
   att.rtc.event.js
   adapter.js
   userMediaService.js
-  SDPFilterModule.js
+  att.utils.sdp-filter.js
   signalingService.js
   peerConnectionService.js
   att.call-manager.js
