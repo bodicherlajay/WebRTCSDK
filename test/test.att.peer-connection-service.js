@@ -180,6 +180,7 @@ describe('PeerConnectionServiceModule', function () {
       ATT.PeerConnectionService.endCall();
       assert.isNull(ATT.PeerConnectionService.peerConnection);
       expect(ATT.PeerConnectionService.modificationCount).to.equal(2);
+      expect(ATT.PeerConnectionService.modificationId).equals(null);
     });
   });
 

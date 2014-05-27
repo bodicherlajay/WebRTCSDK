@@ -385,6 +385,14 @@
       this.modificationCount = 2;
     },
 
+    /**
+    * Reset modification Id
+    *
+    */
+    resetModId: function () {
+      this.modificationId = null;
+    },
+
    /**
     *
     * Hold Call
@@ -478,7 +486,7 @@
       }
       this.peerConnection = null;
       this.resetModCount();
-
+      this.resetModId();
     },
 
     /**
