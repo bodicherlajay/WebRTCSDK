@@ -477,9 +477,13 @@ if (Env === undefined) {
   * @example 
   ATT.rtc.Phone.hangup();
   */
-  function hangup() {
-    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-      callManager.getSessionContext().getCallObject().end();
+  function hangup(options) {
+    try {
+      if (callManager.getSessionContext().getCallObject().end()) {
+        options.onSuccess();
+      }
+    } catch(e) {
+     options.onError(e);
     }
   }
 

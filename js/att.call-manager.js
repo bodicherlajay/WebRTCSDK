@@ -284,8 +284,7 @@ cmgmt = (function () {
   };
 
   Call.hangup = function () {
-    if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCallObject()) {
+    if (ATT.PeerConnectionService.peerConnection) {
       logger.logInfo('Hanging up...');
       ATT.SignalingService.sendEndCall();
     } else {
