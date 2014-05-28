@@ -1,10 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, RESTClient, Env, cmgmt */
-/**
- *  The WebRTC SDK. 
- * @fileOverview Handles all the calls related to web rtc
- * @namespace ATT.rtc.Phone
- */
 
 if (ATT === undefined) {
   var ATT = {};
@@ -14,6 +9,16 @@ if (Env === undefined) {
   var Env = {};
 }
 
+/**
+ *  The WebRTC SDK.
+ *  @fileOverview Handles all the calls related to web rtc
+ *  @namespace ATT.rtc.Phone
+ *  @overview ATT RTC SDK [TODO: To be filled by marketing?]
+ *  @copyright AT&T [TODO: what we show here]
+ *  @class ATT.rtc.Phone
+ *  @license [TODO: to be filled by marketing]
+ *  @classdesc RTC Phone Implementation [TODO: to be filled by marketing]
+ */
 (function (app) {
   'use strict';
 
@@ -97,6 +102,26 @@ if (Env === undefined) {
     }
   }
 
+
+  function initCallbacks(callbacks) {
+    logger.logDebug('intiCallbacks');
+    //Planning not to save the UI callbacks in session context
+    logger.logDebug(callbacks);
+    try {
+      logger.logInfo('getting the Callback for mapping');
+    } catch (err) {
+      throw "Init Callbacks: " + err;
+    }
+  }
+  function getCallType() {
+    logger.logDebug('Call type Audio/Video');
+
+    try {
+      logger.logInfo('Trying to get the CallType from the session Context ');
+    } catch (err) {
+      throw "getcalltype: " + err;
+    }
+  }
   createWebRTCSessionSuccess = function (config, responseObject) {
     logger.logDebug('createWebRTCSessionSuccess');
 
@@ -148,41 +173,42 @@ if (Env === undefined) {
   };
 
   /**
-   * Used to establish webRTC session so that the user can place webRTC calls. 
-   * The service parameter indicates the desired service such as audio or video call
-   * @memberof ATT.rtc.Phone
-   * @param {Object} loginObject Login Object
-   * @param {String} loginObject.token  Access token
-   * @param {String} [loginObject.e911Id] E911 Id. Optional parameter for NoTN users and required for ICMN and VTN users
-   * @param {Boolean} [loginObject.audioOnly] Set this value to true for audio service.
-   *        Optional parameter to indicate only audio service is needed for the session
-   * @param {function} loginObject.onSessionReady
-   * @param {function} loginObject.onIncomingCall
-   * @param {function} loginObject.onCallEnded
-   * @param {function} loginObject.onCallError
-   * @param {function} loginObject.onError
-   * @example
-   *
-   * ATT.rtc.Phone.login({
-   *       token: 'accessToken',
-   *       e911Id: 'e911Identifer',
-   *       audioOnly: true,
-   *       onSessionReady : function (event) {
-   *
-   *       },
-   *       onIncomingCall : function (event) {
-   *       },
-   *       onCallEnded : function (event) {
-   *       },
-   *       onCallError :  function (event) {
-   *       ,
-   *       onError : function (error) {
-   *         error.userErrorCode
-   *         error.helpText
-   *         error.errorDescription);
-   *     }
+    * @summary Performs RTC login
+    * @desc Used to establish webRTC session so that the user can place webRTC calls.
+    * The service parameter indicates the desired service such as audio or video call
+    * @memberof ATT.rtc.Phone
+    * @param {Object} loginParams Login parameters
+    * @param {String} loginParams.token  Access token
+    * @param {String} [loginParams.e911Id] E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
+    * @param {Boolean} [loginParams.audioOnly] Set this value to true for audio service.
+    *        Optional parameter to indicate only audio service is needed for the session
+    * @fires ATT.rtc.Phone.login#[RTCEvent]OnSessionReady  This callback gets invoked when SDK is initialized and ready to make, receive calls
+    * @fires ATT.rtc.Phone.login#[RTCEvent]OnIncomingCall  This callback gets invoked when incoming call event is received
+    * @fires ATT.rtc.Phone.login#[RTCEvent]OnCallEnded     This callback gets invoked when outgoing/incoming call is ended
+    * @fires ATT.rtc.Phone.login#[RTCEvent]OnCallError     This callback gets invoked while encountering issue with outgoing/incoming call
+    * @fires ATT.rtc.Phone.login#[RTCEvent]OnError         This callback gets invoked while encountering issues during login process
+    * @example
+    *
+    * ATT.rtc.Phone.login({
+    *       token: 'accessToken',
+    *       e911Id: 'e911Identifer',
+    *       audioOnly: true,
+    *       onSessionReady : function (event) {
+    *
+    *       },
+    *       onIncomingCall : function (event) {
+    *       },
+    *       onCallEnded : function (event) {
+    *       },
+    *       onCallError :  function (event) {
+    *       ,
+    *       onError : function (error) {
+    *         error.userErrorCode
+    *         error.helpText
+    *         error.errorDescription);
+    *     }
    */
-  function login(loginObject) {
+  function login(loginParams) {
     logger.logDebug('createWebRTCSession');
     var token,
       e911Id,
@@ -190,28 +216,28 @@ if (Env === undefined) {
       services = ['ip_voice_call', 'ip_video_call'],
       errorHandler;
 
-    if (loginObject.callbacks && loginObject.callbacks.onError && typeof loginObject.callbacks.onError === 'function') {
-      errorHandler = loginObject.callbacks.onError;
+    if (loginParams.callbacks && loginParams.callbacks.onError && typeof loginParams.callbacks.onError === 'function') {
+      errorHandler = loginParams.callbacks.onError;
     }
 
     try {
-      if (!loginObject) {
+      if (!loginParams) {
         throw 'Cannot login to web rtc, no configuration';
       }
-      if (!loginObject.token) {
+      if (!loginParams.token) {
         throw 'Cannot login to web rtc, no access token';
       }
 
       // todo: need to decide if callbacks should be mandatory
-      if (!loginObject.callbacks || Object.keys(loginObject.callbacks) <= 0) {
+      if (!loginParams.callbacks || Object.keys(loginParams.callbacks) <= 0) {
         logger.logWarning('No UI callbacks specified');
       }
 
-      token = loginObject.token;
-      e911Id = loginObject.e911Id || null;
+      token = loginParams.token;
+      e911Id = loginParams.e911Id || null;
 
       //remove video service for audio only service
-      if (loginObject.audioOnly) {
+      if (loginParams.audioOnly) {
         services = services.slice(0, 1);
       }
       // create new session with token and optional e911id
@@ -236,7 +262,7 @@ if (Env === undefined) {
             'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
           }
         },
-        success: createWebRTCSessionSuccess.bind(this, loginObject),
+        success: createWebRTCSessionSuccess.bind(this, loginParams),
         error: handleError.bind(this, 'CreateSession', errorHandler)
       });
     } catch (err) {
@@ -463,7 +489,9 @@ if (Env === undefined) {
   */
   function hold() {
     try {
-      callManager.getSessionContext().getCallObject().hold();
+      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+        callManager.getSessionContext().getCallObject().hold();
+      }
     } catch (e) {
       ATT.Error.publish(e);
     }
@@ -477,7 +505,9 @@ if (Env === undefined) {
   */
   function resume() {
     try {
-      callManager.getSessionContext().getCallObject().resume();
+      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+        callManager.getSessionContext().getCallObject().resume();
+      }
     } catch (e) {
       ATT.Error.publish(e);
     }
@@ -491,9 +521,11 @@ if (Env === undefined) {
   */
   function hangup(options) {
     try {
-        //TODO the callended callback gets triggred on session terminated (callbacks are already register)
-      if (callManager.getSessionContext().getCallObject().end()) {
-        options.onSuccess();
+      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+         //TODO the callended callback gets triggred on session terminated (callbacks are already register)
+        if (callManager.getSessionContext().getCallObject().end()) {
+          options.onSuccess();
+        }
       }
     } catch (e) {
       ATT.Error.publish(e);
@@ -510,6 +542,8 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('resume', resume);
     resourceManager.addPublicMethod('mute', mute);
     resourceManager.addPublicMethod('unmute', unmute);
+    resourceManager.addPublicMethod('initCallback', initCallbacks);
+    resourceManager.addPublicMethod('getCallType ', getCallType);
     resourceManager.addPublicMethod('hangup', hangup);
   }
 
