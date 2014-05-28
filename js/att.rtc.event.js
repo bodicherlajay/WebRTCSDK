@@ -135,7 +135,6 @@
 
   //Event structure for RTCEvent
   /** Event Object structure for RTC Event
-   * @memberof ATT.rtc.Phone
    * @param from Origination party
    * @param to  Destination party
    * @param state Call State

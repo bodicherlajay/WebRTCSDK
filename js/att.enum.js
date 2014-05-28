@@ -31,63 +31,51 @@ if (!ATT) {
   };
   module.CallStatus = {
    /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     SESSION_READY:      0,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     CONNECTING:    1,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     RINGING:    2,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     INPROGRESS: 3,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     HOLD:       4,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     TRANSITION: 5,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     WAITING: 6,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     ENDED: 7,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     RESUMED: 8,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     MUTED: 9,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     UNMUTED: 10,
         /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     ESTABLISHED: 11,
 
@@ -95,13 +83,11 @@ if (!ATT) {
 
     SESSION_ERROR: 13,
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
     ERROR: 99
        /**
-* @memberof ATT.rtc.Phone
-* @constant {number} 
+* @constant {number}
  */
   };
 
