@@ -449,7 +449,7 @@ if (Env === undefined) {
     try {
       callManager.CreateIncomingCall(config);
     } catch (e) {
-      ATT.Error.publish(e);
+      ATT.Error.publish(e, "AnswerCall");
     }
   }
 
@@ -526,9 +526,11 @@ if (Env === undefined) {
         if (callManager.getSessionContext().getCallObject().end()) {
           options.onSuccess();
         }
+      } else {
+        //options.onError();
       }
     } catch (e) {
-      ATT.Error.publish(e);
+      ATT.Error.publish(e, "HangUp");
     }
   }
 

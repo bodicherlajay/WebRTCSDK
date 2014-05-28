@@ -244,6 +244,24 @@
       reasonText: "Session Id not associated with the token",
       moduleID: 'RTC'
     },
+    {
+      userErrorCode: "SDK-20024",
+      messageId: "POL1102",
+      operationName: "HangUp",
+      httpStatusCode: "403",
+      errorDescription: "Unable to hangup",
+      reasonText: "Cannot hangup before establishing a Call",
+      moduleID: 'RTC'
+    },
+    {
+      userErrorCode: "SDK-20025",
+      messageId: "POL1102",
+      operationName: "AnswerCall",
+      httpStatusCode: "403",
+      errorDescription: "Unable to AnswerCall",
+      reasonText: "Please Login before accessing this public method",
+      moduleID: 'RTC'
+    },
 
     // range SDK-50000 is reserverd for DHS errors
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
