@@ -41,14 +41,14 @@ module.exports = function (grunt) {
       'test/ATTMainTest.js',
       'test/CallManagementModuleTest.js',
       'test/ErrorDictionaryModuleTest.js',
-      'test/eventChannelTest.js',
+      'test/test.att.utils.event-channel.js',
       'test/eventDispatcherTest.js',
       'test/test.att.peer-connection-service.js',
       'test/RTCEventModuleTest.js',
       'test/signalingServiceModuleTest.js',
-      'test/SDPFilterModuleTest.js',
+      'test/test.att.utils.sdp-filter.js',
       'test/userMediaServiceModuletest.js',
-      'test/webRTCTest.js'
+      'test/test.att.rtc.phone.js'
 
     ],
     logLevel: 'INFO',
