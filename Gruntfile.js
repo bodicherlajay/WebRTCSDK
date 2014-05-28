@@ -40,7 +40,7 @@ module.exports = function (grunt) {
       'test/test.att.enum.js',
       'test/test.att.main.js',
       'test/test.att.call-manager.js',
-      'test/ErrorDictionaryModuleTest.js',
+      'test/test.att.utils.error-dictionary.js',
       'test/test.att.utils.event-channel.js',
       'test/eventDispatcherTest.js',
       'test/test.att.peer-connection-service.js',
