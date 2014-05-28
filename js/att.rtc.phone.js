@@ -429,7 +429,7 @@ if (Env === undefined) {
     try {
       callManager.CreateIncomingCall(config);
     } catch (e) {
-      callManager.PublishError(e);
+      ATT.Error.publish(e);
     }
   }
 
@@ -440,7 +440,11 @@ if (Env === undefined) {
   ATT.rtc.Phone.mute();
   */
   function mute() {
-    callManager.getSessionContext().getCallObject().mute();
+    try {
+      callManager.getSessionContext().getCallObject().mute();
+    } catch (e) {
+      ATT.Error.publish(e);
+    }
   }
 
   /**
@@ -450,7 +454,11 @@ if (Env === undefined) {
   ATT.rtc.Phone.unmute();
   */
   function unmute() {
-    callManager.getSessionContext().getCallObject().unmute();
+    try {
+      callManager.getSessionContext().getCallObject().unmute();
+    } catch (e) {
+      ATT.Error.publish(e);
+    }
   }
 
   /**
@@ -460,8 +468,10 @@ if (Env === undefined) {
   ATT.rtc.Phone.hold();
   */
   function hold() {
-    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+    try {
       callManager.getSessionContext().getCallObject().hold();
+    } catch (e) {
+      ATT.Error.publish(e);
     }
   }
 
@@ -472,8 +482,10 @@ if (Env === undefined) {
   ATT.rtc.Phone.resume();
   */
   function resume() {
-    if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+    try {
       callManager.getSessionContext().getCallObject().resume();
+    } catch (e) {
+      ATT.Error.publish(e);
     }
   }
 
@@ -485,11 +497,12 @@ if (Env === undefined) {
   */
   function hangup(options) {
     try {
+        //TODO the callended callback gets triggred on session terminated (callbacks are already register)
       if (callManager.getSessionContext().getCallObject().end()) {
         options.onSuccess();
       }
-    } catch(e) {
-     options.onError(e);
+    } catch (e) {
+      ATT.Error.publish(e);
     }
   }
 
