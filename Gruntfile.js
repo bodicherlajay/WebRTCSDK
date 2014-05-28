@@ -47,7 +47,7 @@ module.exports = function (grunt) {
       'test/test.att.rtc.event.js',
       'test/test.att.signaling.service.js',
       'test/test.att.utils.sdp-filter.js',
-      'test/userMediaServiceModuletest.js',
+      'test/test.att.user-media-service.js',
       'test/test.att.rtc.phone.js'
 
     ],

@@ -131,4 +131,15 @@ describe('webRTC', function () {
     });
   });
 
+  describe('Mute', function () {
+    it('should have a mute method', function() {
+      assert.ok(ATT.rtc.Phone.mute);
+    });
+  });
+
+  describe('Unmute', function () {
+    it('should have a unmute method', function() {
+      assert.ok(ATT.rtc.Phone.unmute);
+    });
+  })
 });

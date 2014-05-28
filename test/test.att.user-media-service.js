@@ -9,6 +9,7 @@ describe('UserMediaService', function () {
   beforeEach(function () {
     backupAtt = ATT;
   });
+  
   it('should exist and contain startCall, showStream, stopStream', function () {
     expect(ATT.UserMediaService).to.be.an('object');
     expect(ATT.UserMediaService.startCall).to.be.a('function');
@@ -42,18 +43,20 @@ describe('UserMediaService', function () {
     assert.isNull(ATT.UserMediaService.remoteStream);
   });
 
-  it('should mute local stream', function () {
-    var audioTracks = [{ enabled: true}];
+  it('should mute local stream by setting `enabled` to false', function () {
+    var audioTracks = [{ enabled: true}], backupLocalStream = ATT.UserMediaService.localStream;
     ATT.UserMediaService.localStream = {foo: 'bar', getAudioTracks: function () { return audioTracks; }};
     ATT.UserMediaService.muteStream();
     assert.isFalse(ATT.UserMediaService.localStream.getAudioTracks()[0].enabled);
+    ATT.UserMediaService.localStream = backupLocalStream;
   });
 
-  it('should umute local stream', function () {
-    var audioTracks = [{ enabled: true}];
+  it('should umute local stream by setting `enabled` to true', function () {
+    var audioTracks = [{ enabled: true}], backupLocalStream = ATT.UserMediaService.localStream;
     ATT.UserMediaService.localStream = {foo: 'bar', getAudioTracks: function () { return audioTracks; }};
     ATT.UserMediaService.unmuteStream();
     assert.isTrue(ATT.UserMediaService.localStream.getAudioTracks()[0].enabled);
+    ATT.UserMediaService.localStream = backupLocalStream;
   });
 
   afterEach(function () {
