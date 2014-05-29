@@ -51,7 +51,7 @@
     session = callManager.getSessionContext();
 
     setTimeout(function () {
-      var CODEC = [], media, sdp, idx, calltype;
+      var CODEC = [], media, sdp, idx, calltype = '';
 
       logger.logDebug('dispatching event: ' + event.state);
 
@@ -65,10 +65,9 @@
           };
           CODEC.push(media);
         }
+        calltype = (CODEC.length === 1) ? 'audio' : 'video';
+        session.setCallType(calltype);
       }
-      //on each event and if sdp exists we extract the calltype and store it in sessioncontext
-      calltype = event.sdp ? ((CODEC.length === 1) ? 'audio' : 'video') : '';
-      session.setCallType(calltype);
       logger.logDebug('Codec from the event, ' + CODEC);
       if (eventRegistry[event.state]) {
         logger.logDebug("Processing the registered event " + event.state);
