@@ -239,6 +239,7 @@ Env = (function (app) {
           }
 
           // add this to the restConfig.  These will be in addition to the default headers.
+          restConfig.headers = ATT.utils.extend({}, restConfig.headers);
           restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
         }
       }
