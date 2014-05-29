@@ -162,6 +162,24 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
+        * Refresh WebRTC session from RTCEndpoint
+        * @memberof ATT.APIConfigs
+        */
+        refreshWebRTCSession: {
+          method: 'put',
+          formatters: {
+            url: function (sessionId) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + sessionId;
+            },
+            headers: {
+              'Authorization': function (oAuthToken) {
+                return 'Bearer ' + oAuthToken;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
+        },
+        /**
         * Delete WebRTC session from RTCEndpoint
         * @memberof ATT.APIConfigs
         */
