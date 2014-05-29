@@ -161,9 +161,9 @@ if (Env === undefined) {
   }
   function getCallType() {
     logger.logDebug('Call type Audio/Video');
-
     try {
       logger.logInfo('Trying to get the CallType from the session Context ');
+      return callManager.getSessionContext().getCallType();
     } catch (err) {
       throw "getcalltype: " + err;
     }
@@ -579,22 +579,13 @@ if (Env === undefined) {
 
   /**
   * Hangs up the current call
-  * @memberof ATT.rtc.Phone
-  * @example 
-  ATT.rtc.Phone.hangup();
+  * @param {Object} options The UI options
   */
   function hangup(options) {
     try {
-      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-         //TODO the callended callback gets triggred on session terminated (callbacks are already register)
-        if (callManager.getSessionContext().getCallObject().end()) {
-          options.onSuccess();
-        }
-      } else {
-        //options.onError();
-      }
+      callManager.getSessionContext().getCallObject().end(options);
     } catch (e) {
-      ATT.Error.publish(e, "HangUp");
+      ATT.Error.publish('SDK-20024', null, options.onError);
     }
   }
 
@@ -609,7 +600,7 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('mute', mute);
     resourceManager.addPublicMethod('unmute', unmute);
     resourceManager.addPublicMethod('initCallback', initCallbacks);
-    resourceManager.addPublicMethod('getCallType ', getCallType);
+    resourceManager.addPublicMethod('getCallType', getCallType);
     resourceManager.addPublicMethod('hangup', hangup);
   }
 

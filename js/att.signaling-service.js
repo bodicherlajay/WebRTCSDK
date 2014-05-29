@@ -253,7 +253,7 @@ if (!ATT) {
 
     /**
     * Send End Call
-    * @param {Object} config the peer conn config
+    * @param {Object} config the UI options
     */
     sendEndCall: function (config) {
       config = config || {};
@@ -263,7 +263,7 @@ if (!ATT) {
         params: {
           url: [
             callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId()
+            callManager.getSessionContext().getCurrentCallId(),
           ],
           headers: {
             'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
@@ -287,7 +287,13 @@ if (!ATT) {
           if (typeof config.error === 'function') {
             config.error();
           }
-        }
+        },
+        ontimeout: function () {
+          logger.logError('CALL TERMINATION ERROR', err);
+          if (typeof config.error === 'function') {
+            config.error();
+          }
+        },
       });
     }
   };

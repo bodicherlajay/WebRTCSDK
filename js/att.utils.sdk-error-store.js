@@ -48,241 +48,246 @@
     },
     {
       moduleID : 'RTC',
-      userErrorCode : "SDK-20001",
-      operationName : "Login",
-      httpStatusCode : "<optional>",
-      errorDescription : "[TODO: To be filled by Product/Marketing]",
-      reasonText : ""
+      userErrorCode : 'SDK-20001',
+      operationName : 'Login',
+      httpStatusCode : '<optional>',
+      errorDescription : '[TODO: To be filled by Product/Marketing]',
+      reasonText : ''
     },
     {
       moduleID : 'RTC',
-      userErrorCode : "SDK-20002",
-      operationName : "CreateSession",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create Session",
-      reasonText : "A service error has occurred. Error code is <error_explanation>"
+      userErrorCode : 'SDK-20002',
+      operationName : 'CreateSession',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'A service error has occurred. Error code is <error_explanation>'
     },
     {
       moduleID : 'RTC',
-      userErrorCode : "SDK-20003",
-      operationName : "CreateSession",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create Session",
-      reasonText : "Invalid input value for Message part <part_name>"
+      userErrorCode : 'SDK-20003',
+      operationName : 'CreateSession',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'Invalid input value for Message part <part_name>'
     },
     {
       moduleID : 'RTC',
-      userErrorCode : "SDK-20004",
-      operationName : "CreateSession",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create Session",
-      reasonText : "Invalid input value for Message part <part_name>, valid values are <part_values>"
+      userErrorCode : 'SDK-20004',
+      operationName : 'CreateSession',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'Invalid input value for Message part <part_name>, valid values are <part_values>'
     },
     {
-      userErrorCode : "SDK-20005",
+      userErrorCode : 'SDK-20005',
       moduleID : 'RTC',
-      messageId : "SVC0004",
-      operationName : "CreateSession",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create Session",
-      reasonText : "No valid addresses provided in the Message part <part_name>"
+      messageId : 'SVC0004',
+      operationName : 'CreateSession',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'No valid addresses provided in the Message part <part_name>'
     },
     {
-      userErrorCode : "SDK-20006",
+      userErrorCode : 'SDK-20006',
       moduleID : 'RTC',
-      messageId : "SVC8510",
-      operationName : "CreateSession",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create Session",
-      reasonText : "E911 not supported for non-telephone users"
+      messageId : 'SVC8510',
+      operationName : 'CreateSession',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'E911 not supported for non-telephone users'
     },
     {
-      userErrorCode : "SDK-20007",
+      userErrorCode : 'SDK-20007',
       moduleID : 'RTC',
-      messageId : "SVC8511",
-      operationName : "CreateSession",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create Session",
-      reasonText : "Valid e911Id is mandatory for <part_value>"
+      messageId : 'SVC8511',
+      operationName : 'CreateSession',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'Valid e911Id is mandatory for <part_value>'
     },
     {
-      userErrorCode : "SDK-20008",
+      userErrorCode : 'SDK-20008',
       moduleID : 'RTC',
-      messageId : "SVC8512",
-      operationName : "CreateSession",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create Session",
-      reasonText : "Unassigned token Associate token to VTN or username"
+      messageId : 'SVC8512',
+      operationName : 'CreateSession',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'Unassigned token Associate token to VTN or username'
     },
     {
-      userErrorCode : "SDK-20009",
+      userErrorCode : 'SDK-20009',
       moduleID : 'RTC',
-      messageId : "SVC8513",
-      operationName : "CreateSession",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create Session",
-      reasonText : "Token in use."
+      messageId : 'SVC8513',
+      operationName : 'CreateSession',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'Token in use.'
     },
     {
-      userErrorCode : "SDK-20010",
+      userErrorCode : 'SDK-20010',
       moduleID : 'RTC',
-      messageId : "POL0001",
-      operationName : "CreateSession",
-      httpStatusCode : "401/403",
-      errorDescription : "Unable to create Session",
-      reasonText : "A policy error occurred. For example, rate limit error, authentication and authorization errors"
+      messageId : 'POL0001',
+      operationName : 'CreateSession',
+      httpStatusCode : '401/403',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'A policy error occurred. For example, rate limit error, authentication and authorization errors'
     },
     {
-      userErrorCode : "SDK-20011",
+      userErrorCode : 'SDK-20011',
       moduleID : 'RTC',
-      messageId : "POL0002",
-      operationName : "CreateSession",
-      httpStatusCode : "403",
-      errorDescription : "Unable to create Session",
-      reasonText : "Privacy verification failed for address <address> request is refused"
+      messageId : 'POL0002',
+      operationName : 'CreateSession',
+      httpStatusCode : '403',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'Privacy verification failed for address <address> request is refused'
     },
     {
-      userErrorCode : "SDK-20012",
+      userErrorCode : 'SDK-20012',
       moduleID : 'RTC',
-      messageId : "POL0003",
-      operationName : "CreateSession",
-      httpStatusCode : "403",
-      errorDescription : "Unable to create Session",
-      reasonText : "Too many addresses specified in Message part"
+      messageId : 'POL0003',
+      operationName : 'CreateSession',
+      httpStatusCode : '403',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'Too many addresses specified in Message part'
     },
     {
-      userErrorCode : "SDK-20013",
+      userErrorCode : 'SDK-20013',
       moduleID : 'RTC',
-      messageId : "POL0009",
-      operationName : "CreateSession",
-      httpStatusCode : "403",
-      errorDescription : "Unable to create Session",
-      reasonText : "User has not been provisioned for %1"
+      messageId : 'POL0009',
+      operationName : 'CreateSession',
+      httpStatusCode : '403',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'User has not been provisioned for %1'
     },
     {
-      userErrorCode : "SDK-20014",
+      userErrorCode : 'SDK-20014',
       moduleID : 'RTC',
-      messageId : "POL1100",
-      operationName : "CreateSession",
-      httpStatusCode : "403",
-      errorDescription : "Unable to create Session",
-      reasonText : "Max number of session exceeded allowed limit %1"
+      messageId : 'POL1100',
+      operationName : 'CreateSession',
+      httpStatusCode : '403',
+      errorDescription : 'Unable to create Session',
+      reasonText : 'Max number of session exceeded allowed limit %1'
     },
     {
-      userErrorCode : "SDK-20015",
+      userErrorCode : 'SDK-20015',
       moduleID : 'RTC',
-      operationName: "RefreshSession",
-      httpStatusCode: "<optional>",
-      errorDescription: "Unable to Refresh Session",
-      reasonText: ""
+      operationName: 'RefreshSession',
+      httpStatusCode: '<optional>',
+      errorDescription: 'Unable to Refresh Session',
+      reasonText: ''
     },
     {
       moduleID: 'RTC',
-      userErrorCode: "SDK-20016",
-      operationName: "DeleteSession",
-      messageId: "SVC0001",
-      errorDescription: "Unable to Delete Session",
-      reasonText: "A service error has occurred. Error code is <error_explanation>"
+      userErrorCode: 'SDK-20016',
+      operationName: 'DeleteSession',
+      messageId: 'SVC0001',
+      errorDescription: 'Unable to Delete Session',
+      reasonText: 'A service error has occurred. Error code is <error_explanation>'
     },
     {
-      userErrorCode: "SDK-20017",
+      userErrorCode: 'SDK-20017',
       moduleID: 'RTC',
-      operationName: "DeleteSession",
-      messageId: "SVC0002",
-      errorDescription: "Unable to Delete Session",
-      reasonText: "Invalid input value for Message part <part_name>"
+      operationName: 'DeleteSession',
+      messageId: 'SVC0002',
+      errorDescription: 'Unable to Delete Session',
+      reasonText: 'Invalid input value for Message part <part_name>'
     },
     {
       moduleID: 'RTC',
-      userErrorCode: "SDK-20018",
-      operationName: "DeleteSession",
-      messageId: "SVC0003",
-      errorDescription: "Unable to Delete Session",
-      reasonText: "Invalid input value for Message part <part_name>, valid values are <part_values>"
+      userErrorCode: 'SDK-20018',
+      operationName: 'DeleteSession',
+      messageId: 'SVC0003',
+      errorDescription: 'Unable to Delete Session',
+      reasonText: 'Invalid input value for Message part <part_name>, valid values are <part_values>'
     },
     {
-      userErrorCode: "SDK-20019",
+      userErrorCode: 'SDK-20019',
       moduleID: 'RTC',
-      operationName: "DeleteSession",
-      messageId: "SVC0004",
-      errorDescription: "Unable to Delete Session",
-      reasonText: "No valid addresses provided in the Message part <part_name>"
+      operationName: 'DeleteSession',
+      messageId: 'SVC0004',
+      errorDescription: 'Unable to Delete Session',
+      reasonText: 'No valid addresses provided in the Message part <part_name>'
     },
     {
-      userErrorCode: "SDK-20020",
+      userErrorCode: 'SDK-20020',
       moduleID: 'RTC',
-      messageId: "POL0001",
-      operationName: "DeleteSession",
-      httpStatusCode: "401/403",
-      errorDescription: "Unable to create Session",
-      reasonText: "A policy error occurred. For example, rate limit error, authentication and authorization errors"
+      messageId: 'POL0001',
+      operationName: 'DeleteSession',
+      httpStatusCode: '401/403',
+      errorDescription: 'Unable to create Session',
+      reasonText: 'A policy error occurred. For example, rate limit error, authentication and authorization errors'
     },
     {
-      userErrorCode: "SDK-20021",
+      userErrorCode: 'SDK-20021',
       moduleID: 'RTC',
-      messageId: "POL0002",
-      operationName: "DeleteSession",
-      httpStatusCode: "401/403",
-      errorDescription: "Unable to create Session",
-      reasonText: "Privacy verification failed for address <address>, request is refused"
+      messageId: 'POL0002',
+      operationName: 'DeleteSession',
+      httpStatusCode: '401/403',
+      errorDescription: 'Unable to create Session',
+      reasonText: 'Privacy verification failed for address <address>, request is refused'
     },
     {
-      userErrorCode: "SDK-20022",
+      userErrorCode: 'SDK-20022',
       moduleID: 'RTC',
-      messageId: "POL0003",
-      operationName: "DeleteSession",
-      httpStatusCode: "403",
-      errorDescription: "Unable to create Session",
-      reasonText: "Too many addresses specified in Message part"
+      messageId: 'POL0003',
+      operationName: 'DeleteSession',
+      httpStatusCode: '403',
+      errorDescription: 'Unable to create Session',
+      reasonText: 'Too many addresses specified in Message part'
     },
     {
-      userErrorCode: "SDK-20023",
-      messageId: "POL1102",
-      operationName: "DeleteSession",
-      httpStatusCode: "403",
-      errorDescription: "Unable to delete Session",
-      reasonText: "Session Id not associated with the token",
+      userErrorCode: 'SDK-20023',
+      messageId: 'POL1102',
+      operationName: 'DeleteSession',
+      httpStatusCode: '403',
+      errorDescription: 'Unable to delete Session',
+      reasonText: 'Session Id not associated with the token',
       moduleID: 'RTC'
     },
     {
-      userErrorCode: "SDK-20024",
-      messageId: "POL1102",
-      operationName: "HangUp",
-      httpStatusCode: "403",
-      errorDescription: "Unable to hangup",
-      reasonText: "Cannot hangup before establishing a Call",
+      userErrorCode: 'SDK-20024',
+      operationName: 'HangUp failed',
+      errorDescription: 'Unable to hangup',
+      reasonText: 'Cannot hangup before establishing a call',
       moduleID: 'RTC'
     },
     {
-      userErrorCode: "SDK-20025",
-      messageId: "POL1102",
-      operationName: "AnswerCall",
-      httpStatusCode: "403",
-      errorDescription: "Unable to AnswerCall",
-      reasonText: "Please Login before accessing this public method",
+      userErrorCode: 'SDK-20025',
+      operationName: 'AnswerCall',
+      httpStatusCode: '403',
+      errorDescription: 'Unable to AnswerCall',
+      reasonText: 'Please Login before accessing this public method',
+      moduleID: 'RTC'
+    },
+    {
+      userErrorCode: 'SDK-20026',
+      operationName: 'HangUp failed',
+      errorDescription: 'Unable to hangup',
+      reasonText: 'Hangup request network error',
+      helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
 
     // range SDK-50000 is reserverd for DHS errors
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
     {
-      userErrorCode: "SDK-50000",
-      moduleID: "DHS",
-      messageId: "",
-      operationName: "",
-      httpStatusCode: "",
-      errorDescription: "DHS Operation failed",
-      reasonText: "",
+      userErrorCode: 'SDK-50000',
+      moduleID: 'DHS',
+      messageId: '',
+      operationName: '',
+      httpStatusCode: '',
+      errorDescription: 'DHS Operation failed',
+      reasonText: '',
       helpText: 'Please look at tracelog for further information' //Help text which can be displayed on UI
     },
     {
-      userErrorCode: "SDK-51000",
-      moduleID: "DHS",
-      messageId : "SVC0016",
-      operationName : "createE911Id",
-      httpStatusCode : "400",
-      errorDescription : "Unable to create E911 Id",
-      reasonText : "Address could not be confirmed",
+      userErrorCode: 'SDK-51000',
+      moduleID: 'DHS',
+      messageId : 'SVC0016',
+      operationName : 'createE911Id',
+      httpStatusCode : '400',
+      errorDescription : 'Unable to create E911 Id',
+      reasonText : 'Address could not be confirmed',
       helpText: 'Please make sure that the address is valid or confirmed' //Help text which can be displayed on UI
     }];
 
