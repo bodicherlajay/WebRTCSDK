@@ -38,12 +38,16 @@
     moduleId = moduleId || 'RTC';
 
     if (typeof err === 'string') { // String Errors
-      error = ATT.errorDictionary.getDefaultError({
-        moduleID: moduleId,
-        operationName: operation,
-        errorDescription: 'Operation ' + operation + ' failed',
-        reasonText: err
-      });
+      if (err.indexOf("SDK-") === 0) {
+        error = ATT.errorDictionary.getError(err); // if err is the errorCode, get it from error dictionary
+      } else {
+        error = ATT.errorDictionary.getDefaultError({
+          moduleID: moduleId,
+          operationName: operation,
+          errorDescription: 'Operation ' + operation + ' failed',
+          reasonText: err
+        });
+      }
     } else if (err.isSdkErr) { // Previously thrown SDK Errors
       error = err;
     } else if (err.getJson) { // Errors from Network/API
