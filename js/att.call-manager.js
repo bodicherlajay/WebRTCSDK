@@ -298,9 +298,9 @@ cmgmt = (function () {
     ATT.SignalingService.sendEndCall({
       error: function () {
         ATT.Error.publish('SDK-20026', null, options.onError);
+        logger.logWarning('Hangup request failed.');
       }
     });
-    logger.logWarning('Hangup not possible...');
   };
 
   Call.mute = function () {
