@@ -289,13 +289,18 @@ cmgmt = (function () {
     }
   };
 
-  Call.hangup = function () {
-    if (ATT.PeerConnectionService.peerConnection) {
-      logger.logInfo('Hanging up...');
-      ATT.SignalingService.sendEndCall();
-    } else {
-      logger.logWarning('Hangup not possible...');
-    }
+  /**
+  * Call hangup
+  * @param {Object} options The phone.js facade options
+  */
+  Call.hangup = function (options) {
+    logger.logInfo('Hanging up...');
+    ATT.SignalingService.sendEndCall({
+      error: function () {
+        ATT.Error.publish('SDK-20026', null, options.onError);
+      }
+    });
+    logger.logWarning('Hangup not possible...');
   };
 
   Call.mute = function () {
