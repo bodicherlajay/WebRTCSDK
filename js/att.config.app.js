@@ -14,8 +14,11 @@ if (!ATT) {
 (function (app) {
   'use strict';
 
+  // keep alive default duration, change
+  var KeepAliveDuration = 0, // ms, set to 0 for using duration from API server
+
   // DHS endpoint
-  var DHSConf = {
+    DHSConf = {
       HTTP: 'http://localhost:9000',
       HTTPS: 'https://localhost:9001'
     },
@@ -40,6 +43,7 @@ if (!ATT) {
       }
     },
     appConfig = {
+      KeepAlive: 0,
       RTCEndpoint: null,
       DHSEndpoint: null,
       EventChannelConfig: null
@@ -60,6 +64,7 @@ if (!ATT) {
         logger.logTrace('User Configured ENVIRNOMENT: ' + key);
         logger.logTrace('url: ' + EnvConf[key]);
       }
+      appConfig.KeepAlive = KeepAliveDuration;
       appConfig.RTCEndpoint = EnvConf[key] || EnvConf.PROD;
       appConfig.DHSEndpoint = DHSConf[protocol] || DHSConf.HTTP;
       appConfig.EventChannelConfig = EventChannelConf[(useWebSockets ? 'WebSockets' : 'LongPolling')];

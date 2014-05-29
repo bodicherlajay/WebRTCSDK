@@ -24,6 +24,9 @@ if (Env === undefined) {
 
   var resourceManager = Env.resourceManager.getInstance(),
     callManager = cmgmt.CallManager.getInstance(),
+    keepAlive = null,
+    keepSessionAlive,
+    clearSessionAlive,
     handleError,
     setupEventChannel,
     shutdownEventChannel,
@@ -33,7 +36,50 @@ if (Env === undefined) {
 
   logger = logMgr.getLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
+  keepSessionAlive = function (config) {
+    logger.logDebug('keepSessionAlive');
+
+    var session = callManager.getSessionContext(),
+      keepAliveDuration = app.appConfig.KeepAlive || config.keepAliveDuration, // developer configured duration overrides the one set by API server
+      timeBeforeExpiration = 5 * 60 * 1000, // refresh 5 minutes before expiration
+      timeout = (keepAliveDuration > timeBeforeExpiration) ? (keepAliveDuration - timeBeforeExpiration) : keepAliveDuration,
+      dataForRefreshWebRTCSession;
+
+    keepAlive = setInterval(function () {
+      logger.logInfo('Trying to refresh session after ' + (timeout / 1000) + ' seconds');
+      try {
+        dataForRefreshWebRTCSession = {
+          params: {
+            url: [session.getSessionId()],
+            headers: {
+              'Authorization': session.getAccessToken()
+            }
+          },
+          success: function () {
+            if (typeof config.success === 'function') {
+              config.success('Successfully refreshed web rtc session on blackflag');
+            }
+          },
+          error: handleError.bind(this, 'RefreshSession', config.error)
+        };
+
+        // Call BF to refresh WebRTC Session.
+        resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
+      } catch (err) {
+        handleError.call(this, 'RefreshSession', config.error, err);
+      }
+    }, timeout);
+
+  };
+
+  clearSessionAlive = function () {
+    clearInterval(keepAlive);
+    keepAlive = null;
+  };
+
   handleError = function (operation, errHandler, err) {
+    clearSessionAlive();
+
     logger.logDebug('handleError: ' + operation);
     logger.logInfo('There was an error performing operation ' + operation);
 
@@ -126,6 +172,7 @@ if (Env === undefined) {
     logger.logDebug('createWebRTCSessionSuccess');
 
     var sessionId = null,
+      expiration = null,
       errorHandler;
 
     if (config.callbacks && config.callbacks.onError && typeof config.callbacks.onError === 'function') {
@@ -133,8 +180,15 @@ if (Env === undefined) {
     }
 
     try {
-      if (responseObject && responseObject.getResponseHeader('Location')) {
-        sessionId = responseObject.getResponseHeader('Location').split('/')[4];
+      if (responseObject) {
+        if (responseObject.getResponseHeader('Location')) {
+          sessionId = responseObject.getResponseHeader('Location').split('/')[4];
+        }
+        if (responseObject.getResponseHeader('x-expires')) {
+          expiration = responseObject.getResponseHeader('x-expires');
+          expiration = Number(expiration);
+          expiration = isNaN(expiration) ? 0 : expiration * 1000; // convert to ms
+        }
       }
 
       if (!sessionId) {
@@ -167,6 +221,14 @@ if (Env === undefined) {
         error: handleError.bind(this, 'EventChannel', errorHandler)
       });
 
+      // keep web rtc session alive
+      keepSessionAlive({
+        keepAliveDuration: expiration,
+        success: function (msg) {
+          logger.logInfo(msg);
+        },
+        error: handleError.bind(this, 'RefreshSession', errorHandler)
+      });
     } catch (err) {
       handleError.call(this, 'CreateSession', errorHandler, err);
     }
@@ -288,6 +350,8 @@ if (Env === undefined) {
       ATT.UserMediaService.stopStream();
       // stop event channel
       shutdownEventChannel();
+      // stop refreshing session
+      clearSessionAlive();
 
       var session = callManager.getSessionContext(),
         dataForDeleteWebRTCSession;
