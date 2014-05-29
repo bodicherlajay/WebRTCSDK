@@ -126,7 +126,9 @@ describe('webRTC', function () {
       fakeSessionContext = {getCallObject: instanceFunction };
       stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
       stubSessionContext.returns(fakeSessionContext);
-      ATT.rtc.Phone.hangup();
+      ATT.rtc.Phone.hangup({
+        onError: function () { return null; }
+      });
       stubSessionContext.restore();
     });
   });
