@@ -229,8 +229,11 @@ cmgmt = (function () {
     var cleaned = ATT.phoneNumber.stringify(number);
 
     if(cleaned.length < 10){
-      
+      if(!ATT.SpecialNumbers[cleaned]){
+          ATT.Error.publish('SDK-20026', null, options.onError);
+      }
     }
+    return cleaned;
   }
 
   /**

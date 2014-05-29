@@ -12,9 +12,12 @@ if (!ATT) {
 
   var module = {};
 
-  SpecialNumbers = {
-    "911", "411", "*69"
-  };
+  module.SpecialNumbers = {
+        "911":true,
+        "411":true,
+        "*69":true
+      };
+
 
   mainModule.SpecialNumbers = Object.freeze(module.SpecialNumbers);
 
