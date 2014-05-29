@@ -161,9 +161,9 @@ if (Env === undefined) {
   }
   function getCallType() {
     logger.logDebug('Call type Audio/Video');
-
     try {
       logger.logInfo('Trying to get the CallType from the session Context ');
+      return callManager.getSessionContext().getCallType();
     } catch (err) {
       throw "getcalltype: " + err;
     }
@@ -609,7 +609,7 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('mute', mute);
     resourceManager.addPublicMethod('unmute', unmute);
     resourceManager.addPublicMethod('initCallback', initCallbacks);
-    resourceManager.addPublicMethod('getCallType ', getCallType);
+    resourceManager.addPublicMethod('getCallType', getCallType);
     resourceManager.addPublicMethod('hangup', hangup);
   }
 

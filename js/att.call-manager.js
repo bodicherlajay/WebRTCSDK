@@ -134,8 +134,8 @@ cmgmt = (function () {
       getCallType: function () {
         return calltype;
       },
-      setCallType: function () {
-        return calltype;
+      setCallType: function (callType) {
+        calltype = callType;
       }
     };
   };
