@@ -119,6 +119,7 @@ module.exports = function (grunt) {
       server: {
         src: ['js/**/*.js', 'test/**/*.js'],
         options: {
+          failOnError: false,
           log: 'out/jslint/jslint.log',
           checkstyle: 'out/jslint/jslint.xml' // write a checkstyle-XML
         }
