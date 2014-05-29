@@ -9,7 +9,6 @@ describe('UserMediaService', function () {
   beforeEach(function () {
     backupAtt = ATT;
   });
-  
   it('should exist and contain startCall, showStream, stopStream', function () {
     expect(ATT.UserMediaService).to.be.an('object');
     expect(ATT.UserMediaService.startCall).to.be.a('function');

@@ -75,7 +75,7 @@ cmgmt = (function () {
   */
   SessionContext = function (token, e9Id, sessionId, state) {
     var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
-      currentCallId, UICbks = {}, currentCall = null;
+      currentCallId, UICbks = {}, calltype = null, currentCall = null;
     return {
       getCurrentCall: function () {
         return currentCall;
@@ -130,6 +130,12 @@ cmgmt = (function () {
       },
       getCurrentCallId: function () {
         return currentCallId;
+      },
+      getCallType: function () {
+        return calltype;
+      },
+      setCallType: function () {
+        return calltype;
       }
     };
   };

@@ -1,6 +1,6 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
- before: true, sinon: true, expect: true, xit: true, URL: true*/
+ before: true, sinon: true, expect: true, xit: true, URL: true, assert*/
 
 describe('webRTC', function () {
   'use strict';
@@ -132,14 +132,14 @@ describe('webRTC', function () {
   });
 
   describe('Mute', function () {
-    it('should have a mute method', function() {
+    it('should have a mute method', function () {
       assert.ok(ATT.rtc.Phone.mute);
     });
   });
 
   describe('Unmute', function () {
-    it('should have a unmute method', function() {
+    it('should have a unmute method', function () {
       assert.ok(ATT.rtc.Phone.unmute);
     });
-  })
+  });
 });
