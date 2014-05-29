@@ -195,7 +195,8 @@
           audioTracks[i].enabled = true;
         }
       }
-    }
+    },
+    setError: setError  // testability
   };
 
   init();

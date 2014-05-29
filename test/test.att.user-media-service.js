@@ -23,15 +23,136 @@ describe('UserMediaService', function () {
     assert.ok(vidElement.src);
   });
 
-  it('should set local stream', function () {
-    var createObjectURLStub = sinon.stub(URL, "createObjectURL", function () {});
+  it('startCall should set localVideo, remoteVideo elements', function () {
+    var config = {
+      localVideo: 'localVideoEl',
+      remoteVideo: 'remoteVideoEl'
+    },
+      stubGetUserMedia = sinon.stub(window, 'getUserMedia'),
+      stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart');
+    ATT.UserMediaService.startCall(config);
 
-    ATT.UserMediaService.localVideoElement = document.createElement('div');
-    ATT.UserMediaService.localVideoElement.play = function () {};
+    expect(ATT.UserMediaService.localVideoElement).equals('localVideoEl');
+    expect(ATT.UserMediaService.remoteVideoElement).equals('remoteVideoEl');
+    stubGetUserMedia.restore();
+    stubOnRemoteVideoStart.restore();
+  });
 
-    ATT.UserMediaService.showStream('local', 'stream');
-    expect(ATT.UserMediaService.localStream).to.equal('stream');
-    createObjectURLStub.restore();
+  it('startCall should publish error if getUserMedia fails', function () {
+    var config = {
+        localVideo: 'localVideoEl',
+        remoteVideo: 'remoteVideoEl'
+      },
+      stubGetUserMedia = sinon.stub(window, 'getUserMedia').callsArg(2),
+      stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
+      spy = sinon.spy();
+
+    ATT.UserMediaService.setError({
+      publish: spy
+    });
+
+    ATT.UserMediaService.startCall(config);
+    expect(spy.called).to.equal(true);
+    stubGetUserMedia.restore();
+    stubOnRemoteVideoStart.restore();
+  });
+
+  it('showStream should play remote video if localOrRemote set to remote', function () {
+    var spy = sinon.spy(),
+      args = {
+        localOrRemote: 'remote',
+        stream: 'stream'
+      },
+      config = {
+        localVideo: {},
+        remoteVideo: {
+          play: spy   // this should get called
+        }
+      },
+      stubGetUserMedia = sinon.stub(window, 'getUserMedia'),
+      stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
+      stubWindowURLCreateObjectURL = sinon.stub(window.URL, 'createObjectURL', function () {
+        return 'src';
+      });
+
+    ATT.UserMediaService.startCall(config);
+    ATT.UserMediaService.showStream(args);
+    expect(spy.called).to.equal(true);
+    expect(ATT.UserMediaService.remoteStream).equals(args.stream);
+
+    // cleanup
+    stubGetUserMedia.restore();
+    stubOnRemoteVideoStart.restore();
+    stubWindowURLCreateObjectURL.restore();
+  });
+
+  it('showStream should publish error if cannot start stream', function () {
+    var spyPublish = sinon.spy(),
+      args = {
+        localOrRemote: 'remote',
+        stream: 'stream'
+      },
+      config = {
+        localVideo: {},
+        remoteVideo: {
+          play: function () {
+            throw new Error();    // this should throw exception
+          }
+        }
+      },
+      stubGetUserMedia = sinon.stub(window, 'getUserMedia'),
+      stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
+      stubWindowURLCreateObjectURL = sinon.stub(window.URL, 'createObjectURL', function () {
+        return 'src';
+      });
+
+    ATT.UserMediaService.setError({
+      publish: spyPublish
+    });
+
+    ATT.UserMediaService.startCall(config);
+    ATT.UserMediaService.showStream(args);
+    expect(spyPublish.called).to.equal(true);
+
+    // cleanup
+    stubGetUserMedia.restore();
+    stubOnRemoteVideoStart.restore();
+    stubWindowURLCreateObjectURL.restore();
+  });
+
+  it('showStream should call videoStreamEl setAttribute if localOrRemote not set to remote and call play', function () {
+    var spy = sinon.spy(),
+      spySetAttribute = sinon.spy(),
+      args = {
+        localOrRemote: 'local',
+        stream: 'stream'
+      },
+      config = {
+        localVideo: {
+          play: spy,   // this should get called
+          setAttribute: spySetAttribute
+        },
+        remoteVideo: {
+          play: spy   // this should get called
+        }
+      },
+      stubGetUserMedia = sinon.stub(window, 'getUserMedia'),
+      stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
+      stubWindowURLCreateObjectURL = sinon.stub(window.URL, 'createObjectURL', function () {
+        return 'src';
+      });
+
+    ATT.UserMediaService.startCall(config);
+    ATT.UserMediaService.showStream(args);
+
+    // verify
+    expect(spy.called).to.equal(true);
+    expect(ATT.UserMediaService.localStream).equals(args.stream);
+
+    // cleanup
+    stubGetUserMedia.restore();
+    stubOnRemoteVideoStart.restore();
+    stubWindowURLCreateObjectURL.restore();
   });
 
   it('should stop local and remote streams', function () {
@@ -50,7 +171,7 @@ describe('UserMediaService', function () {
     ATT.UserMediaService.localStream = backupLocalStream;
   });
 
-  it('should umute local stream by setting `enabled` to true', function () {
+  it('should unmute local stream by setting `enabled` to true', function () {
     var audioTracks = [{ enabled: true}], backupLocalStream = ATT.UserMediaService.localStream;
     ATT.UserMediaService.localStream = {foo: 'bar', getAudioTracks: function () { return audioTracks; }};
     ATT.UserMediaService.unmuteStream();
