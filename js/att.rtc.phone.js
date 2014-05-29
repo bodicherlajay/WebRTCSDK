@@ -451,6 +451,19 @@ if (Env === undefined) {
 
    */
   function dial(dialParams) {
+
+    // setup callback for ringing
+    callManager.onCallCreated = function () {
+      logger.logInfo('onCallCreated... trigger RINGING event in the UI');
+      // crate an event for Ringing
+      var ringingEvent = ATT.event.createEvent(
+        { state: ATT.RTCCallEvents.CALLING,
+          timestamp: new Date() }
+      );
+      // bubble up the event
+      dialParams.callbacks.onCalling(ringingEvent);
+    };
+
     try {
       if (!dialParams) {
         throw 'Cannot make a web rtc call, no dial configuration';

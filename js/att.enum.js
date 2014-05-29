@@ -82,6 +82,12 @@ if (!ATT) {
     SESSION_DELETED: 12,
 
     SESSION_ERROR: 13,
+
+    /**
+     * @constant {number} Used to indicate the originating party is calling.
+     **/
+    CALLING: 14,
+
        /**
 * @constant {number}
  */

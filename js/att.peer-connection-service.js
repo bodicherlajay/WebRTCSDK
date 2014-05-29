@@ -207,6 +207,12 @@
                   sdp: self.localDescription,
                   success: function () {
                     logger.logInfo('success for offer sent, outgoing call');
+                    // trigger callback meaning successfully sent the offer
+                    if (undefined !== self.onOfferSent
+                        && null !== self.onOfferSent
+                        && 'function' === typeof self.onOfferSent) {
+                      self.onOfferSent();
+                    }
                   },
                   error: function (error) {
                     Error.publish(error, 'SendOffer');
@@ -510,6 +516,8 @@
   module.setCallManager = setCallManager;
   module.setSDPFilter = setSDPFilter;
   module.setLogger = setLogger;
+  // callback for OfferSent event
+  module.onOfferSent = null;
 
   //Name of the module
   app.PeerConnectionService = module;

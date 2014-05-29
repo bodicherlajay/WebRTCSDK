@@ -218,6 +218,17 @@ cmgmt = (function () {
       state : ATT.RTCCallEvents.CALL_CONNECTING
     });
 
+    // setup callback for PeerConnectionService.onOfferSent, will be used to
+    // indicate the RINGING state on an outgoing call
+    ATT.PeerConnectionService.onOfferSent = function () {
+      logger.logInfo('onOfferSent... trigger RINGING event for outgoing call');
+      if (undefined !== this.onCallCreated
+          && null !== this.onCallCreated
+          && 'function' === typeof this.onCallCreated) {
+        this.onCallCreated();
+      }
+    };
+
     ATT.UserMediaService.startCall(config);
   };
 
@@ -284,6 +295,7 @@ cmgmt = (function () {
       UpdateSession: UpdateSession,
       DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
+      onCallCreated: null,
       CreateIncomingCall: CreateIncomingCall,
       DeleteCallObject: DeleteCallObject
     };
