@@ -148,6 +148,26 @@ if (Env === undefined) {
     }
   }
 
+
+  function initCallbacks(callbacks) {
+    logger.logDebug('intiCallbacks');
+    //Planning not to save the UI callbacks in session context
+    logger.logDebug(callbacks);
+    try {
+      logger.logInfo('getting the Callback for mapping');
+    } catch (err) {
+      throw "Init Callbacks: " + err;
+    }
+  }
+  function getCallType() {
+    logger.logDebug('Call type Audio/Video');
+
+    try {
+      logger.logInfo('Trying to get the CallType from the session Context ');
+    } catch (err) {
+      throw "getcalltype: " + err;
+    }
+  }
   createWebRTCSessionSuccess = function (config, responseObject) {
     logger.logDebug('createWebRTCSessionSuccess');
 
@@ -493,7 +513,7 @@ if (Env === undefined) {
     try {
       callManager.CreateIncomingCall(config);
     } catch (e) {
-      ATT.Error.publish(e);
+      ATT.Error.publish(e, "AnswerCall");
     }
   }
 
@@ -533,7 +553,9 @@ if (Env === undefined) {
   */
   function hold() {
     try {
-      callManager.getSessionContext().getCallObject().hold();
+      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+        callManager.getSessionContext().getCallObject().hold();
+      }
     } catch (e) {
       ATT.Error.publish(e);
     }
@@ -547,7 +569,9 @@ if (Env === undefined) {
   */
   function resume() {
     try {
-      callManager.getSessionContext().getCallObject().resume();
+      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+        callManager.getSessionContext().getCallObject().resume();
+      }
     } catch (e) {
       ATT.Error.publish(e);
     }
@@ -561,12 +585,16 @@ if (Env === undefined) {
   */
   function hangup(options) {
     try {
-        //TODO the callended callback gets triggred on session terminated (callbacks are already register)
-      if (callManager.getSessionContext().getCallObject().end()) {
-        options.onSuccess();
+      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
+         //TODO the callended callback gets triggred on session terminated (callbacks are already register)
+        if (callManager.getSessionContext().getCallObject().end()) {
+          options.onSuccess();
+        }
+      } else {
+        //options.onError();
       }
     } catch (e) {
-      ATT.Error.publish(e);
+      ATT.Error.publish(e, "HangUp");
     }
   }
 
@@ -580,6 +608,8 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('resume', resume);
     resourceManager.addPublicMethod('mute', mute);
     resourceManager.addPublicMethod('unmute', unmute);
+    resourceManager.addPublicMethod('initCallback', initCallbacks);
+    resourceManager.addPublicMethod('getCallType ', getCallType);
     resourceManager.addPublicMethod('hangup', hangup);
   }
 
