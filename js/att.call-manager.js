@@ -201,7 +201,8 @@ cmgmt = (function () {
     logger.logDebug('CreateOutgoingCall');
 
     logger.logInfo('Creating outgoing call');
-    var call = new Call(null, config.to, config.mediaConstraints);
+
+    var call = new Call(null, cleanPhoneNumber(config.to), config.mediaConstraints);
 
     // set call and callbacks in current session
     logger.logInfo('Updating current session for outgoing call');
@@ -220,6 +221,20 @@ cmgmt = (function () {
     ATT.UserMediaService.startCall(config);
   };
 
+  /**
+   *  Removes extra characters from the phone number and formats it for
+   *  clear display
+   */
+  function cleanPhoneNumber(number){
+    var cleaned = ATT.phoneNumber.stringify(number);
+
+    if(cleaned.length < 10){
+      if(!ATT.SpecialNumbers[cleaned]){
+          ATT.Error.publish('SDK-20026', null, options.onError);
+      }
+    }
+    return cleaned;
+  }
 
   /**
   * Create an Incoming Call

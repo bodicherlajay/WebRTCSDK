@@ -267,6 +267,14 @@
       helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
+    {
+      userErrorCode: 'SDK-20027',
+      operationName: 'Call Failed',
+      errorDescription: 'Invalid phone number',
+      reasonText: 'The provided phone number is not valid.',
+      helpText: 'Please look at tracelog for further information',
+      moduleID: 'RTC'
+    },
 
     // range SDK-50000 is reserverd for DHS errors
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
