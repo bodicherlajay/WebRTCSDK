@@ -125,8 +125,8 @@ cmgmt = (function () {
       getUICallbacks: function () {
         return UICbks;
       },
-      setCurrentCallId: function (event) {
-        currentCallId = event.split('/')[6] || null;
+      setCurrentCallId: function (callId) {
+        currentCallId = callId;
       },
       getCurrentCallId: function () {
         return currentCallId;
@@ -228,9 +228,14 @@ cmgmt = (function () {
   function cleanPhoneNumber(number){
     var cleaned = ATT.phoneNumber.stringify(number);
 
-    if(cleaned.length < 10){
+    logger.logInfo('Cleaned phone number: ' + cleaned + ', callable: ' +
+      ATT.phoneNumber.getCallable(cleaned));
+
+    if(!ATT.phoneNumber.getCallable(cleaned)){
+      logger.logWarning('Phone number not callable.');
       if(!ATT.SpecialNumbers[cleaned]){
-          ATT.Error.publish('SDK-20026', null, options.onError);
+          logger.logWarning('found number in special numbers list');
+          ATT.Error.publish('SDK-20027', null, options.onError);
       }
     }
     return cleaned;

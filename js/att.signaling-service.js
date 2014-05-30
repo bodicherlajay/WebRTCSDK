@@ -80,7 +80,7 @@ if (!ATT) {
         params: {
           url: [
             callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]
+            callManager.getSessionContext().getCurrentCallId()
           ],
           headers: {
             'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()

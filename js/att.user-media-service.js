@@ -11,6 +11,10 @@
     callManager,
     Error,
     eventEmitter,
+    defaultMediaConstraints = { // default to video call
+      audio: true,
+      video: true
+    },
     logger = Env.resourceManager.getInstance().getLogger("UserMediaService");
 
   function setCallManager(callMgr) {
@@ -43,6 +47,7 @@
     remoteVideoElement: null,
     localStream: null,
     remoteStream: null,
+    mediaConstraints: null,
 
     /**
     * Start Call
@@ -56,17 +61,28 @@
     startCall: function (config) {
       logger.logTrace('starting call');
 
+      var session = callManager.getSessionContext(),
+        callType = session.getCallType();
+
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
+      this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints
+      this.localStream = config.localStream;
+
+      if (callType) {
+        // for incoming call, overwrite media constraints
+        // TODO: need to compare and upgrade/downgrade call 
+        this.mediaConstraints.video = (callType === 'video');
+      }
 
       var args = {
         from: config.from,
         to: config.to,
-        mediaConstraints: config.mediaConstraints
+        mediaConstraints: this.mediaConstraints
       };
 
       // get a local stream, show it in a self-view and add it to be sent
-      getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function () {
+      getUserMedia(this.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function () {
         Error.publish('Get user media failed');
       });
 

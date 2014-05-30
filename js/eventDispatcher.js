@@ -3,7 +3,7 @@
 
 'use strict';
 
-(function (mainModule, callManager, utils, PeerConnectionService) {
+(function (mainModule, callManager, utils, PeerConnectionService, UserMediaService) {
   var callMgr = callManager,
     peerConnService = PeerConnectionService,
     onSessionReady,
@@ -162,7 +162,7 @@
         peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
       if (data.resource) {
-        callMgr.getSessionContext().setCurrentCallId(data.resource);
+        callMgr.getSessionContext().setCurrentCallId(data.resource.split('/')[6]);
       }
     };
 
@@ -203,6 +203,7 @@
       sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
       sessionContext.setCallObject(null);
       peerConnService.endCall();
+      UserMediaService.stopStream();
     };
 
     eventRegistry[mainModule.RTCCallEvents.UNKNOWN] = function (event) {
@@ -214,4 +215,4 @@
 
   utils.createEventRegistry = createEventRegistry;
 
-}(ATT, cmgmt.CallManager.getInstance(), ATT.utils, ATT.PeerConnectionService));
+}(ATT, cmgmt.CallManager.getInstance(), ATT.utils, ATT.PeerConnectionService, ATT.UserMediaService));

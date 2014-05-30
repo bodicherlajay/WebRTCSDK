@@ -97,6 +97,10 @@
 
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
+    
+    if (event.resourceURL) {
+      callManager.getSessionContext().setCurrentCallId(event.resourceURL.split('/')[6]);
+    }
 
     dispatchEventToHandler(event, callManager);
   }
@@ -163,7 +167,7 @@
     evt.codec = arg.codec;
     evt.calltype = arg.calltype;
     evt.data = arg.data;
-    evt.error = mainModule.Error.create(arg.error);
+    evt.error = arg.error ? mainModule.Error.create(arg.error) : null;
     Object.freeze(evt);
 
     logger.logTrace('Created event object', evt);

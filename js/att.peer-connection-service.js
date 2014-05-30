@@ -115,6 +115,10 @@
     initPeerConnection: function (config) {
       logger.logDebug('initPeerConnection');
 
+      var session = CallManager.getSessionContext(),
+        event = session.getEventObject(),
+        callState = session.getCallState();
+
       this.callingParty = config.from;
       this.calledParty = config.to;
       this.mediaConstraints = config.mediaConstraints;
@@ -123,10 +127,6 @@
       logger.logTrace('calling party', config.from);
       logger.logTrace('called party', config.to);
       logger.logTrace('media constraints', config.mediaConstraints);
-
-      var session = CallManager.getSessionContext(),
-        event = session.getEventObject(),
-        callState = session.getCallState();
 
       logger.logInfo('creating peer connection');
       // Create peer connection
