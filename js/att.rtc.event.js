@@ -65,7 +65,7 @@
       if (eventRegistry[event.state]) {
         logger.logDebug("Processing the registered event " + event.state);
         if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED && event.reason) {
-          event.error = event.reason; 
+          event.error = event.reason;
         }
         eventRegistry[event.state](createEvent({
           from: event.from ? event.from.split('@')[0].split(':')[1] : '',
@@ -100,7 +100,7 @@
 
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
-    
+
     if (event.resourceURL) {
       callManager.getSessionContext().setCurrentCallId(event.resourceURL.split('/')[6]);
     }
