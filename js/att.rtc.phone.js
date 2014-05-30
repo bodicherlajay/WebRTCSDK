@@ -450,9 +450,24 @@ if (Env === undefined) {
    video:true},
 
    */
-  function dial(config) {
+  function dial(dialParams) {
     try {
-      callManager.CreateOutgoingCall(config);
+      if (!dialParams) {
+        throw 'Cannot make a web rtc call, no dial configuration';
+      }
+      if (!dialParams.to) {
+        throw 'Cannot make a web rtc call, no destination';
+      }
+      if (!dialParams.mediaConstraints) {
+        throw 'Cannot make a web rtc call, no media constraints';
+      }
+      if (!dialParams.localVideo) {
+        throw 'Cannot make a web rtc call, no local media DOM element';
+      }
+      if (!dialParams.remoteVideo) {
+        throw 'Cannot make a web rtc call, no remote media DOM element';
+      }
+      callManager.CreateOutgoingCall(dialParams);
     } catch (e) {
       ATT.Error.publish(e);
     }
@@ -509,9 +524,21 @@ if (Env === undefined) {
     //video call
 
    */
-  function answer(config) {
+  function answer(answerParams) {
     try {
-      callManager.CreateIncomingCall(config);
+      if (!answerParams) {
+        throw 'Cannot make a web rtc call, no answer configuration';
+      }
+      // if (!answerParams.mediaConstraints) {
+        // throw 'Cannot make a web rtc call, no media constraints';
+      // }
+      if (!answerParams.localVideo) {
+        throw 'Cannot make a web rtc call, no local media DOM element';
+      }
+      if (!answerParams.remoteVideo) {
+        throw 'Cannot make a web rtc call, no remote media DOM element';
+      }
+      callManager.CreateIncomingCall(answerParams);
     } catch (e) {
       ATT.Error.publish(e, "AnswerCall");
     }
