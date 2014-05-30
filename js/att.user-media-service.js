@@ -82,7 +82,7 @@
       };
 
       // get a local stream, show it in a self-view and add it to be sent
-      getUserMedia(config.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function () {
+      getUserMedia(this.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function () {
         Error.publish('Get user media failed');
       });
 
