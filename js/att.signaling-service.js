@@ -263,7 +263,7 @@ if (!ATT) {
         params: {
           url: [
             callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId(),
+            callManager.getSessionContext().getCurrentCallId()
           ],
           headers: {
             'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
