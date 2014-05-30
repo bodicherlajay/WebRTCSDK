@@ -71,6 +71,9 @@
       logger.logDebug('Codec from the event, ' + CODEC);
       if (eventRegistry[event.state]) {
         logger.logDebug("Processing the registered event " + event.state);
+        if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED && event.reason) {
+          event.error = event.reason; 
+        }
         eventRegistry[event.state](createEvent({
           from: event.from ? event.from.split('@')[0].split(':')[1] : '',
           to: session && session.getCallObject() ? session.getCallObject().callee() : '',
@@ -78,7 +81,7 @@
           codec: CODEC,
           calltype: calltype,
           data: event.data,
-          error: event.error || event.reason || ''
+          error: event.error || ''
         }), {
           sdp: event.sdp || '',
           resource: event.resourceURL || '',
