@@ -44,7 +44,7 @@ describe('DHSModule', function () {
 
     ATT.rtc.dhs.login(config);
     expect(spy.called).to.equal(true);
-    spy.restore();
+    resourceManager.doOperation.restore();
   });
 
   xit('should call success callback after authentication', function () {

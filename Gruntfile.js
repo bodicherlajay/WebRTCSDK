@@ -48,7 +48,8 @@ module.exports = function (grunt) {
       'test/test.att.signaling.service.js',
       'test/test.att.utils.sdp-filter.js',
       'test/test.att.user-media-service.js',
-      'test/test.att.rtc.phone.js'
+      'test/test.att.rtc.phone.js',
+      'test/test.att.rtc.dhs.js'
 
     ],
     logLevel: 'INFO',
@@ -60,6 +61,7 @@ module.exports = function (grunt) {
       preprocessors: {
         'js/**/*.js': 'coverage'
       },
+      exclude: ['js/adapter.js'], // google's code.
       reporters: [ 'coverage' ],
       singleRun: false,
       usePolling: true,  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
