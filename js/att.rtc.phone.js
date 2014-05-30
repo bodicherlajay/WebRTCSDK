@@ -550,11 +550,16 @@ if (Env === undefined) {
   * @example 
   ATT.rtc.Phone.mute();
   */
-  function mute() {
+  function mute(options) {
     try {
-      callManager.getSessionContext().getCallObject().mute();
+      callManager.getSessionContext().getCallObject().mute(options);
+      if (options.success) {
+        options.success();
+      }
     } catch (e) {
-      ATT.Error.publish(e);
+      if (options.error) {
+        ATT.Error.publish('SDK-20028', null, options.error);
+      }
     }
   }
 
@@ -564,11 +569,16 @@ if (Env === undefined) {
   * @example 
   ATT.rtc.Phone.unmute();
   */
-  function unmute() {
+  function unmute(options) {
     try {
-      callManager.getSessionContext().getCallObject().unmute();
+      callManager.getSessionContext().getCallObject().unmute(options);
+      if (options.success) {
+        options.success();
+      }
     } catch (e) {
-      ATT.Error.publish(e);
+      if (options.error) {
+        ATT.Error.publish('SDK-20029', null, options.error);
+      }
     }
   }
 
@@ -612,7 +622,9 @@ if (Env === undefined) {
     try {
       callManager.getSessionContext().getCallObject().end(options);
     } catch (e) {
-      ATT.Error.publish('SDK-20024', null, options.onError);
+      if (options.error) {
+        ATT.Error.publish('SDK-20024', null, options.error);
+      }
     }
   }
 
