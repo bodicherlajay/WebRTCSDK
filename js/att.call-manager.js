@@ -125,8 +125,8 @@ cmgmt = (function () {
       getUICallbacks: function () {
         return UICbks;
       },
-      setCurrentCallId: function (event) {
-        currentCallId = event.split('/')[6] || null;
+      setCurrentCallId: function (callId) {
+        currentCallId = callId;
       },
       getCurrentCallId: function () {
         return currentCallId;

@@ -162,7 +162,7 @@
         peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
       if (data.resource) {
-        callMgr.getSessionContext().setCurrentCallId(data.resource);
+        callMgr.getSessionContext().setCurrentCallId(data.resource.split('/')[6]);
       }
     };
 

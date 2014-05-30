@@ -104,6 +104,10 @@
 
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
+    
+    if (event.resourceURL) {
+      callManager.getSessionContext().setCurrentCallId(event.resourceURL.split('/')[6]);
+    }
 
     dispatchEventToHandler(event, callManager);
   }
