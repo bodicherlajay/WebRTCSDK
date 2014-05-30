@@ -174,7 +174,7 @@
     evt.codec = arg.codec;
     evt.calltype = arg.calltype;
     evt.data = arg.data;
-    evt.error = mainModule.Error.create(arg.error);
+    evt.error = arg.error ? mainModule.Error.create(arg.error) : null;
     Object.freeze(evt);
 
     logger.logTrace('Created event object', evt);
