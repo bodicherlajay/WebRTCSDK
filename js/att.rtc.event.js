@@ -57,7 +57,7 @@
 
       if (event.sdp) {
         // Added a getCodec method to the util to get access the codec
-        CODEC =  ATT.sdpFilter.getCodecfromSDP(event.sdp);
+        CODEC =  ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
         calltype = (CODEC.length === 1) ? 'audio' : 'video';
         session.setCallType(calltype);
       }
