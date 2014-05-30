@@ -51,20 +51,13 @@
     session = callManager.getSessionContext();
 
     setTimeout(function () {
-      var CODEC = [], media, sdp, idx, calltype = '';
+      var CODEC = [], calltype = '';
 
       logger.logDebug('dispatching event: ' + event.state);
 
       if (event.sdp) {
-        sdp = ATT.sdpParser.getInstance().parse(event.sdp);
-        logger.logDebug('Parsed SDP ' + sdp);
-        for (idx = 0; idx < sdp.media.length; idx = idx + 1) {
-          media = {
-            rtp: sdp.media[idx].rtp,
-            type: sdp.media[idx].type
-          };
-          CODEC.push(media);
-        }
+        // Added a getCodec method to the util to get access the codec
+        CODEC =  ATT.sdpFilter.getCodecfromSDP(event.sdp);
         calltype = (CODEC.length === 1) ? 'audio' : 'video';
         session.setCallType(calltype);
       }
