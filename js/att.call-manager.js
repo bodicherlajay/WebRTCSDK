@@ -233,9 +233,12 @@ cmgmt = (function () {
 
     if(!ATT.phoneNumber.getCallable(cleaned)){
       logger.logWarning('Phone number not callable.');
+      if(number.charAt(0) == '*'){ cleaned = '*' + cleaned;}
+      logger.logWarning('checking number: ' + cleaned);
       if(!ATT.SpecialNumbers[cleaned]){
-          logger.logWarning('found number in special numbers list');
           ATT.Error.publish('SDK-20027', null, options.onError);
+      } else {
+        logger.logWarning('found number in special numbers list');
       }
     }
     return cleaned;
