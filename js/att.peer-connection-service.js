@@ -115,18 +115,26 @@
     initPeerConnection: function (config) {
       logger.logDebug('initPeerConnection');
 
+      var session = CallManager.getSessionContext(),
+        event = session.getEventObject(),
+        callState = session.getCallState(),
+        callType = session.getCallType();
+
       this.callingParty = config.from;
       this.calledParty = config.to;
-      this.mediaConstraints = config.mediaConstraints;
+      this.mediaConstraints = config.mediaConstraints || { // default to video call
+        audio: true,
+        video: true
+      };
       this.localStream = config.localStream;
+
+      // for incoming call, overwrite media constraints
+      // TODO: need to compare and upgrade/downgrade call 
+      this.mediaConstraints.video = (callType === 'video');
 
       logger.logTrace('calling party', config.from);
       logger.logTrace('called party', config.to);
       logger.logTrace('media constraints', config.mediaConstraints);
-
-      var session = CallManager.getSessionContext(),
-        event = session.getEventObject(),
-        callState = session.getCallState();
 
       logger.logInfo('creating peer connection');
       // Create peer connection
