@@ -237,6 +237,7 @@ cmgmt = (function () {
       logger.logWarning('checking number: ' + cleaned);
       if(!ATT.SpecialNumbers[cleaned]){
           ATT.Error.publish('SDK-20027', null, options.onError);
+          throw new Error('Invalid phone number entered: ' + cleaned);
       } else {
         logger.logWarning('found number in special numbers list');
       }
