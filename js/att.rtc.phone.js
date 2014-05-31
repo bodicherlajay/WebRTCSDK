@@ -546,13 +546,14 @@ if (Env === undefined) {
 
   /**
   * Mutes the local stream (video or audio)
+  * @param {Object} options The callback options
   * @memberof ATT.rtc.Phone
   * @example 
   ATT.rtc.Phone.mute();
   */
   function mute(options) {
     try {
-      callManager.getSessionContext().getCallObject().mute(options);
+      callManager.getSessionContext().getCallObject().mute();
       if (options.success) {
         options.success();
       }
@@ -565,13 +566,14 @@ if (Env === undefined) {
 
   /**
   * Unmutes the local stream
+  * @param {Object} options The callback options
   * @memberof ATT.rtc.Phone
   * @example 
   ATT.rtc.Phone.unmute();
   */
   function unmute(options) {
     try {
-      callManager.getSessionContext().getCallObject().unmute(options);
+      callManager.getSessionContext().getCallObject().unmute();
       if (options.success) {
         options.success();
       }
@@ -616,7 +618,7 @@ if (Env === undefined) {
 
   /**
   * Hangs up the current call
-  * @param {Object} options The UI options
+  * @param {Object} options The callback options
   */
   function hangup(options) {
     try {

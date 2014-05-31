@@ -323,7 +323,7 @@ cmgmt = (function () {
     });
   };
 
-  Call.mute = function (options) {
+  Call.mute = function () {
     logger.logInfo('putting call on mute');
     ATT.UserMediaService.muteStream();
   };
