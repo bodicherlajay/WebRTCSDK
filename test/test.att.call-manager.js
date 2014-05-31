@@ -55,6 +55,32 @@ describe('Call Management', function () {
       expect(sessionContext.getCallState()).to.equal('Outgoing');
     });
 
+    xit('should clean a phone number with extra characters', function () {
+      var config = {
+          to: '1.800-43/3.23+42',
+          mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateOutgoingCall(config);
+      sessionContext = callmgr.getSessionContext();
+      expect(sessionContext.getCallObject()).to.be.an('object');
+      assert.isNull(sessionContext.getCallObject().caller());
+      expect(sessionContext.getCallObject().callee()).to.equal('18004332342');
+      expect(sessionContext.getCallState()).to.equal('Outgoing');
+    });
+
+    xit('should reject a phone number with too few characters not in the special numbers list', function () {
+      var config = {
+          to: '1.800-/3.23+42',
+          mediaContraints: {audio: true, video: true}
+      };
+      callmgr.CreateOutgoingCall(config);
+      sessionContext = callmgr.getSessionContext();
+      expect(sessionContext.getCallObject()).to.be.an('object');
+      assert.isNull(sessionContext.getCallObject().caller());
+      expect(sessionContext.getCallObject().callee()).to.equal('1800-32342');
+      expect(sessionContext.getCallState()).to.equal('Outgoing');
+    });
+
     xit('should create an incoming call', function () {
       var config = {
         caller: '1-800-call-junhua',

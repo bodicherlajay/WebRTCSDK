@@ -228,9 +228,18 @@ cmgmt = (function () {
   function cleanPhoneNumber(number){
     var cleaned = ATT.phoneNumber.stringify(number);
 
-    if(cleaned.length < 10){
+    logger.logInfo('Cleaned phone number: ' + cleaned + ', callable: ' +
+      ATT.phoneNumber.getCallable(cleaned));
+
+    if(!ATT.phoneNumber.getCallable(cleaned)){
+      logger.logWarning('Phone number not callable.');
+      if(number.charAt(0) == '*'){ cleaned = '*' + cleaned;}
+      logger.logWarning('checking number: ' + cleaned);
       if(!ATT.SpecialNumbers[cleaned]){
-          ATT.Error.publish('SDK-20026', null, options.onError);
+          ATT.Error.publish('SDK-20027', null, options.onError);
+          throw new Error('Invalid phone number entered: ' + cleaned);
+      } else {
+        logger.logWarning('found number in special numbers list');
       }
     }
     return cleaned;

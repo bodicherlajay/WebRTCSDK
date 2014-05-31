@@ -91,6 +91,24 @@ if (!ATT) {
   }
 
   /**
+  * Function to get CODEC form SDP
+  * @param {Object} sdp The SDP
+  * @returns {Object} CODEC
+  */
+  function getCodecfromSDP(event_sdp) {
+    var CODEC = [], idx, media, sdp = ATT.sdpParser.getInstance().parse(event_sdp);
+    logger.logDebug('Parsed SDP ' + sdp);
+    for (idx = 0; idx < sdp.media.length; idx = idx + 1) {
+      media = {
+        rtp: sdp.media[idx].rtp,
+        type: sdp.media[idx].type
+      };
+      CODEC.push(media);
+    }
+    return CODEC;
+  }
+
+  /**
    * Function to remove crypto & BUNDLE from the SDP.
    * @param {String} sdp
    * @returns {*|sdp}
@@ -145,6 +163,9 @@ if (!ATT) {
       },
       removeSDPAttribute : function (attributeValue, sdp) {
         return removeSDPAttribute(attributeValue, sdp);
+      },
+      getCodecfromSDP : function (sdp) {
+        return getCodecfromSDP(sdp);
       }
     };
   };

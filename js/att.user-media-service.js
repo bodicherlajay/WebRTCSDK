@@ -62,11 +62,12 @@
       logger.logTrace('starting call');
 
       var session = callManager.getSessionContext(),
-        callType = session.getCallType();
+        callType = session.getCallType(),
+        args;
 
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
-      this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints
+      this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints;
       this.localStream = config.localStream;
 
       if (callType) {
@@ -75,7 +76,7 @@
         this.mediaConstraints.video = (callType === 'video');
       }
 
-      var args = {
+      args = {
         from: config.from,
         to: config.to,
         mediaConstraints: this.mediaConstraints

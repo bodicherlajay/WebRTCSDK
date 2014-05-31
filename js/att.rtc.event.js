@@ -51,26 +51,22 @@
     session = callManager.getSessionContext();
 
     setTimeout(function () {
-      var CODEC = [], media, sdp, idx, calltype = '';
+      var CODEC = [], calltype = '';
 
       logger.logDebug('dispatching event: ' + event.state);
 
       if (event.sdp) {
-        sdp = ATT.sdpParser.getInstance().parse(event.sdp);
-        logger.logDebug('Parsed SDP ' + sdp);
-        for (idx = 0; idx < sdp.media.length; idx = idx + 1) {
-          media = {
-            rtp: sdp.media[idx].rtp,
-            type: sdp.media[idx].type
-          };
-          CODEC.push(media);
-        }
+        // Added a getCodec method to the util to get access the codec
+        CODEC =  ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
         calltype = (CODEC.length === 1) ? 'audio' : 'video';
         session.setCallType(calltype);
       }
       logger.logDebug('Codec from the event, ' + CODEC);
       if (eventRegistry[event.state]) {
         logger.logDebug("Processing the registered event " + event.state);
+        if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED && event.reason) {
+          event.error = event.reason;
+        }
         eventRegistry[event.state](createEvent({
           from: event.from ? event.from.split('@')[0].split(':')[1] : '',
           to: session && session.getCallObject() ? session.getCallObject().callee() : '',
@@ -78,7 +74,7 @@
           codec: CODEC,
           calltype: calltype,
           data: event.data,
-          error: event.error || event.reason || ''
+          error: event.error || ''
         }), {
           sdp: event.sdp || '',
           resource: event.resourceURL || '',
@@ -104,7 +100,7 @@
 
     // set current event on the session
     callManager.getSessionContext().setEventObject(event);
-    
+
     if (event.resourceURL) {
       callManager.getSessionContext().setCurrentCallId(event.resourceURL.split('/')[6]);
     }
