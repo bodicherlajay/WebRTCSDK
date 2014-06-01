@@ -21,7 +21,8 @@ cmgmt = (function () {
     DeleteSession,
     CreateOutgoingCall,
     CreateIncomingCall,
-    DeleteCallObject;
+    DeleteCallObject,
+    cleanPhoneNumber;
     //userMediaService,
     //peerConnectionService,
     //rtcEventModule
@@ -225,25 +226,26 @@ cmgmt = (function () {
    *  Removes extra characters from the phone number and formats it for
    *  clear display
    */
-  function cleanPhoneNumber(number){
+  cleanPhoneNumber = function (number, options) {
     var cleaned = ATT.phoneNumber.stringify(number);
 
     logger.logInfo('Cleaned phone number: ' + cleaned + ', callable: ' +
       ATT.phoneNumber.getCallable(cleaned));
 
-    if(!ATT.phoneNumber.getCallable(cleaned)){
+    if (!ATT.phoneNumber.getCallable(cleaned)) {
       logger.logWarning('Phone number not callable.');
-      if(number.charAt(0) == '*'){ cleaned = '*' + cleaned;}
+      if (number.charAt(0) === '*') {
+        cleaned = '*' + cleaned;
+      }
       logger.logWarning('checking number: ' + cleaned);
-      if(!ATT.SpecialNumbers[cleaned]){
-          ATT.Error.publish('SDK-20027', null, options.onError);
-          throw new Error('Invalid phone number entered: ' + cleaned);
+      if (!ATT.SpecialNumbers[cleaned]) {
+        ATT.Error.publish('SDK-20027', null, options.onError);
       } else {
         logger.logWarning('found number in special numbers list');
       }
     }
     return cleaned;
-  }
+  };
 
   /**
   * Create an Incoming Call
