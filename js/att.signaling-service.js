@@ -282,12 +282,12 @@
             config.error();
           }
         },
-        ontimeout: function () {
+        ontimeout: function (err) {
           logger.logError('CALL TERMINATION ERROR', err);
           if (typeof config.error === 'function') {
             config.error();
           }
-        },
+        }
       });
     }
   };
