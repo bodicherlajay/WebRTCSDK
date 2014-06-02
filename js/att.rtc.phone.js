@@ -160,12 +160,15 @@ if (Env === undefined) {
     }
   }
   function getCallType() {
+    var calltype = null;
     logger.logDebug('Call type Audio/Video');
     try {
       logger.logInfo('Trying to get the CallType from the session Context ');
-      return callManager.getSessionContext().getCallType();
+      calltype = callManager.getSessionContext().getCallType();
+      logger.logInfo('Call Type : ' + calltype);
+      return calltype;
     } catch (err) {
-      throw "getcalltype: " + err;
+      throw "getCallType: " + err;
     }
   }
   createWebRTCSessionSuccess = function (config, responseObject) {
