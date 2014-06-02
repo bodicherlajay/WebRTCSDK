@@ -559,29 +559,41 @@ if (Env === undefined) {
 
   /**
   * Mutes the local stream (video or audio)
+  * @param {Object} options The callback options
   * @memberof ATT.rtc.Phone
   * @example 
   ATT.rtc.Phone.mute();
   */
-  function mute() {
+  function mute(options) {
     try {
       callManager.getSessionContext().getCallObject().mute();
+      if (options.success) {
+        options.success();
+      }
     } catch (e) {
-      ATT.Error.publish(e);
+      if (options.error) {
+        ATT.Error.publish('SDK-20028', null, options.error);
+      }
     }
   }
 
   /**
   * Unmutes the local stream
+  * @param {Object} options The callback options
   * @memberof ATT.rtc.Phone
   * @example 
   ATT.rtc.Phone.unmute();
   */
-  function unmute() {
+  function unmute(options) {
     try {
       callManager.getSessionContext().getCallObject().unmute();
+      if (options.success) {
+        options.success();
+      }
     } catch (e) {
-      ATT.Error.publish(e);
+      if (options.error) {
+        ATT.Error.publish('SDK-20029', null, options.error);
+      }
     }
   }
 
@@ -619,13 +631,15 @@ if (Env === undefined) {
 
   /**
   * Hangs up the current call
-  * @param {Object} options The UI options
+  * @param {Object} options The callback options
   */
   function hangup(options) {
     try {
       callManager.getSessionContext().getCallObject().end(options);
     } catch (e) {
-      ATT.Error.publish('SDK-20024', null, options.onError);
+      if (options.error) {
+        ATT.Error.publish('SDK-20024', null, options.error);
+      }
     }
   }
 

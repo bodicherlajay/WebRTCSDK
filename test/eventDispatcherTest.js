@@ -4,10 +4,14 @@
 describe('Event Dispatcher Tests', function () {
   'use strict';
 
-  var backupAtt, utils = ATT.utils, eventRegistry,
-    onSessionReady, event = {},
+  var backupAtt,
+    utils = ATT.utils,
+    eventRegistry,
+    onSessionReady,
+    event = {},
     data = {},
     RTCEventModule = ATT.RTCEvent.getInstance();
+
   beforeEach(function () {
     backupAtt = window.ATT;
   });
@@ -28,24 +32,6 @@ describe('Event Dispatcher Tests', function () {
         return {
           onSessionReady: function () {
             onSessionReady = true;
-          },
-          onError: function () {
-            onError = true;
-          },
-          onCallEnded: function () {
-            onCallEnded = true;
-          },
-          onCallError: function () {
-            onCallError = true;
-          },
-          onIncomingCall: function () {
-            onIncomingCall = true;
-          },
-          onConnecting: function () {
-            onConnecting = true;
-          },
-          onCallInProgress: function () {
-            onCallInProgress = true;
           }
         };
       }

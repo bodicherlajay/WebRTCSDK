@@ -275,6 +275,22 @@
       helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
+    {
+      userErrorCode: 'SDK-20028',
+      operationName: 'Mute Failed',
+      errorDescription: 'Cannot mute call',
+      reasonText: 'The local audio stream is not currently established',
+      helpText: 'Please make a call first',
+      moduleID: 'RTC'
+    },
+    {
+      userErrorCode: 'SDK-20029',
+      operationName: 'Unmute Failed',
+      errorDescription: 'Cannot unmute call',
+      reasonText: 'The local audio stream is not currently established',
+      helpText: 'Please make a call first',
+      moduleID: 'RTC'
+    },
 
     // range SDK-50000 is reserverd for DHS errors
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)

@@ -42,8 +42,15 @@
     }
 
    /**
-   * OnSessionReady
-   * @param {Object} the UI Event Object
+    * @event
+    * @summary Applies to ATT.rtc.Phone.login
+    * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
+    * This event indicates that SDK is ready to make or receive calls
+    * @memberof ATT.rtc.Phone
+    * @param {Object} evt Event Object
+    * @param evt.state {Enum} ATT.SessionEvents.RTC_SESSION_CREATED
+    * @param evt.data.sessionId {String} Session id
+    *
    */
     onSessionReady = function (evt) {
       callbacks = sessionContext.getUICallbacks();
@@ -52,20 +59,42 @@
       }
     };
 
-   /**
-   * onIncomingCall
-   * @param {Object} the UI Event Object
-   */
+    /**
+     * @event
+     * @summary Applies to ATT.rtc.Phone.login
+     * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
+     * This event indicates that SDK is ready to make or receive calls
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.to {String} Empty
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     * @param evt.error {String} Error object
+     *
+     */
     onIncomingCall = function (evt) {
       if (callbacks.onIncomingCall) {
         callbacks.onIncomingCall(evt);
       }
     };
 
-   /**
-   * onConnecting
-   * @param {Object} the UI Event Object
-   */
+    /**
+     * @event
+     * @summary Applies to ATT.rtc.Phone.login
+     * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
+     * This event indicates that SDK is ready to make or receive calls
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.to {String} Tel or sip uri
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     * @param evt.error {String} Error object
+     *
+     */
     onConnecting = function (evt) {
       callbacks = sessionContext.getUICallbacks();
       if (callbacks.onConnecting) {
@@ -74,9 +103,21 @@
     };
 
     /**
-    * onCallEstablished
-    * @param {Object} the UI Event Object
-    */
+     * @event
+     * @summary Applies to ATT.rtc.Phone.login
+     * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
+     * This event indicates that SDK is ready to make or receive calls
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.to {String} Empty
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     * @param evt.error {String} Error object
+     * @param evt.resource {String} [Optional] Resource id
+     * @param evt.modId {String} [Optional] Modification id
+     */
     onCallEstablished = function (evt) {
       callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallEstablished) {
@@ -96,9 +137,18 @@
     };
 
     /**
-    * onCallEnded
-    * @param {Object} the UI Event Object
-    */
+     * @event
+     * @summary Applies to ATT.rtc.Phone.login
+     * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
+     * This event indicates that SDK is ready to make or receive calls
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     *
+     */
     onCallEnded = function (evt) {
       callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallEnded) {

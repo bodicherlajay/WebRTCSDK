@@ -57,8 +57,8 @@ describe('Call Management', function () {
 
     xit('should clean a phone number with extra characters', function () {
       var config = {
-          to: '1.800-43/3.23+42',
-          mediaContraints: {audio: true, video: true}
+        to: '1.800-43/3.23+42',
+        mediaContraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
       sessionContext = callmgr.getSessionContext();
@@ -72,7 +72,7 @@ describe('Call Management', function () {
       var config = {
           to: '1.800-/3.23+42',
           mediaContraints: {audio: true, video: true}
-      };
+        };
       callmgr.CreateOutgoingCall(config);
       sessionContext = callmgr.getSessionContext();
       expect(sessionContext.getCallObject()).to.be.an('object');

@@ -3,10 +3,6 @@
 
 //Dependency: None
 
-if (!ATT) {
-  var ATT = {};
-}
-
 (function (mainModule) {
   'use strict';
 
@@ -29,6 +25,7 @@ if (!ATT) {
     RTC_SESSION_DELETED: "session-deleted",
     RTC_SESSION_ERROR: "session-error"
   };
+
   module.CallStatus = {
    /**
 * @constant {number}
@@ -66,24 +63,22 @@ if (!ATT) {
 * @constant {number}
  */
     RESUMED: 8,
-       /**
+    /**
 * @constant {number}
  */
-    MUTED: 9,
-       /**
-* @constant {number}
- */
-    UNMUTED: 10,
-        /**
-* @constant {number}
- */
-    ESTABLISHED: 11,
-
-    SESSION_DELETED: 12,
-
-    SESSION_ERROR: 13,
+    ESTABLISHED: 9,
 
     /**
+* @constant {number}
+ */
+    SESSION_DELETED: 10,
+
+    /**
+* @constant {number}
+ */
+    SESSION_ERROR: 11,
+
+ /**
      * @constant {number} Used to indicate the originating party is calling.
      **/
     CALLING: 14,
@@ -111,13 +106,11 @@ if (!ATT) {
     ADD_FAILED:               'add-failed',
     REMOVE_FAILED:            'remove-failed',
     MOVE_TERMINATED:          'Move Terminated',
-    MUTED:                    'call-muted',
-    UNMUTED:                  'call-unmuted',
     UNKNOWN:                  'Unknown'
   };
 
 
-  EventsMapping[RTCCallEvents.SESSION_OPEN] =            module.CallStatus.ESTABLISHED;
+  EventsMapping[RTCCallEvents.SESSION_OPEN] =               module.CallStatus.ESTABLISHED;
   EventsMapping[RTCCallEvents.SESSION_MODIFIED] =           module.CallStatus.SESSION_MODIFIED;
   EventsMapping[RTCCallEvents.SESSION_TERMINATED] =         module.CallStatus.ERROR;
   EventsMapping[RTCCallEvents.CALL_CONNECTING] =            module.CallStatus.CONNECTING;
@@ -130,11 +123,9 @@ if (!ATT) {
   EventsMapping[RTCCallEvents.ADD_FAILED] =                 module.CallStatus.ADD_FAILED;
   EventsMapping[RTCCallEvents.REMOVE_FAILED] =              module.CallStatus.REMOVE_FAILED;
   EventsMapping[RTCCallEvents.MOVE_TERMINATED] =            module.CallStatus.MOVE_TERMINATED;
-  EventsMapping[RTCCallEvents.MUTED] =                      module.CallStatus.MUTED;
   EventsMapping[SessionEvents.RTC_SESSION_CREATED] =        module.CallStatus.SESSION_READY;
   EventsMapping[SessionEvents.RTC_SESSION_DELETED] =        module.CallStatus.SESSION_DELETED;
   EventsMapping[SessionEvents.RTC_SESSION_ERROR] =          module.CallStatus.SESSION_ERROR;
-  EventsMapping[RTCCallEvents.UNMUTED] =                    module.CallStatus.UNMUTED;
   EventsMapping[RTCCallEvents.UNKNOWN] =                    module.CallStatus.ERROR;
 
 

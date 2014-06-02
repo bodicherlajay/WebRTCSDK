@@ -1,12 +1,6 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, Env: true, cmgmt: true*/
 
-/*
-if (!ATT) {
-  var ATT = {};
-}
-
-*/
 //Dependency: Env.resourceManager, cmgmt.CallManager
 
 (function (app) {
@@ -288,12 +282,12 @@ if (!ATT) {
             config.error();
           }
         },
-        ontimeout: function () {
+        ontimeout: function (err) {
           logger.logError('CALL TERMINATION ERROR', err);
           if (typeof config.error === 'function') {
             config.error();
           }
-        },
+        }
       });
     }
   };
