@@ -325,6 +325,16 @@ cmgmt = (function () {
     }
   };
 
+  Call.mute = function () {
+    logger.logInfo('putting call on mute');
+    ATT.UserMediaService.muteStream();
+  };
+
+  Call.unmute = function () {
+    logger.logInfo('unmuting call');
+    ATT.UserMediaService.unmuteStream();
+  };
+
   /**
   * Call hangup
   * @param {Object} options The phone.js facade options
@@ -337,16 +347,6 @@ cmgmt = (function () {
         logger.logWarning('Hangup request failed.');
       }
     });
-  };
-
-  Call.mute = function () {
-    logger.logInfo('putting call on mute');
-    ATT.UserMediaService.muteStream();
-  };
-
-  Call.unmute = function () {
-    logger.logInfo('unmuting call');
-    ATT.UserMediaService.unmuteStream();
   };
 
   module.getInstance = function () {
