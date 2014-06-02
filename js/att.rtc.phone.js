@@ -456,10 +456,11 @@ if (Env === undefined) {
     callManager.onCallCreated = function () {
       logger.logInfo('onCallCreated... trigger RINGING event in the UI');
       // crate an event for Ringing
-      var ringingEvent = ATT.event.createEvent(
-        { state: ATT.RTCCallEvents.CALLING,
-          timestamp: new Date() }
-      );
+      var rtcEvent = ATT.RTCEvent.getInstance(),
+        ringingEvent = rtcEvent.createEvent(
+          { state: ATT.CallStatus.CALLING,
+            timestamp: new Date() }
+        );
       // bubble up the event
       dialParams.callbacks.onCalling(ringingEvent);
     };

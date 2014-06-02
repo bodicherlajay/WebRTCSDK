@@ -203,7 +203,8 @@ cmgmt = (function () {
 
     logger.logInfo('Creating outgoing call');
 
-    var call = new Call(null, cleanPhoneNumber(config.to), config.mediaConstraints);
+    var call = new Call(null, cleanPhoneNumber(config.to), config.mediaConstraints),
+      that = this;
 
     // set call and callbacks in current session
     logger.logInfo('Updating current session for outgoing call');
@@ -223,10 +224,10 @@ cmgmt = (function () {
     // indicate the RINGING state on an outgoing call
     ATT.PeerConnectionService.onOfferSent = function () {
       logger.logInfo('onOfferSent... trigger RINGING event for outgoing call');
-      if (undefined !== this.onCallCreated
-          && null !== this.onCallCreated
-          && 'function' === typeof this.onCallCreated) {
-        this.onCallCreated();
+      if (undefined !== that.onCallCreated
+          && null !== that.onCallCreated
+          && 'function' === typeof that.onCallCreated) {
+        that.onCallCreated();
       }
     };
 
@@ -301,7 +302,6 @@ cmgmt = (function () {
       UpdateSession: UpdateSession,
       DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
-      onCallCreated: null,
       CreateIncomingCall: CreateIncomingCall,
       DeleteCallObject: DeleteCallObject
     };
