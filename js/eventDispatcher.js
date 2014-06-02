@@ -11,6 +11,8 @@
     onConnecting,
     onCallEstablished,
     onCallInProgress,
+    onCallHold,
+    onCallResume,
     onCallEnded,
     onCallError,
     onError,
@@ -133,6 +135,46 @@
       callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallInProgress) {
         callbacks.onCallInProgress(evt);
+      }
+    };
+
+    /**
+     * @event
+     * @summary Applies to ATT.rtc.Phone.login
+     * @desc UI callback function which gets invoked by SDK when call is on hold
+     * This event indicates that call is on hold
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     *
+     */
+    onCallHold = function (evt) {
+      callbacks = sessionContext.getUICallbacks();
+      if (callbacks.onCallHold) {
+        callbacks.onCallHold(evt);
+      }
+    };
+
+    /**
+     * @event
+     * @summary Applies to ATT.rtc.Phone.login
+     * @desc UI callback function which gets invoked by SDK when call is resumed
+     * This event indicates that call is resumed
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     *
+     */
+    onCallResume = function (evt) {
+      callbacks = sessionContext.getUICallbacks();
+      if (callbacks.onCallResume) {
+        callbacks.onCallResume(evt);
       }
     };
 
