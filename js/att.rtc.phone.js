@@ -603,32 +603,40 @@ if (Env === undefined) {
   /**
   * Holds the current call and the other party gets notified through event channel
   * @memberof ATT.rtc.Phone
+  * @param {Object} options The UI options
   * @example 
   ATT.rtc.Phone.hold();
   */
-  function hold() {
+  function hold(options) {
     try {
-      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-        callManager.getSessionContext().getCallObject().hold();
+      callManager.getSessionContext().getCallObject().hold();
+      if (options.success) {
+        options.success();
       }
     } catch (e) {
-      ATT.Error.publish(e);
+      if (options.error) {
+        ATT.Error.publish('SDK-20030', null, options.error);
+      }
     }
   }
 
   /**
   * Resumes the current call and the other party gets notified through event channel and the call resumes
   * @memberof ATT.rtc.Phone
+  * @param {Object} options The UI options
   * @example  
   ATT.rtc.Phone.resume();
   */
-  function resume() {
+  function resume(options) {
     try {
-      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-        callManager.getSessionContext().getCallObject().resume();
+      callManager.getSessionContext().getCallObject().resume();
+      if (options.success) {
+        options.success();
       }
     } catch (e) {
-      ATT.Error.publish(e);
+      if (options.error) {
+        ATT.Error.publish('SDK-20031', null, options.error);
+      }
     }
   }
 
