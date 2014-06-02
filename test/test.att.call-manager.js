@@ -35,7 +35,7 @@ describe('Call Management', function () {
     xit('should return a valid Call Object', function () {
       var config = {
         to: '1-800-call-junhua',
-        mediaContraints: {audio: true, video: true}
+        mediaConstraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
       sessionContext = callmgr.getSessionContext();
@@ -45,7 +45,7 @@ describe('Call Management', function () {
     xit('should create an outgoing call', function () {
       var config = {
         to: '1-800-call-junhua',
-        mediaContraints: {audio: true, video: true}
+        mediaConstraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
       sessionContext = callmgr.getSessionContext();
@@ -58,7 +58,7 @@ describe('Call Management', function () {
     xit('should clean a phone number with extra characters', function () {
       var config = {
         to: '1.800-43/3.23+42',
-        mediaContraints: {audio: true, video: true}
+        mediaConstraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
       sessionContext = callmgr.getSessionContext();
@@ -71,7 +71,7 @@ describe('Call Management', function () {
     xit('should reject a phone number with too few characters not in the special numbers list', function () {
       var config = {
           to: '1.800-/3.23+42',
-          mediaContraints: {audio: true, video: true}
+          mediaConstraints: {audio: true, video: true}
         };
       callmgr.CreateOutgoingCall(config);
       sessionContext = callmgr.getSessionContext();
@@ -81,10 +81,23 @@ describe('Call Management', function () {
       expect(sessionContext.getCallState()).to.equal('Outgoing');
     });
 
+    xit('should translate letters into numbers', function () {
+      var config = {
+        to: '1-800-pick-ups',
+        mediaConstraints: {audio: true, video: true}
+      };
+      callmgr.CreateOutgoingCall(config);
+      sessionContext = callmgr.getSessionContext();
+      expect(sessionContext.getCallObject()).to.be.an('object');
+      assert.isNull(sessionContext.getCallObject().caller());
+      expect(sessionContext.getCallObject().callee()).to.equal('1-800-742-5877');
+      expect(sessionContext.getCallState()).to.equal('Outgoing');
+    });
+
     xit('should create an incoming call', function () {
       var config = {
         caller: '1-800-call-junhua',
-        mediaContraints: {audio: true, video: true}
+        mediaConstraints: {audio: true, video: true}
       }, event = { caller: '1800-foo-bar' };
       sessionContext = callmgr.getSessionContext();
       sessionContext.setEventObject(event);
@@ -95,7 +108,7 @@ describe('Call Management', function () {
     xit('should be able to delete the call object', function () {
       var config = {
         to: '1-800-call-junhua',
-        mediaContraints: {audio: true, video: true}
+        mediaConstraints: {audio: true, video: true}
       };
       callmgr.CreateIncomingCall(config);
       sessionContext = callmgr.getSessionContext();
@@ -108,7 +121,7 @@ describe('Call Management', function () {
     xit('should call ATT.PeerConnection.holdCall() if peer connection and callObject are defined', function () {
       var config = {
         to: '1-800-call-junhua',
-        mediaContraints: {audio: true, video: true}
+        mediaConstraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
       ATT.PeerConnectionService.peerConnection = {foo: 'bar'};
@@ -120,7 +133,7 @@ describe('Call Management', function () {
     xit('should call ATT.PeerConnection.resumeCall() if peer connection and callObject are defined', function () {
       var config = {
         to: '1-800-call-junhua',
-        mediaContraints: {audio: true, video: true}
+        mediaConstraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
       ATT.PeerConnectionService.peerConnection = {foo: 'bar'};
@@ -146,7 +159,7 @@ describe('Call Management', function () {
       var Mute = ATT.UserMediaService.muteStream,
         config = {
           to: '1-800-call-junhua',
-          mediaContraints: {audio: true, video: true}
+          mediaConstraints: {audio: true, video: true}
         };
       callmgr.CreateOutgoingCall(config);
       ATT.UserMediaService.muteStream = sinon.spy();
