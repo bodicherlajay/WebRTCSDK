@@ -184,6 +184,10 @@ describe('PeerConnectionServiceModule', function () {
     });
   });
 
+  describe('Callbacks', function () {
+    it('should trigger `onOfferSent` after successfully sending an offer');
+  });
+
   afterEach(function () {
     ATT = backupAtt;
   });

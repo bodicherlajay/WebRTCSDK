@@ -178,6 +178,10 @@ describe('Call Management', function () {
       assert.isNull(sessionContext);
     });
   });
+
+  describe('Create Outgoing Call callbacks', function () {
+    it('should trigger `onCallCreated` after successfully creating an outgoing call');
+  });
   afterEach(function () {
     ATT = backupAtt;
   });

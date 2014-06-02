@@ -147,4 +147,10 @@ describe('webRTC', function () {
       assert.ok(ATT.rtc.Phone.unmute);
     });
   });
+
+  describe('Dial callbacks', function () {
+    it('should trigger the `onCalling` after calling `onConnecting`');
+    it('should trigger the `onCalling` callback after successfully dialing a number');
+    it('should trigger the `onCalling` before calling `onCallEstablished`');
+  });
 });
