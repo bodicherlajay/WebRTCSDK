@@ -60,7 +60,7 @@ cmgmt = (function () {
     INCOMING_CALL : 'Incoming',
     MOVE_CALL : 'Move Call',
     HOLD_CALL : 'Hold Call',
-    RESUMED_CALL : 'Resumed Call',
+    RESUMED_CALL : 'Resumed call',
     TRANSFER_CALL : 'Transfer Call',
     ENDED_CALL : 'Ended Call',
     READY: 'Ready', //Ready to accept Outgoing or Incoming call

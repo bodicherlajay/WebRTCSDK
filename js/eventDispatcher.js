@@ -265,6 +265,17 @@
       if (data.sdp && data.modId) {
         peerConnService.setRemoteAndCreateAnswer(data.sdp, data.modId);
       }
+
+      // Handle call hold and resume events
+      if (data.sdp.indexOf('sendonly') !== -1) {
+        logger.logInfo('Received hold request');
+        onCallHold(event);
+        sessionContext.setCallState(callMgr.SessionState.HOLD_CALL);
+      } else if (data.sdp.indexOf('sendrecv') !== -1 && peerConnService.localDescription.sdp.indexOf('recvonly') !== -1) {
+        logger.logInfo('Received resume request');
+        onCallResume(event);
+        sessionContext.setCallState(callMgr.SessionState.RESUMED_CALL);
+      }
     };
 
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (event, data) {
