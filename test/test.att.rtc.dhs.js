@@ -6,13 +6,10 @@ describe('DHSModule', function () {
   "use strict";
 
   var resourceManager = Env.resourceManager.getInstance(),
-    apiObj = resourceManager.getAPIObject(),
     requests,
-    xhr,
-    backupAtt;
+    xhr;
 
   beforeEach(function () {
-    backupAtt = ATT;
     xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
 
@@ -47,22 +44,25 @@ describe('DHSModule', function () {
     resourceManager.doOperation.restore();
   });
 
-  xit('should call success callback after authentication', function () {
-    var config = {
-      "data" :
-        { "type" : "MOBILENUMBER"}
-    };
-
-    resourceManager.doOperation = function (config) {
-      config.success(config);
-    };
+  it('should call success callback after authentication', function () {
+    var successSpy = sinon.spy(),
+      doOperationSpy = sinon.spy(resourceManager, 'doOperation'),
+      errorSpy = sinon.spy,
+      config = {
+        data: {
+          type: "MOBILENUMBER"
+        },
+        success: successSpy,
+        error: errorSpy
+      };
 
     ATT.rtc.dhs.login(config);
-    expect(config.success.called).to.equal(true);
+    expect(doOperationSpy.called).to.equal(true);
   });
 
-  xit('login should call SDK initSession with accesstoken & e911id on success ', function () {
-    var initSessionSpy = sinon.spy(apiObj, 'initSession'),
+  it('login should call success cb on success ', function () {
+    var spySuccess = sinon.spy(),
+      spyError = sinon.spy(),
       responseObject1;
 
     ATT.rtc.dhs.login({
@@ -70,7 +70,8 @@ describe('DHSModule', function () {
         un: 'un',
         pw: 'pw'
       },
-      success: function () { return; }
+      success: spySuccess,
+      error: spyError
     });
 
     // response json from authorizeUser call.  check the schema.
@@ -85,27 +86,23 @@ describe('DHSModule', function () {
       }
     };
 
-
     // response to authorize
     requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(responseObject1));
 
     // expect
-    expect(initSessionSpy.called).to.equal(true);
-    expect(initSessionSpy.calledWith(responseObject1.accesstoken.access_token,
-      responseObject1.e911Id.e911Locations.addressIdentifier)).to.equal(true);
-
-    // restore
-    initSessionSpy.restore();
+    expect(spySuccess.called).to.equal(true);
   });
 
 
-  xit('getE911Id should call success callback on call success.', function () {
+  it('getE911Id should call success callback on call success.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       responseObject1;
 
     ATT.rtc.dhs.getE911Id({
-      userId: 'userId',
+      data: {
+        id: 'userId'
+      },
       success:  spySuccess,
       error:    spyError
     });
@@ -123,13 +120,15 @@ describe('DHSModule', function () {
     expect(spySuccess.calledWith(responseObject1)).to.equal(true);
   });
 
-  xit('getE911Id should call error callback on call error.', function () {
+  it('getE911Id should call error callback on call error.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       responseObject1;
 
     ATT.rtc.dhs.getE911Id({
-      userId: 'userId',
+      data: {
+        id: 'userId'
+      },
       success:  spySuccess,
       error:    spyError
     });
@@ -147,35 +146,38 @@ describe('DHSModule', function () {
     expect(spySuccess.called).to.equal(false);
   });
 
-  xit('getE911Id should throw error if no userId passed in.', function () {
+  it('getE911Id should publish error if no userId passed in.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
-      boundCall;
+      publishSpy = sinon.spy(ATT.Error, 'publish');
 
-    boundCall = ATT.rtc.dhs.getE911Id.bind(null, {
+    ATT.rtc.dhs.getE911Id({
       data: {
-        userId: null
+        id: null
       },
       success:  spySuccess,
       error:    spyError
     });
 
-    expect(boundCall).to.throw('userId required for getE911Id.');
+    expect(publishSpy.called).to.equal(true);
+    publishSpy.restore();
   });
 
-  xit('createE911Id should call success callback on call success.', function () {
+  it('createE911Id should call success callback on call success.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       responseObject1;
 
     ATT.rtc.dhs.createE911Id({
-      userId: 'userId',
-      address: {
-        address1: '1234 Test St.',
-        address2: '',
-        city: 'Redmond',
-        state: 'WA',
-        zip: '12345'
+      data: {
+        id: 'userId',
+        address: {
+          address1: 'add1',
+          address2: 'add2',
+          city: 'Redmond',
+          state: 'WA',
+          zip: '12345'
+        }
       },
       success:  spySuccess,
       error:    spyError
@@ -196,19 +198,21 @@ describe('DHSModule', function () {
     expect(spySuccess.calledWith(responseObject1)).to.equal(true);
   });
 
-  xit('createE911Id should call error callback on call error.', function () {
+  it('createE911Id should call error callback on call error.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
       responseObject1;
 
     ATT.rtc.dhs.createE911Id({
-      userId: 'userId',
-      address: {
-        address1: '1234 Test St.',
-        address2: '',
-        city: 'Redmond',
-        state: 'WA',
-        zip: '12345'
+      data: {
+        id: 'userId',
+        address: {
+          address1: 'add1',
+          address2: 'add2',
+          city: 'Redmond',
+          state: 'WA',
+          zip: '12345'
+        }
       },
       success:  spySuccess,
       error:    spyError
@@ -225,62 +229,52 @@ describe('DHSModule', function () {
     expect(spySuccess.called).to.equal(false);
   });
 
-  xit('createE911Id should throw error if no userId passed in.', function () {
+  it('createE911Id should publish error if no config.data passed in.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
-      boundCall;
+      publishSpy = sinon.spy(ATT.Error, 'publish');
 
-    boundCall = ATT.rtc.dhs.createE911Id.bind(null, {
-      userId: null,
-      address: {
-        address1: '1234 Test St.',
-        address2: '',
-        city: 'Redmond',
-        state: 'WA',
-        zip: '12345'
-      },
+    ATT.rtc.dhs.createE911Id({
+//      data: {
+//        id: null,
+//        address: {
+//          address1: 'add1',
+//          address2: 'add2',
+//          city: 'Redmond',
+//          state: 'WA',
+//          zip: '12345'
+//        }
+//      },
       success:  spySuccess,
       error:    spyError
     });
 
-    expect(boundCall).to.throw('userId required.');
+    expect(publishSpy.called).to.equal(true);
+    publishSpy.restore();
   });
 
-  xit('createE911Id should throw error if address fails validation.', function () {
+  it('createE911Id should publish error if address fails validation.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
-      boundCall;
+      publishSpy = sinon.spy(ATT.Error, 'publish');
 
-    // Address empty object.
-    boundCall = ATT.rtc.dhs.createE911Id.bind(null, {
-      userId: '123',
-      address: {
+    // Missing fields
+    ATT.rtc.dhs.createE911Id({
+      data: {
+        userId: '123',
+        address: {
+          address1: '',
+          address2: '',
+          city: '',
+          state: 'WA',
+          zip: '12345'
+        }
       },
       success:  spySuccess,
       error:    spyError
     });
 
-    expect(boundCall).to.throw('Address did not validate.');
-
-    // Missing city
-    boundCall = ATT.rtc.dhs.createE911Id.bind(null, {
-      userId: '123',
-      address: {
-        address1: '1234 Test St.',
-        address2: '',
-        city: '',
-        state: 'WA',
-        zip: '12345'
-      },
-      success:  spySuccess,
-      error:    spyError
-    });
-
-    expect(boundCall).to.throw('Address did not validate.');
+    expect(publishSpy.called).to.equal(true);
+    publishSpy.restore();
   });
-
-  afterEach(function () {
-    ATT = backupAtt;
-  });
-
 });
