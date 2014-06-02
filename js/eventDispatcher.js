@@ -241,7 +241,7 @@
 
     eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
       onCallError(event);
-      sessionContext.setCallType('');
+      sessionContext.setCallType(null);
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
@@ -306,7 +306,7 @@
       }
       sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
       sessionContext.setCallObject(null);
-      sessionContext.setCallType('');
+      sessionContext.setCallType(null);
       peerConnService.endCall();
       UserMediaService.stopStream();
     };
