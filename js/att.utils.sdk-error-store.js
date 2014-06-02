@@ -291,6 +291,38 @@
       helpText: 'Please make a call first',
       moduleID: 'RTC'
     },
+    {
+      userErrorCode: 'SDK-20030',
+      operationName: 'Hold failed',
+      errorDescription: 'Cannot hold call',
+      reasonText: 'No call object',
+      helpText: 'Please make a call first',
+      moduleID: 'RTC'
+    },
+    {
+      userErrorCode: 'SDK-20031',
+      operationName: 'Resume failed',
+      errorDescription: 'Cannot resume call',
+      reasonText: 'No call object',
+      helpText: 'Please make a call first',
+      moduleID: 'RTC'
+    },
+    {
+      userErrorCode: 'SDK-20032',
+      operationName: 'Hold failed',
+      errorDescription: 'Unable to hold',
+      reasonText: 'Hold request network error',
+      helpText: 'Please look at tracelog for further information',
+      moduleID: 'RTC'
+    },
+    {
+      userErrorCode: 'SDK-20033',
+      operationName: 'Resume failed',
+      errorDescription: 'Unable to resume',
+      reasonText: 'Resume request network error',
+      helpText: 'Please look at tracelog for further information',
+      moduleID: 'RTC'
+    },
 
     // range SDK-50000 is reserverd for DHS errors
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
