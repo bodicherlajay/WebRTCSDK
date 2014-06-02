@@ -609,7 +609,7 @@ if (Env === undefined) {
   */
   function hold(options) {
     try {
-      callManager.getSessionContext().getCallObject().hold();
+      callManager.getSessionContext().getCallObject().hold(options);
       if (options.success) {
         options.success();
       }
@@ -629,7 +629,7 @@ if (Env === undefined) {
   */
   function resume(options) {
     try {
-      callManager.getSessionContext().getCallObject().resume();
+      callManager.getSessionContext().getCallObject().resume(options);
       if (options.success) {
         options.success();
       }

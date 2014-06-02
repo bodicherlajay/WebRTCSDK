@@ -308,8 +308,7 @@ cmgmt = (function () {
   };
 
   Call.hold = function () {
-    if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCallObject()) {
+    if (ATT.PeerConnectionService.peerConnection) {
       logger.logInfo('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
@@ -318,8 +317,7 @@ cmgmt = (function () {
   };
 
   Call.resume = function () {
-    if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCallObject()) {
+    if (ATT.PeerConnectionService.peerConnection) {
       logger.logInfo('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
