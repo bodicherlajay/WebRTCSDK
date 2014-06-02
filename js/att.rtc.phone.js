@@ -457,8 +457,10 @@ if (Env === undefined) {
       logger.logInfo('onCallCreated... trigger RINGING event in the UI');
       // crate an event for Ringing
       var rtcEvent = ATT.RTCEvent.getInstance(),
+        session = callManager.getSessionContext(),
         ringingEvent = rtcEvent.createEvent(
-          { state: ATT.CallStatus.CALLING,
+          { to: session && session.getCallObject() ? session.getCallObject().callee() : '',
+            state: ATT.CallStatus.CALLING,
             timestamp: new Date() }
         );
       // bubble up the event
