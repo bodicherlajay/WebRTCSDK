@@ -118,8 +118,6 @@
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
-     * @param evt.resource {String} [Optional] Resource id
-     * @param evt.modId {String} [Optional] Modification id
      */
     onCallEstablished = function (evt) {
       callbacks = sessionContext.getUICallbacks();
@@ -142,8 +140,6 @@
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
-     * @param evt.resource {String} [Optional] Resource id
-     * @param evt.modId {String} [Optional] Modification id
      */
     onCallInProgress = function (evt) {
       callbacks = sessionContext.getUICallbacks();
@@ -154,7 +150,7 @@
 
     /**
      * @event
-     * @summary Applies to ATT.rtc.Phone.hold
+     * @summary Applies to ATT.rtc.Phone.dial,ATT.rtc.Phone.answer
      * @desc
      * This event callback gets invoked when a call is put on hold
      * @memberof ATT.rtc.Phone
@@ -165,9 +161,6 @@
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
-     * @param evt.resource {String} [Optional] Resource id
-     * @param evt.modId {String} [Optional] Modification id
-     *
      */
     onCallHold = function (evt) {
       callbacks = sessionContext.getUICallbacks();
@@ -178,7 +171,7 @@
 
     /**
      * @event
-     * @summary Applies to ATT.rtc.Phone.resume
+     * @summary Applies to ATT.rtc.Phone.answer, ATT.rtc.Phone.dial
      * @desc
      * This event callback gets invoked when a call is in resumed state
      * @memberof ATT.rtc.Phone
@@ -189,9 +182,6 @@
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
-     * @param evt.resource {String} [Optional] Resource id
-     * @param evt.modId {String} [Optional] Modification id
-     *
      */
     onCallResume = function (evt) {
       callbacks = sessionContext.getUICallbacks();
@@ -202,7 +192,7 @@
 
     /**
      * @event
-     * @summary Applies to ATT.rtc.Phone.dial, ATT.rtc.Phone.answer, ATT.rtc.Phone.hangup
+     * @summary Applies to  ATT.rtc.Phone.login ,ATT.rtc.Phone.dial, ATT.rtc.Phone.answer
      * @desc
      * This event callback gets invoked
      * @memberof ATT.rtc.Phone
@@ -213,9 +203,6 @@
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
-     * @param evt.resource {String} [Optional] Resource id
-     * @param evt.modId {String} [Optional] Modification id
-     *
      */
     onCallEnded = function (evt) {
       callbacks = sessionContext.getUICallbacks();
@@ -225,9 +212,19 @@
     };
 
     /**
-    * onCallError
-    * @param {Object} the UI Event Object
-    */
+     * @event
+     * @summary Applies to  ATT.rtc.Phone.login, ATT.rtc.Phone.dial, ATT.rtc.Phone.answer
+     * @desc
+     * This event callback gets invoked
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.to {String} Empty
+     * @param evt.mediaType {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     * @param evt.error {String} Error object
+     */
     onCallError = function (evt) {
       if (callbacks.onCallError) {
         callbacks.onCallError(evt);
@@ -235,9 +232,18 @@
     };
 
     /**
-    * onError
-    * @param {Object} the UI Event Object
-    */
+     * @event
+     * @summary Applies to  ATT.rtc.Phone.login
+     * This event callback gets invoked
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.to {String} Empty
+     * @param evt.mediaType {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     * @param evt.error {String} Error object
+     */
     onError = function (evt) {
       callbacks = sessionContext.getUICallbacks();
       if (callbacks.onError) {
