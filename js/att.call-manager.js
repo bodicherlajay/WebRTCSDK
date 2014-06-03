@@ -251,7 +251,9 @@ cmgmt = (function () {
       }
       logger.logWarning('checking number: ' + cleaned);
       if (!ATT.SpecialNumbers[cleaned]) {
-        ATT.Error.publish('SDK-20027', null, options.onError);
+        ATT.Error.publish('SDK-20027', null, function (error) {
+          logger.logWarning('Undefined `onError`: ' + error);
+        });
       } else {
         logger.logWarning('found number in special numbers list');
       }
