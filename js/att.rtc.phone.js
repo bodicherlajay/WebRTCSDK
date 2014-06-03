@@ -457,17 +457,17 @@ if (Env === undefined) {
 
     // setup callback for ringing
     callManager.onCallCreated = function () {
-      logger.logInfo('onCallCreated... trigger RINGING event in the UI');
-      // crate an event for Ringing
+      logger.logInfo('onCallCreated... trigger CALLING event in the UI');
+      // crate an event for Calling
       var rtcEvent = ATT.RTCEvent.getInstance(),
         session = callManager.getSessionContext(),
-        ringingEvent = rtcEvent.createEvent(
+        callingEvent = rtcEvent.createEvent(
           { to: session && session.getCallObject() ? session.getCallObject().callee() : '',
             state: ATT.CallStatus.CALLING,
             timestamp: new Date() }
         );
       // bubble up the event
-      dialParams.callbacks.onCalling(ringingEvent);
+      dialParams.callbacks.onCalling(callingEvent);
     };
 
     try {
