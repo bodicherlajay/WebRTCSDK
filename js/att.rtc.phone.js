@@ -670,6 +670,7 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('initCallback', initCallbacks);
     resourceManager.addPublicMethod('getCallType', getCallType);
     resourceManager.addPublicMethod('hangup', hangup);
+    resourceManager.addPublicMethod('cleanPhoneNumber', callManager.cleanPhoneNumber);
   }
 
   // sub-namespaces on ATT.
