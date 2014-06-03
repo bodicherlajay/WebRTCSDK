@@ -10,6 +10,8 @@
   var errMgr,
     session,
     eventManager,
+    rtcEvent,
+    resourceManager,
     logger = Env.resourceManager.getInstance().getLogger("RTCManager");
 
   function handleError(operation, errHandler, err) {
@@ -42,10 +44,11 @@
         session = sessionObj; // store the newly created session
 
         options.factories.createEventManager({
-          sessionId: session.getSessionId(),
-          onEventManagerCreated: function (evtMgr) {
-            eventManager = evtMgr;
-            console.log(eventManager);
+          callbacks: options.callbacks
+          session: session,
+          rtcEvent: rtcEvent,
+          resourceManager: resourceManager,
+          onEventManagerCreated: function () {
             options.onSessionStarted(session);
           },
           onError: handleError.bind(this, 'CreateEventManager', options.onError)
@@ -67,6 +70,8 @@
 
     errMgr = options.errorManager;
     eventManager = options.eventManager;
+    resourceManager = options.resourceManager;
+    rtcEvent = options.rtcEvent;    
 
     return {
       startSession: startSession
