@@ -62,7 +62,7 @@
       logger.logTrace('starting call');
 
       var session = callManager.getSessionContext(),
-        callType = session.getCallType(),
+        mediaType = session.getMediaType(),
         args;
 
       this.localVideoElement = config.localVideo;
@@ -70,10 +70,10 @@
       this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints;
       this.localStream = config.localStream;
 
-      if (callType) {
+      if (mediaType) {
         // for incoming call, overwrite media constraints
         // TODO: need to compare and upgrade/downgrade call 
-        this.mediaConstraints.video = (callType === 'video');
+        this.mediaConstraints.video = (mediaType === 'video');
       }
 
       args = {

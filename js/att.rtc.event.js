@@ -35,6 +35,14 @@
         }
         return mainModule.CallStatus.ENDED;
       }
+      if (event.state === mainModule.RTCCallEvents.MODIFICATION_RECEIVED) {
+        if (event.sdp.indexOf('recvonly') !== -1) {
+          return mainModule.CallStatus.HOLD;
+        }
+        if (event.sdp.indexOf('sendrecv') !== -1 && ATT.PeerConnectionService.localDescription.sdp.indexOf('sendonly') !== -1) {
+          return mainModule.CallStatus.RESUMED;
+        }
+      }
       if (mainModule.EventsMapping[event.state]) {
         return mainModule.EventsMapping[event.state];
       }
@@ -51,15 +59,15 @@
     session = callManager.getSessionContext();
 
     setTimeout(function () {
-      var CODEC = [], calltype = '';
+      var CODEC = [], mediaType = '';
 
       logger.logDebug('dispatching event: ' + event.state);
 
       if (event.sdp) {
         // Added a getCodec method to the util to get access the codec
         CODEC =  ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
-        calltype = (CODEC.length === 1) ? 'audio' : 'video';
-        session.setCallType(calltype);
+        mediaType = (CODEC.length === 1) ? 'audio' : 'video';
+        session.setMediaType(mediaType);
       }
       logger.logDebug('Codec from the event, ' + CODEC);
       if (eventRegistry[event.state]) {
@@ -72,7 +80,7 @@
           to: session && session.getCallObject() ? session.getCallObject().callee() : '',
           state: setUIEventState(event),
           codec: CODEC,
-          calltype: calltype,
+          mediaType: mediaType,
           data: event.data,
           error: event.error || ''
         }), {
@@ -150,7 +158,7 @@
     timeStamp: '',
     state: '',
     codec: [],
-    calltype: '',
+    mediaType: '',
     data: null,
     error: null
   };
@@ -168,7 +176,7 @@
     evt.to = arg.to;
     evt.timestamp = new Date();
     evt.codec = arg.codec;
-    evt.calltype = arg.calltype;
+    evt.mediaType = arg.mediaType;
     evt.data = arg.data;
     evt.error = arg.error ? mainModule.Error.create(arg.error) : null;
     Object.freeze(evt);

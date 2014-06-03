@@ -70,7 +70,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -91,7 +91,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -114,7 +114,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -161,7 +161,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -185,7 +185,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -209,7 +209,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
