@@ -613,11 +613,11 @@ if (Env === undefined) {
   function hold(options) {
     try {
       callManager.getSessionContext().getCallObject().hold(options);
-      if (options.success) {
+      if (options && options.success) {
         options.success();
       }
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20030', null, options.error);
       }
     }
@@ -633,11 +633,11 @@ if (Env === undefined) {
   function resume(options) {
     try {
       callManager.getSessionContext().getCallObject().resume(options);
-      if (options.success) {
+      if (options && options.success) {
         options.success();
       }
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20031', null, options.error);
       }
     }
