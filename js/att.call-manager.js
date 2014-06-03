@@ -60,7 +60,7 @@ cmgmt = (function () {
     INCOMING_CALL : 'Incoming',
     MOVE_CALL : 'Move Call',
     HOLD_CALL : 'Hold Call',
-    RESUMED_CALL : 'Resumed Call',
+    RESUMED_CALL : 'Resumed call',
     TRANSFER_CALL : 'Transfer Call',
     ENDED_CALL : 'Ended Call',
     READY: 'Ready', //Ready to accept Outgoing or Incoming call
@@ -308,8 +308,7 @@ cmgmt = (function () {
   };
 
   Call.hold = function () {
-    if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCallObject()) {
+    if (ATT.PeerConnectionService.peerConnection) {
       logger.logInfo('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
@@ -318,13 +317,22 @@ cmgmt = (function () {
   };
 
   Call.resume = function () {
-    if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCallObject()) {
+    if (ATT.PeerConnectionService.peerConnection) {
       logger.logInfo('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
       logger.logWarning('Resume not possible...');
     }
+  };
+
+  Call.mute = function () {
+    logger.logInfo('putting call on mute');
+    ATT.UserMediaService.muteStream();
+  };
+
+  Call.unmute = function () {
+    logger.logInfo('unmuting call');
+    ATT.UserMediaService.unmuteStream();
   };
 
   /**
@@ -339,16 +347,6 @@ cmgmt = (function () {
         logger.logWarning('Hangup request failed.');
       }
     });
-  };
-
-  Call.mute = function () {
-    logger.logInfo('putting call on mute');
-    ATT.UserMediaService.muteStream();
-  };
-
-  Call.unmute = function () {
-    logger.logInfo('unmuting call');
-    ATT.UserMediaService.unmuteStream();
   };
 
   module.getInstance = function () {

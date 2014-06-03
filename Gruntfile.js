@@ -33,6 +33,8 @@ module.exports = function (grunt) {
       'js/att.rtc.dhs.js',
       'js/att.utils.event-channel.js',
       'js/att.rtc.phone.js',
+      'js/att.phonenumber.js',
+      'js/att.special-numbers.js',
       // TESTS
       'test/test.att.utils.sdk-error-store.js',
       'test/test.att.config.api.js',

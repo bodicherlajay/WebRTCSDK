@@ -160,12 +160,15 @@ if (Env === undefined) {
     }
   }
   function getCallType() {
+    var calltype = null;
     logger.logDebug('Call type Audio/Video');
     try {
       logger.logInfo('Trying to get the CallType from the session Context ');
-      return callManager.getSessionContext().getCallType();
+      calltype = callManager.getSessionContext().getCallType();
+      logger.logInfo('Call Type : ' + calltype);
+      return calltype;
     } catch (err) {
-      throw "getcalltype: " + err;
+      throw "getCallType: " + err;
     }
   }
   createWebRTCSessionSuccess = function (config, responseObject) {
@@ -603,32 +606,40 @@ if (Env === undefined) {
   /**
   * Holds the current call and the other party gets notified through event channel
   * @memberof ATT.rtc.Phone
+  * @param {Object} options The UI options
   * @example 
   ATT.rtc.Phone.hold();
   */
-  function hold() {
+  function hold(options) {
     try {
-      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-        callManager.getSessionContext().getCallObject().hold();
+      callManager.getSessionContext().getCallObject().hold(options);
+      if (options.success) {
+        options.success();
       }
     } catch (e) {
-      ATT.Error.publish(e);
+      if (options.error) {
+        ATT.Error.publish('SDK-20030', null, options.error);
+      }
     }
   }
 
   /**
   * Resumes the current call and the other party gets notified through event channel and the call resumes
   * @memberof ATT.rtc.Phone
+  * @param {Object} options The UI options
   * @example  
   ATT.rtc.Phone.resume();
   */
-  function resume() {
+  function resume(options) {
     try {
-      if (callManager.getSessionContext() && callManager.getSessionContext().getCallObject()) {
-        callManager.getSessionContext().getCallObject().resume();
+      callManager.getSessionContext().getCallObject().resume(options);
+      if (options.success) {
+        options.success();
       }
     } catch (e) {
-      ATT.Error.publish(e);
+      if (options.error) {
+        ATT.Error.publish('SDK-20031', null, options.error);
+      }
     }
   }
 

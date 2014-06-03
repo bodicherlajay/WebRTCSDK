@@ -425,6 +425,7 @@
       try {
         // set local description
         this.peerConnection.setLocalDescription(sdp);
+        this.localDescription = sdp;
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -465,6 +466,7 @@
       try {
         // set local description
         this.peerConnection.setLocalDescription(sdp);
+        this.localDescription = sdp;
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }

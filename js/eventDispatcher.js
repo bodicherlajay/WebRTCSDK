@@ -11,6 +11,8 @@
     onConnecting,
     onCallEstablished,
     onCallInProgress,
+    onCallHold,
+    onCallResume,
     onCallEnded,
     onCallError,
     onError,
@@ -139,6 +141,46 @@
     /**
      * @event
      * @summary Applies to ATT.rtc.Phone.login
+     * @desc UI callback function which gets invoked by SDK when call is on hold
+     * This event indicates that call is on hold
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     *
+     */
+    onCallHold = function (evt) {
+      callbacks = sessionContext.getUICallbacks();
+      if (callbacks.onCallHold) {
+        callbacks.onCallHold(evt);
+      }
+    };
+
+    /**
+     * @event
+     * @summary Applies to ATT.rtc.Phone.login
+     * @desc UI callback function which gets invoked by SDK when call is resumed
+     * This event indicates that call is resumed
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     *
+     */
+    onCallResume = function (evt) {
+      callbacks = sessionContext.getUICallbacks();
+      if (callbacks.onCallResume) {
+        callbacks.onCallResume(evt);
+      }
+    };
+
+    /**
+     * @event
+     * @summary Applies to ATT.rtc.Phone.login
      * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
      * This event indicates that SDK is ready to make or receive calls
      * @memberof ATT.rtc.Phone
@@ -199,7 +241,7 @@
 
     eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
       onCallError(event);
-      sessionContext.setCallType('');
+      sessionContext.setCallType(null);
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
@@ -222,6 +264,17 @@
 
       if (data.sdp && data.modId) {
         peerConnService.setRemoteAndCreateAnswer(data.sdp, data.modId);
+      }
+
+      // Handle call hold and resume events
+      if (data.sdp.indexOf('sendonly') !== -1) {
+        logger.logInfo('Received hold request');
+        onCallHold(event);
+        sessionContext.setCallState(callMgr.SessionState.HOLD_CALL);
+      } else if (data.sdp.indexOf('sendrecv') !== -1 && peerConnService.localDescription.sdp.indexOf('recvonly') !== -1) {
+        logger.logInfo('Received resume request');
+        onCallResume(event);
+        sessionContext.setCallState(callMgr.SessionState.RESUMED_CALL);
       }
     };
 
@@ -253,7 +306,7 @@
       }
       sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
       sessionContext.setCallObject(null);
-      sessionContext.setCallType('');
+      sessionContext.setCallType(null);
       peerConnService.endCall();
       UserMediaService.stopStream();
     };
