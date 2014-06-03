@@ -13,6 +13,11 @@
     VTN: 'VTN',
     NOTN: 'NOTN'
   };
+  
+  module.CallTypes = {
+    OUTGOING: 'Outgoing',
+    INCOMING: 'Incoming'
+  };
 
   module.SdkEvents = {
     SDK_READY: 'SdkReady',
@@ -141,6 +146,7 @@
   };
 
   mainModule.UserTypes = Object.freeze(module.UserTypes);
+  mainModule.CallTypes = Object.freeze(module.CallTypes);
   mainModule.SdkEvents = Object.freeze(module.SdkEvents);
   mainModule.SessionEvents = Object.freeze(module.SessionEvents);
   mainModule.CallStatus = Object.freeze(module.CallStatus);
