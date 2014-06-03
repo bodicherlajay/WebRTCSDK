@@ -160,12 +160,19 @@
     });
   }
 
-  function createCall() {
-    logger.logDebug('createCall');
-  }
+  function startCall(options) {
+    logger.logDebug('startCall');
 
-  function getCurrentCall() {
-    logger.logDebug('getCurrentCall');
+    options.factories.createCall(app.utils.extend(options, {
+      onCallCreated: function(callObj) {
+        if (callObj) {
+          this.calls[callObj.id] = callObj;
+          this.currentCall = callObj;
+          options.onCallStarted(callObj);
+        }
+      },
+      onCallError: handleError.bind(this, 'CreateCall', args.onCallError)
+    }));
   }
 
   function deleteCall() {
@@ -184,12 +191,13 @@
     var sessionId = args.sessionId,
       expiration = args.expiration,
       accessToken = args.token,
-      e911Id = args.e911Id,
-      calls = {};
+      e911Id = args.e911Id;
 
     return {
       // public attributes
       keepAliveInterval: null,
+      currentCall,
+      calls = {},
 
       // public methods
       getSessionId: function () {
@@ -207,11 +215,13 @@
       keepAlive: keepAlive,
       clearKeepAlive: clearKeepAlive,
       delete: deleteSession,
-      createCall: createCall,
+      startCall: startCall,
       getCall: function (callId) {
         return calls[callId];
       },
-      getCurrentCall: getCurrentCall,
+      getCurrentCall: function () {
+        return currentCall;
+      }
       deleteCall: deleteCall
     };
   }
@@ -225,7 +235,7 @@
   * })
   */
   function createSession(options) {
-    logger.logTrace('creating session with token: ' + options.token);
+    logger.logDebug('createSession');
 
     errMgr = options.errorManager;
     resourceManager = options.resourceManager;
