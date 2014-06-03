@@ -573,11 +573,11 @@ if (Env === undefined) {
   function mute(options) {
     try {
       callManager.getSessionContext().getCallObject().mute();
-      if (options.success) {
+      if (options && options.success) {
         options.success();
       }
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20028', null, options.error);
       }
     }
@@ -593,11 +593,11 @@ if (Env === undefined) {
   function unmute(options) {
     try {
       callManager.getSessionContext().getCallObject().unmute();
-      if (options.success) {
+      if (options && options.success) {
         options.success();
       }
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20029', null, options.error);
       }
     }
@@ -651,7 +651,7 @@ if (Env === undefined) {
     try {
       callManager.getSessionContext().getCallObject().end(options);
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20024', null, options.error);
       }
     }
