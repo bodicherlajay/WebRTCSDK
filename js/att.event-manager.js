@@ -4,27 +4,91 @@
 //Dependency: ATT.logManager
 
 
-(function () {
+(function (app) {
   'use strict';
 
-  var init,
+  var session,
+    rtcEvent,
+    resourceManager,
     logger = Env.resourceManager.getInstance().getLogger("EventManager");
 
-  function createEventChannel() {
+  function handleError(operation, errHandler, err) {
+    logger.logDebug('handleError: ' + operation);
+
+    logger.logInfo('There was an error performing operation ' + operation);
+
+    var error = errMgr.create(err, operation);
+
+    if (typeof errHandler === 'function') {
+      errHandler(error);
+    }
   }
 
-  function handleUICallbacks() {
-  }
+  function setupEventChannel(options) {
+    logger.logDebug('setupEventChannel');
 
-  init = function () {
-    logger.logDebug('RTC manager init');
-    return {
-      createEventChannel: createEventChannel,
-      handleUICallbacks: handleUICallbacks
+    // Set event channel configuration
+    // All parameters are required
+    // Also, see appConfigModule
+    var channelConfig = {
+      accessToken: session.getAccessToken(),
+      endpoint: app.appConfig.EventChannelConfig.endpoint,
+      sessionId: session.getSessionId(),
+      publisher: app.event,
+      resourceManager: resourceManager,
+      publicMethodName: 'getEvents',
+      usesLongPolling: (app.appConfig.EventChannelConfig.type === 'longpolling')
     };
-  };
 
-  return {
-    createEventManager: init
-  };
-}());
+    app.utils.eventChannel = app.utils.createEventChannel(channelConfig);
+    if (ATT.utils.eventChannel) {
+      logger.logInfo('Event channel up and running');
+
+      app.utils.eventChannel.startListening({
+        success: options.onEventChannelSetup,
+        error: options.onError
+      });
+    } else {
+      throw 'Event channel setup failed';
+    }
+  }
+
+  function hookupUICallbacks(options) {
+    try {
+      rtcEvent.setupEventBasedCallbacks();
+      options.onUICallbcaksHooked();
+    } catch (err) {
+      handleError.call(this, 'HookUICallbacks', options.onError)
+    }
+  }
+
+  function createEventManager(options) {
+    logger.logDebug('createEventManager');
+
+    session = options.session;
+    rtcEvent = options.rtcEvent;
+    resourceManager = options.resourceManager;
+
+    // fire up the event channel after successfult create session
+    logger.logInfo("Setting up event channel...");
+    setupEventChannel({
+      onEventChannelSetup: function (msg) {
+        logger.logInfo(msg);
+        
+        // Hooking up UI callbacks based on events
+        logger.logInfo("Hooking up UI callbacks based on events");
+        hookupUICallbacks({
+          options.callbacks,
+          onUICallbacksHooked: function() {
+            logger.logInfo('UI Call backs hooked to events successfully');
+            options.onEventManagerCreated();
+          },
+          onError: handleError.bind(this, 'HookUICallbacks', options.onError)
+        });
+      },
+      onError: handleError.bind(this, 'SetupEventChannel', options.onError)
+    });
+  }
+
+  app.factories.createEventManager = createEventManager;
+}(ATT || {}));
