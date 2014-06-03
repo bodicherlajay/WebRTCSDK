@@ -173,11 +173,11 @@
   }
 
   /**
-  * Session Context Prototype
+  * session prototype
+  * @param {String} sessionId The sessionId
+  * @param {String} expiration The expiration duration
   * @param {String} token The access token
   * @param {String} e9Id The e911Id
-  * @param {String} sessionId The sessionId
-  * @param {String} state 'Incoming' or 'Outgoing'
   */
   function session(args) {
     // private attributes
@@ -217,10 +217,9 @@
   }
 
   /**
-  * Create a new Session Context
-  * @param {Object} config The configuration
-  * callmgr.CreateSession({
-  *   sessionId: 'sessionId'
+  * Create a new session
+  * @param {Object} options The options
+  * createSession({
   *   token: 'abcd'
   *   e911Id: 'e911Id'
   * })
