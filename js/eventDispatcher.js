@@ -70,7 +70,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -91,7 +91,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -113,7 +113,7 @@
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -146,7 +146,7 @@
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      *
@@ -166,7 +166,7 @@
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      *
@@ -186,7 +186,7 @@
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      *
@@ -241,7 +241,7 @@
 
     eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
       onCallError(event);
-      sessionContext.setCallType(null);
+      sessionContext.setMediaType(null);
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
@@ -306,7 +306,7 @@
       }
       sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
       sessionContext.setCallObject(null);
-      sessionContext.setCallType(null);
+      sessionContext.setMediaType(null);
       peerConnService.endCall();
       UserMediaService.stopStream();
     };
