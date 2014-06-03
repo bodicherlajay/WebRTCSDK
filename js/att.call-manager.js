@@ -292,6 +292,7 @@ cmgmt = (function () {
   };
 
   init = function () {
+    //public interface for call manager
     logger.logDebug('call management module init');
     return {
       getSessionContext: function () {
@@ -303,7 +304,8 @@ cmgmt = (function () {
       DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
       CreateIncomingCall: CreateIncomingCall,
-      DeleteCallObject: DeleteCallObject
+      DeleteCallObject: DeleteCallObject,
+      cleanPhoneNumber: cleanPhoneNumber
     };
   };
 

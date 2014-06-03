@@ -573,11 +573,11 @@ if (Env === undefined) {
   function mute(options) {
     try {
       callManager.getSessionContext().getCallObject().mute();
-      if (options.success) {
+      if (options && options.success) {
         options.success();
       }
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20028', null, options.error);
       }
     }
@@ -593,11 +593,11 @@ if (Env === undefined) {
   function unmute(options) {
     try {
       callManager.getSessionContext().getCallObject().unmute();
-      if (options.success) {
+      if (options && options.success) {
         options.success();
       }
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20029', null, options.error);
       }
     }
@@ -613,11 +613,11 @@ if (Env === undefined) {
   function hold(options) {
     try {
       callManager.getSessionContext().getCallObject().hold(options);
-      if (options.success) {
+      if (options && options.success) {
         options.success();
       }
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20030', null, options.error);
       }
     }
@@ -633,11 +633,11 @@ if (Env === undefined) {
   function resume(options) {
     try {
       callManager.getSessionContext().getCallObject().resume(options);
-      if (options.success) {
+      if (options && options.success) {
         options.success();
       }
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20031', null, options.error);
       }
     }
@@ -651,7 +651,7 @@ if (Env === undefined) {
     try {
       callManager.getSessionContext().getCallObject().end(options);
     } catch (e) {
-      if (options.error) {
+      if (options && options.error) {
         ATT.Error.publish('SDK-20024', null, options.error);
       }
     }
@@ -670,6 +670,7 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('initCallback', initCallbacks);
     resourceManager.addPublicMethod('getCallType', getCallType);
     resourceManager.addPublicMethod('hangup', hangup);
+    resourceManager.addPublicMethod('cleanPhoneNumber', callManager.cleanPhoneNumber);
   }
 
   // sub-namespaces on ATT.
