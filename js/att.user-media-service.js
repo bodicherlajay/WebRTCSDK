@@ -68,7 +68,6 @@
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
       this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints;
-      this.localStream = config.localStream;
 
       if (callType) {
         // for incoming call, overwrite media constraints
