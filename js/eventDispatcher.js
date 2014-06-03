@@ -267,11 +267,11 @@
       }
 
       // Handle call hold and resume events
-      if (data.sdp.indexOf('sendonly') !== -1) {
+      if (event.state === mainModule.CallStatus.HOLD) {
         logger.logInfo('Received hold request');
         onCallHold(event);
         sessionContext.setCallState(callMgr.SessionState.HOLD_CALL);
-      } else if (data.sdp.indexOf('sendrecv') !== -1 && peerConnService.localDescription.sdp.indexOf('recvonly') !== -1) {
+      } else if (event.state === mainModule.CallStatus.RESUMED) {
         logger.logInfo('Received resume request');
         onCallResume(event);
         sessionContext.setCallState(callMgr.SessionState.RESUMED_CALL);

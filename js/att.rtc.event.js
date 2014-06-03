@@ -35,6 +35,14 @@
         }
         return mainModule.CallStatus.ENDED;
       }
+      if (event.state === mainModule.RTCCallEvents.MODIFICATION_RECEIVED) {
+        if (event.sdp.indexOf('recvonly') !== -1) {
+          return mainModule.CallStatus.HOLD;
+        }
+        if (event.sdp.indexOf('sendrecv') !== -1 && ATT.PeerConnectionService.localDescription.sdp.indexOf('sendonly') !== -1) {
+          return mainModule.CallStatus.RESUMED;
+        }
+      }
       if (mainModule.EventsMapping[event.state]) {
         return mainModule.EventsMapping[event.state];
       }
