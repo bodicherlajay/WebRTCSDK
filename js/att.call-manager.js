@@ -76,7 +76,7 @@ cmgmt = (function () {
   */
   SessionContext = function (token, e9Id, sessionId, state) {
     var currState = state, callObject = null, event = null, accessToken = token, e911Id = e9Id, currSessionId = sessionId,
-      currentCallId, UICbks = {}, calltype = null, currentCall = null;
+      currentCallId, UICbks = {}, mediaType = null, currentCall = null;
     return {
       getCurrentCall: function () {
         return currentCall;
@@ -132,11 +132,11 @@ cmgmt = (function () {
       getCurrentCallId: function () {
         return currentCallId;
       },
-      getCallType: function () {
-        return calltype;
+      getMediaType: function () {
+        return mediaType;
       },
-      setCallType: function (callType) {
-        calltype = callType;
+      setMediaType: function (mediaType) {
+        mediaType = mediaType;
       }
     };
   };
@@ -292,6 +292,7 @@ cmgmt = (function () {
   };
 
   init = function () {
+    //public interface for call manager
     logger.logDebug('call management module init');
     return {
       getSessionContext: function () {
@@ -303,7 +304,8 @@ cmgmt = (function () {
       DeleteSession: DeleteSession,
       CreateOutgoingCall: CreateOutgoingCall,
       CreateIncomingCall: CreateIncomingCall,
-      DeleteCallObject: DeleteCallObject
+      DeleteCallObject: DeleteCallObject,
+      cleanPhoneNumber: cleanPhoneNumber
     };
   };
 

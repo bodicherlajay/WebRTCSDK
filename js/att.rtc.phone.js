@@ -159,16 +159,16 @@ if (Env === undefined) {
       throw "Init Callbacks: " + err;
     }
   }
-  function getCallType() {
-    var calltype = null;
+  function getMediaType() {
+    var mediaType = null;
     logger.logDebug('Call type Audio/Video');
     try {
-      logger.logInfo('Trying to get the CallType from the session Context ');
-      calltype = callManager.getSessionContext().getCallType();
-      logger.logInfo('Call Type : ' + calltype);
-      return calltype;
+      logger.logInfo('Trying to get the mediaType from the session Context ');
+      mediaType = callManager.getSessionContext().getMediaType();
+      logger.logInfo('Call Type : ' + mediaType);
+      return mediaType;
     } catch (err) {
-      throw "getCallType: " + err;
+      throw "getMediaType: " + err;
     }
   }
   createWebRTCSessionSuccess = function (config, responseObject) {
@@ -668,8 +668,9 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('mute', mute);
     resourceManager.addPublicMethod('unmute', unmute);
     resourceManager.addPublicMethod('initCallback', initCallbacks);
-    resourceManager.addPublicMethod('getCallType', getCallType);
+    resourceManager.addPublicMethod('getMediaType', getMediaType);
     resourceManager.addPublicMethod('hangup', hangup);
+    resourceManager.addPublicMethod('cleanPhoneNumber', callManager.cleanPhoneNumber);
   }
 
   // sub-namespaces on ATT.
