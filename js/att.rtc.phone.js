@@ -247,6 +247,11 @@ if (Env === undefined) {
     * @param {String} [loginParams.e911Id] E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
     * @param {Boolean} [loginParams.audioOnly] Set this value to true for audio service.
     *        Optional parameter to indicate only audio service is needed for the session
+   *  @param {function} loginParams.onSessionReady  Session ready callback function
+   *  @param {function} loginParams.onIncomingCall  Incoming call callback function
+   *  @param {function} loginParams.onCallEnded     Call ended callback function
+   *  @param {function} loginParams.onCallError     Call error callback function
+   *  @param {function} loginParams.onError         Error callback function
     * @fires ATT.rtc.Phone.login#[RTCEvent]OnSessionReady  This callback gets invoked when SDK is initialized and ready to make, receive calls
     * @fires ATT.rtc.Phone.login#[RTCEvent]OnIncomingCall  This callback gets invoked when incoming call event is received
     * @fires ATT.rtc.Phone.login#[RTCEvent]OnCallEnded     This callback gets invoked when outgoing/incoming call is ended
@@ -336,15 +341,25 @@ if (Env === undefined) {
   }
 
  /**
-   * Logs out the user from webRTC session. When invoked webRTC session gets deleted
-   * @memberof ATT.rtc
-   * @param {Object} data The required login form data from the UI.
-   * @attribute {String} token
-   * @attribute {String} e911Locations
-   * @example 
-  ATT.rtc.Phone.logout();
+  * @memberof ATT.rtc.Phone
+  * @summary Performs logout on RTC Session
+  * @desc
+  * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
+  * requests gets stopped
+  * @param {Object} logoutParams
+  * @param {function} logoutParams.onSuccess  callback function for onSuccess event
+  * @param {function} logoutParams.onError    callback function for onError event
+  * @fires ATT.rtc.Phone.logout#[RTCEvent]onSuccess  This callback gets invoked when the session gets successfully deleted
+  * @fires ATT.rtc.Phone.logout#[RTCEvent]onError  This callback gets invoked while encountering issues
+  * @example
+  * ATT.rtc.Phone.logout({
+  *   onSuccess: function(evt) {
+  *   },
+  *   onError: function(evt) {
+  *   }
+  * });
   */
-  function logout(config) {
+  function logout(logoutParams) {
     logger.logDebug('deleteWebRTCSession');
 
     try {
@@ -360,8 +375,8 @@ if (Env === undefined) {
         dataForDeleteWebRTCSession;
 
       if (!session) {
-        if (typeof config.success === 'function') {
-          config.success();
+        if (typeof logoutParams.success === 'function') {
+          logoutParams.success();
         }
         return;
       }
@@ -375,11 +390,11 @@ if (Env === undefined) {
         },
         success: function () {
           logger.logInfo('Successfully deleted web rtc session on blackflag');
-          if (typeof config.success === 'function') {
-            config.success();
+          if (typeof logoutParams.success === 'function') {
+            logoutParams.success();
           }
         },
-        error: handleError.bind(this, 'DeleteSession', config.error)
+        error: handleError.bind(this, 'DeleteSession', logoutParams.error)
       };
 
     // Call BF to delete WebRTC Session.
@@ -387,7 +402,7 @@ if (Env === undefined) {
       callManager.DeleteSession();
     } catch (err) {
       callManager.DeleteSession();
-      handleError.call(this, 'DeleteSession', config.error, err);
+      handleError.call(this, 'DeleteSession', logoutParams.error, err);
     }
   }
 
@@ -404,44 +419,41 @@ if (Env === undefined) {
    * @param {HTMLElement} dialParams.localVideo
    * @param {HTMLElement} dialParams.remoteVideo
    * @param {Object} dialParams.mediaConstraints
-   * @fires ATT.rtc.Phone.dial#[RTCEvent]onConnecting  This callback gets invoked when SDK is initialized and ready to make, receive calls
-   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCalling  This callback gets invoked when incoming call event is received
-   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEstablished     This callback gets invoked when outgoing/incoming call is ended
-   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallInProgress     This callback gets invoked while encountering issue with outgoing/incoming call
-   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallHold         This callback gets invoked while encountering issues during login process
-   *
-   *
-   *       onConnecting : rtcCallback,
-   onCalling: rtcCallback,
-   onCallEstablished: rtcCallback,
-   onCallInProgress : rtcCallback,
-   onCallHold: rtcCallback,
-   onCallResume: rtcCallback,
-   onCallEnded : rtcCallback,
-   onCallError : rtcCallback
-
-   *
-   *
-   * @example Preconditions: SDK was initialized with access token and e911 id
-   * ATT.rtc.Phone.dial(“telephone number or sip uri”,
-   * localVideo: “localvideo”,
-   * remoteVideo: “remotevideo”,
-   * mediaConstraints: {
-   * audio:true,
-   * video:false},
-   * callbacks: {
-   * onSessionOpen: callback_name,
-   * onOutgoingCall: callback_name,
-   * onInProgress: callback_name,
-   * onCallEnded: callback_name,
-   * onCallError: callback_name}
+   * @param {function} dialParams.onConnecting callback function for onConnecting event
+   * @param {function} dialParams.onCalling    callback function for onCalling event
+   * @param {function} dialParams.onCallEstablished  callback function for onCallEstablished event
+   * @param {function} dialParams.onCallInProgress   callback function for onCallInProgress event
+   * @param {function} dialParams.onCallHold         callback function for onCallHold event
+   * @param {function} dialParams.onCallResume       callback function for onCallResume event
+   * @param {function} dialParams.onCallEnded        callback function for onCallEnded event
+   * @param {function} dialParams.onCallError        callback function for onCallError event
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCalling            This callback function gets invoked immediately after dial method is invoked
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onConnecting         This callback function gets invoked before the call established and after onCalling callback is invoked
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEstablished    This callback function gets invoked when both parties are completed negotiation and engaged in active conversation
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallInProgress     This callback function gets invoked while encountering issue with outgoing/incoming call
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallHold         This callback function gets invoked when hold call is successful
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallResume         This callback function gets invoked when the current call successfully resumed
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEnded         This callback function gets invoked when outgoing call is ended
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallError         This callback function gets invoked when encountering issues during outgoing call flow
+   * @example
+   * ATT.rtc.Phone.dial({
+   *  “telephone number or sip uri”,
+   *  localVideo: “localvideo”,
+   *  remoteVideo: “remotevideo”,
+   *  mediaConstraints: {
+   *    audio:true,
+   *    video:false
+   *  },
+   * onConnecting: function(evt) {},
+   * onCalling: function(evt) {},
+   * onCallEstablished: function(evt) {},
+   * onCallInProgress: function(evt) {},
+   * onCallHold: function(evt) {}
+   * onCallResume: function(evt) {}
+   * onCallEnded: function(evt) {}
+   * onCallError: function(evt) {}
+   * }
    * );
-   * ATT.rtc.Phone.dial(“telephone number or sip uri”,
-   * localVideo: “localvideo”,
-   * remoteVideo: “remotevideo”,
-   * mediaConstraints: {
-   * audio:true,
-   * video:true},
    */
   function dial(dialParams) {
 
@@ -483,55 +495,46 @@ if (Env === undefined) {
   }
 
   /**
+   * @summary
+   * Answer an incoming call
+   * @desc
    * When call arrives via an incoming call event, call can be answered by using this method
    * @memberof ATT.rtc.Phone
-   * @param {Object} config Dial configuration object.
-   * @attribute {String} phoneNumber
-   * @attribute {HTMLElement} localVideo
-   * @attribute {HTMLElement} remoteVideo
-   * @attribute {Object} mediaConstraints
-   * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
-   * @example 
-   Preconditions: SDK was initialized with access token and e911 id
-
-    //Example 1
-    //audio call
-    ATT.rtc.Phone.answer(
-    localVideo: “localvideo”,
-    remoteVideo: “remotevideo”,
-    mediaConstraints: {
-    audio:true,
-    video:false},
-    success: {
-    onSessionOpen: callback_name,
-    onInProgress: callback_name,
-    onCallEnded: callback_name,
-    //removed other callbacks for brevity
-    onCallError: callback_name}
+   * @param {Object} answerParams
+   * @param {HTMLElement} answerParams.localVideo
+   * @param {HTMLElement} answerParams.remoteVideo
+   * @param {Object} answerParams.mediaConstraints
+   * @param {function} answerParams.onCallEstablished  callback function for onCallEstablished event
+   * @param {function} answerParams.onCallInProgress   callback function for onCallInProgress event
+   * @param {function} answerParams.onCallHold         callback function for onCallHold event
+   * @param {function} answerParams.onCallResume       callback function for onCallResume event
+   * @param {function} answerParams.onCallEnded        callback function for onCallEnded event
+   * @param {function} answerParams.onCallError        callback function for onCallError event
+   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallEstablished    This callback function gets invoked when both parties are completed negotiation and engaged in active conversation
+   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallInProgress     This callback function gets invoked while encountering issue with incoming call
+   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallHold         This callback function gets invoked when hold call is successful
+   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallResume         This callback function gets invoked when the current call successfully resumed
+   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallEnded         This callback function gets invoked when outgoing call is ended
+   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallError         This callback function gets invoked when encountering issues during outgoing call flow
+   * @example
+   *  Preconditions: ATT.rtc.Phone.login() invocation is successful
+   * //Example 1
+   * //audio call
+   * ATT.rtc.Phone.answer(
+   * localVideo: “localvideo”,
+   * remoteVideo: “remotevideo”,
+   *   mediaConstraints: {
+   *     audio:true,
+   *     video:false
+   *   },
+   * onCallEstablished: function(evt) {},
+   * onCallInProgress: function(evt) {},
+   * onCallHold: function(evt) {}
+   * onCallResume: function(evt) {}
+   * onCallEnded: function(evt) {}
+   * onCallError: function(evt) {}
+   * }
     );
-
-    //Example 2
-   //Not yet implemented
-    ATT.rtc.Phone(
-    OnSessionOpen(event) {
-    },
-    OnIncomingCall(event) {
-    },
-    OnInProgress(event) {
-    },
-    OnRinging(event) {
-    },
-    OnCallEnded(event) {
-    },
-    //removed other callbacks for brevity
-    OnError(event) {
-    }).answer(localVideo: “localvideo”,
-    remoteVideo: “remotevideo”,
-    mediaConstraints: {
-    audio:true,
-    video:false});
-    //video call
-
    */
   function answer(answerParams) {
     try {
@@ -554,95 +557,142 @@ if (Env === undefined) {
   }
 
   /**
+   * @memberof ATT.rtc.Phone
+   * @summary
+   * Mutes current call stream
+   * @desc
   * Mutes the local stream (video or audio)
-  * @param {Object} options The callback options
-  * @memberof ATT.rtc.Phone
-  * @example 
-  ATT.rtc.Phone.mute();
+  * @param {Object} muteParams
+   * @param {function} muteParams.onSuccess
+   * @param {function} muteParams.onError
+   * @fires ATT.rtc.Phone.mute#[RTCEvent]onSuccess  This callback function gets invoked when mute is successful
+   * @fires ATT.rtc.Phone.mute#[RTCEvent]onError    This callback function gets invoked while encountering errors
+  * @example
+    ATT.rtc.Phone.mute({
+      onSuccess: function(evt) {},
+      onError: function(evt) {}
+    });
   */
-  function mute(options) {
+  function mute(muteParams) {
     try {
       callManager.getSessionContext().getCallObject().mute();
-      if (options && options.success) {
-        options.success();
+      if (muteParams && muteParams.success) {
+        muteParams.success();
       }
     } catch (e) {
-      if (options && options.error) {
-        ATT.Error.publish('SDK-20028', null, options.error);
+      if (muteParams && muteParams.error) {
+        ATT.Error.publish('SDK-20028', null, muteParams.error);
       }
     }
   }
 
   /**
+   * @memberof ATT.rtc.Phone
+   * @summary
+   * Unmutes the current call stream
+   * @desc
   * Unmutes the local stream
-  * @param {Object} options The callback options
-  * @memberof ATT.rtc.Phone
-  * @example 
-  ATT.rtc.Phone.unmute();
+  * @param {Object} unmuteParams
+   * @param {function} unmuteParams.onSuccess
+   * @param {function} unmuteParams.onError
+   * @fires ATT.rtc.Phone.unmute#[RTCEvent]onSuccess  This callback function gets invoked when unmute is successful
+   * @fires ATT.rtc.Phone.unmute#[RTCEvent]onError    This callback function gets invoked while encountering errors
+  * @example
+  ATT.rtc.Phone.unmute({
+      onSuccess: function(evt) {},
+      onError: function(evt) {}
+  });
   */
-  function unmute(options) {
+  function unmute(unmuteParams) {
     try {
       callManager.getSessionContext().getCallObject().unmute();
-      if (options && options.success) {
-        options.success();
+      if (unmuteParams && unmuteParams.success) {
+        unmuteParams.success();
       }
     } catch (e) {
-      if (options && options.error) {
-        ATT.Error.publish('SDK-20029', null, options.error);
+      if (unmuteParams && unmuteParams.error) {
+        ATT.Error.publish('SDK-20029', null, unmuteParams.error);
       }
     }
   }
 
   /**
+   * @memberof ATT.rtc.Phone
+   * @summary
+   * Holds the current call
+   * @desc
   * Holds the current call and the other party gets notified through event channel
-  * @memberof ATT.rtc.Phone
-  * @param {Object} options The UI options
-  * @example 
-  ATT.rtc.Phone.hold();
+  * @param {Object} holdParams
+   * @param {function} holdParams.onSuccess
+   * @param {function} holdParams.onError
+   * @fires ATT.rtc.Phone.hold#[RTCEvent]onSuccess  This callback function gets invoked when hold is successful
+   * @fires ATT.rtc.Phone.hold#[RTCEvent]onError    This callback function gets invoked while encountering errors
+  * @example
+  ATT.rtc.Phone.hold({
+      onSuccess: function(evt) {},
+      onError: function(evt) {}
+  });
   */
-  function hold(options) {
+  function hold(holdParams) {
     try {
-      callManager.getSessionContext().getCallObject().hold(options);
-      if (options && options.success) {
-        options.success();
+      callManager.getSessionContext().getCallObject().hold(holdParams);
+      if (holdParams && holdParams.success) {
+        holdParams.success();
       }
     } catch (e) {
-      if (options && options.error) {
-        ATT.Error.publish('SDK-20030', null, options.error);
+      if (holdParams && holdParams.error) {
+        ATT.Error.publish('SDK-20030', null, holdParams.error);
       }
     }
   }
 
   /**
+   * @memberof ATT.rtc.Phone
+   * @summary
+   * Resumes the current call
+   * @desc
   * Resumes the current call and the other party gets notified through event channel and the call resumes
-  * @memberof ATT.rtc.Phone
-  * @param {Object} options The UI options
-  * @example  
-  ATT.rtc.Phone.resume();
+  * @param {Object} resumeParams
+   * @param {function} resumeParams.onSuccess
+   * @param {function} resumeParams.onError
+   * @fires ATT.rtc.Phone.resume#[RTCEvent]onSuccess  This callback function gets invoked when resume is successful
+   * @fires ATT.rtc.Phone.resume#[RTCEvent]onError    This callback function gets invoked while encountering errors
+  * @example
+  ATT.rtc.Phone.resume({
+      onSuccess: function(evt) {},
+      onError: function(evt) {}
+  });
   */
-  function resume(options) {
+  function resume(resumeParams) {
     try {
-      callManager.getSessionContext().getCallObject().resume(options);
-      if (options && options.success) {
-        options.success();
+      callManager.getSessionContext().getCallObject().resume(resumeParams);
+      if (resumeParams && resumeParams.success) {
+        resumeParams.success();
       }
     } catch (e) {
-      if (options && options.error) {
-        ATT.Error.publish('SDK-20031', null, options.error);
+      if (resumeParams && resumeParams.error) {
+        ATT.Error.publish('SDK-20031', null, resumeParams.error);
       }
     }
   }
 
   /**
+   * @summary
+   * Hangup the current call
+   * @desc
   * Hangs up the current call
-  * @param {Object} options The callback options
+  * @param {Object} hangupParams The callback options
+   * @param {function} hangupParams.onSuccess
+   * @param {function} hangupParams.onError
+   * @fires ATT.rtc.Phone.hangup#[RTCEvent]onSuccess  This callback function gets invoked when hangup is successful
+   * @fires ATT.rtc.Phone.hangup#[RTCEvent]onError    This callback function gets invoked while encountering errors
   */
-  function hangup(options) {
+  function hangup(hangupParams) {
     try {
-      callManager.getSessionContext().getCallObject().end(options);
+      callManager.getSessionContext().getCallObject().end(hangupParams);
     } catch (e) {
-      if (options && options.error) {
-        ATT.Error.publish('SDK-20024', null, options.error);
+      if (hangupParams && hangupParams.error) {
+        ATT.Error.publish('SDK-20024', null, hangupParams.error);
       }
     }
   }
