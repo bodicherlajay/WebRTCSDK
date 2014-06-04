@@ -56,4 +56,10 @@ describe('ATT.phoneNumber', function () {
       countryCode = 'us';
     expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal('11234567890');
   });
+
+  it('getCallable3', function () {
+    var number = '11234567890',
+      countryCode = 'ca';
+    expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal(false);
+  });
 });
