@@ -86,6 +86,10 @@
     }
   }
 
+  function createRTCEvent(options) {
+    return rtcEvent.createEvent(options);
+  }
+
   function eventManager(options) {
     var session = options.session;
     return {
@@ -94,7 +98,8 @@
       },
       setupEventChannel: setupEventChannel,
       hookupUICallbacks: hookupUICallbacks,
-      shutDown: shutDown
+      shutDown: shutDown,
+      createRTCEvent: createRTCEvent
     };
   }
 

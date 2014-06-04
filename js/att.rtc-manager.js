@@ -12,6 +12,8 @@
     eventManager,
     rtcEvent,
     resourceManager,
+    userMediaSvc,
+    peerConnSvc,
     logger;
 
   function handleError(operation, errHandler, err) {
@@ -68,6 +70,10 @@
   }
 
   function deleteSession(options) {
+    if (!session) {
+      throw 'No session found to delete. Please login first';
+    }
+
     session.clearSession({
       onSessionCleared: function () {
         try {
@@ -91,6 +97,30 @@
     });
   }
 
+  function dialCall(options) {
+    if (!session) {
+      throw 'No session found to start a call. Please login first';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.startCall(ATT.utils.extend(options, {
+      type: app.CallTypes.OUTGOING,
+      onCallStarted: function (callObj) {
+        options.onCallDialed(eventManager.createRTCEvent({
+          state: app.CallStatus.CALLING,
+          to: callObj.to
+        }));
+      },
+      onCallError: handleError.bind(this, 'StartCall', options.onCallError),
+      errorManager: errMgr,
+      resourceManager: resourceManager,
+      userMediaSvc: userMediaSvc,
+      peerConnSvc: peerConnSvc
+    }));
+  }
+
   /**
   * Create a new RTC Manager
   * @param {Object} options The options
@@ -100,6 +130,8 @@
     errMgr = options.errorManager;
     resourceManager = options.resourceManager;
     rtcEvent = options.rtcEvent;
+    userMediaSvc = options.userMediaSvc;
+    peerConnSvc = options.peerConnSvc;
     logger = resourceManager.getLogger("RTCManager");
 
     logger.logDebug('createRTCManager');
@@ -107,7 +139,8 @@
     return {
       startSession: startSession,
       getSession: getSession,
-      deleteSession: deleteSession
+      deleteSession: deleteSession,
+      dialCall: dialCall
     };
   }
 

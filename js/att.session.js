@@ -189,10 +189,15 @@
 
     options.factories.createCall(app.utils.extend(options, {
       onCallCreated: function (callObj) {
-        if (callObj) {
+        try {
+          if (!callObj) {
+            throw 'Failed to create the call';
+          }
           this.setCall(callObj);
           this.setCurrentCall(callObj);
           options.onCallStarted(callObj);
+        } catch (err) {
+          handleError.call(this, 'CreateCall', options.onCallError, err);
         }
       },
       onCallError: handleError.bind(this, 'CreateCall', options.onCallError)

@@ -60,9 +60,11 @@
       this.remoteVideoElement = config.remoteVideo;
       this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints;
 
-      // for incoming call, overwrite media constraints
-      // TODO: need to compare and upgrade/downgrade call 
-      this.mediaConstraints.video = (config.mediaType === 'video');
+      if (config.mediaType) {
+        // for incoming call, overwrite media constraints
+        // TODO: need to compare and upgrade/downgrade call 
+        this.mediaConstraints.video = (config.mediaType === 'video');
+      }
 
       var args = {
         from: config.from,

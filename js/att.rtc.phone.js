@@ -99,7 +99,6 @@ if (Env === undefined) {
     logger.logDebug('createWebRTCSession');
     var token,
       e911Id,
-      session,
       callbacks,
       services = ['ip_voice_call', 'ip_video_call'],
       errorHandler;
@@ -138,15 +137,21 @@ if (Env === undefined) {
         token: token,
         e911Id: e911Id,
         callbacks: callbacks,
-        onSessionStarted: function (sessObj) {
-          session = sessObj;
-          if (typeof callbacks.onSessionReady === 'function') {
-            // TODO: Need better way to handle callbacks
-            callbacks.onSessionReady({
-              data: {
-                sessionId: session.getSessionId()
-              }
-            });
+        onSessionStarted: function (session) {
+          try {
+            if (!session) {
+              throw 'Failed to created a web rtc session';
+            }
+            if (typeof callbacks.onSessionReady === 'function') {
+              // TODO: Need better way to handle callbacks
+              callbacks.onSessionReady({
+                data: {
+                  sessionId: session.getSessionId()
+                }
+              });
+            }
+          } catch (err) {
+            handleError.call(this, 'CreateSession', errorHandler, err);
           }
         },
         onError: handleError.bind(this, 'CreateSession', errorHandler)
@@ -250,21 +255,6 @@ if (Env === undefined) {
    */
   function dial(dialParams) {
 
-    // setup callback for ringing
-    rtcManager.onCallCreated = function () {
-      logger.logInfo('onCallCreated... trigger CALLING event in the UI');
-      // crate an event for Calling
-      var rtcEvent = ATT.RTCEvent.getInstance(),
-        session = rtcManager.getSessionContext(),
-        callingEvent = rtcEvent.createEvent({
-          to: session && session.getCallObject() ? session.getCallObject().callee() : '',
-          state: ATT.CallStatus.CALLING,
-          timestamp: new Date()
-        });
-      // bubble up the event
-      dialParams.callbacks.onCalling(callingEvent);
-    };
-
     try {
       if (!dialParams) {
         throw 'Cannot make a web rtc call, no dial configuration';
@@ -281,9 +271,20 @@ if (Env === undefined) {
       if (!dialParams.remoteVideo) {
         throw 'Cannot make a web rtc call, no remote media DOM element';
       }
-      rtcManager.CreateOutgoingCall(dialParams);
-    } catch (e) {
-      ATT.Error.publish(e);
+      if (!rtcManager) {
+        throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.dialCall(ATT.utils.extend(dialParams, {
+        factories: factories,
+        onCallDialed: function (event) {
+          logger.logInfo('onCallCreated... trigger CALLING event in the UI');
+          // bubble up the event
+          dialParams.callbacks.onCalling(event);
+        },
+        onCallError: handleError.bind(this, 'StartCall', dialParams.callbacks.onCallError)
+      }));
+    } catch (err) {
+      handleError.call(this, 'StartCall', dialParams.callbacks.onCallError, err);
     }
   }
 

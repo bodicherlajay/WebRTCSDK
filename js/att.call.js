@@ -11,7 +11,7 @@
   var errMgr,
     resourceManager,
     userMediaSvc,
-    peerConnectionSvc,
+    peerConnSvc,
     logger;
 
   function handleError(operation, errHandler, err) {
@@ -151,7 +151,7 @@
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
     userMediaSvc.startCall(app.utils.extend(options, {
-      mediaType: getMediaType()
+      //mediaType: getMediaType()
       // enable this code once startCall returns callbacks
       // onCallStarted: function(obj) {
         // var callObj = call({
@@ -165,13 +165,13 @@
       // },
       // onCallError: handleError.bind(this, 'CreateIncomingCall', options.onError)
     }));
-    
+
     var callObj = call({
-      from: option.from,
-      type: app.CallTypes.INCOMING,
+      from: options.from,
+      type: options.type,
       mediaConstraints: options.mediaConstraints
     });
-    
+
     options.onIncomingCallCreated(callObj);
   }
 
@@ -183,7 +183,7 @@
   *   mediaConstraints: {audio: true, video: true}
   * })
   */
-  function createOutgoingCall(config) {
+  function createOutgoingCall(options) {
     logger.logDebug('createIncomingCall');
 
     logger.logInfo('Creating incoming call');
@@ -192,7 +192,6 @@
     options.to = cleanPhoneNumber(options.to);
 
     userMediaSvc.startCall(app.utils.extend(options, {
-      mediaType: getMediaType()
       // enable this code once startCall returns callbacks
       // onCallStarted: function(obj) {
         // var callObj = call({
@@ -206,35 +205,39 @@
       // },
       // onCallError: handleError.bind(this, 'CreateIncomingCall', options.onError)
     }));
-    
+
     var callObj = call({
       to: options.to,
-      type: app.CallTypes.OUTGOING,
+      type: options.type,
       mediaConstraints: options.mediaConstraints
     });
-    
+
     options.onOutgoingCallCreated(callObj);
 
     // Here, we publish `onConnecting`
     // event for the UI
-    ATT.event.publish(session_context.getSessionId() + '.responseEvent', {
-      state : ATT.RTCCallEvents.CALL_CONNECTING
-    });
+    // ATT.event.publish(session_context.getSessionId() + '.responseEvent', {
+      // state : ATT.RTCCallEvents.CALL_CONNECTING
+    // });
   }
 
   function createCall(options) {
     errMgr = options.errorManager;
     resourceManager = options.resourceManager;
     userMediaSvc = options.userMediaSvc;
-    peerConnectionSvc = options.peerConnSvc;
+    peerConnSvc = options.peerConnSvc;
     logger = resourceManager.getLogger("Call");
 
     logger.logDebug('createCall');
 
     if (options.type === app.CallTypes.INCOMING) {
-      createIncomingCall(options);
+      createIncomingCall(app.utils.extend(options, {
+        onOutgoingCallCreated: options.onCallCreated
+      }));
     } else {
-      createOutgoingCall(options);
+      createOutgoingCall(app.utils.extend(options, {
+        onIncomingCallCreated: options.onCallCreated
+      }));
     }
   }
 
