@@ -291,7 +291,9 @@
       } else {
         onCallEnded(event);
       }
-      session.deleteCurrentCall();
+      if (session) {
+        session.deleteCurrentCall();
+      }      
       peerConnService.endCall();
       UserMediaService.stopStream();
     };

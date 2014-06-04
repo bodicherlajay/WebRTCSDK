@@ -7,8 +7,7 @@
 (function (app) {
   'use strict';
 
-  var session,
-    rtcEvent,
+  var rtcEvent,
     resourceManager,
     errMgr,
     logger;
@@ -28,18 +27,19 @@
   function setupEventChannel(options) {
     logger.logDebug('setupEventChannel');
 
-    // Set event channel configuration
-    // All parameters are required
-    // Also, see appConfigModule
-    var channelConfig = {
-      accessToken: session.getAccessToken(),
-      endpoint: app.appConfig.EventChannelConfig.endpoint,
-      sessionId: session.getSessionId(),
-      publisher: app.event,
-      resourceManager: resourceManager,
-      publicMethodName: 'getEvents',
-      usesLongPolling: (app.appConfig.EventChannelConfig.type === 'longpolling')
-    };
+    var session = this.getSession(),
+      // Set event channel configuration
+      // All parameters are required
+      // Also, see appConfigModule
+      channelConfig = {
+        accessToken: session.getAccessToken(),
+        endpoint: app.appConfig.EventChannelConfig.endpoint,
+        sessionId: session.getSessionId(),
+        publisher: app.event,
+        resourceManager: resourceManager,
+        publicMethodName: 'getEvents',
+        usesLongPolling: (app.appConfig.EventChannelConfig.type === 'longpolling')
+      };
 
     app.utils.eventChannel = app.utils.createEventChannel(channelConfig);
     if (ATT.utils.eventChannel) {
@@ -66,6 +66,7 @@
 
   function hookupUICallbacks(options) {
     try {
+      var session = this.getSession();
       rtcEvent.setupEventBasedCallbacks({
         session: session,
         callbacks: options.callbacks
@@ -76,8 +77,28 @@
     }
   }
 
+  function shutDown(options) {
+    try {
+      shutdownEventChannel();
+      options.onShutDown();
+    } catch (err) {
+      handleError.call(this, 'ShutDown', options.onError)
+    }
+  }
+
+  function eventManager(options) {
+    var session = options.session;
+    return {
+      getSession: function () {
+        return session;
+      },
+      setupEventChannel: setupEventChannel,
+      hookupUICallbacks: hookupUICallbacks,
+      shutDown: shutDown
+    }
+  }
+
   function createEventManager(options) {
-    session = options.session;
     rtcEvent = options.rtcEvent;
     resourceManager = options.resourceManager;
     errMgr = options.errorManager;
@@ -85,17 +106,21 @@
 
     logger.logDebug('createEventManager');
 
+    var evtMgr = eventManager({
+      session: options.session
+    });
+
     // fire up the event channel after successfult create session
     logger.logInfo("Setting up event channel...");
-    setupEventChannel({
+    evtMgr.setupEventChannel({
       onEventChannelSetup: function () {        
         // Hooking up UI callbacks based on events
         logger.logInfo("Hooking up UI callbacks based on events");
-        hookupUICallbacks({
+        evtMgr.hookupUICallbacks({
           callbacks: options.callbacks,
           onUICallbacksHooked: function() {
             logger.logInfo('UI Call backs hooked to events successfully');
-            options.onEventManagerCreated();
+            options.onEventManagerCreated(evtMgr);
           },
           onError: handleError.bind(this, 'HookUICallbacks', options.onError)
         });

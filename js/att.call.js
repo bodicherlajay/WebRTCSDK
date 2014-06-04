@@ -80,10 +80,10 @@
   }
 
   /**
-  * Call hangup
+  * Call end
   * @param {Object} options The phone.js facade options
   */
-  function hangupCall(options) {
+  function endCall(options) {
     logger.logInfo('Hanging up...');
     ATT.SignalingService.sendEndCall({
       error: function () {
@@ -133,7 +133,7 @@
       resume: resumeCall,
       mute: muteCall,
       unmute: unmuteCall,
-      end: hangupCall
+      end: endCall
     };
   }
 

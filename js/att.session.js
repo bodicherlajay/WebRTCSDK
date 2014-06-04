@@ -146,16 +146,41 @@
   }
 
   function clearSession(args) {
-    deleteWebRTCSession({
-      sessionId: this.getSessionId(),
-      token: this.getAccessToken(),
-      e911Id: this.getE911Id(),
-      onWebRTCSessionDeleted: function () {
-        this.clearSessionAlive(); // clear keep alive iinterval
-        args.onSessionCleared();
-      },
-      onError: handleError.bind(this, 'DeleteSession', args.onError)
-    });
+    var session = this,
+      deleteAllCalls = function () {
+      if (session.calls && Object.keys(session.calls) > 0) {
+        for(var callId in Object.keys(session.calls)) { // delete all exisinting calls
+          if (session.calls.hasOwnProperty(callId)) {
+            session.deleteCall(callId);
+          }
+        }
+      }
+    },
+    deleteSession = function () {
+      deleteWebRTCSession({
+        sessionId: session.getSessionId(),
+        token: session.getAccessToken(),
+        e911Id: session.getE911Id(),
+        onWebRTCSessionDeleted: function () {
+          session.clearKeepAlive(); // clear keep alive interval
+          args.onSessionCleared();
+        },
+        onError: handleError.bind(session, 'DeleteSession', args.onError)
+      });
+    };
+
+    if (session.currentCall) {
+      session.currentCall.end({
+        onCallEndInitiated: function () {
+          deleteAllCalls();
+          deleteSession();
+        },
+        onError: handleError.bind(session, 'DeleteSession', args.onError)
+      });
+    } else {
+      deleteAllCalls();
+      deleteSession();
+    }
   }
 
   function startCall(options) {
@@ -173,10 +198,10 @@
     }));
   }
 
-  function deleteCall() {
+  function deleteCall(callId) {
     logger.logDebug('deleteCall');
-    delete calls[currentCall.id];
-    currentCall = null;
+    calls[callId] = null;
+    delete calls[callId];
   }
 
   /**
@@ -219,10 +244,13 @@
       getCall: function (callId) {
         return calls[callId];
       },
+      deleteCall: deleteCall,
       getCurrentCall: function () {
         return currentCall;
       },
-      deleteCall: deleteCall
+      deleteCurrentCall: function () {
+        currentCall = null;
+      }
     };
   }
 

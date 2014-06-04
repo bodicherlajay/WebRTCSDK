@@ -50,7 +50,8 @@
           rtcEvent: rtcEvent,
           resourceManager: resourceManager,
           errorManager: errMgr,
-          onEventManagerCreated: function () {
+          onEventManagerCreated: function (evtMgr) {
+            eventManager = evtMgr;
             options.onSessionStarted(session);
           },
           onError: handleError.bind(this, 'CreateEventManager', options.onError)
@@ -69,8 +70,22 @@
   function deleteSession(options) {
     session.clearSession({
       onSessionCleared: function () {
-        session = null; // set session to null
-        options.onSessionDeleted();
+        try {
+          session = null; // set session to null
+          if (eventManager) {
+            eventManager.shutDown({
+              onShutDown: function () {
+                eventManager = null;
+                options.onSessionDeleted();
+              },
+              onError: handleError.bind(this, 'DeleteSession', options.onError),
+            });
+          } else {
+            throw 'Session was cleared but there is no event manager instance to shut down.'
+          }
+        } catch (err) {
+          handleError.call(this, 'DeleteSession', options.onError, err);
+        }
       },
       onError: handleError.bind(this, 'DeleteSession', options.onError),
     });
