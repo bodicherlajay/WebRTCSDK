@@ -194,6 +194,7 @@
             try {
               self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
+              CallManager.getSessionContext().getCallObject().setSDP(sdp);
             } catch (e) {
               Error.publish('Could not set local description. Exception: ' + e.message);
             }
@@ -345,6 +346,7 @@
       SDPFilter.processChromeSDPOffer(description);
 
       this.localDescription = description;
+      CallManager.getSessionContext().getCallObject().setSDP(description);
 
       // set local description
       try {
@@ -407,12 +409,12 @@
     holdCall: function () {
       logger.logDebug('holdCall');
 
-      var sdp = this.localDescription;
+      var sdp = this.peerConnection.localDescription;
 
       logger.logTrace('holding call', sdp);
 
       // adjust SDP for hold request
-      sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
+      sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=sendonly');
       SDPFilter.processChromeSDPOffer(sdp);
       this.incrementModCount();
 
@@ -426,6 +428,7 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
+        CallManager.getSessionContext().getCallObject().setSDP(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -467,6 +470,7 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
+        CallManager.getSessionContext().getCallObject().setSDP(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
