@@ -31,7 +31,7 @@ describe('ATT.phoneNumber', function () {
 
   it('stringify4', function () {
     var number = 'b123456790a';
-    expect(ATT.phoneNumber.stringify(number)).to.equal('233333333333333351234567902');
+    expect(ATT.phoneNumber.stringify(number)).to.equal('212-345-67902');
   });
 
   it('stringify5', function () {

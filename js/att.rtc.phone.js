@@ -457,6 +457,9 @@ if (Env === undefined) {
    */
   function dial(dialParams) {
 
+    // get a callable phone number and pass that
+    dialParams.to = callManager.cleanPhoneNumber(dialParams.to);
+
     // setup callback for ringing
     callManager.onCallCreated = function () {
       logger.logInfo('onCallCreated... trigger CALLING event in the UI');
@@ -711,6 +714,7 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('getMediaType', getMediaType);
     resourceManager.addPublicMethod('hangup', hangup);
     resourceManager.addPublicMethod('cleanPhoneNumber', callManager.cleanPhoneNumber);
+    resourceManager.addPublicMethod('formatNumber', callManager.formatNumber);
 
     // TODO: For the moment expose the resourceManager so that we can stub it, this will change
     // once we apply the constructor method pattern to phone.js, instead we'll inject the callManager when
