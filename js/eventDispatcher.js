@@ -320,6 +320,17 @@
       if (data.sdp) {
         peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
+
+      // Handle call hold and resume events
+      if (event.state === mainModule.CallStatus.HOLD) {
+        logger.logInfo('Hold request successful...other party is waiting...');
+        onCallHold(event);
+        sessionContext.setCallState(callMgr.SessionState.HOLD_CALL);
+      } else if (event.state === mainModule.CallStatus.RESUMED) {
+        logger.logInfo('Resume request successful...call is ongoing...');
+        onCallResume(event);
+        sessionContext.setCallState(callMgr.SessionState.RESUMED_CALL);
+      }
     };
 
     eventRegistry[mainModule.RTCCallEvents.CALL_CONNECTING] = function (event) {

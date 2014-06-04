@@ -102,6 +102,8 @@
 
     modificationCount: 2,
 
+    isModInitiator: false,
+
     callManager: window.cmgmt.CallManager.getInstance(),
 
     configureICEServers: function (servers) {
@@ -442,6 +444,8 @@
       } catch (e) {
         Error.publish('Send hold signal fail: ' + e.message);
       }
+
+      this.isModInitiator = true;
     },
 
     /**
@@ -456,7 +460,7 @@
       logger.logTrace('resuming call', sdp);
 
       // adjust SDP for resume request
-      sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
+      sdp.sdp = sdp.sdp.replace(/a=sendonly/g, 'a=sendrecv');
       SDPFilter.processChromeSDPOffer(sdp);
       this.incrementModCount();
 
@@ -484,6 +488,8 @@
       } catch (e) {
         Error.publish('Send resume call Fail: ' + e.message);
       }
+
+      this.isModInitiator = true;
     },
 
     /**

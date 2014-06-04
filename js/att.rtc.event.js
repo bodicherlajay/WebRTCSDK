@@ -7,7 +7,7 @@
   'use strict';
 
   var callManager = cmgmt.CallManager.getInstance(),
-    logger = Env.resourceManager.getInstance().getLogger("RTCEventModule"),
+    logger = Env.resourceManager.getInstance().getLogger('RTCEventModule'),
     session,
     module = {},
     instance,
@@ -29,20 +29,40 @@
     */
   function setUIEventState(event) {
     if (event.state) {
+      // SESSION_TERMINATED
       if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED) {
         if (event.reason) {
           return mainModule.CallStatus.ERROR;
         }
         return mainModule.CallStatus.ENDED;
       }
+
+      // MODIFICATION_RECEIVED
       if (event.state === mainModule.RTCCallEvents.MODIFICATION_RECEIVED) {
-        if (event.sdp.indexOf('recvonly') !== -1) {
+        if (event.sdp.indexOf('sendonly') !== -1) {
+          // Received hold request...
           return mainModule.CallStatus.HOLD;
         }
-        if (event.sdp.indexOf('sendrecv') !== -1 && ATT.PeerConnectionService.localDescription.sdp.indexOf('sendonly') !== -1) {
+        if (event.sdp.indexOf('sendrecv') !== -1 && callManager.getSessionContext().getCallObject().getSDP().sdp.indexOf('recvonly') !== -1) {
+          // Received resume request...
           return mainModule.CallStatus.RESUMED;
         }
       }
+
+      // MODIFICATION_TERMINATED
+      // if (event.state === mainModule.RTCCallEvents.MODIFICATION_TERMINATED) {
+      //   if (ATT.PeerConnectionService.isModInitiator) {
+      //     if (event.sdp.indexOf('recvonly') !== -1 && event.sdp.indexOf('sendrecv') === -1) {
+      //       // Hold call successful...waiting for other party...
+      //       return mainModule.CallStatus.HOLD;
+      //     }
+      //     if (event.sdp.indexOf('sendrecv') !== -1) {
+      //       // Resume call successful...call ongoing...
+      //       return mainModule.CallStatus.RESUMED;
+      //     }
+      //   }
+      // }
+
       if (mainModule.EventsMapping[event.state]) {
         return mainModule.EventsMapping[event.state];
       }
@@ -71,7 +91,7 @@
       }
       logger.logDebug('Codec from the event, ' + CODEC);
       if (eventRegistry[event.state]) {
-        logger.logDebug("Processing the registered event " + event.state);
+        logger.logDebug('Processing the registered event ' + event.state);
         if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED && event.reason) {
           event.error = event.reason;
         }
@@ -122,14 +142,14 @@
     It hands off the event to interceptingEventChannelCallback()
   */
   setupEventBasedCallbacks = function () {
-    logger.logDebug("setupEventBasedCallbacks");
+    logger.logDebug('setupEventBasedCallbacks');
 
     // get current session context
     session = callManager.getSessionContext();
 
     var sessionId = session.getSessionId();
 
-    logger.logInfo("Creating event registry...");
+    logger.logInfo('Creating event registry...');
 
     // setup events registry
     eventRegistry = mainModule.utils.createEventRegistry(session);
@@ -164,7 +184,7 @@
   };
 
   createEvent = function (arg) {
-    logger.logDebug("Creating event " + arg.state);
+    logger.logDebug('Creating event ' + arg.state);
 
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {
       throw new Error('State must be of type ATT.CallStatus');
