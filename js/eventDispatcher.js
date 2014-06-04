@@ -24,10 +24,10 @@
     peerConnService = depPeerConnService;
   }
 
-  function createEventRegistry(session, callbacks, depCallMgr, depPeerConn) {
+  function createEventRegistry(options) {
     //Call set methods for jslint
-    if (depPeerConn !== undefined) {
-      setPeerConnService(depPeerConn);
+    if (options.depPeerConn !== undefined) {
+      setPeerConnService(options.depPeerConn);
     }
 
     session = options.session;

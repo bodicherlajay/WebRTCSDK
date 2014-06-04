@@ -70,7 +70,7 @@
         session: session,
         callbacks: options.callbacks
       });
-      options.onUICallbcaksHooked();
+      options.onUICallbacksHooked();
     } catch (err) {
       handleError.call(this, 'HookUICallbacks', options.onError)
     }
