@@ -392,82 +392,72 @@ if (Env === undefined) {
   }
 
   /**
+   * @summary
+   * Make an outgoing call
+   * @desc
    * Used to make outgoing call. This function takes five arguments: the destination(tel or sip uri), 
    * html element id to display the local video/audio, html element id to display remote video,
    * media constraints, configuration object with callback functions 
-   * @param {Object} config Dial configuration object.
+   * @param {Object} dialParams Dial configuration object.
    * @memberof ATT.rtc.Phone
-   * @attribute {String} phoneNumber
-   * @attribute {HTMLElement} localVideo
-   * @attribute {HTMLElement} remoteVideo
-   * @attribute {Object} mediaConstraints
-   * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
+   * @param {String} dialParams.phoneNumber
+   * @param {HTMLElement} dialParams.localVideo
+   * @param {HTMLElement} dialParams.remoteVideo
+   * @param {Object} dialParams.mediaConstraints
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onConnecting  This callback gets invoked when SDK is initialized and ready to make, receive calls
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCalling  This callback gets invoked when incoming call event is received
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEstablished     This callback gets invoked when outgoing/incoming call is ended
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallInProgress     This callback gets invoked while encountering issue with outgoing/incoming call
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallHold         This callback gets invoked while encountering issues during login process
+   *
+   *
+   *       onConnecting : rtcCallback,
+   onCalling: rtcCallback,
+   onCallEstablished: rtcCallback,
+   onCallInProgress : rtcCallback,
+   onCallHold: rtcCallback,
+   onCallResume: rtcCallback,
+   onCallEnded : rtcCallback,
+   onCallError : rtcCallback
+
+   *
+   *
    * @example Preconditions: SDK was initialized with access token and e911 id
-
-   * //audio call
-   * //Example 1
-   ATT.rtc.Phone.dial(“telephone number or sip uri”,
-   localVideo: “localvideo”,
-   remoteVideo: “remotevideo”,
-   mediaConstraints: {
-   audio:true,
-   video:false},
-   callbacks: {
-   onSessionOpen: callback_name,
-   onOutgoingCall: callback_name,
-   onInProgress: callback_name,
-   onCallEnded: callback_name,
-   onCallError: callback_name}
-   //removed other callbacks for brevity
-   );
-
-  //Example 2
-   //Not yet implemented
-   ATT.rtc.Phone(
-   OnSessionOpen(event) {
-   },
-   OnIncomingCall(event) {
-   },
-   OnInProgress(event) {
-   },
-   OnRinging(event) {
-   },
-   OnCallEnded(event) {
-   },
-   //removed other callbacks for brevity
-   OnError(event) {
-   }).dial(“telephone or sip uri”,
-   localVideo: “localvideo”,
-   remoteVideo: “remotevideo”,
-   mediaConstraints: {
-   audio:true,
-   video:false});
-
-
-   //video call
-   ATT.rtc.Phone.dial(“telephone number or sip uri”,
-   localVideo: “localvideo”,
-   remoteVideo: “remotevideo”,
-   mediaConstraints: {
-   audio:true,
-   video:true},
-
+   * ATT.rtc.Phone.dial(“telephone number or sip uri”,
+   * localVideo: “localvideo”,
+   * remoteVideo: “remotevideo”,
+   * mediaConstraints: {
+   * audio:true,
+   * video:false},
+   * callbacks: {
+   * onSessionOpen: callback_name,
+   * onOutgoingCall: callback_name,
+   * onInProgress: callback_name,
+   * onCallEnded: callback_name,
+   * onCallError: callback_name}
+   * );
+   * ATT.rtc.Phone.dial(“telephone number or sip uri”,
+   * localVideo: “localvideo”,
+   * remoteVideo: “remotevideo”,
+   * mediaConstraints: {
+   * audio:true,
+   * video:true},
    */
   function dial(dialParams) {
 
     // setup callback for ringing
     callManager.onCallCreated = function () {
-      logger.logInfo('onCallCreated... trigger RINGING event in the UI');
-      // crate an event for Ringing
+      logger.logInfo('onCallCreated... trigger CALLING event in the UI');
+      // crate an event for Calling
       var rtcEvent = ATT.RTCEvent.getInstance(),
         session = callManager.getSessionContext(),
-        ringingEvent = rtcEvent.createEvent(
+        callingEvent = rtcEvent.createEvent(
           { to: session && session.getCallObject() ? session.getCallObject().callee() : '',
             state: ATT.CallStatus.CALLING,
             timestamp: new Date() }
         );
       // bubble up the event
-      dialParams.callbacks.onCalling(ringingEvent);
+      dialParams.callbacks.onCalling(callingEvent);
     };
 
     try {
@@ -671,6 +661,12 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('getMediaType', getMediaType);
     resourceManager.addPublicMethod('hangup', hangup);
     resourceManager.addPublicMethod('cleanPhoneNumber', callManager.cleanPhoneNumber);
+
+    // TODO: For the moment expose the resourceManager so that we can stub it, this will change
+    // once we apply the constructor method pattern to phone.js, instead we'll inject the callManager when
+    // creating the phone object:
+    // createPhone({callManager: rsrcMgr }){ ... };
+    resourceManager.addPublicMethod('callManager', callManager);
   }
 
   // sub-namespaces on ATT.
