@@ -333,6 +333,7 @@
       this.modificationId = modId;
       this.incrementModCount();
       this.setTheRemoteDescription(sdp, 'offer');
+      this.isModInitiator = false;
       this.createAnswer();
     },
 

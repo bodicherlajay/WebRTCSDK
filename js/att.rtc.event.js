@@ -49,19 +49,19 @@
         }
       }
 
-      // MODIFICATION_TERMINATED
-      // if (event.state === mainModule.RTCCallEvents.MODIFICATION_TERMINATED) {
-      //   if (ATT.PeerConnectionService.isModInitiator) {
-      //     if (event.sdp.indexOf('recvonly') !== -1 && event.sdp.indexOf('sendrecv') === -1) {
-      //       // Hold call successful...waiting for other party...
-      //       return mainModule.CallStatus.HOLD;
-      //     }
-      //     if (event.sdp.indexOf('sendrecv') !== -1) {
-      //       // Resume call successful...call ongoing...
-      //       return mainModule.CallStatus.RESUMED;
-      //     }
-      //   }
-      // }
+      //MODIFICATION_TERMINATED
+      if (event.state === mainModule.RTCCallEvents.MODIFICATION_TERMINATED) {
+        if (ATT.PeerConnectionService.isModInitiator) {
+          if (event.sdp.indexOf('recvonly') !== -1 && event.sdp.indexOf('sendrecv') === -1) {
+            // Hold call successful...waiting for other party...
+            return mainModule.CallStatus.HOLD;
+          }
+          if (event.sdp.indexOf('sendrecv') !== -1) {
+            // Resume call successful...call ongoing...
+            return mainModule.CallStatus.RESUMED;
+          }
+        }
+      }
 
       if (mainModule.EventsMapping[event.state]) {
         return mainModule.EventsMapping[event.state];
