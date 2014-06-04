@@ -7,14 +7,13 @@ describe('Call Management', function () {
   var backupAtt, callmgr = cmgmt.CallManager.getInstance(), sessionContext;
   beforeEach(function () {
     backupAtt = ATT;
+    callmgr.CreateSession({
+      token: "abcd",
+      e911Id: "e911id",
+      sessionId: "sessionId"
+    });
+    sessionContext = callmgr.getSessionContext();
   });
-
-  callmgr.CreateSession({
-    token: "abcd",
-    e911Id: "e911id",
-    sessionId: "sessionId"
-  });
-  sessionContext = callmgr.getSessionContext();
 
   it('should be a singleton', function () {
     var instance1 = cmgmt.CallManager.getInstance(),
@@ -192,8 +191,30 @@ describe('Call Management', function () {
     });
   });
 
-  describe('Create Outgoing Call callbacks', function () {
-    it('should trigger `onCallCreated` after successfully creating an outgoing call');
+  describe('Create Outgoing Call', function () {
+    var callManager, callOptions;
+    beforeEach(function () {
+      callManager = cmgmt.CallManager.getInstance();
+      callOptions = {
+        to: '1-800-call-junh'
+      };
+    });
+    // TODO: Unignore after the changes for the CallManager.
+    xit('should trigger `onCallCreated` after successfully creating an outgoing call', function (done) {
+      var onCallCreatedSpy, sendOfferStub;
+
+      onCallCreatedSpy = sinon.spy(callManager, 'onCallCreated', function () {
+        expect(onCallCreatedSpy.called).to.equal(true);
+        done();
+      });
+
+      sendOfferStub = sinon.stub(callManager.peerConnectionService, 'sendOffer', function () {
+        // force success
+        callManager.peerConnectionService.onOfferSent();
+      });
+
+      callManager.createOutgoingCall(callOptions);
+    });
   });
   afterEach(function () {
     ATT = backupAtt;

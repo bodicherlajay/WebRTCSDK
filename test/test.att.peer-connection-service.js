@@ -184,7 +184,7 @@ describe('PeerConnectionServiceModule', function () {
     });
   });
 
-  describe('Callbacks', function () {
+  describe('`sendOffer` method', function () {
     it('should trigger `onOfferSent` after successfully sending an offer');
   });
 

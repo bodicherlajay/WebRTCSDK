@@ -2,52 +2,54 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert*/
 
-describe('webRTC', function () {
+describe('Phone', function () {
   'use strict';
 
   var resourceManager = Env.resourceManager.getInstance(),
     doOperation,
     requests;
 
-  beforeEach(function () {
-    this.xhr = sinon.useFakeXMLHttpRequest();
-    requests = [];
-
-    this.xhr.onCreate = function (xhr) {
-      requests.push(xhr);
-    };
-    doOperation = sinon.spy(resourceManager, "doOperation");
+  it('should exist', function () {
+    expect(ATT.rtc.Phone).to.be.an('object');
   });
 
-  afterEach(function () {
-    this.xhr.restore();
-    resourceManager.doOperation.restore();
-  });
+  describe('Login', function () {
 
-  it('ATT namespace should exist and contain utils', function () {
-    expect(ATT).to.be.an('object');
-    expect(ATT.utils).to.be.an('object');
-  });
+    beforeEach(function () {
+      this.xhr = sinon.useFakeXMLHttpRequest();
+      requests = [];
 
-  it('login with audio only service', function () {
-    var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
-    ATT.rtc.Phone.login({token: "token", e911Id: "e911id", audioOnly: true, callbacks: {onSessionReady: function () {}, onError : function () {}}});
-    expect(doOperation.calledOnce).equals(true);
-    requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
-    expect(requests[0].requestBody).equals('{"session":{"mediaType":"dtls-srtp","ice":"true","services":["ip_voice_call"]}}');
-    expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
-    expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
-  });
+      this.xhr.onCreate = function (xhr) {
+        requests.push(xhr);
+      };
+      doOperation = sinon.spy(resourceManager, "doOperation");
+    });
 
-  it('login with audio and video service', function () {
-    var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
-    ATT.rtc.Phone.login({token: "token", e911Id: "e911id", callbacks: {onSessionReady: function () {}, onError : function () {}}});
-    expect(doOperation.calledOnce).equals(true);
-    requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
-    expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
-    expect(requests[0].requestBody).equals('{"session":{"mediaType":"dtls-srtp","ice":"true","services":["ip_voice_call","ip_video_call"]}}');
-    expect(requests[0].method).equals('post');
-    expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
+    afterEach(function () {
+      this.xhr.restore();
+      resourceManager.doOperation.restore();
+    });
+
+    it('login with audio only service', function () {
+      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
+      ATT.rtc.Phone.login({token: "token", e911Id: "e911id", audioOnly: true, callbacks: {onSessionReady: function () {}, onError : function () {}}});
+      expect(doOperation.calledOnce).equals(true);
+      requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
+      expect(requests[0].requestBody).equals('{"session":{"mediaType":"dtls-srtp","ice":"true","services":["ip_voice_call"]}}');
+      expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
+      expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
+    });
+
+    it('login with audio and video service', function () {
+      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
+      ATT.rtc.Phone.login({token: "token", e911Id: "e911id", callbacks: {onSessionReady: function () {}, onError : function () {}}});
+      expect(doOperation.calledOnce).equals(true);
+      requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
+      expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
+      expect(requests[0].requestBody).equals('{"session":{"mediaType":"dtls-srtp","ice":"true","services":["ip_voice_call","ip_video_call"]}}');
+      expect(requests[0].method).equals('post');
+      expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
+    });
   });
 
   describe('logout', function () {
@@ -165,9 +167,48 @@ describe('webRTC', function () {
     });
   });
 
-  describe('Dial callbacks', function () {
-    it('should trigger the `onCalling` after calling `onConnecting`');
-    it('should trigger the `onCalling` callback after successfully dialing a number');
-    it('should trigger the `onCalling` before calling `onCallEstablished`');
+  describe('Dial Method', function () {
+    var phone, dialOpts,
+      onCallingSpy,
+      createOutgoingCallStub;
+
+    beforeEach(function () {
+
+      phone = ATT.rtc.Phone;
+
+      dialOpts = {
+        to : '11234567890',
+        mediaConstraints : {},
+        localVideo : 'dummy',
+        remoteVideo : 'dummy',
+        callbacks : {}
+      };
+    });
+
+    it('should trigger `onConnecting` while dialing');
+
+    it('should trigger the `onCalling` if dial is successful', function (done) {
+      // stub the resourceManager to force successful creation of the call
+      createOutgoingCallStub = sinon.stub(phone.callManager, 'CreateOutgoingCall', function () {
+        // assume it was successful, therefore execute onCallCreated
+        phone.callManager.onCallCreated();
+      });
+
+      onCallingSpy = sinon.spy(function () {
+        expect(onCallingSpy.called).to.equal(true);
+        phone.hangup();
+        createOutgoingCallStub.restore();
+        done();
+      });
+
+      dialOpts.callbacks.onCalling = onCallingSpy;
+
+      phone.dial(dialOpts);
+    });
+
+    it('should trigger the `onCallEstablished` after `onCalling`');
+
+    afterEach(function () {
+    });
   });
 });

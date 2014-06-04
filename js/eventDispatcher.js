@@ -58,17 +58,16 @@
     /**
      * @event
      * @summary Applies to ATT.rtc.Phone.login
-     * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
-     * This event indicates that SDK is ready to make or receive calls
+     * @desc
+     * This event callback gets invoked when an Incoming call is received
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
-     *
      */
     onIncomingCall = function (evt) {
       if (callbacks.onIncomingCall) {
@@ -78,14 +77,15 @@
 
     /**
      * @event
-     * @summary Applies to ATT.rtc.Phone.login
-     * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
-     * This event indicates that SDK is ready to make or receive calls
+     * @summary Applies to ATT.rtc.Phone.dial
+     * @desc
+     * This event callback gets invoked when an outgoing call flow is initiated and the call state is changed to
+     * connecting state
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
@@ -99,19 +99,18 @@
 
     /**
      * @event
-     * @summary Applies to ATT.rtc.Phone.login
-     * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
-     * This event indicates that SDK is ready to make or receive calls
+     * @summary Applies to ATT.rtc.Phone.dial
+     * @desc
+     * This event callback gets invoked when an outgoing call flow is initiated and the call state is changed to call
+     * established state
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
      * @param evt.to {String} Empty
-     * @param evt.calltype {String} Type of call
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
      * @param evt.error {String} Error object
-     * @param evt.resource {String} [Optional] Resource id
-     * @param evt.modId {String} [Optional] Modification id
      */
     onCallEstablished = function (evt) {
       if (callbacks.onCallEstablished) {
@@ -120,9 +119,20 @@
     };
 
     /**
-    * onCallInProgress
-    * @param {Object} the UI Event Object
-    */
+     * @event
+     * @summary Applies to ATT.rtc.Phone.dial, ATT.rtc.Phone.answer
+     * @desc
+     * This event callback gets invoked during an outgoing call or incoming call workflow is in progress. It means that
+     * parties are engaged in conversation
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.to {String} Empty
+     * @param evt.calltype {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     * @param evt.error {String} Error object
+     */
     onCallInProgress = function (evt) {
       if (callbacks.onCallInProgress) {
         callbacks.onCallInProgress(evt);
@@ -131,16 +141,17 @@
 
     /**
      * @event
-     * @summary Applies to ATT.rtc.Phone.login
-     * @desc UI callback function which gets invoked by SDK when call is on hold
-     * This event indicates that call is on hold
+     * @summary Applies to ATT.rtc.Phone.dial,ATT.rtc.Phone.answer
+     * @desc
+     * This event callback gets invoked when a call is put on hold
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.to {String} Empty
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
-     *
+     * @param evt.error {String} Error object
      */
     onCallHold = function (evt) {
       if (callbacks.onCallHold) {
@@ -150,16 +161,17 @@
 
     /**
      * @event
-     * @summary Applies to ATT.rtc.Phone.login
-     * @desc UI callback function which gets invoked by SDK when call is resumed
-     * This event indicates that call is resumed
+     * @summary Applies to ATT.rtc.Phone.answer, ATT.rtc.Phone.dial
+     * @desc
+     * This event callback gets invoked when a call is in resumed state
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.to {String} Empty
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
-     *
+     * @param evt.error {String} Error object
      */
     onCallResume = function (evt) {
       if (callbacks.onCallResume) {
@@ -169,16 +181,17 @@
 
     /**
      * @event
-     * @summary Applies to ATT.rtc.Phone.login
-     * @desc UI callback function which gets invoked by SDK when SDK gets initialized.
-     * This event indicates that SDK is ready to make or receive calls
+     * @summary Applies to  ATT.rtc.Phone.login ,ATT.rtc.Phone.dial, ATT.rtc.Phone.answer
+     * @desc
+     * This event callback gets invoked
      * @memberof ATT.rtc.Phone
      * @param {Object} evt Event Object
      * @param evt.from {String} Tel or sip uri
-     * @param evt.calltype {String} Type of call
+     * @param evt.to {String} Empty
+     * @param evt.mediaType {String} Type of call
      * @param evt.timestamp {Date} Timestamp
      * @param evt.codec {String} Codec
-     *
+     * @param evt.error {String} Error object
      */
     onCallEnded = function (evt) {
       if (callbacks.onCallEnded) {
@@ -187,9 +200,19 @@
     };
 
     /**
-    * onCallError
-    * @param {Object} the UI Event Object
-    */
+     * @event
+     * @summary Applies to  ATT.rtc.Phone.login, ATT.rtc.Phone.dial, ATT.rtc.Phone.answer
+     * @desc
+     * This event callback gets invoked
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.to {String} Empty
+     * @param evt.mediaType {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     * @param evt.error {String} Error object
+     */
     onCallError = function (evt) {
       if (callbacks.onCallError) {
         callbacks.onCallError(evt);
@@ -197,9 +220,18 @@
     };
 
     /**
-    * onError
-    * @param {Object} the UI Event Object
-    */
+     * @event
+     * @summary Applies to  ATT.rtc.Phone.login
+     * This event callback gets invoked
+     * @memberof ATT.rtc.Phone
+     * @param {Object} evt Event Object
+     * @param evt.from {String} Tel or sip uri
+     * @param evt.to {String} Empty
+     * @param evt.mediaType {String} Type of call
+     * @param evt.timestamp {Date} Timestamp
+     * @param evt.codec {String} Codec
+     * @param evt.error {String} Error object
+     */
     onError = function (evt) {
       if (callbacks.onError) {
         callbacks.onError(evt);
@@ -228,7 +260,7 @@
 
     eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
       onCallError(event);
-      session.deleteCall();
+      session.deleteCurrentCall();
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
@@ -254,11 +286,11 @@
       }
 
       // Handle call hold and resume events
-      if (data.sdp.indexOf('sendonly') !== -1) {
+      if (event.state === mainModule.CallStatus.HOLD) {
         logger.logInfo('Received hold request');
         onCallHold(event);
         session.getCurrentCall().setCallState(ATT.CallStates.HELD);
-      } else if (data.sdp.indexOf('sendrecv') !== -1 && peerConnService.localDescription.sdp.indexOf('recvonly') !== -1) {
+      } else if (event.state === mainModule.CallStatus.RESUMED) {
         logger.logInfo('Received resume request');
         onCallResume(event);
         session.getCurrentCall().setCallState(ATT.CallStates.RESUMED);
