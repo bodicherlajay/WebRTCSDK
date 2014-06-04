@@ -6,9 +6,9 @@
 (function (mainModule) {
   'use strict';
 
-  var callManager = cmgmt.CallManager.getInstance(),
-    logger = Env.resourceManager.getInstance().getLogger("RTCEventModule"),
+  var logger = Env.resourceManager.getInstance().getLogger("RTCEventModule"),
     session,
+    sessionId,
     module = {},
     instance,
     createEvent,
@@ -113,18 +113,16 @@
     being published by the event channel.
     It hands off the event to interceptingEventChannelCallback()
   */
-  setupEventBasedCallbacks = function () {
+  setupEventBasedCallbacks = function (options) {
     logger.logDebug("setupEventBasedCallbacks");
 
-    // get current session context
-    session = callManager.getSessionContext();
-
-    var sessionId = session.getSessionId();
+    session = options.session;
+    sessionId = session.getSessionId();
 
     logger.logInfo("Creating event registry...");
 
     // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(session);
+    eventRegistry = mainModule.utils.createEventRegistry(session, options.callbacks);
 
     // unsubscribe first, to avoid double subscription from previous actions
     mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);

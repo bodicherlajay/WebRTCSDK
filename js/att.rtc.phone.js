@@ -22,64 +22,16 @@ if (Env === undefined) {
 (function (app) {
   'use strict';
 
-  var resourceManager = Env.resourceManager.getInstance(),
-    callManager = cmgmt.CallManager.getInstance(),
-    keepAlive = null,
-    keepSessionAlive,
-    clearSessionAlive,
+  var factories,
+    resourceManager,
+    callManager,
     handleError,
-    setupEventChannel,
-    shutdownEventChannel,
-    createWebRTCSessionSuccess,
     logMgr = ATT.logManager.getInstance(),
     logger;
 
   logger = logMgr.getLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
-  keepSessionAlive = function (config) {
-    logger.logDebug('keepSessionAlive');
-
-    var session = callManager.getSessionContext(),
-      keepAliveDuration = app.appConfig.KeepAlive || config.keepAliveDuration, // developer configured duration overrides the one set by API server
-      timeBeforeExpiration = 5 * 60 * 1000, // refresh 5 minutes before expiration
-      timeout = (keepAliveDuration > timeBeforeExpiration) ? (keepAliveDuration - timeBeforeExpiration) : keepAliveDuration,
-      dataForRefreshWebRTCSession;
-
-    keepAlive = setInterval(function () {
-      logger.logInfo('Trying to refresh session after ' + (timeout / 1000) + ' seconds');
-      try {
-        dataForRefreshWebRTCSession = {
-          params: {
-            url: [session.getSessionId()],
-            headers: {
-              'Authorization': session.getAccessToken()
-            }
-          },
-          success: function () {
-            if (typeof config.success === 'function') {
-              config.success('Successfully refreshed web rtc session on blackflag');
-            }
-          },
-          error: handleError.bind(this, 'RefreshSession', config.error)
-        };
-
-        // Call BF to refresh WebRTC Session.
-        resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
-      } catch (err) {
-        handleError.call(this, 'RefreshSession', config.error, err);
-      }
-    }, timeout);
-
-  };
-
-  clearSessionAlive = function () {
-    clearInterval(keepAlive);
-    keepAlive = null;
-  };
-
   handleError = function (operation, errHandler, err) {
-    clearSessionAlive();
-
     logger.logDebug('handleError: ' + operation);
     logger.logInfo('There was an error performing operation ' + operation);
 
@@ -90,75 +42,6 @@ if (Env === undefined) {
     }
   };
 
-  setupEventChannel = function (config) {
-    logger.logDebug('setupEventChannel');
-
-    var session = callManager.getSessionContext(),
-
-      // Set event channel configuration
-      // All parameters are required
-      // Also, see appConfigModule
-      channelConfig = {
-        accessToken: session.getAccessToken(),
-        endpoint: ATT.appConfig.EventChannelConfig.endpoint,
-        sessionId: session.getSessionId(),
-        publisher: ATT.event,
-        resourceManager: resourceManager,
-        publicMethodName: 'getEvents',
-        usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
-      };
-
-    ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
-    if (ATT.utils.eventChannel) {
-      logger.logInfo('Event channel up and running');
-
-      ATT.utils.eventChannel.startListening({
-        success: config.success,
-        error: config.error
-      });
-    } else {
-      throw 'Event channel setup failed';
-    }
-  };
-
-  shutdownEventChannel = function () {
-    logger.logDebug('shutdownEventChannel');
-    ATT.utils.eventChannel.stopListening();
-    logger.logInfo('Event channel shutdown successfully');
-  };
-
-  function initSession(accessToken, e911Id) {
-    logger.logDebug('initSession');
-
-    try {
-      if (!accessToken) {
-        throw 'Cannot init SDK session, no access token';
-      }
-      if (!e911Id) {
-        logger.logWarning('Initializing SDK session without e911 id');
-      }
-    // Set the access Token in the callManager.
-      callManager.CreateSession({
-        token: accessToken,
-        e911Id: e911Id
-      });
-      logger.logInfo('Initialed SDK session with token and optional e911 id');
-    } catch (err) {
-      throw "Init Session Error: " + err;
-    }
-  }
-
-
-  function initCallbacks(callbacks) {
-    logger.logDebug('intiCallbacks');
-    //Planning not to save the UI callbacks in session context
-    logger.logDebug(callbacks);
-    try {
-      logger.logInfo('getting the Callback for mapping');
-    } catch (err) {
-      throw "Init Callbacks: " + err;
-    }
-  }
   function getCallType() {
     var calltype = null;
     logger.logDebug('Call type Audio/Video');
@@ -171,71 +54,6 @@ if (Env === undefined) {
       throw "getCallType: " + err;
     }
   }
-  createWebRTCSessionSuccess = function (config, responseObject) {
-    logger.logDebug('createWebRTCSessionSuccess');
-
-    var sessionId = null,
-      expiration = null,
-      errorHandler;
-
-    if (config.callbacks && config.callbacks.onError && typeof config.callbacks.onError === 'function') {
-      errorHandler = config.callbacks.onError;
-    }
-
-    try {
-      if (responseObject) {
-        if (responseObject.getResponseHeader('Location')) {
-          sessionId = responseObject.getResponseHeader('Location').split('/')[4];
-        }
-        if (responseObject.getResponseHeader('x-expires')) {
-          expiration = responseObject.getResponseHeader('x-expires');
-          expiration = Number(expiration);
-          expiration = isNaN(expiration) ? 0 : expiration * 1000; // convert to ms
-        }
-      }
-
-      if (!sessionId) {
-        throw 'Failed to retrieve session id';
-      }
-
-      logger.logInfo('Successfully created web rtc session, the session id is:' + sessionId);
-
-      // Set WebRTC.Session data object that will be needed downstream.
-      // Also setup UI callbacks
-      callManager.UpdateSession({
-        sessionId: sessionId,
-        callbacks: config.callbacks
-      });
-
-      // publish the UI callback for ready state
-      app.event.publish(sessionId + '.responseEvent', {
-        state:  app.SessionEvents.RTC_SESSION_CREATED,
-        data: {
-          sessionId: sessionId
-        }
-      });
-
-      // fire up the event channel after successfult create session
-      logger.logInfo("Setting up event channel...");
-      setupEventChannel({
-        success: function (msg) {
-          logger.logInfo(msg);
-        },
-        error: handleError.bind(this, 'EventChannel', errorHandler)
-      });
-
-      // keep web rtc session alive
-      keepSessionAlive({
-        keepAliveDuration: expiration,
-        success: function (msg) {
-          logger.logInfo(msg);
-        },
-        error: handleError.bind(this, 'RefreshSession', errorHandler)
-      });
-    } catch (err) {
-      handleError.call(this, 'CreateSession', errorHandler, err);
-    }
-  };
 
   /**
     * @summary Performs RTC login
@@ -277,6 +95,7 @@ if (Env === undefined) {
     logger.logDebug('createWebRTCSession');
     var token,
       e911Id,
+      callbacks,
       session,
       services = ['ip_voice_call', 'ip_video_call'],
       errorHandler;
@@ -300,36 +119,30 @@ if (Env === undefined) {
 
       token = loginParams.token;
       e911Id = loginParams.e911Id || null;
+      callbacks = loginParams.callbacks;
 
       //remove video service for audio only service
       if (loginParams.audioOnly) {
         services = services.slice(0, 1);
       }
-      // create new session with token and optional e911id
-      initSession(token, e911Id);
 
-      session = callManager.getSessionContext();
-      token = session.getAccessToken();
-      e911Id = session.getE911Id();
+      callManager.startSession({
+        factories: factories,
+        token: token,
+        e911Id: e911Id,
+        callbacks: callbacks,
+        onSessionStarted: function (sessObj) {
+          session = sessObj;
+          // TODO: Need better way to handle callbacks
+          callbacks.onSessionReady({
+            data: {
+              sessionId: session.getSessionId()
+            }
+          });
+        },
+        onError: handleError.bind(this, 'CreateSession', errorHandler)
+      })
 
-      resourceManager.doOperation('createWebRTCSession', {
-        data: {
-          'session': {
-            'mediaType': 'dtls-srtp',
-            'ice': 'true',
-            'services': services
-          }
-        },
-        params: {
-          headers: {
-            'Authorization': token,
-            'x-e911Id': e911Id || "",
-            'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
-          }
-        },
-        success: createWebRTCSessionSuccess.bind(this, loginParams),
-        error: handleError.bind(this, 'CreateSession', errorHandler)
-      });
     } catch (err) {
       handleError.call(this, 'CreateSession', errorHandler, err);
     }
@@ -667,15 +480,24 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('resume', resume);
     resourceManager.addPublicMethod('mute', mute);
     resourceManager.addPublicMethod('unmute', unmute);
-    resourceManager.addPublicMethod('initCallback', initCallbacks);
+    //resourceManager.addPublicMethod('initCallback', initCallbacks);
     resourceManager.addPublicMethod('getCallType', getCallType);
     resourceManager.addPublicMethod('hangup', hangup);
-    resourceManager.addPublicMethod('cleanPhoneNumber', callManager.cleanPhoneNumber);
+    //resourceManager.addPublicMethod('cleanPhoneNumber', callManager.cleanPhoneNumber);
   }
 
-  // sub-namespaces on ATT.
-  app.RESTClient = RESTClient;
+ 
+  function createPhone (options) {
+    factories = options.factories;
+    callManager = options.rtcManager;
+    resourceManager = options.resourceManager;
 
-  app.configurePublicAPIs = configurePublicAPIs;
+    // sub-namespaces on ATT.
+    app.RESTClient = RESTClient;
+  
+    app.configurePublicAPIs = configurePublicAPIs;
+  }
+
+  app.factories.createPhone = createPhone;
 
 }(ATT || {}));

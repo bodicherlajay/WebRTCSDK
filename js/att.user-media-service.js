@@ -8,7 +8,6 @@
   'use strict';
 
   var module,
-    callManager,
     Error,
     eventEmitter,
     defaultMediaConstraints = { // default to video call
@@ -16,10 +15,6 @@
       video: true
     },
     logger = Env.resourceManager.getInstance().getLogger("UserMediaService");
-
-  function setCallManager(callMgr) {
-    callManager = callMgr;
-  }
 
   function setError(service) {
     Error = service;
@@ -34,7 +29,6 @@
     logger.logInfo("Initializing User Media Service...");
     logger.logDebug("Setting the call manager");
 
-    setCallManager(window.cmgmt.CallManager.getInstance());
     setError(app.Error);
     setEventEmitter(app.event);
 
@@ -42,7 +36,7 @@
   }
 
   module = {
-
+    sessionId: null,
     localVideoElement: null,
     remoteVideoElement: null,
     localStream: null,
@@ -61,24 +55,20 @@
     startCall: function (config) {
       logger.logTrace('starting call');
 
-      var session = callManager.getSessionContext(),
-        callType = session.getCallType(),
-        args;
-
+      this.sessionId = config.sessionId;
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
       this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints;
 
-      if (callType) {
-        // for incoming call, overwrite media constraints
-        // TODO: need to compare and upgrade/downgrade call 
-        this.mediaConstraints.video = (callType === 'video');
-      }
+      // for incoming call, overwrite media constraints
+      // TODO: need to compare and upgrade/downgrade call 
+      this.mediaConstraints.video = (config.mediaType === 'video');
 
-      args = {
+      var args = {
         from: config.from,
         to: config.to,
-        mediaConstraints: this.mediaConstraints
+        mediaConstraints: this.mediaConstraints,
+        session: config.session
       };
 
       // get a local stream, show it in a self-view and add it to be sent
@@ -116,8 +106,6 @@
     */
     onRemoteVideoStart: function (remoteVideo) {
       remoteVideo.addEventListener('playing', function () {
-        var sessionId = callManager.getSessionContext().getSessionId();
-
         eventEmitter.publish(sessionId + '.responseEvent', {
           state : ATT.RTCCallEvents.CALL_IN_PROGRESS
         });
@@ -132,7 +120,6 @@
      * Attaches media stream to DOM and plays video.
      * @param localOrRemote  Specify either 'local' or 'remote'
      * @param stream The media stream.
-     * @param {Object} callManager The call manager
      */
     showStream: function (args) {
       var videoStreamEl;

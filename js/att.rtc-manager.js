@@ -12,7 +12,7 @@
     eventManager,
     rtcEvent,
     resourceManager,
-    logger = Env.resourceManager.getInstance().getLogger("RTCManager");
+    logger;
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -38,16 +38,18 @@
     logger.logDebug('startSession');
 
     options.factories.createSession({
+      factories: options.factories,
       token: options.token,
       e911Id: options.e911Id,
       onSessionCreated: function (sessionObj) {
         session = sessionObj; // store the newly created session
 
         options.factories.createEventManager({
-          callbacks: options.callbacks
+          callbacks: options.callbacks,
           session: session,
           rtcEvent: rtcEvent,
           resourceManager: resourceManager,
+          errorManager: errMgr,
           onEventManagerCreated: function () {
             options.onSessionStarted(session);
           },
@@ -56,7 +58,21 @@
       },
       onError: handleError.bind(this, 'CreateSession', options.onError),
       errorManager: errMgr,
-      resourceManager: options.resourceManager
+      resourceManager: resourceManager
+    });
+  }
+
+  function getSession() {
+    return session;
+  }
+
+  function deleteSession(options) {
+    session.clearSession({
+      onSessionCleared: function () {
+        session = null; // set session to null
+        options.onSessionDeleted();
+      },
+      onError: handleError.bind(this, 'DeleteSession', options.onError),
     });
   }
 
@@ -66,15 +82,17 @@
   * })
   */
   function createRTCManager(options) {
+    errMgr = options.errorManager;
+    resourceManager = options.resourceManager;
+    rtcEvent = options.rtcEvent;
+    logger = resourceManager.getLogger("RTCManager")
+
     logger.logDebug('createRTCManager');
 
-    errMgr = options.errorManager;
-    eventManager = options.eventManager;
-    resourceManager = options.resourceManager;
-    rtcEvent = options.rtcEvent;    
-
     return {
-      startSession: startSession
+      startSession: startSession,
+      getSession: getSession,
+      deleteSession: deleteSession
     };
   }
 

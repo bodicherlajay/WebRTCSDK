@@ -10,7 +10,8 @@
   var session,
     rtcEvent,
     resourceManager,
-    logger = Env.resourceManager.getInstance().getLogger("EventManager");
+    errMgr,
+    logger;
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -45,17 +46,30 @@
       logger.logInfo('Event channel up and running');
 
       app.utils.eventChannel.startListening({
-        success: options.onEventChannelSetup,
+        success: function (msg) {
+          logger.logInfo(msg);
+        },
         error: options.onError
       });
+
+      options.onEventChannelSetup();
     } else {
       throw 'Event channel setup failed';
     }
   }
 
+  function shutdownEventChannel() {
+    logger.logDebug('shutdownEventChannel');
+    ATT.utils.eventChannel.stopListening();
+    logger.logInfo('Event channel shutdown successfully');
+  }
+
   function hookupUICallbacks(options) {
     try {
-      rtcEvent.setupEventBasedCallbacks();
+      rtcEvent.setupEventBasedCallbacks({
+        session: session,
+        callbacks: options.callbacks
+      });
       options.onUICallbcaksHooked();
     } catch (err) {
       handleError.call(this, 'HookUICallbacks', options.onError)
@@ -63,22 +77,22 @@
   }
 
   function createEventManager(options) {
-    logger.logDebug('createEventManager');
-
     session = options.session;
     rtcEvent = options.rtcEvent;
     resourceManager = options.resourceManager;
+    errMgr = options.errorManager;
+    logger = resourceManager.getLogger("EventManager");
+
+    logger.logDebug('createEventManager');
 
     // fire up the event channel after successfult create session
     logger.logInfo("Setting up event channel...");
     setupEventChannel({
-      onEventChannelSetup: function (msg) {
-        logger.logInfo(msg);
-        
+      onEventChannelSetup: function () {        
         // Hooking up UI callbacks based on events
         logger.logInfo("Hooking up UI callbacks based on events");
         hookupUICallbacks({
-          options.callbacks,
+          callbacks: options.callbacks,
           onUICallbacksHooked: function() {
             logger.logInfo('UI Call backs hooked to events successfully');
             options.onEventManagerCreated();

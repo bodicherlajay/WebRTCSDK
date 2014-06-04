@@ -19,7 +19,9 @@
 //todo fixme - this file needs to be renamed to something else ? errorDictionaryloader or delete this
 (function () {
   'use strict';
-  var logMgr = ATT.logManager.getInstance(),
+  var resourceManager,
+    rtcEvent,
+    logMgr = ATT.logManager.getInstance(),
     logger,
     sdkErrors,
     idx;
@@ -60,6 +62,21 @@
       GENERAL: 'GENERAL'
     }
   }, ATT.utils);
+
+  resourceManager = Env.resourceManager.getInstance();
+  rtcEvent = ATT.RTCEvent.getInstance();
+
+  ATT.RTCManager = ATT.factories.createRTCManager({
+    errorManager: ATT.Error,
+    resourceManager: resourceManager,
+    rtcEvent: rtcEvent
+  });
+
+  ATT.Phone = ATT.factories.createPhone({
+    factories: ATT.factories,
+    rtcManager: ATT.RTCManager,
+    resourceManager: resourceManager
+  })
 
   if (undefined !== ATT.errorDictionary) {
     logger.logTrace("Error Dictionary created.");

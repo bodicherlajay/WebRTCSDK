@@ -6,11 +6,11 @@
 (function (app) {
   'use strict';
 
-  var logMgr = ATT.logManager.getInstance(), logger = null, resourceManager, callManager;
+  var logMgr = ATT.logManager.getInstance(), logger = null, resourceManager, rtcManager;
   logger = logMgr.getLogger('SignalingService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
   resourceManager = Env.resourceManager.getInstance();
-  callManager = cmgmt.CallManager.getInstance();
+  rtcManager = ATT.rtcManager;
 
   app.SignalingService = {
     /**
@@ -34,9 +34,9 @@
 
       resourceManager.doOperation('startCall', {
         params: {
-          url: [callManager.getSessionContext().getSessionId()],
+          url: [rtcManager.getSession().getSessionId()],
           headers: {
-            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            'Authorization' : 'Bearer ' + rtcManager.getSession().getAccessToken()
           }
         },
         data: data,
@@ -73,11 +73,11 @@
       resourceManager.doOperation('answerCall', {
         params: {
           url: [
-            callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId()
+            rtcManager.getSession().getSessionId(),
+            rtcManager.getSession().getCurrentCallId()
           ],
           headers: {
-            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            'Authorization' : 'Bearer ' + rtcManager.getSession().getAccessToken()
           }
         },
         data : data,
@@ -122,11 +122,11 @@
       resourceManager.doOperation('acceptModifications', {
         params: {
           url: [
-            callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getEventObject().resourceURL.split('/')[6]
+            rtcManager.getSession().getSessionId(),
+            rtcManager.getSession().getEventObject().resourceURL.split('/')[6]
           ],
           headers : {
-            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'Authorization' : 'Bearer ' + rtcManager.getSession().getAccessToken(),
             'x-modId' : config.modId
           }
         },
@@ -169,11 +169,11 @@
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [
-            callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId()
+            rtcManager.getSession().getSessionId(),
+            rtcManager.getSession().getCurrentCallId()
           ],
           headers: {
-            'Authorization' : 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'Authorization' : 'Bearer ' + rtcManager.getSession().getAccessToken(),
             'x-calls-action' : 'initiate-call-hold'
           }
         },
@@ -214,11 +214,11 @@
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [
-            callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId()
+            rtcManager.getSession().getSessionId(),
+            rtcManager.getSession().getCurrentCallId()
           ],
           headers: {
-            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken(),
+            'Authorization': 'Bearer ' + rtcManager.getSession().getAccessToken(),
             'x-calls-action' : 'initiate-call-resume'
           }
         },
@@ -256,11 +256,11 @@
       resourceManager.doOperation('endCall', {
         params: {
           url: [
-            callManager.getSessionContext().getSessionId(),
-            callManager.getSessionContext().getCurrentCallId()
+            rtcManager.getSession().getSessionId(),
+            rtcManager.getSession().getCurrentCallId()
           ],
           headers: {
-            'Authorization': 'Bearer ' + callManager.getSessionContext().getAccessToken()
+            'Authorization': 'Bearer ' + rtcManager.getSession().getAccessToken()
           }
         },
         success: function (response) {

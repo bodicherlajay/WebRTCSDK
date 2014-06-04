@@ -5,14 +5,14 @@
 //Dependency: ATT.logManager
 
 
-cmgmt = (function () {
+(function (app) {
   'use strict';
 
   var errMgr,
     resourceManager,
     userMediaSvc,
     peerConnectionSvc,
-    logger = Env.resourceManager.getInstance().getLogger("Call");
+    logger;
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -30,7 +30,7 @@ cmgmt = (function () {
    *  Removes extra characters from the phone number and formats it for
    *  clear display
    */
-  cleanPhoneNumber = function (number, options) {
+  function cleanPhoneNumber(number, options) {
     var cleaned = ATT.phoneNumber.stringify(number);
 
     logger.logInfo('Cleaned phone number: ' + cleaned + ', callable: ' +
@@ -52,8 +52,7 @@ cmgmt = (function () {
   };
 
   function holdCall() {
-    if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCallObject()) {
+    if (ATT.PeerConnectionService.peerConnection) {
       logger.logInfo('Putting call on hold...');
       ATT.PeerConnectionService.holdCall();
     } else {
@@ -62,8 +61,7 @@ cmgmt = (function () {
   }
 
   function resumeCall() {
-    if (ATT.PeerConnectionService.peerConnection
-        && session_context.getCallObject()) {
+    if (ATT.PeerConnectionService.peerConnection) {
       logger.logInfo('Resuming call...');
       ATT.PeerConnectionService.resumeCall();
     } else {
@@ -95,11 +93,6 @@ cmgmt = (function () {
     });
   }
 
-  // call object cleanup
-  function deleteCall() {
-    session_context.setCallObject(null);
-  };
-
   /**
   * Call Prototype
   * @param {String} from The caller
@@ -109,25 +102,38 @@ cmgmt = (function () {
   function call (options) {
     var from = options.from,
       to = options.to,
+      mediaType = options.mediaType,
       mediaConstraints = options.mediaConstraints,
-      localSDP = options.localSDP;
+      localSdp = options.localSdp,
+      remoteSdp = options.remoteSdp;
 
     return {
       from: function () { return from; },
       to: function () { return to; },
       mediaConstraints: function () { return mediaConstraints; },
-      setSDP: function (sdp) {
-        localSDP = sdp;
+      setMediaType: function (type) {
+        mediaType = type;
       },
-      getSDP: function () {
-        return localSDP;
+      getMediaType: function () {
+        return mediaType;
+      },
+      setLocalSdp: function (sdp) {
+        localSdp = sdp;
+      },
+      getLocalSdp: function () {
+        return localSdp;
+      },
+      setRemoteSdp: function (sdp) {
+        remoteSdp = sdp;
+      },
+      getRemoteSdp: function () {
+        return remoteSdp;
       },
       hold: holdCall,
       resume: resumeCall,
       mute: muteCall,
       unmute: unmuteCall,
-      end: hangupCall,
-      delete: deleteCall
+      end: hangupCall
     };
   }
 
@@ -145,6 +151,7 @@ cmgmt = (function () {
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
     userMediaSvc.startCall(app.utils.extend(options, {
+        mediaType: getMediaType()
       // enable this code once startCall returns callbacks
       // onCallStarted: function(obj) {
         // var callObj = call({
@@ -185,6 +192,7 @@ cmgmt = (function () {
     options.to = cleanPhoneNumber(options.to);
 
     userMediaSvc.startCall(app.utils.extend(options, {
+      mediaType: getMediaType()
       // enable this code once startCall returns callbacks
       // onCallStarted: function(obj) {
         // var callObj = call({
@@ -215,12 +223,13 @@ cmgmt = (function () {
   }
 
   function createCall(options) {
-    logger.logDebug('createCall');
-
     errMgr = options.errorManager;
     resourceManager = options.resourceManager;
     userMediaSvc = options.userMediaSvc;
     peerConnectionSvc = options.peerConnSvc;
+    logger = resourceManager.getLogger("Call");
+
+    logger.logDebug('createCall');
 
     if (options.type === app.CallTypes.INCOMING) {
       createIncomingCall(options);

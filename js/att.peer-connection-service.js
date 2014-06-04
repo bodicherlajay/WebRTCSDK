@@ -23,10 +23,6 @@
     SignalingService = service;
   }
 
-  function setCallManager(service) {
-    CallManager = service;
-  }
-
   function setSDPFilter(service) {
     SDPFilter = service;
   }
@@ -48,20 +44,11 @@
     try {
       //setUserMediaService(app.UserMediaService);
       setSignalingService(app.SignalingService);
-      setCallManager(window.cmgmt.CallManager.getInstance());
       setSDPFilter(app.sdpFilter.getInstance());
       setResourceManager(Env.resourceManager.getInstance());
       setLogger(resourceManager.getLogger("PeerConnectionService"));
       setError(app.Error);
       setEventEmitter(app.event);
-      // setApp ({
-        // SignalingService: {
-//           
-        // },
-        // Error: {
-//           
-        // }
-      // });
 
       eventEmitter.subscribe(ATT.SdkEvents.USER_MEDIA_INITIALIZED, module.initPeerConnection, module);
     } catch (e) {
@@ -97,12 +84,14 @@
     callingParty: null,
 
     calledParty: null,
+    
+    callType: null,
+
+    mediaType: null,
 
     modificationId: null,
 
     modificationCount: 2,
-
-    callManager: window.cmgmt.CallManager.getInstance(),
 
     configureICEServers: function (servers) {
       this.pcConfig.iceServers = servers;
@@ -115,12 +104,14 @@
     initPeerConnection: function (config) {
       logger.logDebug('initPeerConnection');
 
-      var session = CallManager.getSessionContext(),
-        event = session.getEventObject(),
-        callState = session.getCallState();
+      var session = config.session,
+        call = session.getCurrentCall(),
+        sdp;
 
       this.callingParty = config.from;
       this.calledParty = config.to;
+      this.callType = config.type;
+      this.mediaType = config.mediaType;
       this.mediaConstraints = config.mediaConstraints;
       this.localStream = config.localStream;
 
@@ -131,11 +122,11 @@
       logger.logInfo('creating peer connection');
       // Create peer connection
       // send any ice candidates to the other peer
-      this.createPeerConnection(callState);
+      this.createPeerConnection(callType);
 
-      logger.logTrace('session state', callState);
+      logger.logTrace('session state', callType);
 
-      if (callState === CallManager.SessionState.OUTGOING_CALL) {
+      if (callType === ATT.CallTypes.OUTGOING) {
         logger.logInfo('creating offer for outgoing call');
         this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
           Error.publish('Create offer failed');
@@ -144,12 +135,13 @@
           'OfferToReceiveVideo': this.mediaConstraints.video
         }});
 
-      } else if (callState === CallManager.SessionState.INCOMING_CALL) {
+      } else if (callType === ATT.CallTypes.INCOMING) {
         logger.logInfo('Responding to incoming call');
 
         //Check if invite is an announcement
-        if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
-          event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
+        sdp = call.getRemoteSdp();
+        if (sdp && sdp.indexOf('sendonly') !== -1) {
+          call.setRemoteSdp(sdp.replace(/sendonly/g, 'sendrecv'));
         }
         this.setTheRemoteDescription(event.sdp, 'offer');
         this.createAnswer();
@@ -158,9 +150,9 @@
 
     /**
     * Create a Peer Connection
-    * @param {String} callState 'Outgoing' or 'Incoming'
+    * @param {String} callType 'Outgoing' or 'Incoming'
     */
-    createPeerConnection: function (callState) {
+    createPeerConnection: function (callType) {
       logger.logDebug('createPeerConnection');
 
       var self = this, pc;
@@ -180,7 +172,7 @@
         } else {
           if (self.peerConnection !== null) {
             var sdp = pc.localDescription;
-            logger.logTrace('callState', callState);
+            logger.logTrace('callType', callType);
             // fix SDP
             try {
               SDPFilter.processChromeSDPOffer(sdp);
@@ -198,7 +190,7 @@
               Error.publish('Could not set local description. Exception: ' + e.message);
             }
 
-            if (callState === CallManager.SessionState.OUTGOING_CALL) {
+            if (callType === ATT.CallTypes.OUTGOING) {
               // send offer...
               logger.logInfo('sending offer');
               try {
@@ -222,7 +214,7 @@
                 Error.publish('Could not send offer: ' + e);
               }
 
-            } else if (callState === CallManager.SessionState.INCOMING_CALL) {
+            } else if (callType === ATT.CallTypes.INCOMING) {
               // send answer...
               logger.logInfo('incoming call, sending answer');
               try {
@@ -515,7 +507,6 @@
   module.setResourceManager = setResourceManager;
   module.setError = setError;
   module.setSignalingService = setSignalingService;
-  module.setCallManager = setCallManager;
   module.setSDPFilter = setSDPFilter;
   module.setLogger = setLogger;
   // callback for OfferSent event

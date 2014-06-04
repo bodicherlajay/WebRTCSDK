@@ -9,7 +9,7 @@
 
   var errMgr,
     resourceManager,
-    logger = Env.resourceManager.getInstance().getLogger("Session");
+    logger;
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -71,9 +71,9 @@
           'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
         }
       },
-      success: function () {
+      success: function (responseObj) {
         logger.logInfo('Successfully created web rtc session on blackflag');
-        args.onWebRTCSessionCreated(extractSessionInformation());
+        args.onWebRTCSessionCreated(extractSessionInformation(responseObj));
       },
       error: args.onError
     });
@@ -145,16 +145,14 @@
     this.keepAliveInterval = null;
   }
 
-  function deleteSession(args) {
+  function clearSession(args) {
     deleteWebRTCSession({
       sessionId: this.getSessionId(),
       token: this.getAccessToken(),
       e911Id: this.getE911Id(),
       onWebRTCSessionDeleted: function () {
         this.clearSessionAlive(); // clear keep alive iinterval
-
-        this = null; // clear the current session object
-        args.onSessionDeleted();
+        args.onSessionCleared();
       },
       onError: handleError.bind(this, 'DeleteSession', args.onError)
     });
@@ -177,6 +175,8 @@
 
   function deleteCall() {
     logger.logDebug('deleteCall');
+    delete calls[currentCall.id];
+    currentCall = null;
   }
 
   /**
@@ -196,8 +196,8 @@
     return {
       // public attributes
       keepAliveInterval: null,
-      currentCall,
-      calls = {},
+      currentCall: null,
+      calls: {},
 
       // public methods
       getSessionId: function () {
@@ -214,14 +214,14 @@
       },
       keepAlive: keepAlive,
       clearKeepAlive: clearKeepAlive,
-      delete: deleteSession,
+      clearSession: clearSession,
       startCall: startCall,
       getCall: function (callId) {
         return calls[callId];
       },
       getCurrentCall: function () {
         return currentCall;
-      }
+      },
       deleteCall: deleteCall
     };
   }
@@ -235,10 +235,11 @@
   * })
   */
   function createSession(options) {
-    logger.logDebug('createSession');
-
     errMgr = options.errorManager;
     resourceManager = options.resourceManager;
+    logger = resourceManager.getLogger('Session');
+
+    logger.logDebug('createSession');
 
     createWebRTCSession({
       token: options.token,
