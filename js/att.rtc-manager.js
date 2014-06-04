@@ -78,16 +78,16 @@
                 eventManager = null;
                 options.onSessionDeleted();
               },
-              onError: handleError.bind(this, 'DeleteSession', options.onError),
+              onError: handleError.bind(this, 'DeleteSession', options.onError)
             });
           } else {
-            throw 'Session was cleared but there is no event manager instance to shut down.'
+            throw 'Session was cleared but there is no event manager instance to shut down.';
           }
         } catch (err) {
           handleError.call(this, 'DeleteSession', options.onError, err);
         }
       },
-      onError: handleError.bind(this, 'DeleteSession', options.onError),
+      onError: handleError.bind(this, 'DeleteSession', options.onError)
     });
   }
 
@@ -100,7 +100,7 @@
     errMgr = options.errorManager;
     resourceManager = options.resourceManager;
     rtcEvent = options.rtcEvent;
-    logger = resourceManager.getLogger("RTCManager")
+    logger = resourceManager.getLogger("RTCManager");
 
     logger.logDebug('createRTCManager');
 

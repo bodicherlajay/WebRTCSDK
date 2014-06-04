@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT: true, cmgmt,sdkErrorCollection:true */
+/*global ATT: true, Env: true, cmgmt,sdkErrorCollection:true */
 
 /** This is going to be the main entry/assembly module for the SDK 
  * By the time this file is loaded, all other modules have already 
@@ -76,7 +76,7 @@
     factories: ATT.factories,
     rtcManager: ATT.RTCManager,
     resourceManager: resourceManager
-  })
+  });
 
   if (undefined !== ATT.errorDictionary) {
     logger.logTrace("Error Dictionary created.");

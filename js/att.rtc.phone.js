@@ -39,7 +39,7 @@ if (Env === undefined) {
     if (typeof errHandler === 'function') {
       ATT.Error.publish(error, operation, errHandler);
     }
-  };
+  }
 
   function getMediaType() {
     var mediaType = null;
@@ -150,7 +150,7 @@ if (Env === undefined) {
           }
         },
         onError: handleError.bind(this, 'CreateSession', errorHandler)
-      })
+      });
 
     } catch (err) {
       handleError.call(this, 'CreateSession', errorHandler, err);
@@ -192,7 +192,7 @@ if (Env === undefined) {
           }
         },
         onError: handleError.bind(this, 'DeleteSession', logoutParams.onError)
-      })
+      });
 
     } catch (err) {
       handleError.call(this, 'DeleteSession', logoutParams.onError, err);
@@ -512,15 +512,14 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('rtcManager', rtcManager);
   }
 
- 
-  function createPhone (options) {
+  function createPhone(options) {
     factories = options.factories;
     rtcManager = options.rtcManager;
     resourceManager = options.resourceManager;
 
     // sub-namespaces on ATT.
     app.RESTClient = RESTClient;
-  
+
     app.configurePublicAPIs = configurePublicAPIs;
   }
 

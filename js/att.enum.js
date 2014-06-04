@@ -13,7 +13,7 @@
     VTN: 'VTN',
     NOTN: 'NOTN'
   };
-  
+
   module.CallTypes = {
     OUTGOING: 'Outgoing',
     INCOMING: 'Incoming'
@@ -26,7 +26,7 @@
     RESUMED: 'Call Resumed',
     TRANSFERED: 'Call Transferred',
     ENDED: 'Call Ended'
-  },
+  };
 
   module.SdkEvents = {
     SDK_READY: 'SdkReady',

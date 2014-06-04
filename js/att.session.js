@@ -148,26 +148,27 @@
   function clearSession(args) {
     var session = this,
       deleteAllCalls = function () {
-      if (session.calls && Object.keys(session.calls) > 0) {
-        for(var callId in Object.keys(session.calls)) { // delete all exisinting calls
-          if (session.calls.hasOwnProperty(callId)) {
-            session.deleteCall(callId);
+        var callId;
+        if (session.calls && Object.keys(session.calls) > 0) {
+          for (callId in session.calls) { // delete all exisinting calls
+            if (session.calls.hasOwnProperty(callId)) {
+              session.deleteCall(callId);
+            }
           }
         }
-      }
-    },
-    deleteSession = function () {
-      deleteWebRTCSession({
-        sessionId: session.getSessionId(),
-        token: session.getAccessToken(),
-        e911Id: session.getE911Id(),
-        onWebRTCSessionDeleted: function () {
-          session.clearKeepAlive(); // clear keep alive interval
-          args.onSessionCleared();
-        },
-        onError: handleError.bind(session, 'DeleteSession', args.onError)
-      });
-    };
+      },
+      deleteSession = function () {
+        deleteWebRTCSession({
+          sessionId: session.getSessionId(),
+          token: session.getAccessToken(),
+          e911Id: session.getE911Id(),
+          onWebRTCSessionDeleted: function () {
+            session.clearKeepAlive(); // clear keep alive interval
+            args.onSessionCleared();
+          },
+          onError: handleError.bind(session, 'DeleteSession', args.onError)
+        });
+      };
 
     if (session.currentCall) {
       session.currentCall.end({
@@ -187,21 +188,15 @@
     logger.logDebug('startCall');
 
     options.factories.createCall(app.utils.extend(options, {
-      onCallCreated: function(callObj) {
+      onCallCreated: function (callObj) {
         if (callObj) {
-          this.calls[callObj.id] = callObj;
-          this.currentCall = callObj;
+          this.setCall(callObj);
+          this.setCurrentCall(callObj);
           options.onCallStarted(callObj);
         }
       },
-      onCallError: handleError.bind(this, 'CreateCall', args.onCallError)
+      onCallError: handleError.bind(this, 'CreateCall', options.onCallError)
     }));
-  }
-
-  function deleteCall(callId) {
-    logger.logDebug('deleteCall');
-    calls[callId] = null;
-    delete calls[callId];
   }
 
   /**
@@ -216,13 +211,13 @@
     var sessionId = args.sessionId,
       expiration = args.expiration,
       accessToken = args.token,
-      e911Id = args.e911Id;
+      e911Id = args.e911Id,
+      currentCall = null,
+      calls = {};
 
     return {
       // public attributes
       keepAliveInterval: null,
-      currentCall: null,
-      calls: {},
 
       // public methods
       getSessionId: function () {
@@ -241,12 +236,24 @@
       clearKeepAlive: clearKeepAlive,
       clearSession: clearSession,
       startCall: startCall,
+      getCalls: function () {
+        return calls;
+      },
       getCall: function (callId) {
         return calls[callId];
       },
-      deleteCall: deleteCall,
+      setCall: function (callObj) {
+        calls[callObj.id] = callObj;
+      },
+      deleteCall: function (callId) {
+        calls[callId] = null;
+        delete calls[callId];
+      },
       getCurrentCall: function () {
         return currentCall;
+      },
+      setCurrentCall: function (callObj) {
+        currentCall = callObj;
       },
       deleteCurrentCall: function () {
         currentCall = null;

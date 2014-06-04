@@ -325,7 +325,7 @@
       }
       if (session) {
         session.deleteCurrentCall();
-      }      
+      }
       peerConnService.endCall();
       UserMediaService.stopStream();
     };

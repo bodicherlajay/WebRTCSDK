@@ -73,7 +73,7 @@
       });
       options.onUICallbacksHooked();
     } catch (err) {
-      handleError.call(this, 'HookUICallbacks', options.onError)
+      handleError.call(this, 'HookUICallbacks', options.onError);
     }
   }
 
@@ -82,7 +82,7 @@
       shutdownEventChannel();
       options.onShutDown();
     } catch (err) {
-      handleError.call(this, 'ShutDown', options.onError)
+      handleError.call(this, 'ShutDown', options.onError);
     }
   }
 
@@ -95,7 +95,7 @@
       setupEventChannel: setupEventChannel,
       hookupUICallbacks: hookupUICallbacks,
       shutDown: shutDown
-    }
+    };
   }
 
   function createEventManager(options) {
@@ -113,12 +113,12 @@
     // fire up the event channel after successfult create session
     logger.logInfo("Setting up event channel...");
     evtMgr.setupEventChannel({
-      onEventChannelSetup: function () {        
+      onEventChannelSetup: function () {
         // Hooking up UI callbacks based on events
         logger.logInfo("Hooking up UI callbacks based on events");
         evtMgr.hookupUICallbacks({
           callbacks: options.callbacks,
-          onUICallbacksHooked: function() {
+          onUICallbacksHooked: function () {
             logger.logInfo('UI Call backs hooked to events successfully');
             options.onEventManagerCreated(evtMgr);
           },

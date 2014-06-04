@@ -49,7 +49,7 @@
       }
     }
     return cleaned;
-  };
+  }
 
   function holdCall() {
     if (ATT.PeerConnectionService.peerConnection) {
@@ -99,7 +99,7 @@
   * @param {String} to The callee
   * @param {String} mediaConstraints 'audio' or 'video'
   */
-  function call (options) {
+  function call(options) {
     var from = options.from,
       to = options.to,
       mediaType = options.mediaType,
@@ -151,7 +151,7 @@
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
     userMediaSvc.startCall(app.utils.extend(options, {
-        mediaType: getMediaType()
+      mediaType: getMediaType()
       // enable this code once startCall returns callbacks
       // onCallStarted: function(obj) {
         // var callObj = call({
