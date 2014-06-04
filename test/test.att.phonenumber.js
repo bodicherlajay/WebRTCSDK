@@ -2,7 +2,7 @@
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
 before: true, sinon: true, expect: true, xit: true, xdescribe: true*/
 
-describe.only('ATT.phoneNumber', function () {
+describe('ATT.phoneNumber', function () {
   "use strict";
 
   it('should exist', function () {
