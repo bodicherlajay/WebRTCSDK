@@ -87,7 +87,7 @@
       for(var i = 0; i < input.length; i++){
         var ch = input.charAt(i);
         if(isNaN(ch)) {
-          if (!(phoneNumber.alphaLookup[ch.toLowerCase()] === 'undefined')) {
+          if (!(phoneNumber.alphaLookup[ch.toLowerCase()] === undefined)) {
             digits += phoneNumber.alphaLookup[ch.toLowerCase()];
           }
         } else {
