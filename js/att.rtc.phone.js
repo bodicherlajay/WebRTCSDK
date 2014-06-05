@@ -625,27 +625,14 @@ if (Env === undefined) {
    * Holds the current call
    * @desc
   * Holds the current call and the other party gets notified through event channel
-  * @param {Object} holdParams
-   * @param {function} holdParams.onSuccess
-   * @param {function} holdParams.onError
-   * @fires ATT.rtc.Phone.hold#[RTCEvent]onSuccess  This callback function gets invoked when hold is successful
-   * @fires ATT.rtc.Phone.hold#[RTCEvent]onError    This callback function gets invoked while encountering errors
   * @example
-  ATT.rtc.Phone.hold({
-      onSuccess: function(evt) {},
-      onError: function(evt) {}
-  });
+  ATT.rtc.Phone.hold();
   */
-  function hold(holdParams) {
+  function hold() {
     try {
-      callManager.getSessionContext().getCallObject().hold(holdParams);
-      if (holdParams && holdParams.success) {
-        holdParams.success();
-      }
+      callManager.getSessionContext().getCallObject().hold();
     } catch (e) {
-      if (holdParams && holdParams.error) {
-        ATT.Error.publish('SDK-20030', null, holdParams.error);
-      }
+      ATT.Error.publish('SDK-20030', null);
     }
   }
 
@@ -655,27 +642,14 @@ if (Env === undefined) {
    * Resumes the current call
    * @desc
   * Resumes the current call and the other party gets notified through event channel and the call resumes
-  * @param {Object} resumeParams
-   * @param {function} resumeParams.onSuccess
-   * @param {function} resumeParams.onError
-   * @fires ATT.rtc.Phone.resume#[RTCEvent]onSuccess  This callback function gets invoked when resume is successful
-   * @fires ATT.rtc.Phone.resume#[RTCEvent]onError    This callback function gets invoked while encountering errors
   * @example
-  ATT.rtc.Phone.resume({
-      onSuccess: function(evt) {},
-      onError: function(evt) {}
-  });
+  ATT.rtc.Phone.resume();
   */
-  function resume(resumeParams) {
+  function resume() {
     try {
-      callManager.getSessionContext().getCallObject().resume(resumeParams);
-      if (resumeParams && resumeParams.success) {
-        resumeParams.success();
-      }
+      callManager.getSessionContext().getCallObject().resume();
     } catch (e) {
-      if (resumeParams && resumeParams.error) {
-        ATT.Error.publish('SDK-20031', null, resumeParams.error);
-      }
+      ATT.Error.publish('SDK-20031', null);
     }
   }
 
@@ -684,19 +658,12 @@ if (Env === undefined) {
    * Hangup the current call
    * @desc
   * Hangs up the current call
-  * @param {Object} hangupParams The callback options
-   * @param {function} hangupParams.onSuccess
-   * @param {function} hangupParams.onError
-   * @fires ATT.rtc.Phone.hangup#[RTCEvent]onSuccess  This callback function gets invoked when hangup is successful
-   * @fires ATT.rtc.Phone.hangup#[RTCEvent]onError    This callback function gets invoked while encountering errors
   */
-  function hangup(hangupParams) {
+  function hangup() {
     try {
-      callManager.getSessionContext().getCallObject().end(hangupParams);
+      callManager.getSessionContext().getCallObject().end();
     } catch (e) {
-      if (hangupParams && hangupParams.error) {
-        ATT.Error.publish('SDK-20024', null, hangupParams.error);
-      }
+      ATT.Error.publish('SDK-20024', null);
     }
   }
 

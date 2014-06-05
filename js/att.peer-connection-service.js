@@ -314,10 +314,12 @@
           if (typeof err === 'object') {
             err = err.message;
           }
-          Error.publish('Set Remote Description Fail: ' + err);
+          // Need to figure out why Chrome throws this event though it works
+          //Error.publish('Set Remote Description Fail: ' + err);
         });
       } catch (err) {
-        Error.publish('Set Remote Description Fail: ' + err.message);
+        // Need to figure out why Chrome throws this event though it works
+        //Error.publish('Set Remote Description Fail: ' + err.message);
       }
     },
 
