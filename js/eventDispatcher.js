@@ -303,10 +303,14 @@
         logger.logInfo('Received hold request');
         onCallHold(event);
         sessionContext.setCallState(callMgr.SessionState.HOLD_CALL);
+        UserMediaService.muteStream();
+        UserMediaService.holdVideoStream();
       } else if (event.state === mainModule.CallStatus.RESUMED) {
         logger.logInfo('Received resume request');
         onCallResume(event);
         sessionContext.setCallState(callMgr.SessionState.RESUMED_CALL);
+        UserMediaService.unmuteStream();
+        UserMediaService.resumeVideoStream();
       }
     };
 
@@ -326,10 +330,14 @@
         logger.logInfo('Hold request successful...other party is waiting...');
         onCallHold(event);
         sessionContext.setCallState(callMgr.SessionState.HOLD_CALL);
+        UserMediaService.muteStream();
+        UserMediaService.holdVideoStream();
       } else if (event.state === mainModule.CallStatus.RESUMED) {
         logger.logInfo('Resume request successful...call is ongoing...');
         onCallResume(event);
         sessionContext.setCallState(callMgr.SessionState.RESUMED_CALL);
+        UserMediaService.unmuteStream();
+        UserMediaService.resumeVideoStream();
       }
     };
 
