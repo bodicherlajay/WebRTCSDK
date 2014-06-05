@@ -56,11 +56,11 @@
         if (errObj.RequestError.ServiceException) { // API Service Exceptions
           error = ATT.errorDictionary.getErrorByOpStatus(operation,
             err.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
-          error.reasonText = errObj.RequestError.ServiceException.MessageId.Text;
+          error.reasonText = errObj.RequestError.ServiceException.Text;
         } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
           error = ATT.errorDictionary.getErrorByOpStatus(operation,
             err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
-          error.reasonText = errObj.RequestError.PolicyException.MessageId.Text;
+          error.reasonText = errObj.RequestError.PolicyException.Text;
         } else if (errObj.RequestError.Exception) { // API Exceptions
           error = ATT.errorDictionary.getDefaultError({
             moduleID: moduleId,

@@ -286,18 +286,21 @@ if (Env === undefined) {
       services = ['ip_voice_call', 'ip_video_call'],
       errorHandler;
 
+    if (!loginParams) {
+      throw new TypeError('Cannot login to web rtc, no configuration');
+    }
+    if (!loginParams.token) {
+      throw new TypeError('Cannot login to web rtc, no access token');
+    }
+    if (!loginParams.e911Id) {
+      throw new TypeError('Cannot login to web rtc, no e911Id');
+    }
+
     if (loginParams.callbacks && loginParams.callbacks.onError && typeof loginParams.callbacks.onError === 'function') {
       errorHandler = loginParams.callbacks.onError;
     }
 
     try {
-      if (!loginParams) {
-        throw 'Cannot login to web rtc, no configuration';
-      }
-      if (!loginParams.token) {
-        throw 'Cannot login to web rtc, no access token';
-      }
-
       // todo: need to decide if callbacks should be mandatory
       if (!loginParams.callbacks || Object.keys(loginParams.callbacks) <= 0) {
         logger.logWarning('No UI callbacks specified');
@@ -456,10 +459,22 @@ if (Env === undefined) {
    * );
    */
   function dial(dialParams) {
-
-    // get a callable phone number and pass that
-   // dialParams.to = callManager.cleanPhoneNumber(dialParams.to);
-
+    if (!dialParams) {
+      throw new TypeError('Cannot make a web rtc call, no dial configuration');
+    }
+    if (!dialParams.to) {
+      throw new TypeError('Cannot make a web rtc call, no destination');
+    }
+    if (!dialParams.mediaConstraints) {
+      throw new TypeError('Cannot make a web rtc call, no media constraints');
+    }
+    if (!dialParams.localVideo) {
+      throw new TypeError('Cannot make a web rtc call, no local media DOM element');
+    }
+    if (!dialParams.remoteVideo) {
+      throw new TypeError('Cannot make a web rtc call, no remote media DOM element');
+    }
+    callManager.CreateOutgoingCall(dialParams);
     // setup callback for ringing
     callManager.onCallCreated = function () {
       logger.logInfo('onCallCreated... trigger CALLING event in the UI');
@@ -475,26 +490,7 @@ if (Env === undefined) {
       dialParams.callbacks.onCalling(callingEvent);
     };
 
-    try {
-      if (!dialParams) {
-        throw 'Cannot make a web rtc call, no dial configuration';
-      }
-      if (!dialParams.to) {
-        throw 'Cannot make a web rtc call, no destination';
-      }
-      if (!dialParams.mediaConstraints) {
-        throw 'Cannot make a web rtc call, no media constraints';
-      }
-      if (!dialParams.localVideo) {
-        throw 'Cannot make a web rtc call, no local media DOM element';
-      }
-      if (!dialParams.remoteVideo) {
-        throw 'Cannot make a web rtc call, no remote media DOM element';
-      }
-      callManager.CreateOutgoingCall(dialParams);
-    } catch (e) {
-      ATT.Error.publish(e);
-    }
+
   }
 
   /**
@@ -540,19 +536,17 @@ if (Env === undefined) {
     );
    */
   function answer(answerParams) {
+    if (!answerParams) {
+      throw new TypeError('Cannot make a web rtc call, no answer configuration');
+    }
+    if (!answerParams.localVideo) {
+      throw new TypeError('Cannot make a web rtc call, no local media DOM element');
+    }
+    if (!answerParams.remoteVideo) {
+      throw new TypeError('Cannot make a web rtc call, no remote media DOM element');
+    }
+
     try {
-      if (!answerParams) {
-        throw 'Cannot make a web rtc call, no answer configuration';
-      }
-      // if (!answerParams.mediaConstraints) {
-        // throw 'Cannot make a web rtc call, no media constraints';
-      // }
-      if (!answerParams.localVideo) {
-        throw 'Cannot make a web rtc call, no local media DOM element';
-      }
-      if (!answerParams.remoteVideo) {
-        throw 'Cannot make a web rtc call, no remote media DOM element';
-      }
       callManager.CreateIncomingCall(answerParams);
     } catch (e) {
       ATT.Error.publish(e, "AnswerCall");
