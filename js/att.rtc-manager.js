@@ -105,20 +105,35 @@
       throw 'No event manager found to start a call. Please login first';
     }
 
-    session.startCall(ATT.utils.extend(options, {
-      type: app.CallTypes.OUTGOING,
-      onCallStarted: function (callObj) {
-        options.onCallDialed(eventManager.createRTCEvent({
-          state: app.CallStatus.CALLING,
-          to: callObj.to
+    eventManager.hookupUICallbacks({
+      callbacks: options.callbacks,
+      onUICallbacksHooked: function () {
+        logger.logInfo('UI Call backs hooked to events successfully');
+
+        // Here, we publish `onConnecting`
+        // event for the UI
+        eventManager.publishRTCEvent({
+          state: app.RTCCallEvents.CALL_CONNECTING,
+          to: options.to
+        });
+    
+        session.startCall(ATT.utils.extend(options, {
+          type: app.CallTypes.OUTGOING,
+          onCallStarted: function (callObj) {
+            options.onCallDialed(eventManager.createRTCEvent({
+              state: app.CallStatus.CALLING,
+              to: callObj.to
+            }));
+          },
+          onCallError: handleError.bind(this, 'StartCall', options.onCallError),
+          errorManager: errMgr,
+          resourceManager: resourceManager,
+          userMediaSvc: userMediaSvc,
+          peerConnSvc: peerConnSvc
         }));
       },
-      onCallError: handleError.bind(this, 'StartCall', options.onCallError),
-      errorManager: errMgr,
-      resourceManager: resourceManager,
-      userMediaSvc: userMediaSvc,
-      peerConnSvc: peerConnSvc
-    }));
+      onError: handleError.bind(this, 'HookUICallbacks', options.onError)
+    });
   }
 
   /**

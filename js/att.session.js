@@ -188,6 +188,7 @@
     logger.logDebug('startCall');
 
     options.factories.createCall(app.utils.extend(options, {
+      session: this,  // TODO: this should not be needed once we refactor UM and PC 
       onCallCreated: function (callObj) {
         try {
           if (!callObj) {

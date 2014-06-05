@@ -104,7 +104,7 @@
     initPeerConnection: function (config) {
       logger.logDebug('initPeerConnection');
 
-      var session = config.session,
+      var session = config.session,  // TODO: PC shouldn't use session
         call = session.getCurrentCall(),
         sdp;
 

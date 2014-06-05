@@ -107,10 +107,10 @@
     logger.logDebug('Consume event from event channel', JSON.stringify(event));
 
     // set current event on the session
-    callManager.getSessionContext().setEventObject(event);
+    //session.setEventObject(event);
 
     if (event.resourceURL) {
-      callManager.getSessionContext().setCurrentCallId(event.resourceURL.split('/')[6]);
+      session.getCurrentCall().setId(event.resourceURL.split('/')[6]);
     }
 
     dispatchEventToHandler(event, callManager);

@@ -7,7 +7,8 @@
 (function (app) {
   'use strict';
 
-  var rtcEvent,
+  var callbacks = {},
+    rtcEvent,
     resourceManager,
     errMgr,
     logger;
@@ -66,10 +67,10 @@
 
   function hookupUICallbacks(options) {
     try {
-      var session = this.getSession();
+      callbacks = app.utils.extend(callbacks, options.callbacks); // add to existing callbacks
       rtcEvent.setupEventBasedCallbacks({
-        session: session,
-        callbacks: options.callbacks
+        session: this.getSession(),
+        callbacks: callbacks
       });
       options.onUICallbacksHooked();
     } catch (err) {
@@ -90,6 +91,10 @@
     return rtcEvent.createEvent(options);
   }
 
+  function publishRTCEvent(options) {
+    ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', this.createRTCEvent(options));
+  }
+
   function eventManager(options) {
     var session = options.session;
     return {
@@ -99,7 +104,8 @@
       setupEventChannel: setupEventChannel,
       hookupUICallbacks: hookupUICallbacks,
       shutDown: shutDown,
-      createRTCEvent: createRTCEvent
+      createRTCEvent: createRTCEvent,
+      publishRTCEvent: publishRTCEvent
     };
   }
 

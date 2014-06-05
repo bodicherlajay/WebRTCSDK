@@ -55,7 +55,7 @@
     startCall: function (config) {
       logger.logTrace('starting call');
 
-      this.sessionId = config.sessionId;
+      this.sessionId = config.session.getSessionId(); // TODO: UM shouldn't use session
       this.localVideoElement = config.localVideo;
       this.remoteVideoElement = config.remoteVideo;
       this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints;
@@ -70,7 +70,7 @@
         from: config.from,
         to: config.to,
         mediaConstraints: this.mediaConstraints,
-        session: config.session
+        session: config.session  // TODO: UM shouldn't use session
       };
 
       // get a local stream, show it in a self-view and add it to be sent

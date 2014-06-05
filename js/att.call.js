@@ -206,19 +206,19 @@
       // onCallError: handleError.bind(this, 'CreateIncomingCall', options.onError)
     }));
 
-    var callObj = call({
-      to: options.to,
-      type: options.type,
-      mediaConstraints: options.mediaConstraints
-    });
-
-    options.onOutgoingCallCreated(callObj);
-
-    // Here, we publish `onConnecting`
-    // event for the UI
-    // ATT.event.publish(session_context.getSessionId() + '.responseEvent', {
-      // state : ATT.RTCCallEvents.CALL_CONNECTING
-    // });
+    // TODO: patch work
+    // setup callback for PeerConnectionService.onOfferSent, will be used to
+    // indicate the RINGING state on an outgoing call
+    ATT.PeerConnectionService.onOfferSent = function () {
+      logger.logInfo('onOfferSent... trigger RINGING event for outgoing call');
+      var callObj = call({
+        to: options.to,
+        type: options.type,
+        mediaConstraints: options.mediaConstraints
+      });
+  
+      options.onOutgoingCallCreated(callObj);
+    };
   }
 
   function createCall(options) {
