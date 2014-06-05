@@ -314,12 +314,11 @@
           if (typeof err === 'object') {
             err = err.message;
           }
-          // Need to figure out why Chrome throws this event though it works
-          //Error.publish('Set Remote Description Fail: ' + err);
+          Error.publish('Set Remote Description Fail: ' + err);
         });
       } catch (err) {
         // Need to figure out why Chrome throws this event though it works
-        //Error.publish('Set Remote Description Fail: ' + err.message);
+        Error.publish('Set Remote Description Fail: ' + err.message);
       }
     },
 
@@ -419,7 +418,7 @@
       logger.logTrace('holding call', sdp);
 
       // adjust SDP for hold request
-      sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=sendonly');
+      sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
       SDPFilter.processChromeSDPOffer(sdp);
       this.incrementModCount();
 
@@ -463,7 +462,7 @@
       logger.logTrace('resuming call', sdp);
 
       // adjust SDP for resume request
-      sdp.sdp = sdp.sdp.replace(/a=sendonly/g, 'a=sendrecv');
+      sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
       SDPFilter.processChromeSDPOffer(sdp);
       this.incrementModCount();
 

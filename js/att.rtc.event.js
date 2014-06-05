@@ -39,11 +39,11 @@
 
       // MODIFICATION_RECEIVED
       if (event.state === mainModule.RTCCallEvents.MODIFICATION_RECEIVED) {
-        if (event.sdp.indexOf('sendonly') !== -1) {
+        if (event.sdp.indexOf('recvonly') !== -1) {
           // Received hold request...
           return mainModule.CallStatus.HOLD;
         }
-        if (event.sdp.indexOf('sendrecv') !== -1 && callManager.getSessionContext().getCallObject().getSDP().sdp.indexOf('recvonly') !== -1) {
+        if (event.sdp.indexOf('sendrecv') !== -1 && callManager.getSessionContext().getCallObject().getSDP().sdp.indexOf('sendonly') !== -1) {
           // Received resume request...
           return mainModule.CallStatus.RESUMED;
         }
