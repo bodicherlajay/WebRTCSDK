@@ -25,7 +25,13 @@ cmgmt = (function () {
 
 
   function formatNumber(number) {
-    return ATT.phoneNumber.stringify(number);
+    var callable = ATT.rtc.Phone.cleanPhoneNumber(number);
+    if (!callable) {
+      logger.logWarning('Phone number not formatable .');
+      return;
+    }
+    logger.logInfo('The formated Number' + callable);
+    return ATT.phoneNumber.stringify(callable);
   }
   /**
    *  Removes extra characters from the phone number and formats it for
