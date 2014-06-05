@@ -2,7 +2,7 @@
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
 before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
 
-describe('UserMediaService', function () {
+describe.only('UserMediaService', function () {
   'use strict';
   var backupAtt;
 
@@ -177,6 +177,14 @@ describe('UserMediaService', function () {
     ATT.UserMediaService.unmuteStream();
     assert.isTrue(ATT.UserMediaService.localStream.getAudioTracks()[0].enabled);
     ATT.UserMediaService.localStream = backupLocalStream;
+  });
+
+  it('should hold video stream by setting `enabled` to false', function () {
+    // TODO
+  });
+
+  it('should resume video stream by setting `enabled` to true', function () {
+    // TODO
   });
 
   afterEach(function () {
