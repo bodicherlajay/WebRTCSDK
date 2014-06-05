@@ -39,8 +39,8 @@ cmgmt = (function () {
    */
   function cleanPhoneNumber(number) {
     var callable;
-
-    callable = ATT.phoneNumber.getCallable(number);
+    //removes the spaces form the number
+    callable = ATT.phoneNumber.getCallable(number.replace(/\s/g, ''));
 
     if (!callable) {
       logger.logWarning('Phone number not callable.');
