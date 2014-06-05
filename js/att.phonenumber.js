@@ -94,15 +94,10 @@
           digits += ch;
         }
       };
+      if(digits.length > 11){
+        digits = digits.substring(0, 10);
+      }
       return String(digits);
-    },
-    parse: function (input) {
-      return String(input)
-        .toUpperCase()
-        .replace(/[A-Z]/g, function (l) {
-          return (l.charCodeAt(0) - 65) / 3 + 2 - ("SVYZ".indexOf(l) > -1) || 0;
-        })
-        .replace(/\D/g, '');
     },
     getCallable: function (input, countryAbr) {
       var country = countryAbr || 'us',
