@@ -458,7 +458,7 @@ if (Env === undefined) {
   function dial(dialParams) {
 
     // get a callable phone number and pass that
-    dialParams.to = callManager.cleanPhoneNumber(dialParams.to);
+   // dialParams.to = callManager.cleanPhoneNumber(dialParams.to);
 
     // setup callback for ringing
     callManager.onCallCreated = function () {
