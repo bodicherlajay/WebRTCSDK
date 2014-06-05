@@ -2,7 +2,7 @@
 /*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
 before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
 
-describe.only('UserMediaService', function () {
+describe('UserMediaService', function () {
   'use strict';
   var backupAtt;
 
