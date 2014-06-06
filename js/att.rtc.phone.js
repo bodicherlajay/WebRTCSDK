@@ -473,8 +473,8 @@ if (Env === undefined) {
     //resourceManager.addPublicMethod('initCallback', initCallbacks);
     resourceManager.addPublicMethod('getMediaType', getMediaType);
     resourceManager.addPublicMethod('hangup', hangup);
-    //resourceManager.addPublicMethod('cleanPhoneNumber', rtcManager.cleanPhoneNumber);
-    //resourceManager.addPublicMethod('formatNumber', callManager.formatNumber);
+    resourceManager.addPublicMethod('cleanPhoneNumber', rtcManager.cleanPhoneNumber);
+    resourceManager.addPublicMethod('formatNumber', rtcManager.formatNumber);
 
     // TODO: For the moment expose the resourceManager so that we can stub it, this will change
     // once we apply the constructor method pattern to phone.js, instead we'll inject the rtcManager when

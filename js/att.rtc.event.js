@@ -43,7 +43,7 @@
           // Received hold request...
           return mainModule.CallStatus.HOLD;
         }
-        if (event.sdp.indexOf('sendrecv') !== -1 && callManager.getSessionContext().getCallObject().getSDP().sdp.indexOf('recvonly') !== -1) {
+        if (event.sdp.indexOf('sendrecv') !== -1 && session.getCurrentCall().getRemoteSdp().indexOf('recvonly') !== -1) {
           // Received resume request...
           return mainModule.CallStatus.RESUMED;
         }
@@ -76,8 +76,6 @@
   * @param {Object} callManager Instance of Call Manager
   */
   function dispatchEventToHandler(event) {
-    session = callManager.getSessionContext();
-
     setTimeout(function () {
       var CODEC = [], mediaType = '';
 
@@ -95,19 +93,23 @@
         if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED && event.reason) {
           event.error = event.reason;
         }
-        eventRegistry[event.state](createEvent({
-          from: event.from ? event.from.split('@')[0].split(':')[1] : '',
-          to: session && session.getCallObject() ? session.getCallObject().callee() : '',
-          state: setUIEventState(event),
-          codec: CODEC,
-          mediaType: mediaType,
-          data: event.data,
-          error: event.error || ''
-        }), {
-          sdp: event.sdp || '',
-          resource: event.resourceURL || '',
-          modId: event.modId || ''
-        });
+        if (RTCEvent.isPrototypeOf(event)) { // if already an RTC event, don't convert it again
+          eventRegistry[event.state](event);
+        } else {
+          eventRegistry[event.state](createEvent({
+            from: event.from ? event.from.split('@')[0].split(':')[1] : '',
+            to: session && session.getCurrentCall() ? session.getCurrentCall().to() : '',
+            state: setUIEventState(event),
+            codec: CODEC,
+            mediaType: mediaType,
+            data: event.data,
+            error: event.error || ''
+          }), {
+            sdp: event.sdp || '',
+            resource: event.resourceURL || '',
+            modId: event.modId || ''
+          });
+        }
       } else {
         logger.logError('No event handler defined for ' + event.state);
       }
@@ -133,7 +135,7 @@
       session.getCurrentCall().setId(event.resourceURL.split('/')[6]);
     }
 
-    dispatchEventToHandler(event, callManager);
+    dispatchEventToHandler(event);
   }
 
   /**

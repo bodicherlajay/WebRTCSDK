@@ -124,11 +124,11 @@
       logger.logInfo('creating peer connection');
       // Create peer connection
       // send any ice candidates to the other peer
-      this.createPeerConnection(callType);
+      this.createPeerConnection(this.callType);
 
-      logger.logTrace('session state', callType);
+      logger.logTrace('session state', this.callType);
 
-      if (callType === ATT.CallTypes.OUTGOING) {
+      if (this.callType === ATT.CallTypes.OUTGOING) {
         logger.logInfo('creating offer for outgoing call');
         this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
           Error.publish('Create offer failed');
@@ -137,7 +137,7 @@
           'OfferToReceiveVideo': this.mediaConstraints.video
         }});
 
-      } else if (callType === ATT.CallTypes.INCOMING) {
+      } else if (this.callType === ATT.CallTypes.INCOMING) {
         logger.logInfo('Responding to incoming call');
 
         //Check if invite is an announcement

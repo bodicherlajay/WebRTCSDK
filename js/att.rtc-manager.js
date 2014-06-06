@@ -28,6 +28,51 @@
     }
   }
 
+  function formatNumber(number) {
+    var callable = ATT.rtc.Phone.cleanPhoneNumber(number);
+    if (!callable) {
+      logger.logWarning('Phone number not formatable .');
+      return;
+    }
+    logger.logInfo('The formated Number' + callable);
+    return ATT.phoneNumber.stringify(callable);
+  }
+
+  /**
+   *  Removes extra characters from the phone number and formats it for
+   *  clear display
+   */
+  function cleanPhoneNumber(number) {
+    var callable;
+    //removes the spaces form the number
+    callable = ATT.phoneNumber.getCallable(number.replace(/\s/g, ''));
+
+    if (!callable) {
+      logger.logWarning('Phone number not callable.');
+      return;
+    }
+
+    logger.logInfo('checking number: ' + callable);
+
+    if (callable.length < 10) {
+
+      if (number.charAt(0) === '*') {
+        callable = '*' + callable;
+      }
+
+      if (!ATT.SpecialNumbers[callable]) {
+        ATT.Error.publish('SDK-20027', null, function (error) {
+          logger.logWarning('Undefined `onError`: ' + error);
+        });
+        return;
+      }
+    }
+
+    logger.logWarning('found number in special numbers list');
+
+    return callable;
+  }
+
   /**
   * start a new session
   * @param {Object} options The options
@@ -155,7 +200,9 @@
       startSession: startSession,
       getSession: getSession,
       deleteSession: deleteSession,
-      dialCall: dialCall
+      dialCall: dialCall,
+      cleanPhoneNumber: cleanPhoneNumber,
+      formatNumber: formatNumber
     };
   }
 
