@@ -38,30 +38,30 @@ cmgmt = (function () {
    *  clear display
    */
   function cleanPhoneNumber(number) {
-    var callable;
+    var callable, cleaned;
     //removes the spaces form the number
-    callable = ATT.phoneNumber.getCallable(number.replace(/\s/g, ''));
+    callable = ATT.phoneNumber.getCallable(number);
 
-    if (!callable) {
-      logger.logWarning('Phone number not callable.');
-      return;
+    if (callable) {
+      return callable;
     }
-
+    logger.logWarning('Phone number not callable, will check special numbers list.');
     logger.logInfo('checking number: ' + callable);
 
-    if (callable.length < 10) {
-
-      if (number.charAt(0) === '*') {
-        callable = '*' + callable;
-      }
-
-      if (!ATT.SpecialNumbers[callable]) {
-        ATT.Error.publish('SDK-20027', null, function (error) {
-          logger.logWarning('Undefined `onError`: ' + error);
-        });
-        return;
-      }
+    if (number.charAt(0) === '*') {
+      callable = '*' + callable;
     }
+
+    cleaned = ATT.phoneNumber.translate(number);
+    console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned );
+    if (ATT.SpecialNumbers[cleaned]) {
+      return cleaned;
+    }
+    ATT.Error.publish('SDK-20027', null, function (error) {
+      logger.logWarning('Undefined `onError`: ' + error);
+    });
+    return;
+
 
     logger.logWarning('found number in special numbers list');
 
