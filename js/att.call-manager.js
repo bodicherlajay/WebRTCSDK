@@ -48,12 +48,11 @@ cmgmt = (function () {
     logger.logWarning('Phone number not callable, will check special numbers list.');
     logger.logInfo('checking number: ' + callable);
 
-    if (number.charAt(0) === '*') {
-      callable = '*' + callable;
-    }
-
     cleaned = ATT.phoneNumber.translate(number);
     console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned );
+    if (number.charAt(0) === '*') {
+      cleaned = '*' + cleaned;
+    }
     if (ATT.SpecialNumbers[cleaned]) {
       return cleaned;
     }
@@ -358,9 +357,18 @@ cmgmt = (function () {
     ATT.UserMediaService.unmuteStream();
   };
 
-  Call.hangup = function () {
+  /**
+  * Call hangup
+  * @param {Object} options The phone.js facade options
+  */
+  Call.hangup = function (options) {
     logger.logInfo('Hanging up...');
-    ATT.SignalingService.sendEndCall();
+    ATT.SignalingService.sendEndCall({
+      error: function () {
+        ATT.Error.publish('SDK-20026', null, options.onError);
+        logger.logWarning('Hangup request failed.');
+      }
+    });
   };
 
   module.getInstance = function () {
