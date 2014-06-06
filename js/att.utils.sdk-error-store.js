@@ -189,6 +189,7 @@
       moduleID: 'RTC',
       operationName: 'DeleteSession',
       messageId: 'SVC0002',
+      httpStatusCode:'400',
       errorDescription: 'Unable to Delete Session',
       reasonText: 'Invalid input value for Message part <part_name>'
     },
@@ -351,6 +352,7 @@
   function freezeErrors(list) {
     var idx = 0;
     for (idx = 0; idx < list.length; idx = idx + 1) {
+      Object.getOwnPropertyDescriptor(list[idx], "reasonText").writable = true;
       // make all errors unmutable
       Object.freeze(list[idx]);
     }

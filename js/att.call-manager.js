@@ -21,9 +21,54 @@ cmgmt = (function () {
     DeleteSession,
     CreateOutgoingCall,
     CreateIncomingCall,
-    DeleteCallObject,
-    cleanPhoneNumber;
-    //userMediaService,
+    DeleteCallObject;
+
+
+  function formatNumber(number) {
+    var callable = ATT.rtc.Phone.cleanPhoneNumber(number);
+    if (!callable) {
+      logger.logWarning('Phone number not formatable .');
+      return;
+    }
+    logger.logInfo('The formated Number' + callable);
+    return ATT.phoneNumber.stringify(callable);
+  }
+  /**
+   *  Removes extra characters from the phone number and formats it for
+   *  clear display
+   */
+  function cleanPhoneNumber(number) {
+    var callable;
+    //removes the spaces form the number
+    callable = ATT.phoneNumber.getCallable(number.replace(/\s/g, ''));
+
+    if (!callable) {
+      logger.logWarning('Phone number not callable.');
+      return;
+    }
+
+    logger.logInfo('checking number: ' + callable);
+
+    if (callable.length < 10) {
+
+      if (number.charAt(0) === '*') {
+        callable = '*' + callable;
+      }
+
+      if (!ATT.SpecialNumbers[callable]) {
+        ATT.Error.publish('SDK-20027', null, function (error) {
+          logger.logWarning('Undefined `onError`: ' + error);
+        });
+        return;
+      }
+    }
+
+    logger.logWarning('found number in special numbers list');
+
+    return callable;
+  }
+
+  //userMediaService,
     //peerConnectionService,
     //rtcEventModule
 
@@ -135,8 +180,8 @@ cmgmt = (function () {
       getMediaType: function () {
         return mediaType;
       },
-      setMediaType: function (mediaType) {
-        mediaType = mediaType;
+      setMediaType: function (mediatype) {
+        mediaType = mediatype;
       }
     };
   };
@@ -203,7 +248,7 @@ cmgmt = (function () {
 
     logger.logInfo('Creating outgoing call');
 
-    var call = new Call(null, cleanPhoneNumber(config.to), config.mediaConstraints),
+    var call = new Call(null, config.to, config.mediaConstraints),
       that = this;
 
     // set call and callbacks in current session
@@ -232,33 +277,6 @@ cmgmt = (function () {
     };
 
     ATT.UserMediaService.startCall(config);
-  };
-
-  /**
-   *  Removes extra characters from the phone number and formats it for
-   *  clear display
-   */
-  cleanPhoneNumber = function (number, options) {
-    var cleaned = ATT.phoneNumber.stringify(number);
-
-    logger.logInfo('Cleaned phone number: ' + cleaned + ', callable: ' +
-      ATT.phoneNumber.getCallable(cleaned));
-
-    if (!ATT.phoneNumber.getCallable(cleaned)) {
-      logger.logWarning('Phone number not callable.');
-      if (number.charAt(0) === '*') {
-        cleaned = '*' + cleaned;
-      }
-      logger.logWarning('checking number: ' + cleaned);
-      if (!ATT.SpecialNumbers[cleaned]) {
-        ATT.Error.publish('SDK-20027', null, function (error) {
-          logger.logWarning('Undefined `onError`: ' + error);
-        });
-      } else {
-        logger.logWarning('found number in special numbers list');
-      }
-    }
-    return cleaned;
   };
 
   /**
@@ -307,7 +325,8 @@ cmgmt = (function () {
       CreateOutgoingCall: CreateOutgoingCall,
       CreateIncomingCall: CreateIncomingCall,
       DeleteCallObject: DeleteCallObject,
-      cleanPhoneNumber: cleanPhoneNumber
+      cleanPhoneNumber: cleanPhoneNumber,
+      formatNumber: formatNumber
     };
   };
 
@@ -339,18 +358,9 @@ cmgmt = (function () {
     ATT.UserMediaService.unmuteStream();
   };
 
-  /**
-  * Call hangup
-  * @param {Object} options The phone.js facade options
-  */
-  Call.hangup = function (options) {
+  Call.hangup = function () {
     logger.logInfo('Hanging up...');
-    ATT.SignalingService.sendEndCall({
-      error: function () {
-        ATT.Error.publish('SDK-20026', null, options.onError);
-        logger.logWarning('Hangup request failed.');
-      }
-    });
+    ATT.SignalingService.sendEndCall();
   };
 
   module.getInstance = function () {

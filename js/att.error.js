@@ -56,9 +56,19 @@
         if (errObj.RequestError.ServiceException) { // API Service Exceptions
           error = ATT.errorDictionary.getErrorByOpStatus(operation,
             err.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+          if (error === undefined) {
+            logger.logError("Error code not found in dictionary for key:" + operation + err.getResponseStatus() + errObj.RequestError.ServiceException.MessageId);
+          } else {
+            error.reasonText = errObj.RequestError.ServiceException.Text + ",Variables=" + errObj.RequestError.ServiceException.Variables;
+          }
         } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
           error = ATT.errorDictionary.getErrorByOpStatus(operation,
             err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+          if (error === undefined) {
+            logger.logError("Error code not found in dictionary for key:" + operation + err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+          } else {
+            error.reasonText = errObj.RequestError.PolicyException.Text + ",Variables=" + errObj.RequestError.PolicyException.Variables;
+          }
         } else if (errObj.RequestError.Exception) { // API Exceptions
           error = ATT.errorDictionary.getDefaultError({
             moduleID: moduleId,

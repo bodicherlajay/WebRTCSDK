@@ -103,17 +103,18 @@ if (Env === undefined) {
       services = ['ip_voice_call', 'ip_video_call'],
       errorHandler;
 
+    if (!loginParams) {
+      throw 'Cannot login to web rtc, no configuration';
+    }
+    if (!loginParams.token) {
+      throw 'Cannot login to web rtc, no access token';
+    }
+
     try {
       if (loginParams.callbacks && loginParams.callbacks.onError && typeof loginParams.callbacks.onError === 'function') {
         errorHandler = loginParams.callbacks.onError;
       }
 
-      if (!loginParams) {
-        throw 'Cannot login to web rtc, no configuration';
-      }
-      if (!loginParams.token) {
-        throw 'Cannot login to web rtc, no access token';
-      }
       if (!rtcManager) {
         throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
       }
@@ -254,23 +255,23 @@ if (Env === undefined) {
    * );
    */
   function dial(dialParams) {
+    if (!dialParams) {
+      throw 'Cannot make a web rtc call, no dial configuration';
+    }
+    if (!dialParams.to) {
+      throw 'Cannot make a web rtc call, no destination';
+    }
+    if (!dialParams.mediaConstraints) {
+      throw 'Cannot make a web rtc call, no media constraints';
+    }
+    if (!dialParams.localVideo) {
+      throw 'Cannot make a web rtc call, no local media DOM element';
+    }
+    if (!dialParams.remoteVideo) {
+      throw 'Cannot make a web rtc call, no remote media DOM element';
+    }
 
     try {
-      if (!dialParams) {
-        throw 'Cannot make a web rtc call, no dial configuration';
-      }
-      if (!dialParams.to) {
-        throw 'Cannot make a web rtc call, no destination';
-      }
-      if (!dialParams.mediaConstraints) {
-        throw 'Cannot make a web rtc call, no media constraints';
-      }
-      if (!dialParams.localVideo) {
-        throw 'Cannot make a web rtc call, no local media DOM element';
-      }
-      if (!dialParams.remoteVideo) {
-        throw 'Cannot make a web rtc call, no remote media DOM element';
-      }
       if (!rtcManager) {
         throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
       }
@@ -331,19 +332,20 @@ if (Env === undefined) {
     );
    */
   function answer(answerParams) {
+    if (!answerParams) {
+      throw new TypeError('Cannot make a web rtc call, no answer configuration');
+    }
+    // if (!answerParams.mediaConstraints) {
+      // throw 'Cannot make a web rtc call, no media constraints';
+    // }
+    if (!answerParams.localVideo) {
+      throw new TypeError('Cannot make a web rtc call, no local media DOM element');
+    }
+    if (!answerParams.remoteVideo) {
+      throw new TypeError('Cannot make a web rtc call, no remote media DOM element');
+    }
+
     try {
-      if (!answerParams) {
-        throw 'Cannot make a web rtc call, no answer configuration';
-      }
-      // if (!answerParams.mediaConstraints) {
-        // throw 'Cannot make a web rtc call, no media constraints';
-      // }
-      if (!answerParams.localVideo) {
-        throw 'Cannot make a web rtc call, no local media DOM element';
-      }
-      if (!answerParams.remoteVideo) {
-        throw 'Cannot make a web rtc call, no remote media DOM element';
-      }
       rtcManager.CreateIncomingCall(answerParams);
     } catch (e) {
       ATT.Error.publish(e, "AnswerCall");
@@ -416,27 +418,14 @@ if (Env === undefined) {
    * Holds the current call
    * @desc
   * Holds the current call and the other party gets notified through event channel
-  * @param {Object} holdParams
-   * @param {function} holdParams.onSuccess
-   * @param {function} holdParams.onError
-   * @fires ATT.rtc.Phone.hold#[RTCEvent]onSuccess  This callback function gets invoked when hold is successful
-   * @fires ATT.rtc.Phone.hold#[RTCEvent]onError    This callback function gets invoked while encountering errors
   * @example
-  ATT.rtc.Phone.hold({
-      onSuccess: function(evt) {},
-      onError: function(evt) {}
-  });
+  ATT.rtc.Phone.hold();
   */
-  function hold(holdParams) {
+  function hold() {
     try {
       rtcManager.getSessionContext().getCallObject().hold(holdParams);
-      if (holdParams && holdParams.success) {
-        holdParams.success();
-      }
     } catch (e) {
-      if (holdParams && holdParams.error) {
-        ATT.Error.publish('SDK-20030', null, holdParams.error);
-      }
+      ATT.Error.publish('SDK-20030', null);
     }
   }
 
@@ -446,27 +435,14 @@ if (Env === undefined) {
    * Resumes the current call
    * @desc
   * Resumes the current call and the other party gets notified through event channel and the call resumes
-  * @param {Object} resumeParams
-   * @param {function} resumeParams.onSuccess
-   * @param {function} resumeParams.onError
-   * @fires ATT.rtc.Phone.resume#[RTCEvent]onSuccess  This callback function gets invoked when resume is successful
-   * @fires ATT.rtc.Phone.resume#[RTCEvent]onError    This callback function gets invoked while encountering errors
   * @example
-  ATT.rtc.Phone.resume({
-      onSuccess: function(evt) {},
-      onError: function(evt) {}
-  });
+  ATT.rtc.Phone.resume();
   */
-  function resume(resumeParams) {
+  function resume() {
     try {
       rtcManager.getSessionContext().getCallObject().resume(resumeParams);
-      if (resumeParams && resumeParams.success) {
-        resumeParams.success();
-      }
     } catch (e) {
-      if (resumeParams && resumeParams.error) {
-        ATT.Error.publish('SDK-20031', null, resumeParams.error);
-      }
+      ATT.Error.publish('SDK-20031', null);
     }
   }
 
@@ -475,19 +451,12 @@ if (Env === undefined) {
    * Hangup the current call
    * @desc
   * Hangs up the current call
-  * @param {Object} hangupParams The callback options
-   * @param {function} hangupParams.onSuccess
-   * @param {function} hangupParams.onError
-   * @fires ATT.rtc.Phone.hangup#[RTCEvent]onSuccess  This callback function gets invoked when hangup is successful
-   * @fires ATT.rtc.Phone.hangup#[RTCEvent]onError    This callback function gets invoked while encountering errors
   */
-  function hangup(hangupParams) {
+  function hangup() {
     try {
       rtcManager.getSessionContext().getCallObject().end(hangupParams);
     } catch (e) {
-      if (hangupParams && hangupParams.error) {
-        ATT.Error.publish('SDK-20024', null, hangupParams.error);
-      }
+      ATT.Error.publish('SDK-20024', null);
     }
   }
 
@@ -505,6 +474,7 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('getMediaType', getMediaType);
     resourceManager.addPublicMethod('hangup', hangup);
     //resourceManager.addPublicMethod('cleanPhoneNumber', rtcManager.cleanPhoneNumber);
+    resourceManager.addPublicMethod('formatNumber', callManager.formatNumber);
 
     // TODO: For the moment expose the resourceManager so that we can stub it, this will change
     // once we apply the constructor method pattern to phone.js, instead we'll inject the rtcManager when

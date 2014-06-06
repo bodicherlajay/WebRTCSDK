@@ -201,6 +201,36 @@
         }
       }
     },
+
+    /**
+    * Disable the local video stream
+    */
+    holdVideoStream: function () {
+      logger.logTrace('disabling local video stream...');
+      if (this.remoteStream) {
+        var videoTracks = this.remoteStream.getVideoTracks(),
+          i,
+          l = videoTracks.length;
+        for (i = 0; i < l; i = i + 1) {
+          videoTracks[i].enabled = false;
+        }
+      }
+    },
+
+    /**
+    * Enable the local video stream
+    */
+    resumeVideoStream: function () {
+      logger.logTrace('disabling local video stream...');
+      if (this.remoteStream) {
+        var videoTracks = this.remoteStream.getVideoTracks(),
+          i,
+          l = videoTracks.length;
+        for (i = 0; i < l; i = i + 1) {
+          videoTracks[i].enabled = true;
+        }
+      }
+    },
     setError: setError  // testability
   };
 

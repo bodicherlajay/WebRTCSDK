@@ -179,6 +179,14 @@ describe('UserMediaService', function () {
     ATT.UserMediaService.localStream = backupLocalStream;
   });
 
+  it('should hold video stream by setting `enabled` to false', function () {
+    // TODO
+  });
+
+  it('should resume video stream by setting `enabled` to true', function () {
+    // TODO
+  });
+
   afterEach(function () {
     ATT = backupAtt;
   });

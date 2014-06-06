@@ -31,12 +31,21 @@ describe('ATT.phoneNumber', function () {
 
   it('stringify4', function () {
     var number = 'b123456790a';
-    expect(ATT.phoneNumber.stringify(number)).to.equal('233333333333333351234567902');
+    expect(ATT.phoneNumber.stringify(number)).to.equal('212-345-67902');
   });
 
   it('stringify5', function () {
     var number = '723';
     expect(ATT.phoneNumber.stringify(number)).to.equal('723');
+  });
+
+  it('should trim numbers to 11 digits', function () {
+    var number = '12345678901';
+    expect(ATT.phoneNumber.stringify(number)).to.equal('1234567890');
+    var number = '1234567#$#$#8901';
+    expect(ATT.phoneNumber.stringify(number)).to.equal('1234567890');
+    var number = '1234567890';
+    expect(ATT.phoneNumber.stringify(number)).to.equal('1234567890');
   });
 
   it('getCallable1', function () {

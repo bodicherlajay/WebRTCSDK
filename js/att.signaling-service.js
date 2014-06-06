@@ -192,6 +192,7 @@
         },
         error: function (err) {
           logger.logError('CALL HOLD ERROR', err);
+          ATT.Error.publish('SDK-20032', null);
           if (typeof config.error === 'function') {
             config.error();
           }
@@ -238,6 +239,7 @@
         },
         error: function (err) {
           logger.logError('CALL RESUME ERROR', err);
+          ATT.Error.publish('SDK-20033', null);
           if (typeof config.error === 'function') {
             config.error();
           }
@@ -271,6 +273,7 @@
             }
           } else {
             logger.logError('CALL TERMINATION ERROR, status:', response.getResponseStatus());
+            ATT.Error.publish('SDK-20026', null);
             if (typeof config.error === 'function') {
               config.error();
             }
@@ -278,12 +281,14 @@
         },
         error: function (err) {
           logger.logError('CALL TERMINATION ERROR', err);
+          ATT.Error.publish('SDK-20026', null);
           if (typeof config.error === 'function') {
             config.error();
           }
         },
         ontimeout: function (err) {
           logger.logError('CALL TERMINATION ERROR', err);
+          ATT.Error.publish('SDK-20026', null);
           if (typeof config.error === 'function') {
             config.error();
           }
