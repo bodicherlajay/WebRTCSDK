@@ -93,23 +93,6 @@ describe('Phone', function () {
     });
   });
 
-  describe('getcalltype', function () {
-    it('Check if getCalltype returns null by default', function () {
-      expect(ATT.rtc.Phone.getCallType()).equals(null);
-    });
-    it('Check if getCalltype returns video type for video calls', function () {
-      cmgmt.CallManager.getInstance().getSessionContext().setCallType('video');
-      expect(ATT.rtc.Phone.getCallType()).equals('video');
-    });
-    it('Check if getCalltype returns audio type for audio Calls', function () {
-      cmgmt.CallManager.getInstance().getSessionContext().setCallType('audio');
-      expect(ATT.rtc.Phone.getCallType()).equals('audio');
-    });
-    it('Check if getCalltype returns null on call terminated or ended ', function () {
-      cmgmt.CallManager.getInstance().getSessionContext().setCallType(null);
-      expect(ATT.rtc.Phone.getCallType()).equals(null);
-    });
-  });
   xdescribe('resume', function () {
     var stubSessionContext, fakeSessionContext, instanceFunction, resumeCalled = false,
       myCallManager = cmgmt.CallManager.getInstance();
