@@ -41,7 +41,7 @@ if (Env === undefined) {
 
     var session = callManager.getSessionContext(),
       keepAliveDuration = app.appConfig.KeepAlive || config.keepAliveDuration, // developer configured duration overrides the one set by API server
-      timeBeforeExpiration = 5 * 60 * 1000, // refresh 5 minutes before expiration
+      timeBeforeExpiration = 1 * 60 * 1000, // refresh 1 minutes before expiration
       timeout = (keepAliveDuration > timeBeforeExpiration) ? (keepAliveDuration - timeBeforeExpiration) : keepAliveDuration,
       dataForRefreshWebRTCSession;
 
@@ -190,7 +190,7 @@ if (Env === undefined) {
         if (responseObject.getResponseHeader('x-expires')) {
           expiration = responseObject.getResponseHeader('x-expires');
           expiration = Number(expiration);
-          expiration = isNaN(expiration) ? 0 : expiration * 1000; // convert to ms
+          expiration = isNaN(expiration) ? 0 : expiration;// * 1000; // already comes in as ms now
         }
       }
 
