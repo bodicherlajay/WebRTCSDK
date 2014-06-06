@@ -71,27 +71,47 @@ describe('Phone', function () {
     });
   });
 
-  xdescribe('hold', function () {
-    var stubSessionContext, fakeSessionContext, instanceFunction, holdCalled = false,
-      myCallManager = cmgmt.CallManager.getInstance();
-    it('will call hold if callObject is defined', function () {
-      instanceFunction = function () { return { hold: function () { holdCalled = true; } }; };
-      fakeSessionContext = {getCallObject: instanceFunction };
-      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
-      stubSessionContext.returns(fakeSessionContext);
+  describe('hold', function () {
+    var myCallManager = cmgmt.CallManager.getInstance();
+
+    it('should call callObject.hold', function () {
+      var holdSpy = sinon.spy(),
+        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+          return {
+            getCallObject: function () {
+              return {
+                hold: holdSpy
+              };
+            }
+          };
+        });
+
       ATT.rtc.Phone.hold();
-      expect(holdCalled).equals(true);
-      stubSessionContext.restore();
+      expect(holdSpy.called).to.equal(true);
+      sessionContextStub.restore();
     });
-    it('will not call hold if calledObject is null', function () {
-      instanceFunction = function () { return null; };
-      fakeSessionContext = {getCallObject: instanceFunction };
-      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
-      stubSessionContext.returns(fakeSessionContext);
+
+    it('should publish error if hold throws exception', function () {
+      var publishStub = sinon.stub(ATT.Error, 'publish'),
+        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+          return {
+            getCallObject: function () {
+              return {
+                hold: function () {
+                  throw new Error();
+                }
+              };
+            }
+          };
+        });
+
       ATT.rtc.Phone.hold();
-      stubSessionContext.restore();
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
+      sessionContextStub.restore();
     });
   });
+
 
   describe('getMediaType', function () {
     it('Check if getMediaType returns null by default', function () {
@@ -110,46 +130,85 @@ describe('Phone', function () {
       expect(ATT.rtc.Phone.getMediaType()).equals(null);
     });
   });
-  xdescribe('resume', function () {
-    var stubSessionContext, fakeSessionContext, instanceFunction, resumeCalled = false,
-      myCallManager = cmgmt.CallManager.getInstance();
-    it('will call resume if callObject is defined', function () {
-      instanceFunction = function () { return { resume: function () { resumeCalled = true; } }; };
-      fakeSessionContext = { getCallObject: instanceFunction };
-      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
-      stubSessionContext.returns(fakeSessionContext);
+
+  describe('resume', function () {
+
+    var myCallManager = cmgmt.CallManager.getInstance();
+
+    it('should call callObject.resume', function () {
+      var resumeSpy = sinon.spy(),
+        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+          return {
+            getCallObject: function () {
+              return {
+                resume: resumeSpy
+              };
+            }
+          };
+        });
       ATT.rtc.Phone.resume();
-      expect(resumeCalled).equals(true);
-      stubSessionContext.restore();
+      expect(resumeSpy.called).to.equal(true);
+      sessionContextStub.restore();
     });
-    it('will not call resume if calledObject is null', function () {
-      instanceFunction = function () { return null; };
-      fakeSessionContext = {getCallObject: instanceFunction };
-      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
-      stubSessionContext.returns(fakeSessionContext);
+
+    it('should publish error if restore throws exception', function () {
+      var publishStub = sinon.stub(ATT.Error, 'publish'),
+        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+          return {
+            getCallObject: function () {
+              return {
+                resume: function () {
+                  throw new Error();
+                }
+              };
+            }
+          };
+        });
+
       ATT.rtc.Phone.resume();
-      stubSessionContext.restore();
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
+      sessionContextStub.restore();
     });
   });
-  xdescribe('hangup', function () {
-    var stubSessionContext, fakeSessionContext, instanceFunction, hangupCalled = false,
-      myCallManager = cmgmt.CallManager.getInstance();
-    it('will call hangup if callObject is defined', function () {
-      instanceFunction = function () { return { end: function () { hangupCalled = true; } }; };
-      fakeSessionContext = { getCallObject: instanceFunction };
-      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
-      stubSessionContext.returns(fakeSessionContext);
+  describe('hangup', function () {
+    var myCallManager = cmgmt.CallManager.getInstance();
+
+    it('should call callObject.end', function () {
+      var hangupSpy = sinon.spy(),
+        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+          return {
+            getCallObject: function () {
+              return {
+                end: hangupSpy
+              };
+            }
+          };
+        });
+
       ATT.rtc.Phone.hangup();
-      expect(hangupCalled).equals(true);
-      stubSessionContext.restore();
+      expect(hangupSpy.called).to.equal(true);
+      sessionContextStub.restore();
     });
-    it('will not call hangup if calledObject is null', function () {
-      instanceFunction = function () { return null; };
-      fakeSessionContext = {getCallObject: instanceFunction };
-      stubSessionContext = sinon.stub(myCallManager, "getSessionContext");
-      stubSessionContext.returns(fakeSessionContext);
+
+    it('should publish error if end throws exception', function () {
+      var publishStub = sinon.stub(ATT.Error, 'publish'),
+        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+          return {
+            getCallObject: function () {
+              return {
+                end: function () {
+                  throw new Error();
+                }
+              };
+            }
+          };
+        });
+
       ATT.rtc.Phone.hangup();
-      stubSessionContext.restore();
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
+      sessionContextStub.restore();
     });
   });
 

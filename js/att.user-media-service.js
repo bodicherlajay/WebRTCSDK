@@ -219,14 +219,6 @@
     */
     holdVideoStream: function () {
       logger.logTrace('disabling local video stream...');
-      if (this.localStream) {
-        var videoTracks = this.localStream.getVideoTracks(),
-          i,
-          l = videoTracks.length;
-        for (i = 0; i < l; i = i + 1) {
-          videoTracks[i].enabled = false;
-        }
-      }
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,
@@ -242,14 +234,6 @@
     */
     resumeVideoStream: function () {
       logger.logTrace('disabling local video stream...');
-      if (this.localStream) {
-        var videoTracks = this.localStream.getVideoTracks(),
-          i,
-          l = videoTracks.length;
-        for (i = 0; i < l; i = i + 1) {
-          videoTracks[i].enabled = true;
-        }
-      }
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,

@@ -358,18 +358,9 @@ cmgmt = (function () {
     ATT.UserMediaService.unmuteStream();
   };
 
-  /**
-  * Call hangup
-  * @param {Object} options The phone.js facade options
-  */
-  Call.hangup = function (options) {
+  Call.hangup = function () {
     logger.logInfo('Hanging up...');
-    ATT.SignalingService.sendEndCall({
-      error: function () {
-        ATT.Error.publish('SDK-20026', null, options.onError);
-        logger.logWarning('Hangup request failed.');
-      }
-    });
+    ATT.SignalingService.sendEndCall();
   };
 
   module.getInstance = function () {

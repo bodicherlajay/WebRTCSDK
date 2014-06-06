@@ -39,6 +39,15 @@ describe('ATT.phoneNumber', function () {
     expect(ATT.phoneNumber.stringify(number)).to.equal('723');
   });
 
+  it('should trim numbers to 11 digits', function () {
+    var number = '12345678901';
+    expect(ATT.phoneNumber.stringify(number)).to.equal('1234567890');
+    var number = '1234567#$#$#8901';
+    expect(ATT.phoneNumber.stringify(number)).to.equal('1234567890');
+    var number = '1234567890';
+    expect(ATT.phoneNumber.stringify(number)).to.equal('1234567890');
+  });
+
   it('getCallable1', function () {
     var number = '222222',
       countryCode = 'us';
