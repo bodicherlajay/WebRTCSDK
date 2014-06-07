@@ -1,5 +1,5 @@
 /*jslint indent:2*/
-/*global assert,cmgmt, event, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, console, window*/
+/*global assert,cmgmt, event, ATT, describe, it, xit, afterEach, beforeEach, before, sinon, expect, console, window*/
 
 describe('Event Dispatcher Tests', function () {
   'use strict';
@@ -139,7 +139,7 @@ describe('Event Dispatcher Tests', function () {
 
     });
 
-    it('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
+    xit('should invoke onCallEnded when SESSION_TERMINATED happens WITHOUT event.reason', function () {
       var context = new SessionContext("token", "e911id", ATT.RTCCallEvents.SESSION_TERMINATED), called = false;
       context.setUICallbacks({onCallEnded: function () { called = true; }});
       eventRegistry = utils.createEventRegistry(context, RTCEventModule, cmgmt.CallManager.getInstance(), ATT.PeerConnectionService);

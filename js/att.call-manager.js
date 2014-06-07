@@ -49,7 +49,7 @@ cmgmt = (function () {
     logger.logInfo('checking number: ' + callable);
 
     cleaned = ATT.phoneNumber.translate(number);
-    console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned );
+    console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
     if (number.charAt(0) === '*') {
       cleaned = '*' + cleaned;
     }
@@ -59,17 +59,7 @@ cmgmt = (function () {
     ATT.Error.publish('SDK-20027', null, function (error) {
       logger.logWarning('Undefined `onError`: ' + error);
     });
-    return;
-
-
-    logger.logWarning('found number in special numbers list');
-
-    return callable;
   }
-
-  //userMediaService,
-    //peerConnectionService,
-    //rtcEventModule
 
   /**
   * Call Prototype

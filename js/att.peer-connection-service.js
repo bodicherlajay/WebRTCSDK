@@ -56,10 +56,10 @@
       setEventEmitter(app.event);
       // setApp ({
         // SignalingService: {
-//           
+//
         // },
         // Error: {
-//           
+//
         // }
       // });
 
@@ -318,6 +318,7 @@
           //Error.publish('Set Remote Description Fail: ' + err);
         });
       } catch (err) {
+        console.log(err);
         // Need to figure out why Chrome throws this event though it works
         //Error.publish('Set Remote Description Fail: ' + err.message);
       }

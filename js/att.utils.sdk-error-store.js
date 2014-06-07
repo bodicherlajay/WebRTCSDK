@@ -189,7 +189,7 @@
       moduleID: 'RTC',
       operationName: 'DeleteSession',
       messageId: 'SVC0002',
-      httpStatusCode:'400',
+      httpStatusCode: '400',
       errorDescription: 'Unable to Delete Session',
       reasonText: 'Invalid input value for Message part <part_name>'
     },

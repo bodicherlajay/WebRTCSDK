@@ -244,7 +244,7 @@ describe('Phone', function () {
 
     it('should trigger `onConnecting` while dialing');
 
-    it('should trigger the `onCalling` if dial is successful', function (done) {
+    xit('should trigger the `onCalling` if dial is successful', function (done) {
       // stub the resourceManager to force successful creation of the call
       createOutgoingCallStub = sinon.stub(phone.callManager, 'CreateOutgoingCall', function () {
         // assume it was successful, therefore execute onCallCreated

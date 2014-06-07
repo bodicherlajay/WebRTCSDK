@@ -41,7 +41,7 @@ if (Env === undefined) {
 
     var session = callManager.getSessionContext(),
       keepAliveDuration = app.appConfig.KeepAlive || config.keepAliveDuration, // developer configured duration overrides the one set by API server
-      timeBeforeExpiration = 1 * 60 * 1000, // refresh 1 minutes before expiration
+      timeBeforeExpiration = 60 * 1000, // refresh 1 minutes before expiration
       timeout = (keepAliveDuration > timeBeforeExpiration) ? (keepAliveDuration - timeBeforeExpiration) : keepAliveDuration,
       dataForRefreshWebRTCSession;
 
@@ -413,9 +413,9 @@ if (Env === undefined) {
    * @summary
    * Make an outgoing call
    * @desc
-   * Used to make outgoing call. This function takes five arguments: the destination(tel or sip uri), 
+   * Used to make outgoing call. This function takes five arguments: the destination(tel or sip uri),
    * html element id to display the local video/audio, html element id to display remote video,
-   * media constraints, configuration object with callback functions 
+   * media constraints, configuration object with callback functions
    * @param {Object} dialParams Dial configuration object.
    * @memberof ATT.rtc.Phone
    * @param {String} dialParams.phoneNumber
@@ -431,8 +431,10 @@ if (Env === undefined) {
    * @param {function} dialParams.onCallEnded        callback function for onCallEnded event
    * @param {function} dialParams.onCallError        callback function for onCallError event
    * @fires ATT.rtc.Phone.dial#[RTCEvent]onCalling            This callback function gets invoked immediately after dial method is invoked
-   * @fires ATT.rtc.Phone.dial#[RTCEvent]onConnecting         This callback function gets invoked before the call established and after onCalling callback is invoked
-   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEstablished    This callback function gets invoked when both parties are completed negotiation and engaged in active conversation
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onConnecting         This callback function gets invoked before the call
+   *                                                          established and after onCalling callback is invoked
+   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEstablished    This callback function gets invoked when both
+   *                                                          parties are completed negotiation and engaged in active conversation
    * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallInProgress     This callback function gets invoked while encountering issue with outgoing/incoming call
    * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallHold         This callback function gets invoked when hold call is successful
    * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallResume         This callback function gets invoked when the current call successfully resumed
@@ -509,7 +511,8 @@ if (Env === undefined) {
    * @param {function} answerParams.onCallResume       callback function for onCallResume event
    * @param {function} answerParams.onCallEnded        callback function for onCallEnded event
    * @param {function} answerParams.onCallError        callback function for onCallError event
-   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallEstablished    This callback function gets invoked when both parties are completed negotiation and engaged in active conversation
+   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallEstablished    This callback function gets invoked when both parties are completed negotiation
+   *                                                            and engaged in active conversation
    * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallInProgress     This callback function gets invoked while encountering issue with incoming call
    * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallHold         This callback function gets invoked when hold call is successful
    * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallResume         This callback function gets invoked when the current call successfully resumed

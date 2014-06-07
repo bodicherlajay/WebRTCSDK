@@ -37,16 +37,16 @@ describe('DHSModule', function () {
 
   it('should call `doOperation` on the resourceManager', function () {
     var config = {"data" : {"type" : "MOBILENUMBER"}},
-      spy = sinon.spy(resourceManager, 'doOperation');
+      stub = sinon.stub(resourceManager, 'doOperation');
 
     ATT.rtc.dhs.login(config);
-    expect(spy.called).to.equal(true);
-    resourceManager.doOperation.restore();
+    expect(stub.called).to.equal(true);
+    stub.restore();
   });
 
   it('should call success callback after authentication', function () {
     var successSpy = sinon.spy(),
-      doOperationSpy = sinon.spy(resourceManager, 'doOperation'),
+      doOperationStub = sinon.stub(resourceManager, 'doOperation'),
       errorSpy = sinon.spy,
       config = {
         data: {
@@ -57,7 +57,8 @@ describe('DHSModule', function () {
       };
 
     ATT.rtc.dhs.login(config);
-    expect(doOperationSpy.called).to.equal(true);
+    expect(doOperationStub.called).to.equal(true);
+    doOperationStub.restore();
   });
 
   it('login should call success cb on success ', function () {
@@ -92,7 +93,6 @@ describe('DHSModule', function () {
     // expect
     expect(spySuccess.called).to.equal(true);
   });
-
 
   it('getE911Id should call success callback on call success.', function () {
     var spySuccess = sinon.spy(),
@@ -149,7 +149,7 @@ describe('DHSModule', function () {
   it('getE911Id should publish error if no userId passed in.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
-      publishSpy = sinon.spy(ATT.Error, 'publish');
+      publishStub = sinon.stub(ATT.Error, 'publish');
 
     ATT.rtc.dhs.getE911Id({
       data: {
@@ -159,8 +159,8 @@ describe('DHSModule', function () {
       error:    spyError
     });
 
-    expect(publishSpy.called).to.equal(true);
-    publishSpy.restore();
+    expect(publishStub.called).to.equal(true);
+    publishStub.restore();
   });
 
   it('createE911Id should call success callback on call success.', function () {
@@ -232,7 +232,7 @@ describe('DHSModule', function () {
   it('createE911Id should publish error if no config.data passed in.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
-      publishSpy = sinon.spy(ATT.Error, 'publish');
+      publishStub = sinon.stub(ATT.Error, 'publish');
 
     ATT.rtc.dhs.createE911Id({
 //      data: {
@@ -249,14 +249,14 @@ describe('DHSModule', function () {
       error:    spyError
     });
 
-    expect(publishSpy.called).to.equal(true);
-    publishSpy.restore();
+    expect(publishStub.called).to.equal(true);
+    publishStub.restore();
   });
 
   it('createE911Id should publish error if address fails validation.', function () {
     var spySuccess = sinon.spy(),
       spyError = sinon.spy(),
-      publishSpy = sinon.spy(ATT.Error, 'publish');
+      publishStub = sinon.stub(ATT.Error, 'publish');
 
     // Missing fields
     ATT.rtc.dhs.createE911Id({
@@ -274,7 +274,7 @@ describe('DHSModule', function () {
       error:    spyError
     });
 
-    expect(publishSpy.called).to.equal(true);
-    publishSpy.restore();
+    expect(publishStub.called).to.equal(true);
+    publishStub.restore();
   });
 });
