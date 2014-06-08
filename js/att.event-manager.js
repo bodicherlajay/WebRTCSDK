@@ -98,6 +98,19 @@
           sessionId: this.getSession().getSessionId()
         }
       }));
+      break;
+    case app.RTCCallEvents.CALL_CONNECTING:
+      this.onEvent(rtcEvent.createRTCEvent({
+        state: app.CallStatus.CONNECTING,
+        to: currentEvent.to
+      }));
+      break;
+    case app.RTCCallEvents.CALL_RINGING:
+      this.onEvent(rtcEvent.createRTCEvent({
+        state: app.CallStatus.RINGING,
+        to: currentEvent.to
+      }));
+      break;
     default:
       logger.logError('Event with state ' + currentEvent.state + ' not handled');
     }
@@ -214,8 +227,14 @@
       onError: handleError.bind(this, 'SetupEventChannel', options.onError)
     });
 
+    // event handler for callbacks
     evtMgr.onEvent = function(event) {
-      options.onEventCallback(mapEventNameToCallback(event.state), event);
+      if (typeof options.onSessionEventCallback === 'function') {
+        options.onSessionEventCallback(mapEventNameToCallback(event.state), event);
+      }
+      if (typeof options.onCallEventCallback === 'function') {
+        options.onCallEventCallback(mapEventNameToCallback(event.state), event);
+      }
     }
   }
 
