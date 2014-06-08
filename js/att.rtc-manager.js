@@ -92,14 +92,21 @@
         session = sessionObj; // store the newly created session
 
         options.factories.createEventManager({
-          callbacks: options.callbacks,
           session: session,
           rtcEvent: rtcEvent,
           resourceManager: resourceManager,
           errorManager: errMgr,
           onEventManagerCreated: function (evtMgr) {
             eventManager = evtMgr;
-            options.onSessionStarted(session);
+
+            // fire the session created event
+            eventManager.publishEvent({
+              state: app.SessionEvents.RTC_SESSION_CREATED
+            });
+
+          },
+          onEventCallback: function (callback, event) {
+            options.onCallbackCalled(callback, event);
           },
           onError: handleError.bind(this, 'CreateEventManager', options.onError)
         });

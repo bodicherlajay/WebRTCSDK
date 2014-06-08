@@ -11,14 +11,12 @@
     sessionId,
     module = {},
     instance,
-    createEvent,
+    createRTCEvent,
     RTCEvent,
-    setupEventBasedCallbacks,
     eventRegistry,
     init = function () {
       return {
-        setupEventBasedCallbacks: setupEventBasedCallbacks,
-        createEvent: createEvent
+        createRTCEvent: createRTCEvent
       };
     };
 
@@ -93,23 +91,19 @@
         if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED && event.reason) {
           event.error = event.reason;
         }
-        if (RTCEvent.isPrototypeOf(event)) { // if already an RTC event, don't convert it again
-          eventRegistry[event.state](event);
-        } else {
-          eventRegistry[event.state](createEvent({
-            from: event.from ? event.from.split('@')[0].split(':')[1] : '',
-            to: session && session.getCurrentCall() ? session.getCurrentCall().to() : '',
-            state: setUIEventState(event),
-            codec: CODEC,
-            mediaType: mediaType,
-            data: event.data,
-            error: event.error || ''
-          }), {
-            sdp: event.sdp || '',
-            resource: event.resourceURL || '',
-            modId: event.modId || ''
-          });
-        }
+        eventRegistry[event.state](createEvent({
+          from: event.from ? event.from.split('@')[0].split(':')[1] : '',
+          to: session && session.getCurrentCall() ? session.getCurrentCall().to() : '',
+          state: setUIEventState(event),
+          codec: CODEC,
+          mediaType: mediaType,
+          data: event.data,
+          error: event.error || ''
+        }), {
+          sdp: event.sdp || '',
+          resource: event.resourceURL || '',
+          modId: event.modId || ''
+        });
       } else {
         logger.logError('No event handler defined for ' + event.state);
       }
@@ -138,31 +132,6 @@
     dispatchEventToHandler(event);
   }
 
-  /**
-    This function subscribes to all events 
-    being published by the event channel.
-    It hands off the event to interceptingEventChannelCallback()
-  */
-  setupEventBasedCallbacks = function (options) {
-    logger.logDebug("setupEventBasedCallbacks");
-
-    session = options.session;
-    sessionId = session.getSessionId();
-
-    logger.logInfo('Creating event registry...');
-
-    // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(options);
-
-    // unsubscribe first, to avoid double subscription from previous actions
-    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
-
-    // subscribe to published events from event channel
-    mainModule.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
-  };
-
   //Event structure for RTCEvent
   /** Event Object structure for RTC Event
    * @param from Origination party
@@ -183,7 +152,7 @@
     error: null
   };
 
-  createEvent = function (arg) {
+  createRTCEvent = function (arg) {
     logger.logDebug('Creating event ' + arg.state);
 
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {

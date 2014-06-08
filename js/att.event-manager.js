@@ -65,16 +65,85 @@
     logger.logInfo('Event channel shutdown successfully');
   }
 
-  function hookupUICallbacks(options) {
+
+  function mapEventNameToCallback(callEvent) {
+    switch(callEvent) {
+    case app.CallStatus.SESSION_READY:  return  'onSessionReady';
+    case app.CallStatus.SESSION_DELETED:return  'onLogout';
+    case app.CallStatus.SESSION_ERROR:  return  'onError';
+    case app.CallStatus.CONNECTING:     return  'onConnecting';
+    case app.CallStatus.RINGING:        return  'onRinging';
+    case app.CallStatus.CALLING:        return  'onIncomingCall';
+    case app.CallStatus.ESTABLISHED:    return  'onCallEstablished';
+    case app.CallStatus.INPROGRESS:     return  'onCallInProgress';
+    case app.CallStatus.HOLD:           return  'onCallHold';
+    case app.CallStatus.RESUMED:        return  'onCallResume';
+    case app.CallStatus.TRANSITION:     return  'onSessionReady';
+    case app.CallStatus.WAITING:        return  'onCallWaiting';
+    case app.CallStatus.ENDED:          return  'onCallEnded';
+    case app.CallStatus.ERROR:          return  'onCallError';
+    default:                            return  null;
+    }
+  }
+
+  function processCurrentEvent () {
+    var currentEvent = this.getCurrentEvent(),
+      state = currentEvent.state;
+
+    switch(state) {
+    case app.SessionEvents.RTC_SESSION_CREATED:
+      this.onEvent(rtcEvent.createRTCEvent({
+        state: app.CallStatus.SESSION_READY,
+        data: {
+          sessionId: this.getSession().getSessionId()
+        }
+      }));
+    default:
+      logger.logError('Event with state ' + currentEvent.state + ' not handled');
+    }
+  }
+
+  /*
+  * Subscribes to all Event Channel announcements
+  * and triggers UI callbacks
+  * @param {Object} event The event object
+  */
+  function interceptEventChannelCallback(event) {
+    if (!event) {
+      logger.logError('Not able to consume null event...');
+      return;
+    }
+
+    logger.logDebug('Consume event from event channel', JSON.stringify(event));
+
+    // set current event
+    this.setCurrentEvent(event);
+
+    this.processCurrentEvent();
+  }
+
+  /**
+    This function subscribes to all events 
+    being published by the event channel.
+    It hands off the event to interceptingEventChannelCallback()
+  */
+  function setupEventInterceptor(options) {
     try {
-      callbacks = app.utils.extend(callbacks, options.callbacks); // add to existing callbacks
-      rtcEvent.setupEventBasedCallbacks({
-        session: this.getSession(),
-        callbacks: callbacks
-      });
-      options.onUICallbacksHooked();
+      logger.logDebug("setupEventInterceptor");
+  
+      var sessionId = this.getSession().getSessionId();
+ 
+      // unsubscribe first, to avoid double subscription from previous actions
+      app.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
+      logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
+  
+      // subscribe to published events from event channel
+      app.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback, this);
+      logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
+
+      options.onEventInterceptorSetup();
     } catch (err) {
-      handleError.call(this, 'HookUICallbacks', options.onError);
+      handleError.call(this, 'SetupEventInterceptor', options.onError);
     }
   }
 
@@ -91,21 +160,30 @@
     return rtcEvent.createEvent(options);
   }
 
-  function publishRTCEvent(options) {
-    ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', this.createRTCEvent(options));
+  function publishEvent(event) {
+    ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', event);
   }
 
   function eventManager(options) {
-    var session = options.session;
+    var session = options.session,
+      callbacks = options.callbacks,
+      currentEvent = null;
     return {
       getSession: function () {
         return session;
       },
+      getCurrentEvent: function () {
+        return currentEvent;
+      },
+      setCurrentEvent: function (evt) {
+        currentEvent = evt;
+      },
       setupEventChannel: setupEventChannel,
-      hookupUICallbacks: hookupUICallbacks,
-      shutDown: shutDown,
+      setupEventInterceptor: setupEventInterceptor,
+      processCurrentEvent: processCurrentEvent,
       createRTCEvent: createRTCEvent,
-      publishRTCEvent: publishRTCEvent
+      publishEvent: publishEvent,
+      shutDown: shutDown
     };
   }
 
@@ -121,23 +199,24 @@
       session: options.session
     });
 
-    // fire up the event channel after successfult create session
     logger.logInfo("Setting up event channel...");
     evtMgr.setupEventChannel({
       onEventChannelSetup: function () {
-        // Hooking up UI callbacks based on events
-        logger.logInfo("Hooking up UI callbacks based on events");
-        evtMgr.hookupUICallbacks({
-          callbacks: options.callbacks,
-          onUICallbacksHooked: function () {
-            logger.logInfo('UI Call backs hooked to events successfully');
+        logger.logInfo("Setting up events interceptor");
+        evtMgr.setupEventInterceptor({
+          onEventInterceptorSetup: function () {
+            logger.logInfo('Events interceptor setup successfully');
             options.onEventManagerCreated(evtMgr);
           },
-          onError: handleError.bind(this, 'HookUICallbacks', options.onError)
+          onError: handleError.bind(this, 'SetupEventInterceptor', options.onError)
         });
       },
       onError: handleError.bind(this, 'SetupEventChannel', options.onError)
     });
+
+    evtMgr.onEvent = function(event) {
+      options.onEventCallback(mapEventNameToCallback(event.state), event);
+    }
   }
 
   app.factories.createEventManager = createEventManager;

@@ -137,19 +137,16 @@ if (Env === undefined) {
         factories: factories,
         token: token,
         e911Id: e911Id,
-        callbacks: callbacks,
-        onSessionStarted: function (session) {
+        onCallbackCalled: function (callback, event) {
           try {
-            if (!session) {
-              throw 'Failed to created a web rtc session';
+            if (!callback) {
+              throw 'Null callback called';
             }
-            if (typeof callbacks.onSessionReady === 'function') {
-              // TODO: Need better way to handle callbacks
-              callbacks.onSessionReady({
-                data: {
-                  sessionId: session.getSessionId()
-                }
-              });
+            if (!event) {
+              throw 'Callback called with empty event';
+            }
+            if (callbacks.hasOwnProperty(callback) && typeof callbacks[callback] === 'function') {
+              callbacks[callback](event);
             }
           } catch (err) {
             handleError.call(this, 'CreateSession', errorHandler, err);
