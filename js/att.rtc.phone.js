@@ -146,6 +146,7 @@ if (Env === undefined) {
               throw 'Callback called with empty event';
             }
             if (callbacks.hasOwnProperty(callback) && typeof callbacks[callback] === 'function') {
+              logger.logInfo(callback + ' trigger');
               callbacks[callback](event);
             }
           } catch (err) {
@@ -274,10 +275,22 @@ if (Env === undefined) {
       }
       rtcManager.dialCall(ATT.utils.extend(dialParams, {
         factories: factories,
-        onCallDialed: function (event) {
-          logger.logInfo('onCallCreated... trigger CALLING event in the UI');
-          // bubble up the event
-          dialParams.callbacks.onCalling(event);
+        onCallbackCalled: function (callback, event) {
+          try {
+            if (!callback) {
+              throw 'Null callback called';
+            }
+            if (!event) {
+              throw 'Callback called with empty event';
+            }
+            if (callbacks.hasOwnProperty(callback) && typeof callbacks[callback] === 'function') {
+              logger.logInfo(callback + ' trigger');
+
+              callbacks[callback](event);
+            }
+          } catch (err) {
+            handleError.call(this, 'StartCall', errorHandler, err);
+          }
         },
         onCallError: handleError.bind(this, 'StartCall', dialParams.callbacks.onCallError)
       }));
