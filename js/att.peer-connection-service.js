@@ -3,13 +3,13 @@
 
 /**
  * PeerConnection Service
- * Dependencies:  adapter.js, UserMediaService, SignalingService, Env.resourceManager, sdpFilter, cmgmt.CallManager
+ * Dependencies:  adapter.js, UserMediaService, SignalingService, Env.resourceManager, sdpFilter
  */
 
 (function (app) {
   'use strict';
 
-  var module, logger, resourceManager, Error, SignalingService, CallManager, SDPFilter, eventEmitter;
+  var module, logger, resourceManager, Error, SignalingService, SDPFilter, eventEmitter;
 
   function setResourceManager(service) {
     resourceManager = service;
@@ -77,6 +77,8 @@
 
     remoteDescription: {},
 
+    session: null,
+
     localStream: null,
 
     peerConnection: null,
@@ -110,6 +112,7 @@
         call = session.getCurrentCall(),
         sdp;
 
+      this.session = config.session;
       this.callingParty = config.from;
       this.calledParty = config.to;
       this.callType = config.type;
@@ -188,7 +191,7 @@
             try {
               self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
-              CallManager.getSessionContext().getCallObject().setSDP(sdp);
+              //session.getCurrentCall().setLocalSdp(sdp);
             } catch (e) {
               Error.publish('Could not set local description. Exception: ' + e.message);
             }
@@ -206,7 +209,7 @@
                     if (undefined !== self.onOfferSent
                         && null !== self.onOfferSent
                         && 'function' === typeof self.onOfferSent) {
-                      self.onOfferSent();
+                      self.onOfferSent(self.localDescription);
                     }
                   },
                   error: function (error) {
@@ -343,7 +346,6 @@
       SDPFilter.processChromeSDPOffer(description);
 
       this.localDescription = description;
-      CallManager.getSessionContext().getCallObject().setSDP(description);
 
       // set local description
       try {
@@ -425,7 +427,7 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        CallManager.getSessionContext().getCallObject().setSDP(sdp);
+        session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -469,7 +471,7 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        CallManager.getSessionContext().getCallObject().setSDP(sdp);
+        session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
