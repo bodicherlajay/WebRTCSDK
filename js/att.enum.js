@@ -28,6 +28,7 @@
     ENDED: 'Call Ended'
   };
 
+  // TODO: should get rid of this
   module.SdkEvents = {
     SDK_READY: 'SdkReady',
     USER_MEDIA_INITIALIZED: 'UserMediaInitialized',
@@ -111,6 +112,7 @@
     SESSION_MODIFIED:         'session-modified',
     SESSION_TERMINATED:       'session-terminated',
     CALL_CONNECTING:          'call-connecting',
+    CALL_RINGING:             'call-ringing',
     CALL_IN_PROGRESS:         'call-in-progress',
     INVITATION_RECEIVED:      'invitation-received',
     MODIFICATION_RECEIVED:    'mod-received',
