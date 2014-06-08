@@ -70,6 +70,7 @@
         from: config.from,
         to: config.to,
         mediaConstraints: this.mediaConstraints,
+        type: config.type,
         session: config.session  // TODO: UM shouldn't use session
       };
 
