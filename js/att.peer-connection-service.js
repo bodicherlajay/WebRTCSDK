@@ -201,16 +201,20 @@
               logger.logInfo('sending offer');
               try {
                 SignalingService.sendOffer({
+                  session: self.session,
                   calledParty: self.calledParty,
                   sdp: self.localDescription,
-                  success: function () {
-                    logger.logInfo('success for offer sent, outgoing call');
-                    // trigger callback meaning successfully sent the offer
-                    if (undefined !== self.onOfferSent
-                        && null !== self.onOfferSent
-                        && 'function' === typeof self.onOfferSent) {
-                      self.onOfferSent(self.localDescription);
+                  success: function (responseData) {
+                    if (responseData) {
+                      if (responseData.callId) {
+                        if (responseData.xState && responseData.xState === 'invitation-sent') {
+                          logger.logInfo('success for offer sent, outgoing call');
+                          // trigger callback meaning successfully sent the offer
+                          return self.onOfferSent(responseData.callId, self.localDescription);
+                        }
+                      }
                     }
+                    Error.publish('Failed to send offer', 'SendOffer');
                   },
                   error: function (error) {
                     Error.publish(error, 'SendOffer');
