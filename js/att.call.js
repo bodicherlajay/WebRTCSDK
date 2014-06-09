@@ -100,7 +100,8 @@
   * @param {String} mediaConstraints 'audio' or 'video'
   */
   function call(options) {
-    var from = options.from,
+    var id = options.callId,
+      from = options.from,
       to = options.to,
       mediaType = options.mediaType,
       mediaConstraints = options.mediaConstraints,
@@ -108,6 +109,7 @@
       remoteSdp = options.remoteSdp;
 
     return {
+      id: function () { return id; },
       from: function () { return from; },
       to: function () { return to; },
       mediaConstraints: function () { return mediaConstraints; },
@@ -189,8 +191,6 @@
     logger.logInfo('Creating incoming call');
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
-    options.to = cleanPhoneNumber(options.to);
-
     userMediaSvc.startCall(app.utils.extend(options, {
       // enable this code once startCall returns callbacks
       // onCallStarted: function(obj) {
@@ -209,9 +209,10 @@
     // TODO: patch work
     // setup callback for PeerConnectionService.onOfferSent, will be used to
     // indicate the RINGING state on an outgoing call
-    ATT.PeerConnectionService.onOfferSent = function (localSdp) {
+    ATT.PeerConnectionService.onOfferSent = function (callId, localSdp) {
       logger.logInfo('onOfferSent... trigger RINGING event for outgoing call');
       var callObj = call({
+        id: callId,
         to: options.to,
         type: options.type,
         mediaConstraints: options.mediaConstraints,
@@ -233,11 +234,11 @@
 
     if (options.type === app.CallTypes.INCOMING) {
       createIncomingCall(app.utils.extend(options, {
-        onOutgoingCallCreated: options.onCallCreated
+        onIncomingCallCreated: options.onCallCreated
       }));
     } else {
       createOutgoingCall(app.utils.extend(options, {
-        onIncomingCallCreated: options.onCallCreated
+        onOutgoingCallCreated: options.onCallCreated
       }));
     }
   }
