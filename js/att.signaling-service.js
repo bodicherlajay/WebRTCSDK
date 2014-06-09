@@ -10,7 +10,7 @@
   logger = logMgr.getLogger('SignalingService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
   resourceManager = Env.resourceManager.getInstance();
-  rtcManager = ATT.rtcManager;
+  rtcManager = ATT.RTCManager;
 
   app.SignalingService = {
     /**
