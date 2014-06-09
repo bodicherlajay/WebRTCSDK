@@ -72,8 +72,8 @@
     case app.CallStatus.SESSION_DELETED:return  'onLogout';
     case app.CallStatus.SESSION_ERROR:  return  'onError';
     case app.CallStatus.CONNECTING:     return  'onConnecting';
-    case app.CallStatus.RINGING:        return  'onRinging';
-    case app.CallStatus.CALLING:        return  'onIncomingCall';
+    case app.CallStatus.CALLING:        return  'onCalling';
+    case app.CallStatus.RINGING:        return  'onIncomingCall';
     case app.CallStatus.ESTABLISHED:    return  'onCallEstablished';
     case app.CallStatus.INPROGRESS:     return  'onCallInProgress';
     case app.CallStatus.HOLD:           return  'onCallHold';
@@ -107,7 +107,7 @@
       break;
     case app.RTCCallEvents.CALL_RINGING:
       this.onEvent(rtcEvent.createRTCEvent({
-        state: app.CallStatus.RINGING,
+        state: app.CallStatus.CALLING,
         to: currentEvent.to
       }));
       break;
