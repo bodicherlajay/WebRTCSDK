@@ -29,7 +29,7 @@
   }
 
   function formatNumber(number) {
-    var callable = ATT.rtc.Phone.cleanPhoneNumber(number);
+    var callable = cleanPhoneNumber(number);
     if (!callable) {
       logger.logWarning('Phone number not formatable .');
       return;
@@ -177,7 +177,7 @@
         // fire the session created event
         eventManager.publishEvent({
           state: app.RTCCallEvents.CALL_RINGING,
-          to: callObj.to
+          to: callObj.to()
         });
       },
       onCallError: handleError.bind(this, 'StartCall', options.onCallError),
