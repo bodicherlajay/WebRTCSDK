@@ -39,11 +39,11 @@
 
       // MODIFICATION_RECEIVED
       if (event.state === mainModule.RTCCallEvents.MODIFICATION_RECEIVED) {
-        if (event.sdp.indexOf('sendonly') !== -1) {
+        if (event.sdp.indexOf('recvonly') !== -1) {
           // Received hold request...
           return mainModule.CallStatus.HOLD;
         }
-        if (event.sdp.indexOf('sendrecv') !== -1 && callManager.getSessionContext().getCallObject().getSDP().sdp.indexOf('recvonly') !== -1) {
+        if (event.sdp.indexOf('sendrecv') !== -1 && ATT.PeerConnectionService.remoteDescription.sdp.indexOf('recvonly') !== -1) {
           // Received resume request...
           return mainModule.CallStatus.RESUMED;
         }
@@ -51,9 +51,12 @@
 
       //MODIFICATION_TERMINATED
       if (event.state === mainModule.RTCCallEvents.MODIFICATION_TERMINATED) {
-        if (ATT.PeerConnectionService.isModInitiator) {
-          if (event.sdp.indexOf('recvonly') !== -1 && event.sdp.indexOf('sendrecv') === -1) {
-            // Hold call successful...waiting for other party...
+        if (event.reason !== 'success') {
+          return mainModule.CallStatus.ERROR;
+        }
+        if (event.sdp && ATT.PeerConnectionService.isModInitiator) {
+          if (event.sdp.indexOf('sendonly') !== -1 && event.sdp.indexOf('sendrecv') === -1) {
+            // Hold call successful...other party is waiting...
             return mainModule.CallStatus.HOLD;
           }
           if (event.sdp.indexOf('sendrecv') !== -1) {
@@ -93,6 +96,9 @@
       if (eventRegistry[event.state]) {
         logger.logDebug('Processing the registered event ' + event.state);
         if (event.state === mainModule.RTCCallEvents.SESSION_TERMINATED && event.reason) {
+          event.error = event.reason;
+        }
+        if (event.state === mainModule.RTCCallEvents.MODIFICATION_TERMINATED && event.reason !== 'success') {
           event.error = event.reason;
         }
         eventRegistry[event.state](createEvent({
