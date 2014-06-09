@@ -317,6 +317,11 @@
     eventRegistry[mainModule.RTCCallEvents.MODIFICATION_TERMINATED] = function (event, data) {
       logger.logDebug(event);
 
+      if (event.state === mainModule.CallStatus.ERROR) {
+        onCallError(event);
+        return;
+      }
+
       if (data.modId) {
         peerConnService.setModificationId(data.modId);
       }
