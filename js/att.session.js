@@ -186,22 +186,23 @@
 
   function startCall(options) {
     logger.logDebug('startCall');
+    var session = this;
 
     options.factories.createCall(app.utils.extend(options, {
-      session: this,  // TODO: this should not be needed once we refactor UM and PC 
+      session: session,  // TODO: this should not be needed once we refactor UM and PC 
       onCallCreated: function (callObj) {
         try {
           if (!callObj) {
             throw 'Failed to create the call';
           }
-          this.setCall(callObj);
-          this.setCurrentCall(callObj);
+          session.setCall(callObj);
+          session.setCurrentCall(callObj);
           options.onCallStarted(callObj);
         } catch (err) {
-          handleError.call(this, 'CreateCall', options.onCallError, err);
+          handleError.call(session, 'CreateCall', options.onCallError, err);
         }
       },
-      onCallError: handleError.bind(this, 'CreateCall', options.onCallError)
+      onCallError: handleError.bind(session, 'CreateCall', options.onCallError)
     }));
   }
 
@@ -249,7 +250,7 @@
         return calls[callId];
       },
       setCall: function (callObj) {
-        calls[callObj.id] = callObj;
+        calls[callObj.id()] = callObj;
       },
       deleteCall: function (callId) {
         calls[callId] = null;
