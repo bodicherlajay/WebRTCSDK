@@ -111,6 +111,18 @@
         to: currentEvent.to
       }));
       break;
+    case app.RTCCallEvents.SESSION_TERMINATED:
+      if (currentEvent.reason) {
+        this.onEvent(rtcEvent.createRTCEvent({
+          state: app.CallStatus.ERROR,
+          error: errMgr.create(currentEvent.reason)
+        }));
+      } else {
+        this.onEvent(rtcEvent.createRTCEvent({
+          state: app.CallStatus.ENDED
+        }));
+      }
+      break;
     default:
       logger.logError('Event with state ' + currentEvent.state + ' not handled');
     }
