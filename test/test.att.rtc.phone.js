@@ -112,6 +112,25 @@ describe('Phone', function () {
     });
   });
 
+
+  describe('getMediaType', function () {
+    it('Check if getMediaType returns null by default', function () {
+      expect(ATT.rtc.Phone.getMediaType()).equals(null);
+    });
+    it('Check if getMediaType returns video type for video calls', function () {
+      cmgmt.CallManager.getInstance().getSessionContext().setMediaType('video');
+      expect(ATT.rtc.Phone.getMediaType()).equals('video');
+    });
+    it('Check if getMediaType returns audio type for audio Calls', function () {
+      cmgmt.CallManager.getInstance().getSessionContext().setMediaType('audio');
+      expect(ATT.rtc.Phone.getMediaType()).equals('audio');
+    });
+    it('Check if getMediaType returns null on call terminated or ended ', function () {
+      cmgmt.CallManager.getInstance().getSessionContext().setMediaType(null);
+      expect(ATT.rtc.Phone.getMediaType()).equals(null);
+    });
+  });
+
   describe('resume', function () {
 
     var myCallManager = cmgmt.CallManager.getInstance();
@@ -127,7 +146,6 @@ describe('Phone', function () {
             }
           };
         });
-
       ATT.rtc.Phone.resume();
       expect(resumeSpy.called).to.equal(true);
       sessionContextStub.restore();
@@ -226,7 +244,7 @@ describe('Phone', function () {
 
     it('should trigger `onConnecting` while dialing');
 
-    it('should trigger the `onCalling` if dial is successful', function (done) {
+    xit('should trigger the `onCalling` if dial is successful', function (done) {
       // stub the resourceManager to force successful creation of the call
       createOutgoingCallStub = sinon.stub(phone.callManager, 'CreateOutgoingCall', function () {
         // assume it was successful, therefore execute onCallCreated

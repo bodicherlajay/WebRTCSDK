@@ -38,39 +38,28 @@ cmgmt = (function () {
    *  clear display
    */
   function cleanPhoneNumber(number) {
-    var callable;
+    var callable, cleaned;
     //removes the spaces form the number
-    callable = ATT.phoneNumber.getCallable(number.replace(/\s/g, ''));
+    callable = ATT.phoneNumber.getCallable(number);
 
-    if (!callable) {
-      logger.logWarning('Phone number not callable.');
-      return;
+    if (callable) {
+      return callable;
     }
-
+    logger.logWarning('Phone number not callable, will check special numbers list.');
     logger.logInfo('checking number: ' + callable);
 
-    if (callable.length < 10) {
-
-      if (number.charAt(0) === '*') {
-        callable = '*' + callable;
-      }
-
-      if (!ATT.SpecialNumbers[callable]) {
-        ATT.Error.publish('SDK-20027', null, function (error) {
-          logger.logWarning('Undefined `onError`: ' + error);
-        });
-        return;
-      }
+    cleaned = ATT.phoneNumber.translate(number);
+    console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
+    if (number.charAt(0) === '*') {
+      cleaned = '*' + cleaned;
     }
-
-    logger.logWarning('found number in special numbers list');
-
-    return callable;
+    if (ATT.SpecialNumbers[cleaned]) {
+      return cleaned;
+    }
+    ATT.Error.publish('SDK-20027', null, function (error) {
+      logger.logWarning('Undefined `onError`: ' + error);
+    });
   }
-
-  //userMediaService,
-    //peerConnectionService,
-    //rtcEventModule
 
   /**
   * Call Prototype
@@ -358,9 +347,18 @@ cmgmt = (function () {
     ATT.UserMediaService.unmuteStream();
   };
 
-  Call.hangup = function () {
+  /**
+  * Call hangup
+  * @param {Object} options The phone.js facade options
+  */
+  Call.hangup = function (options) {
     logger.logInfo('Hanging up...');
-    ATT.SignalingService.sendEndCall();
+    ATT.SignalingService.sendEndCall({
+      error: function () {
+        ATT.Error.publish('SDK-20026', null, options.onError);
+        logger.logWarning('Hangup request failed.');
+      }
+    });
   };
 
   module.getInstance = function () {

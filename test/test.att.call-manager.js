@@ -191,6 +191,24 @@ describe('Call Management', function () {
     });
   });
 
+  describe('formatNumber', function () {
+
+    it('should format number, happy path', function () {
+      var number = ATT.rtc.Phone.formatNumber('1234567890');
+      expect(number).to.equal('1 (123) 456-7890');
+    });
+
+    it('should return undefined if not callable', function () {
+      var number = ATT.rtc.Phone.formatNumber('1234');
+      expect(number).to.equal(undefined);
+    });
+
+    it('should return special number without *', function () {
+      var number = ATT.rtc.Phone.formatNumber('*69');
+      expect(number).to.equal('69');
+    });
+  });
+
   describe('Create Outgoing Call', function () {
     var callManager, callOptions;
     beforeEach(function () {
@@ -214,6 +232,7 @@ describe('Call Management', function () {
       });
 
       callManager.createOutgoingCall(callOptions);
+      sendOfferStub.restore();
     });
   });
   afterEach(function () {

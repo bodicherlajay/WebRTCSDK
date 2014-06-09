@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
+/*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
 before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
 
 describe('UserMediaService', function () {
@@ -9,6 +9,7 @@ describe('UserMediaService', function () {
   beforeEach(function () {
     backupAtt = ATT;
   });
+
   it('should exist and contain startCall, showStream, stopStream', function () {
     expect(ATT.UserMediaService).to.be.an('object');
     expect(ATT.UserMediaService.startCall).to.be.a('function');
@@ -24,18 +25,28 @@ describe('UserMediaService', function () {
   });
 
   it('startCall should set localVideo, remoteVideo elements', function () {
+
     var config = {
       localVideo: 'localVideoEl',
       remoteVideo: 'remoteVideoEl'
     },
+      callmgr = cmgmt.CallManager.getInstance(),
       stubGetUserMedia = sinon.stub(window, 'getUserMedia'),
-      stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart');
+      stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
+      stubCallManager = sinon.stub(callmgr, 'getSessionContext', function () {
+        return {
+          getMediaType: function () {
+            return 'video';
+          }
+        };
+      });
     ATT.UserMediaService.startCall(config);
 
     expect(ATT.UserMediaService.localVideoElement).equals('localVideoEl');
     expect(ATT.UserMediaService.remoteVideoElement).equals('remoteVideoEl');
     stubGetUserMedia.restore();
     stubOnRemoteVideoStart.restore();
+    stubCallManager.restore();
   });
 
   it('startCall should publish error if getUserMedia fails', function () {
@@ -43,6 +54,14 @@ describe('UserMediaService', function () {
         localVideo: 'localVideoEl',
         remoteVideo: 'remoteVideoEl'
       },
+      callmgr = cmgmt.CallManager.getInstance(),
+      stubCallManager = sinon.stub(callmgr, 'getSessionContext', function () {
+        return {
+          getMediaType: function () {
+            return 'media type';
+          }
+        };
+      }),
       stubGetUserMedia = sinon.stub(window, 'getUserMedia').callsArg(2),
       stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
       spy = sinon.spy();
@@ -55,6 +74,7 @@ describe('UserMediaService', function () {
     expect(spy.called).to.equal(true);
     stubGetUserMedia.restore();
     stubOnRemoteVideoStart.restore();
+    stubCallManager.restore();
   });
 
   it('showStream should play remote video if localOrRemote set to remote', function () {
@@ -69,6 +89,14 @@ describe('UserMediaService', function () {
           play: spy   // this should get called
         }
       },
+      callmgr = cmgmt.CallManager.getInstance(),
+      stubCallManager = sinon.stub(callmgr, 'getSessionContext', function () {
+        return {
+          getMediaType: function () {
+            return 'media type';
+          }
+        };
+      }),
       stubGetUserMedia = sinon.stub(window, 'getUserMedia'),
       stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
       stubWindowURLCreateObjectURL = sinon.stub(window.URL, 'createObjectURL', function () {
@@ -84,6 +112,7 @@ describe('UserMediaService', function () {
     stubGetUserMedia.restore();
     stubOnRemoteVideoStart.restore();
     stubWindowURLCreateObjectURL.restore();
+    stubCallManager.restore();
   });
 
   it('showStream should publish error if cannot start stream', function () {
@@ -100,6 +129,14 @@ describe('UserMediaService', function () {
           }
         }
       },
+      callmgr = cmgmt.CallManager.getInstance(),
+      stubCallManager = sinon.stub(callmgr, 'getSessionContext', function () {
+        return {
+          getMediaType: function () {
+            return 'media type';
+          }
+        };
+      }),
       stubGetUserMedia = sinon.stub(window, 'getUserMedia'),
       stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
       stubWindowURLCreateObjectURL = sinon.stub(window.URL, 'createObjectURL', function () {
@@ -118,6 +155,7 @@ describe('UserMediaService', function () {
     stubGetUserMedia.restore();
     stubOnRemoteVideoStart.restore();
     stubWindowURLCreateObjectURL.restore();
+    stubCallManager.restore();
   });
 
   it('showStream should call videoStreamEl setAttribute if localOrRemote not set to remote and call play', function () {
@@ -136,6 +174,14 @@ describe('UserMediaService', function () {
           play: spy   // this should get called
         }
       },
+      callmgr = cmgmt.CallManager.getInstance(),
+      stubCallManager = sinon.stub(callmgr, 'getSessionContext', function () {
+        return {
+          getMediaType: function () {
+            return 'media type';
+          }
+        };
+      }),
       stubGetUserMedia = sinon.stub(window, 'getUserMedia'),
       stubOnRemoteVideoStart = sinon.stub(ATT.UserMediaService, 'onRemoteVideoStart'),
       stubWindowURLCreateObjectURL = sinon.stub(window.URL, 'createObjectURL', function () {
@@ -153,6 +199,7 @@ describe('UserMediaService', function () {
     stubGetUserMedia.restore();
     stubOnRemoteVideoStart.restore();
     stubWindowURLCreateObjectURL.restore();
+    stubCallManager.restore();
   });
 
   it('should stop local and remote streams', function () {

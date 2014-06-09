@@ -204,10 +204,9 @@
     },
 
     /**
-    * Disable the local video stream
+    * Disable the remote video stream
     */
     holdVideoStream: function () {
-      logger.logTrace('disabling local video stream...');
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,
@@ -219,10 +218,9 @@
     },
 
     /**
-    * Enable the local video stream
+    * Enable the remote video stream
     */
     resumeVideoStream: function () {
-      logger.logTrace('disabling local video stream...');
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,
