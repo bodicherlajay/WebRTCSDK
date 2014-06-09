@@ -268,11 +268,16 @@ if (Env === undefined) {
     if (!dialParams.remoteVideo) {
       throw 'Cannot make a web rtc call, no remote media DOM element';
     }
-
+    var callbacks,
+      errorHandler;
     try {
       if (!rtcManager) {
         throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
       }
+
+      callbacks = dialParams.callbacks;
+      errorHandler = dialParams.callbacks.onCallError
+
       rtcManager.dialCall(ATT.utils.extend(dialParams, {
         factories: factories,
         onCallbackCalled: function (callback, event) {
@@ -292,10 +297,10 @@ if (Env === undefined) {
             handleError.call(this, 'StartCall', errorHandler, err);
           }
         },
-        onCallError: handleError.bind(this, 'StartCall', dialParams.callbacks.onCallError)
+        onCallError: handleError.bind(this, 'StartCall', errorHandler)
       }));
     } catch (err) {
-      handleError.call(this, 'StartCall', dialParams.callbacks.onCallError, err);
+      handleError.call(this, 'StartCall', errorHandler, err);
     }
   }
 
