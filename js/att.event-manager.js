@@ -229,11 +229,11 @@
 
     // event handler for callbacks
     evtMgr.onEvent = function(event) {
-      if (typeof options.onSessionEventCallback === 'function') {
-        options.onSessionEventCallback(mapEventNameToCallback(event.state), event);
+      if (typeof evtMgr.onSessionEventCallback === 'function') {
+        evtMgr.onSessionEventCallback(mapEventNameToCallback(event.state), event);
       }
-      if (typeof options.onCallEventCallback === 'function') {
-        options.onCallEventCallback(mapEventNameToCallback(event.state), event);
+      if (typeof evtMgr.onCallEventCallback === 'function') {
+        evtMgr.onCallEventCallback(mapEventNameToCallback(event.state), event);
       }
     }
   }
