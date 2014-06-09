@@ -6,11 +6,10 @@
 (function (app) {
   'use strict';
 
-  var logMgr = ATT.logManager.getInstance(), logger = null, resourceManager, rtcManager;
+  var logMgr = ATT.logManager.getInstance(), logger = null, resourceManager;
   logger = logMgr.getLogger('SignalingService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
   resourceManager = Env.resourceManager.getInstance();
-  rtcManager = ATT.RTCManager;
 
   app.SignalingService = {
     /**
@@ -23,7 +22,8 @@
       // fix description just before sending
       logger.logDebug(config.sdp);
 
-      var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
+      var session = config.session,
+        description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
         // call data
         data = {
           call : {
@@ -34,21 +34,21 @@
 
       resourceManager.doOperation('startCall', {
         params: {
-          url: [rtcManager.getSession().getSessionId()],
+          url: [session.getSessionId()],
           headers: {
-            'Authorization' : 'Bearer ' + rtcManager.getSession().getAccessToken()
+            'Authorization' : 'Bearer ' + session.getAccessToken()
           }
         },
         data: data,
         success: function (obj) {
           logger.logInfo('offer sent successfully');
 
-          var headers = {
-            location : obj.getResponseHeader('Location'),
+          var responseData = {
+            callId : obj.getResponseHeader('Location') ? obj.getResponseHeader('Location').split('/')[6]: null,
             xState : obj.getResponseHeader('x-state')
           };
 
-          config.success.call(null, headers);
+          config.success.call(null, responseData);
         },
         error: config.error
       });
@@ -61,8 +61,10 @@
     sendAnswer: function (config) {
       // fix description just before sending
       logger.logTrace('sendAnswer, pre-processing SDP', config.sdp);
-      var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
-      // call data
+
+      var session = config.session,
+        description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
+        // call data
         data = {
           callsMediaModifications : {
             sdp : description.sdp
@@ -73,11 +75,11 @@
       resourceManager.doOperation('answerCall', {
         params: {
           url: [
-            rtcManager.getSession().getSessionId(),
-            rtcManager.getSession().getCurrentCallId()
+            session.getSessionId(),
+            session.getCurrentCallId()
           ],
           headers: {
-            'Authorization' : 'Bearer ' + rtcManager.getSession().getAccessToken()
+            'Authorization' : 'Bearer ' + session.getAccessToken()
           }
         },
         data : data,
@@ -110,8 +112,10 @@
     sendAcceptMods: function (config) {
       // fix description just before sending
       logger.logTrace('sendAcceptMods, pre-processing sdp', config.sdp);
-      var description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
-      // call data
+
+      var session = config.session,
+        description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
+        // call data
         data = {
           callsMediaModifications : {
             sdp : description.sdp
@@ -122,11 +126,11 @@
       resourceManager.doOperation('acceptModifications', {
         params: {
           url: [
-            rtcManager.getSession().getSessionId(),
-            rtcManager.getSession().getEventObject().resourceURL.split('/')[6]
+            session.getSessionId(),
+            session.getEventObject().resourceURL.split('/')[6]
           ],
           headers : {
-            'Authorization' : 'Bearer ' + rtcManager.getSession().getAccessToken(),
+            'Authorization' : 'Bearer ' + session.getAccessToken(),
             'x-modId' : config.modId
           }
         },
@@ -160,20 +164,22 @@
     sendHoldCall: function (config) {
       // request payload
       logger.logTrace('sendHoldCall');
-      var data = {
-        callsMediaModifications : {
-          sdp : config.sdp
-        }
-      };
+      var session = config.session,
+        data = {
+          callsMediaModifications : {
+            sdp : config.sdp
+          }
+        };
+
       logger.logTrace('doOperation: modifyCall');
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [
-            rtcManager.getSession().getSessionId(),
-            rtcManager.getSession().getCurrentCallId()
+            session.getSessionId(),
+            session.getCurrentCallId()
           ],
           headers: {
-            'Authorization' : 'Bearer ' + rtcManager.getSession().getAccessToken(),
+            'Authorization' : 'Bearer ' + session.getAccessToken(),
             'x-calls-action' : 'initiate-call-hold'
           }
         },
@@ -213,20 +219,22 @@
     */
     sendResumeCall: function (config) {
       // request payload
-      var data = {
-        callsMediaModifications : {
-          sdp : config.sdp
-        }
-      };
+      var session = config.session,
+        data = {
+          callsMediaModifications : {
+            sdp : config.sdp
+          }
+        };
+
       logger.logTrace('sendResumeCall, doOperation: modifyCall');
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [
-            rtcManager.getSession().getSessionId(),
-            rtcManager.getSession().getCurrentCallId()
+            session.getSessionId(),
+            session.getCurrentCallId()
           ],
           headers: {
-            'Authorization': 'Bearer ' + rtcManager.getSession().getAccessToken(),
+            'Authorization': 'Bearer ' + session.getAccessToken(),
             'x-calls-action' : 'initiate-call-resume'
           }
         },
@@ -268,15 +276,17 @@
     sendEndCall: function (config) {
       config = config || {};
 
+      var session = config.session;
+
       logger.logTrace('ending call');
       resourceManager.doOperation('endCall', {
         params: {
           url: [
-            rtcManager.getSession().getSessionId(),
-            rtcManager.getSession().getCurrentCallId()
+            session.getSessionId(),
+            session.getCurrentCallId()
           ],
           headers: {
-            'Authorization': 'Bearer ' + rtcManager.getSession().getAccessToken()
+            'Authorization': 'Bearer ' + session.getAccessToken()
           }
         },
         success: function (response) {
