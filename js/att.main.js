@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT: true, cmgmt,sdkErrorCollection:true */
+/*global ATT: true, Env: true, cmgmt,sdkErrorCollection:true */
 
 /** This is going to be the main entry/assembly module for the SDK 
  * By the time this file is loaded, all other modules have already 
@@ -19,7 +19,11 @@
 //todo fixme - this file needs to be renamed to something else ? errorDictionaryloader or delete this
 (function () {
   'use strict';
-  var logMgr = ATT.logManager.getInstance(),
+  var resourceManager,
+    rtcEvent,
+    userMediaSvc,
+    peerConnSvc,
+    logMgr = ATT.logManager.getInstance(),
     logger,
     sdkErrors,
     idx;
@@ -60,6 +64,25 @@
       GENERAL: 'GENERAL'
     }
   }, ATT.utils);
+
+  resourceManager = Env.resourceManager.getInstance();
+  rtcEvent = ATT.RTCEvent.getInstance();
+  userMediaSvc = ATT.UserMediaService;
+  peerConnSvc = ATT.PeerConnectionService;
+
+  ATT.RTCManager = ATT.factories.createRTCManager({
+    errorManager: ATT.Error,
+    resourceManager: resourceManager,
+    rtcEvent: rtcEvent,
+    userMediaSvc: userMediaSvc,
+    peerConnSvc: peerConnSvc
+  });
+
+  ATT.Phone = ATT.factories.createPhone({
+    factories: ATT.factories,
+    rtcManager: ATT.RTCManager,
+    resourceManager: resourceManager
+  });
 
   if (undefined !== ATT.errorDictionary) {
     logger.logTrace("Error Dictionary created.");

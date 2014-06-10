@@ -22,64 +22,15 @@ if (Env === undefined) {
 (function (app) {
   'use strict';
 
-  var resourceManager = Env.resourceManager.getInstance(),
-    callManager = cmgmt.CallManager.getInstance(),
-    keepAlive = null,
-    keepSessionAlive,
-    clearSessionAlive,
-    handleError,
-    setupEventChannel,
-    shutdownEventChannel,
-    createWebRTCSessionSuccess,
+  var factories,
+    resourceManager,
+    rtcManager,
     logMgr = ATT.logManager.getInstance(),
     logger;
 
   logger = logMgr.getLogger('WebRTC', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
 
-  keepSessionAlive = function (config) {
-    logger.logDebug('keepSessionAlive');
-
-    var session = callManager.getSessionContext(),
-      keepAliveDuration = app.appConfig.KeepAlive || config.keepAliveDuration, // developer configured duration overrides the one set by API server
-      timeBeforeExpiration = 60 * 1000, // refresh 1 minutes before expiration
-      timeout = (keepAliveDuration > timeBeforeExpiration) ? (keepAliveDuration - timeBeforeExpiration) : keepAliveDuration,
-      dataForRefreshWebRTCSession;
-
-    keepAlive = setInterval(function () {
-      logger.logInfo('Trying to refresh session after ' + (timeout / 1000) + ' seconds');
-      try {
-        dataForRefreshWebRTCSession = {
-          params: {
-            url: [session.getSessionId()],
-            headers: {
-              'Authorization': session.getAccessToken()
-            }
-          },
-          success: function () {
-            if (typeof config.success === 'function') {
-              config.success('Successfully refreshed web rtc session on blackflag');
-            }
-          },
-          error: handleError.bind(this, 'RefreshSession', config.error)
-        };
-
-        // Call BF to refresh WebRTC Session.
-        resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
-      } catch (err) {
-        handleError.call(this, 'RefreshSession', config.error, err);
-      }
-    }, timeout);
-
-  };
-
-  clearSessionAlive = function () {
-    clearInterval(keepAlive);
-    keepAlive = null;
-  };
-
-  handleError = function (operation, errHandler, err) {
-    clearSessionAlive();
-
+  function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
     logger.logInfo('There was an error performing operation ' + operation);
 
@@ -88,154 +39,20 @@ if (Env === undefined) {
     if (typeof errHandler === 'function') {
       ATT.Error.publish(error, operation, errHandler);
     }
-  };
-
-  setupEventChannel = function (config) {
-    logger.logDebug('setupEventChannel');
-
-    var session = callManager.getSessionContext(),
-
-      // Set event channel configuration
-      // All parameters are required
-      // Also, see appConfigModule
-      channelConfig = {
-        accessToken: session.getAccessToken(),
-        endpoint: ATT.appConfig.EventChannelConfig.endpoint,
-        sessionId: session.getSessionId(),
-        publisher: ATT.event,
-        resourceManager: resourceManager,
-        publicMethodName: 'getEvents',
-        usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
-      };
-
-    ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
-    if (ATT.utils.eventChannel) {
-      logger.logInfo('Event channel up and running');
-
-      ATT.utils.eventChannel.startListening({
-        success: config.success,
-        error: config.error
-      });
-    } else {
-      throw 'Event channel setup failed';
-    }
-  };
-
-  shutdownEventChannel = function () {
-    logger.logDebug('shutdownEventChannel');
-    ATT.utils.eventChannel.stopListening();
-    logger.logInfo('Event channel shutdown successfully');
-  };
-
-  function initSession(accessToken, e911Id) {
-    logger.logDebug('initSession');
-
-    try {
-      if (!accessToken) {
-        throw 'Cannot init SDK session, no access token';
-      }
-      if (!e911Id) {
-        logger.logWarning('Initializing SDK session without e911 id');
-      }
-    // Set the access Token in the callManager.
-      callManager.CreateSession({
-        token: accessToken,
-        e911Id: e911Id
-      });
-      logger.logInfo('Initialed SDK session with token and optional e911 id');
-    } catch (err) {
-      throw "Init Session Error: " + err;
-    }
   }
 
-
-  function initCallbacks(callbacks) {
-    logger.logDebug('intiCallbacks');
-    //Planning not to save the UI callbacks in session context
-    logger.logDebug(callbacks);
-    try {
-      logger.logInfo('getting the Callback for mapping');
-    } catch (err) {
-      throw "Init Callbacks: " + err;
-    }
-  }
   function getMediaType() {
     var mediaType = null;
     logger.logDebug('Call type Audio/Video');
     try {
       logger.logInfo('Trying to get the mediaType from the session Context ');
-      mediaType = callManager.getSessionContext().getMediaType();
+      mediaType = rtcManager.getSessionContext().getMediaType();
       logger.logInfo('Call Type : ' + mediaType);
       return mediaType;
     } catch (err) {
       throw "getMediaType: " + err;
     }
   }
-  createWebRTCSessionSuccess = function (config, responseObject) {
-    logger.logDebug('createWebRTCSessionSuccess');
-
-    var sessionId = null,
-      expiration = null,
-      errorHandler;
-
-    if (config.callbacks && config.callbacks.onError && typeof config.callbacks.onError === 'function') {
-      errorHandler = config.callbacks.onError;
-    }
-
-    try {
-      if (responseObject) {
-        if (responseObject.getResponseHeader('Location')) {
-          sessionId = responseObject.getResponseHeader('Location').split('/')[4];
-        }
-        if (responseObject.getResponseHeader('x-expires')) {
-          expiration = responseObject.getResponseHeader('x-expires');
-          expiration = Number(expiration);
-          expiration = isNaN(expiration) ? 0 : expiration;// * 1000; // already comes in as ms now
-        }
-      }
-
-      if (!sessionId) {
-        throw 'Failed to retrieve session id';
-      }
-
-      logger.logInfo('Successfully created web rtc session, the session id is:' + sessionId);
-
-      // Set WebRTC.Session data object that will be needed downstream.
-      // Also setup UI callbacks
-      callManager.UpdateSession({
-        sessionId: sessionId,
-        callbacks: config.callbacks
-      });
-
-      // publish the UI callback for ready state
-      app.event.publish(sessionId + '.responseEvent', {
-        state:  app.SessionEvents.RTC_SESSION_CREATED,
-        data: {
-          sessionId: sessionId
-        }
-      });
-
-      // fire up the event channel after successfult create session
-      logger.logInfo("Setting up event channel...");
-      setupEventChannel({
-        success: function (msg) {
-          logger.logInfo(msg);
-        },
-        error: handleError.bind(this, 'EventChannel', errorHandler)
-      });
-
-      // keep web rtc session alive
-      keepSessionAlive({
-        keepAliveDuration: expiration,
-        success: function (msg) {
-          logger.logInfo(msg);
-        },
-        error: handleError.bind(this, 'RefreshSession', errorHandler)
-      });
-    } catch (err) {
-      handleError.call(this, 'CreateSession', errorHandler, err);
-    }
-  };
 
   /**
     * @summary Performs RTC login
@@ -282,25 +99,26 @@ if (Env === undefined) {
     logger.logDebug('createWebRTCSession');
     var token,
       e911Id,
-      session,
+      callbacks,
       services = ['ip_voice_call', 'ip_video_call'],
       errorHandler;
 
     if (!loginParams) {
-      throw new TypeError('Cannot login to web rtc, no configuration');
+      throw 'Cannot login to web rtc, no configuration';
     }
     if (!loginParams.token) {
-      throw new TypeError('Cannot login to web rtc, no access token');
-    }
-    if (!loginParams.e911Id) {
-      throw new TypeError('Cannot login to web rtc, no e911Id');
-    }
-
-    if (loginParams.callbacks && loginParams.callbacks.onError && typeof loginParams.callbacks.onError === 'function') {
-      errorHandler = loginParams.callbacks.onError;
+      throw 'Cannot login to web rtc, no access token';
     }
 
     try {
+      if (loginParams.callbacks && loginParams.callbacks.onError && typeof loginParams.callbacks.onError === 'function') {
+        errorHandler = loginParams.callbacks.onError;
+      }
+
+      if (!rtcManager) {
+        throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
+      }
+
       // todo: need to decide if callbacks should be mandatory
       if (!loginParams.callbacks || Object.keys(loginParams.callbacks) <= 0) {
         logger.logWarning('No UI callbacks specified');
@@ -308,36 +126,36 @@ if (Env === undefined) {
 
       token = loginParams.token;
       e911Id = loginParams.e911Id || null;
+      callbacks = loginParams.callbacks;
 
       //remove video service for audio only service
       if (loginParams.audioOnly) {
         services = services.slice(0, 1);
       }
-      // create new session with token and optional e911id
-      initSession(token, e911Id);
 
-      session = callManager.getSessionContext();
-      token = session.getAccessToken();
-      e911Id = session.getE911Id();
-
-      resourceManager.doOperation('createWebRTCSession', {
-        data: {
-          'session': {
-            'mediaType': 'dtls-srtp',
-            'ice': 'true',
-            'services': services
+      rtcManager.startSession({
+        factories: factories,
+        token: token,
+        e911Id: e911Id,
+        onCallbackCalled: function (callback, event) {
+          try {
+            if (!callback) {
+              throw 'Null callback called';
+            }
+            if (!event) {
+              throw 'Callback called with empty event';
+            }
+            if (callbacks.hasOwnProperty(callback) && typeof callbacks[callback] === 'function') {
+              logger.logInfo(callback + ' trigger');
+              callbacks[callback](event);
+            }
+          } catch (err) {
+            handleError.call(this, 'CreateSession', errorHandler, err);
           }
         },
-        params: {
-          headers: {
-            'Authorization': token,
-            'x-e911Id': e911Id || "",
-            'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
-          }
-        },
-        success: createWebRTCSessionSuccess.bind(this, loginParams),
-        error: handleError.bind(this, 'CreateSession', errorHandler)
+        onError: handleError.bind(this, 'CreateSession', errorHandler)
       });
+
     } catch (err) {
       handleError.call(this, 'CreateSession', errorHandler, err);
     }
@@ -366,46 +184,22 @@ if (Env === undefined) {
     logger.logDebug('deleteWebRTCSession');
 
     try {
-
-      // stop media stream
-      ATT.UserMediaService.stopStream();
-      // stop event channel
-      shutdownEventChannel();
-      // stop refreshing session
-      clearSessionAlive();
-
-      var session = callManager.getSessionContext(),
-        dataForDeleteWebRTCSession;
-
-      if (!session) {
-        if (typeof logoutParams.success === 'function') {
-          logoutParams.success();
-        }
-        return;
+      if (!rtcManager) {
+        throw 'Unable to logout from web rtc. There is no valid RTC manager to perform this operation';
       }
-      dataForDeleteWebRTCSession = {
-        params: {
-          url: [session.getSessionId()],
-          headers: {
-            'Authorization': session.getAccessToken(),
-            'x-e911Id': session.getE911Id()
-          }
-        },
-        success: function () {
-          logger.logInfo('Successfully deleted web rtc session on blackflag');
-          if (typeof logoutParams.success === 'function') {
-            logoutParams.success();
-          }
-        },
-        error: handleError.bind(this, 'DeleteSession', logoutParams.error)
-      };
 
-    // Call BF to delete WebRTC Session.
-      resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
-      callManager.DeleteSession();
+      rtcManager.deleteSession({
+        onSessionDeleted: function () {
+          logger.logInfo('Successfully deleted web rtc session on blackflag');
+          if (typeof logoutParams.onLogout === 'function') {
+            logoutParams.onLogout();
+          }
+        },
+        onError: handleError.bind(this, 'DeleteSession', logoutParams.onError)
+      });
+
     } catch (err) {
-      callManager.DeleteSession();
-      handleError.call(this, 'DeleteSession', logoutParams.error, err);
+      handleError.call(this, 'DeleteSession', logoutParams.onError, err);
     }
   }
 
@@ -462,37 +256,54 @@ if (Env === undefined) {
    */
   function dial(dialParams) {
     if (!dialParams) {
-      throw new TypeError('Cannot make a web rtc call, no dial configuration');
+      throw 'Cannot make a web rtc call, no dial configuration';
     }
     if (!dialParams.to) {
-      throw new TypeError('Cannot make a web rtc call, no destination');
+      throw 'Cannot make a web rtc call, no destination';
     }
     if (!dialParams.mediaConstraints) {
-      throw new TypeError('Cannot make a web rtc call, no media constraints');
+      throw 'Cannot make a web rtc call, no media constraints';
     }
     if (!dialParams.localVideo) {
-      throw new TypeError('Cannot make a web rtc call, no local media DOM element');
+      throw 'Cannot make a web rtc call, no local media DOM element';
     }
     if (!dialParams.remoteVideo) {
-      throw new TypeError('Cannot make a web rtc call, no remote media DOM element');
+      throw 'Cannot make a web rtc call, no remote media DOM element';
     }
-    callManager.CreateOutgoingCall(dialParams);
-    // setup callback for ringing
-    callManager.onCallCreated = function () {
-      logger.logInfo('onCallCreated... trigger CALLING event in the UI');
-      // crate an event for Calling
-      var rtcEvent = ATT.RTCEvent.getInstance(),
-        session = callManager.getSessionContext(),
-        callingEvent = rtcEvent.createEvent(
-          { to: session && session.getCallObject() ? session.getCallObject().callee() : '',
-            state: ATT.CallStatus.CALLING,
-            timestamp: new Date() }
-        );
-      // bubble up the event
-      dialParams.callbacks.onCalling(callingEvent);
-    };
+    var callbacks,
+      errorHandler;
+    try {
+      if (!rtcManager) {
+        throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
+      }
 
+      callbacks = dialParams.callbacks;
+      errorHandler = dialParams.callbacks.onCallError
 
+      rtcManager.dialCall(ATT.utils.extend(dialParams, {
+        factories: factories,
+        onCallbackCalled: function (callback, event) {
+          try {
+            if (!callback) {
+              throw 'Null callback called';
+            }
+            if (!event) {
+              throw 'Callback called with empty event';
+            }
+            if (callbacks.hasOwnProperty(callback) && typeof callbacks[callback] === 'function') {
+              logger.logInfo(callback + ' trigger');
+
+              callbacks[callback](event);
+            }
+          } catch (err) {
+            handleError.call(this, 'StartCall', errorHandler, err);
+          }
+        },
+        onCallError: handleError.bind(this, 'StartCall', errorHandler)
+      }));
+    } catch (err) {
+      handleError.call(this, 'StartCall', errorHandler, err);
+    }
   }
 
   /**
@@ -542,6 +353,9 @@ if (Env === undefined) {
     if (!answerParams) {
       throw new TypeError('Cannot make a web rtc call, no answer configuration');
     }
+    // if (!answerParams.mediaConstraints) {
+      // throw 'Cannot make a web rtc call, no media constraints';
+    // }
     if (!answerParams.localVideo) {
       throw new TypeError('Cannot make a web rtc call, no local media DOM element');
     }
@@ -550,7 +364,7 @@ if (Env === undefined) {
     }
 
     try {
-      callManager.CreateIncomingCall(answerParams);
+      rtcManager.CreateIncomingCall(answerParams);
     } catch (e) {
       ATT.Error.publish(e, "AnswerCall");
     }
@@ -575,7 +389,7 @@ if (Env === undefined) {
   */
   function mute(muteParams) {
     try {
-      callManager.getSessionContext().getCallObject().mute();
+      rtcManager.getSessionContext().getCallObject().mute();
       if (muteParams && muteParams.success) {
         muteParams.success();
       }
@@ -605,7 +419,7 @@ if (Env === undefined) {
   */
   function unmute(unmuteParams) {
     try {
-      callManager.getSessionContext().getCallObject().unmute();
+      rtcManager.getSessionContext().getCallObject().unmute();
       if (unmuteParams && unmuteParams.success) {
         unmuteParams.success();
       }
@@ -627,7 +441,7 @@ if (Env === undefined) {
   */
   function hold() {
     try {
-      callManager.getSessionContext().getCallObject().hold();
+      rtcManager.getSessionContext().getCallObject().hold(holdParams);
     } catch (e) {
       ATT.Error.publish('SDK-20030', null);
     }
@@ -644,7 +458,7 @@ if (Env === undefined) {
   */
   function resume() {
     try {
-      callManager.getSessionContext().getCallObject().resume();
+      rtcManager.getSessionContext().getCallObject().resume(resumeParams);
     } catch (e) {
       ATT.Error.publish('SDK-20031', null);
     }
@@ -658,7 +472,7 @@ if (Env === undefined) {
   */
   function hangup() {
     try {
-      callManager.getSessionContext().getCallObject().end();
+      rtcManager.getSessionContext().getCallObject().end(hangupParams);
     } catch (e) {
       ATT.Error.publish('SDK-20024', null);
     }
@@ -674,22 +488,30 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('resume', resume);
     resourceManager.addPublicMethod('mute', mute);
     resourceManager.addPublicMethod('unmute', unmute);
-    resourceManager.addPublicMethod('initCallback', initCallbacks);
+    //resourceManager.addPublicMethod('initCallback', initCallbacks);
     resourceManager.addPublicMethod('getMediaType', getMediaType);
     resourceManager.addPublicMethod('hangup', hangup);
-    resourceManager.addPublicMethod('cleanPhoneNumber', callManager.cleanPhoneNumber);
-    resourceManager.addPublicMethod('formatNumber', callManager.formatNumber);
+    resourceManager.addPublicMethod('cleanPhoneNumber', rtcManager.cleanPhoneNumber);
+    resourceManager.addPublicMethod('formatNumber', rtcManager.formatNumber);
 
     // TODO: For the moment expose the resourceManager so that we can stub it, this will change
-    // once we apply the constructor method pattern to phone.js, instead we'll inject the callManager when
+    // once we apply the constructor method pattern to phone.js, instead we'll inject the rtcManager when
     // creating the phone object:
-    // createPhone({callManager: rsrcMgr }){ ... };
-    resourceManager.addPublicMethod('callManager', callManager);
+    // createPhone({rtcManager: rsrcMgr }){ ... };
+    resourceManager.addPublicMethod('rtcManager', rtcManager);
   }
 
-  // sub-namespaces on ATT.
-  app.RESTClient = RESTClient;
+  function createPhone(options) {
+    factories = options.factories;
+    rtcManager = options.rtcManager;
+    resourceManager = options.resourceManager;
 
-  app.configurePublicAPIs = configurePublicAPIs;
+    // sub-namespaces on ATT.
+    app.RESTClient = RESTClient;
+
+    app.configurePublicAPIs = configurePublicAPIs;
+  }
+
+  app.factories.createPhone = createPhone;
 
 }(ATT || {}));

@@ -3,8 +3,9 @@
 
 'use strict';
 
-(function (mainModule, callManager, utils, PeerConnectionService, UserMediaService) {
-  var callMgr = callManager,
+(function (mainModule, utils, PeerConnectionService, UserMediaService) {
+  var session,
+    callbacks,
     peerConnService = PeerConnectionService,
     onSessionReady,
     onIncomingCall,
@@ -19,24 +20,18 @@
     eventRegistry = {},
     logger = Env.resourceManager.getInstance().getLogger('eventDispatcher');
 
-  function setCallManager(depCallMgr) {
-    callMgr = depCallMgr;
-  }
-
   function setPeerConnService(depPeerConnService) {
     peerConnService = depPeerConnService;
   }
 
-  function createEventRegistry(sessionContext, depCallMgr, depPeerConn) {
+  function createEventRegistry(options) {
     //Call set methods for jslint
-    if (depCallMgr !== undefined) {
-      setCallManager(depCallMgr);
-    }
-    if (depPeerConn !== undefined) {
-      setPeerConnService(depPeerConn);
+    if (options.depPeerConn !== undefined) {
+      setPeerConnService(options.depPeerConn);
     }
 
-    var callbacks = sessionContext.getUICallbacks();
+    session = options.session;
+    callbacks = options.callbacks;
 
     if (undefined === callbacks || 0 === Object.keys(callbacks).length) {
       logger.logError('No callbacks to execute');
@@ -55,7 +50,6 @@
     *
    */
     onSessionReady = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onSessionReady) {
         callbacks.onSessionReady(evt);
       }
@@ -98,7 +92,6 @@
      *
      */
     onConnecting = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onConnecting) {
         callbacks.onConnecting(evt);
       }
@@ -120,7 +113,6 @@
      * @param evt.error {String} Error object
      */
     onCallEstablished = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallEstablished) {
         callbacks.onCallEstablished(evt);
       }
@@ -142,7 +134,6 @@
      * @param evt.error {String} Error object
      */
     onCallInProgress = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallInProgress) {
         callbacks.onCallInProgress(evt);
       }
@@ -163,7 +154,6 @@
      * @param evt.error {String} Error object
      */
     onCallHold = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallHold) {
         callbacks.onCallHold(evt);
       }
@@ -184,7 +174,6 @@
      * @param evt.error {String} Error object
      */
     onCallResume = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallResume) {
         callbacks.onCallResume(evt);
       }
@@ -205,7 +194,6 @@
      * @param evt.error {String} Error object
      */
     onCallEnded = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onCallEnded) {
         callbacks.onCallEnded(evt);
       }
@@ -245,7 +233,6 @@
      * @param evt.error {String} Error object
      */
     onError = function (evt) {
-      callbacks = sessionContext.getUICallbacks();
       if (callbacks.onError) {
         callbacks.onError(evt);
       }
@@ -273,7 +260,7 @@
 
     eventRegistry[mainModule.CallStatus.ERROR] = function (event) {
       onCallError(event);
-      sessionContext.setMediaType(null);
+      session.deleteCurrentCall();
     };
 
     eventRegistry[mainModule.RTCCallEvents.INVITATION_RECEIVED] = function (event) {
@@ -287,7 +274,7 @@
         peerConnService.setTheRemoteDescription(data.sdp, 'answer');
       }
       if (data.resource) {
-        callMgr.getSessionContext().setCurrentCallId(data.resource.split('/')[6]);
+        //session.setCurrentCallId(data.resource.split('/')[6]);
       }
     };
 
@@ -302,13 +289,11 @@
       if (event.state === mainModule.CallStatus.HOLD) {
         logger.logInfo('Received hold request');
         onCallHold(event);
-        sessionContext.setCallState(callMgr.SessionState.HOLD_CALL);
-        UserMediaService.muteStream();
-        UserMediaService.holdVideoStream();
+        session.getCurrentCall().setCallState(ATT.CallStates.HELD);
       } else if (event.state === mainModule.CallStatus.RESUMED) {
         logger.logInfo('Received resume request');
         onCallResume(event);
-        sessionContext.setCallState(callMgr.SessionState.RESUMED_CALL);
+        session.getCurrentCall().setCallState(ATT.CallStates.RESUMED);
         UserMediaService.unmuteStream();
         UserMediaService.resumeVideoStream();
       }
@@ -360,9 +345,9 @@
       } else {
         onCallEnded(event);
       }
-      sessionContext.setCallState(callMgr.SessionState.ENDED_CALL);
-      sessionContext.setCallObject(null);
-      sessionContext.setMediaType(null);
+      if (session) {
+        session.deleteCurrentCall();
+      }
       peerConnService.endCall();
       UserMediaService.stopStream();
     };
@@ -376,4 +361,4 @@
 
   utils.createEventRegistry = createEventRegistry;
 
-}(ATT, cmgmt.CallManager.getInstance(), ATT.utils, ATT.PeerConnectionService, ATT.UserMediaService));
+}(ATT, ATT.utils, ATT.PeerConnectionService, ATT.UserMediaService));

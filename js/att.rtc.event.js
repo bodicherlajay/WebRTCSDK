@@ -6,19 +6,17 @@
 (function (mainModule) {
   'use strict';
 
-  var callManager = cmgmt.CallManager.getInstance(),
-    logger = Env.resourceManager.getInstance().getLogger('RTCEventModule'),
+  var logger = Env.resourceManager.getInstance().getLogger("RTCEventModule"),
     session,
+    sessionId,
     module = {},
     instance,
-    createEvent,
+    createRTCEvent,
     RTCEvent,
-    setupEventBasedCallbacks,
     eventRegistry,
     init = function () {
       return {
-        setupEventBasedCallbacks: setupEventBasedCallbacks,
-        createEvent: createEvent
+        createRTCEvent: createRTCEvent
       };
     };
 
@@ -43,7 +41,7 @@
           // Received hold request...
           return mainModule.CallStatus.HOLD;
         }
-        if (event.sdp.indexOf('sendrecv') !== -1 && ATT.PeerConnectionService.remoteDescription.sdp.indexOf('recvonly') !== -1) {
+        if (event.sdp.indexOf('sendrecv') !== -1 && session.getCurrentCall().getRemoteSdp().indexOf('recvonly') !== -1) {
           // Received resume request...
           return mainModule.CallStatus.RESUMED;
         }
@@ -79,8 +77,6 @@
   * @param {Object} callManager Instance of Call Manager
   */
   function dispatchEventToHandler(event) {
-    session = callManager.getSessionContext();
-
     setTimeout(function () {
       var CODEC = [], mediaType = '';
 
@@ -103,7 +99,7 @@
         }
         eventRegistry[event.state](createEvent({
           from: event.from ? event.from.split('@')[0].split(':')[1] : '',
-          to: session && session.getCallObject() ? session.getCallObject().callee() : '',
+          to: session && session.getCurrentCall() ? session.getCurrentCall().to() : '',
           state: setUIEventState(event),
           codec: CODEC,
           mediaType: mediaType,
@@ -133,41 +129,14 @@
     logger.logDebug('Consume event from event channel', JSON.stringify(event));
 
     // set current event on the session
-    callManager.getSessionContext().setEventObject(event);
+    //session.setEventObject(event);
 
     if (event.resourceURL) {
-      callManager.getSessionContext().setCurrentCallId(event.resourceURL.split('/')[6]);
+      session.getCurrentCall().setId(event.resourceURL.split('/')[6]);
     }
 
-    dispatchEventToHandler(event, callManager);
+    dispatchEventToHandler(event);
   }
-
-  /**
-    This function subscribes to all events 
-    being published by the event channel.
-    It hands off the event to interceptingEventChannelCallback()
-  */
-  setupEventBasedCallbacks = function () {
-    logger.logDebug('setupEventBasedCallbacks');
-
-    // get current session context
-    session = callManager.getSessionContext();
-
-    var sessionId = session.getSessionId();
-
-    logger.logInfo('Creating event registry...');
-
-    // setup events registry
-    eventRegistry = mainModule.utils.createEventRegistry(session);
-
-    // unsubscribe first, to avoid double subscription from previous actions
-    mainModule.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
-
-    // subscribe to published events from event channel
-    mainModule.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
-    logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
-  };
 
   //Event structure for RTCEvent
   /** Event Object structure for RTC Event
@@ -189,7 +158,7 @@
     error: null
   };
 
-  createEvent = function (arg) {
+  createRTCEvent = function (arg) {
     logger.logDebug('Creating event ' + arg.state);
 
     if (arg.state.hasOwnProperty(ATT.CallStatus)) {

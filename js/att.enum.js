@@ -14,6 +14,21 @@
     NOTN: 'NOTN'
   };
 
+  module.CallTypes = {
+    OUTGOING: 'Outgoing',
+    INCOMING: 'Incoming'
+  };
+
+  module.CallStates = {
+    ONGOING: 'Call Ongoing',
+    MOVED: 'Call Moved',
+    HELD: 'Call Held',
+    RESUMED: 'Call Resumed',
+    TRANSFERED: 'Call Transferred',
+    ENDED: 'Call Ended'
+  };
+
+  // TODO: should get rid of this
   module.SdkEvents = {
     SDK_READY: 'SdkReady',
     USER_MEDIA_INITIALIZED: 'UserMediaInitialized',
@@ -97,6 +112,7 @@
     SESSION_MODIFIED:         'session-modified',
     SESSION_TERMINATED:       'session-terminated',
     CALL_CONNECTING:          'call-connecting',
+    CALL_RINGING:             'call-ringing',
     CALL_IN_PROGRESS:         'call-in-progress',
     INVITATION_RECEIVED:      'invitation-received',
     MODIFICATION_RECEIVED:    'mod-received',
@@ -141,6 +157,8 @@
   };
 
   mainModule.UserTypes = Object.freeze(module.UserTypes);
+  mainModule.CallTypes = Object.freeze(module.CallTypes);
+  mainModule.CallStates = Object.freeze(module.CallStates);
   mainModule.SdkEvents = Object.freeze(module.SdkEvents);
   mainModule.SessionEvents = Object.freeze(module.SessionEvents);
   mainModule.CallStatus = Object.freeze(module.CallStatus);

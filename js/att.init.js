@@ -11,6 +11,8 @@
     //shared utilities
     utils: {
     },
+    factories: {
+    },
     logManager: {
     },
     RESTClient: {
