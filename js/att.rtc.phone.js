@@ -54,6 +54,28 @@ if (Env === undefined) {
     }
   }
 
+  /** 
+   * method to validate the Rtc manager, session and Call object
+   * Throws the corresponding error when Called and object not presend
+   */
+
+  function currentCall() {
+    var activecallobject = null;
+    if (!rtcManager) {
+      throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
+    }
+    if (!rtcManager.getSession()) {
+      throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
+    }
+    activecallobject = rtcManager.getSession().getCurrentCall();
+    if (!activecallobject) {
+      throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
+    }
+
+    return activecallobject;
+
+  }
+
   /**
     * @summary Performs RTC login
     * @desc Used to establish webRTC session so that the user can place webRTC calls.
@@ -281,7 +303,7 @@ if (Env === undefined) {
       }
 
       callbacks = dialParams.callbacks;
-      errorHandler = dialParams.callbacks.onCallError
+      errorHandler = dialParams.callbacks.onCallError;
 
       rtcManager.dialCall(ATT.utils.extend(dialParams, {
         factories: factories,
@@ -392,7 +414,7 @@ if (Env === undefined) {
   */
   function mute(muteParams) {
     try {
-      rtcManager.getSessionContext().getCallObject().mute();
+      currentCall().mute();
       if (muteParams && muteParams.success) {
         muteParams.success();
       }
@@ -422,7 +444,7 @@ if (Env === undefined) {
   */
   function unmute(unmuteParams) {
     try {
-      rtcManager.getSessionContext().getCallObject().unmute();
+      currentCall().unmute();
       if (unmuteParams && unmuteParams.success) {
         unmuteParams.success();
       }
@@ -444,7 +466,7 @@ if (Env === undefined) {
   */
   function hold() {
     try {
-      rtcManager.getSessionContext().getCallObject().hold(holdParams);
+      currentCall().hold();
     } catch (e) {
       ATT.Error.publish('SDK-20030', null);
     }
@@ -461,7 +483,7 @@ if (Env === undefined) {
   */
   function resume() {
     try {
-      rtcManager.getSessionContext().getCallObject().resume(resumeParams);
+      currentCall().resume();
     } catch (e) {
       ATT.Error.publish('SDK-20031', null);
     }
@@ -475,11 +497,13 @@ if (Env === undefined) {
   */
   function hangup() {
     try {
-      rtcManager.getSessionContext().getCallObject().end(hangupParams);
+      currentCall().end();
     } catch (e) {
       ATT.Error.publish('SDK-20024', null);
     }
   }
+
+
 
   // The SDK public API.
   function configurePublicAPIs() {
