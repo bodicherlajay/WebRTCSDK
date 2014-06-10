@@ -10,8 +10,6 @@
     init,
     create,
     publish,
-    callManager,
-    rtcEvent,
     logMgr = ATT.logManager.getInstance(),
     logger;
 
@@ -119,46 +117,17 @@
       return handler(error);
     }
 
-    if (!callManager) {
-      callManager = cmgmt.CallManager.getInstance();
-    }
-
-    if (!rtcEvent) {
-      rtcEvent = ATT.RTCEvent.getInstance();
-    }
-
-    var session = callManager.getSessionContext(),
-      sessionId,
-      callbacks;
-
-    if (session) {
+    var session = ATT.RTCManager.getSession(),
       sessionId = session.getSessionId();
-      if (sessionId) {
-        logger.logTrace('Publishing the error as an event');
-        // publish the UI callback event for call fail state
-        return ATT.event.publish(sessionId + '.responseEvent', {
-          state: ATT.CallStatus.ERROR,
-          error: error
-        });
-      }
-      callbacks = session.getUICallbacks();
-      if (callbacks) {
-        if (typeof callbacks.onError === 'function') {
-          logger.logTrace('Publishing the error through on error UI callback');
-          return callbacks.onError(rtcEvent.createEvent({
-            state: ATT.CallState.ERROR,
-            error: error
-          }));
-        }
-        if (typeof callbacks.onCallError === 'function') {
-          logger.logTrace('Publishing the error through on call error UI callback');
-          return callbacks.onCallError(rtcEvent.createEvent({
-            state: ATT.CallState.ERROR,
-            error: error
-          }));
-        }
-      }
-    }
+
+    logger.logTrace('Publishing the error as an event');
+
+    // publish the UI callback event for call fail state
+    ATT.event.publish(sessionId + '.responseEvent', {
+      state: ATT.CallStatus.ERROR,
+      error: error
+    });
+
     logger.logWarning('Unable to publish error to UI');
   };
 
