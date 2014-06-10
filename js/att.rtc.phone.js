@@ -389,7 +389,7 @@ if (Env === undefined) {
     }
 
     try {
-      rtcManager.CreateIncomingCall(answerParams);
+      rtcManager.answerCall(answerParams);
     } catch (e) {
       ATT.Error.publish(e, "AnswerCall");
     }
