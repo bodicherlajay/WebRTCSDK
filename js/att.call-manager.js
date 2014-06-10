@@ -40,7 +40,8 @@ cmgmt = (function () {
   function cleanPhoneNumber(number) {
     var callable, cleaned;
     //removes the spaces form the number
-    callable = ATT.phoneNumber.getCallable(number);
+    callable = number.replace(/\s/g, '');
+    callable = ATT.phoneNumber.getCallable(callable);
 
     if (callable) {
       return callable;

@@ -30,6 +30,20 @@ describe('Phone', function () {
       resourceManager.doOperation.restore();
     });
 
+    it('login method should have all the parameters needed to login', function () {
+      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204",
+        params = { };
+      expect(ATT.rtc.Phone.login.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
+
+      params = { e911Id: "e911id", audioOnly: true, callbacks:
+        {onSessionReady: function () {return; }, onError : function () {return; }}};
+      expect(ATT.rtc.Phone.login.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
+
+      params = {token: "token", audioOnly: true, callbacks:
+        {onSessionReady: function () {return; }, onError : function () {return; }}};
+      expect(ATT.rtc.Phone.login.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
+    });
+
     it('login with audio only service', function () {
       var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
       ATT.rtc.Phone.login({token: "token", e911Id: "e911id", audioOnly: true, callbacks: {onSessionReady: function () {}, onError : function () {}}});
