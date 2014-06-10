@@ -40,7 +40,8 @@ cmgmt = (function () {
   function cleanPhoneNumber(number) {
     var callable, cleaned;
     //removes the spaces form the number
-    callable = ATT.phoneNumber.getCallable(number);
+    callable = number.replace(/\s/g, '');
+    callable = ATT.phoneNumber.getCallable(callable);
 
     if (callable) {
       return callable;
@@ -266,6 +267,7 @@ cmgmt = (function () {
     };
 
     ATT.UserMediaService.startCall(config);
+    return call;  // testability
   };
 
   /**
@@ -293,6 +295,7 @@ cmgmt = (function () {
     logger.logInfo('caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
 
     ATT.UserMediaService.startCall(config);
+    return call;  // testability
   };
 
   // call object cleanup
