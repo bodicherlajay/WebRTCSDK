@@ -111,6 +111,18 @@
         to: currentEvent.to
       }));
       break;
+    case app.RTCCallEvents.INVITATION_RECEIVED:
+      this.onEvent(rtcEvent.createRTCEvent({
+        state: app.CallStatus.RINGING,
+        from: currentEvent.from
+      }));
+      break;
+    case app.RTCCallEvents.SESSION_OPEN:
+      this.onEvent(rtcEvent.createRTCEvent({
+        state: app.CallStatus.ESTABLISHED,
+        from: currentEvent.from
+      }));
+      break;
     case app.RTCCallEvents.SESSION_TERMINATED:
       if (currentEvent.reason) {
         this.onEvent(rtcEvent.createRTCEvent({
@@ -133,7 +145,7 @@
   * and triggers UI callbacks
   * @param {Object} event The event object
   */
-  function interceptEventChannelCallback(event) {
+  function interceptEventChannelEvent(event) {
     if (!event) {
       logger.logError('Not able to consume null event...');
       return;
@@ -159,11 +171,11 @@
       var sessionId = this.getSession().getSessionId();
  
       // unsubscribe first, to avoid double subscription from previous actions
-      app.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelCallback);
+      app.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
       logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
   
       // subscribe to published events from event channel
-      app.event.subscribe(sessionId + '.responseEvent', interceptEventChannelCallback, this);
+      app.event.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
       logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
 
       options.onEventInterceptorSetup();
