@@ -31,8 +31,7 @@ describe('Phone', function () {
     });
 
     it('login method should have all the parameters needed to login', function () {
-      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204",
-        params = { };
+      var params = { };
       expect(ATT.rtc.Phone.login.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
 
       params = { e911Id: "e911id", audioOnly: true, callbacks:
@@ -255,6 +254,25 @@ describe('Phone', function () {
         callbacks : {}
       };
     });
+
+    it('dial method should have all the parameters needed to dial', function () {
+      var params = {};
+      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
+
+      params = {mediaConstraints : {}, localVideo : 'dummy', remoteVideo : 'dummy', callbacks : {} };
+      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
+
+      params = {to : '11234567890', localVideo : 'dummy', remoteVideo : 'dummy', callbacks : {} };
+      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
+
+      params = {to : '11234567890', mediaConstraints : {}, remoteVideo : 'dummy', callbacks : {} };
+      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
+
+      params = {to : '11234567890', mediaConstraints : {}, localVideo : 'dummy', callbacks : {} };
+      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
+    });
+
+
 
     it('should trigger `onConnecting` while dialing');
 

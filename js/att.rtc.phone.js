@@ -104,10 +104,13 @@ if (Env === undefined) {
       errorHandler;
 
     if (!loginParams) {
-      throw 'Cannot login to web rtc, no configuration';
+      throw new TypeError('Cannot login to web rtc, no configuration');
     }
     if (!loginParams.token) {
-      throw 'Cannot login to web rtc, no access token';
+      throw new TypeError('Cannot login to web rtc, no access token');
+    }
+    if (!loginParams.e911Id) {
+      throw new TypeError('Cannot login to web rtc, no e911Id');
     }
 
     try {
@@ -256,19 +259,19 @@ if (Env === undefined) {
    */
   function dial(dialParams) {
     if (!dialParams) {
-      throw 'Cannot make a web rtc call, no dial configuration';
+      throw new TypeError('Cannot make a web rtc call, no dial configuration');
     }
     if (!dialParams.to) {
-      throw 'Cannot make a web rtc call, no destination';
+      throw new TypeError('Cannot make a web rtc call, no destination');
     }
     if (!dialParams.mediaConstraints) {
-      throw 'Cannot make a web rtc call, no media constraints';
+      throw new TypeError('Cannot make a web rtc call, no media constraints');
     }
     if (!dialParams.localVideo) {
-      throw 'Cannot make a web rtc call, no local media DOM element';
+      throw new TypeError('Cannot make a web rtc call, no local media DOM element');
     }
     if (!dialParams.remoteVideo) {
-      throw 'Cannot make a web rtc call, no remote media DOM element';
+      throw new TypeError('Cannot make a web rtc call, no remote media DOM element');
     }
     var callbacks,
       errorHandler;
