@@ -267,6 +267,7 @@ cmgmt = (function () {
     };
 
     ATT.UserMediaService.startCall(config);
+    return call;  // testability
   };
 
   /**
@@ -294,6 +295,7 @@ cmgmt = (function () {
     logger.logInfo('caller: ' + event.caller + ', constraints: ' + config.mediaConstraints);
 
     ATT.UserMediaService.startCall(config);
+    return call;  // testability
   };
 
   // call object cleanup
