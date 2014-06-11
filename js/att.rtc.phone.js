@@ -41,19 +41,6 @@ if (Env === undefined) {
     }
   }
 
-  function getMediaType() {
-    var mediaType = null;
-    logger.logDebug('Call type Audio/Video');
-    try {
-      logger.logInfo('Trying to get the mediaType from the session Context ');
-      mediaType = rtcManager.getSessionContext().getMediaType();
-      logger.logInfo('Call Type : ' + mediaType);
-      return mediaType;
-    } catch (err) {
-      throw "getMediaType: " + err;
-    }
-  }
-
   /** 
    * method to validate the Rtc manager, session and Call object
    * Throws the corresponding error when Called and object not presend
@@ -74,6 +61,22 @@ if (Env === undefined) {
 
     return activecallobject;
 
+  }
+
+  function getMediaType() {
+    var mediaType = null;
+    logger.logDebug('Call type Audio/Video');
+    try {
+      logger.logInfo('Trying to get the mediaType from the session Context ');
+
+      if (rtcManager && rtcManager.getSession() && rtcManager.getSession().getCurrentCall()) {
+        mediaType = rtcManager.getSession().getCurrentCall().getMediaType();
+      }
+      logger.logInfo('Media Type : ' + mediaType);
+      return mediaType;
+    } catch (err) {
+      throw "getMediaType: " + err;
+    }
   }
 
   /**
