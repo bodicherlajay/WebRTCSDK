@@ -14,6 +14,10 @@
     peerConnSvc,
     logger;
 
+  function setupAnswer(sdp, modId) {
+    peerConnSvc.setRemoteAndCreateAnswer(sdp, modId);
+  }
+
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
 
@@ -131,6 +135,7 @@
       getRemoteSdp: function () {
         return remoteSdp;
       },
+      setupAnswer: setupAnswer,
       hold: holdCall,
       resume: resumeCall,
       mute: muteCall,
@@ -152,26 +157,11 @@
     logger.logInfo('Creating incoming call');
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
-    userMediaSvc.startCall(app.utils.extend(options, {
-      //mediaType: getMediaType()
-      // enable this code once startCall returns callbacks
-      // onCallStarted: function(obj) {
-        // var callObj = call({
-          // from: option.from,
-          // type: app.CallTypes.INCOMING,
-          // mediaConstraints: options.mediaConstraints
-        // });
-// 
-        // logger.logInfo('Incoming call created successfully');
-        // options.onIncomingCallCreated(callObj);
-      // },
-      // onCallError: handleError.bind(this, 'CreateIncomingCall', options.onError)
-    }));
-
     var callObj = call({
       from: options.from,
       type: options.type,
-      mediaConstraints: options.mediaConstraints
+      id: options.id,
+      remoteSdp: options.remoteSdp
     });
 
     options.onIncomingCallCreated(callObj);

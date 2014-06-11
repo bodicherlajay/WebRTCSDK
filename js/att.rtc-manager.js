@@ -100,7 +100,34 @@
             eventManager = evtMgr;
 
             // configure event manager for session event callbacks
-            eventManager.onSessionEventCallback = function (callback, event) {
+            eventManager.onSessionEventCallback = function (callback, event, data) {
+
+              // invitation received event, NOT a UI Event
+              if (undefined !== data) {
+                ATT.utils.extend(options, data);
+                session.startCall(ATT.utils.extend(options, {
+                  type: app.CallTypes.INCOMING,
+                  onCallStarted: function (callObj) {
+                    logger.logInfo('onCallStarted ...');
+                    options.onCallbackCalled(callback, event);
+                  },
+                  onCallError: handleError.bind(this, 'StartCall', options.onCallError),
+                  errorManager: errMgr,
+                  resourceManager: resourceManager,
+                  userMediaSvc: userMediaSvc,
+                  peerConnSvc: peerConnSvc
+                }));
+                return;
+              }
+
+              // modification received event, NOT a UI Event
+              if (event.sdp && event.modId) {
+                session.getCurrentCall().setupAnswer(event.sdp, event.modId);
+                return;
+              }
+
+
+              // for all other UI events
               options.onCallbackCalled(callback, event);
             };
 
@@ -188,6 +215,10 @@
     }));
   }
 
+
+  function answerCall(options) {
+    session.getCurrentCall().answer(options);
+  }
   /**
   * Create a new RTC Manager
   * @param {Object} options The options

@@ -114,8 +114,14 @@
     case app.RTCCallEvents.INVITATION_RECEIVED:
       this.onEvent(rtcEvent.createRTCEvent({
         state: app.CallStatus.RINGING,
-        from: currentEvent.from
-      }));
+        to: currentEvent.to
+      }), { from: currentEvent.from,
+            remoteSdp: currentEvent.sdp,
+            id: currentEvent.resourceURL.split('/')[6] });
+      break;
+    case app.RTCCallEvents.MODIFICATION_RECEIVED:
+      this.onEvent({ sdp: currentEvent.sdp,
+                     modId: currentEvent.modId });
       break;
     case app.RTCCallEvents.SESSION_OPEN:
       this.onEvent(rtcEvent.createRTCEvent({
@@ -180,7 +186,7 @@
 
       options.onEventInterceptorSetup();
     } catch (err) {
-      handleError.call(this, 'SetupEventInterceptor', options.onError);
+      handleError.call(this, 'SetupEventInterceptor', options.onError, err);
     }
   }
 
@@ -252,12 +258,12 @@
     });
 
     // event handler for callbacks
-    evtMgr.onEvent = function(event) {
+    evtMgr.onEvent = function(event, data) {
       if (typeof evtMgr.onSessionEventCallback === 'function') {
-        evtMgr.onSessionEventCallback(mapEventNameToCallback(event.state), event);
+        evtMgr.onSessionEventCallback(mapEventNameToCallback(event.state), event, data);
       }
       if (typeof evtMgr.onCallEventCallback === 'function') {
-        evtMgr.onCallEventCallback(mapEventNameToCallback(event.state), event);
+        evtMgr.onCallEventCallback(mapEventNameToCallback(event.state), event, data);
       }
     }
   }
