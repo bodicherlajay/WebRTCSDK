@@ -86,8 +86,8 @@ describe('Phone', function () {
 
   describe('hold', function () {
     var myCallManager = cmgmt.CallManager.getInstance();
-
-    it('should call callObject.hold', function () {
+    //manage in Rtc -manager
+    xit('should call callObject.hold', function () {
       var holdSpy = sinon.spy(),
         sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
           return {
@@ -123,34 +123,50 @@ describe('Phone', function () {
       publishStub.restore();
       sessionContextStub.restore();
     });
+    //TODO need a way to get access to rtcManager
+    it('should throw an error when hold is called before call', function () {
+      var publishStub = sinon.stub(ATT.Error, 'publish'),
+        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
+          return {
+            getCurrentCall: function () {
+              return null;
+            }
+          };
+        });
+
+      ATT.rtc.Phone.hold();
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
+      sessionContextStub.restore();
+    });
   });
 
 
   describe('getMediaType', function () {
+   //TODO need to replace this with object constructor pattern
+    //var currentcall = ATT.rtc.Phone.rtcManager.getSession().getCurrentCall();
     it('Check if getMediaType returns null by default', function () {
       expect(ATT.rtc.Phone.getMediaType()).equals(null);
     });
     it('Check if getMediaType returns video type for video calls', function () {
-      cmgmt.CallManager.getInstance().getSessionContext().setMediaType('video');
+      currentcall.setMediaType('video');
       expect(ATT.rtc.Phone.getMediaType()).equals('video');
     });
     it('Check if getMediaType returns audio type for audio Calls', function () {
-      cmgmt.CallManager.getInstance().getSessionContext().setMediaType('audio');
+      currentcall.setMediaType('audio');
       expect(ATT.rtc.Phone.getMediaType()).equals('audio');
     });
     it('Check if getMediaType returns null on call terminated or ended ', function () {
-      cmgmt.CallManager.getInstance().getSessionContext().setMediaType(null);
+      currentcall.setMediaType(null);
       expect(ATT.rtc.Phone.getMediaType()).equals(null);
     });
   });
 
   describe('resume', function () {
-
-    var myCallManager = cmgmt.CallManager.getInstance();
-
-    it('should call callObject.resume', function () {
+    xit('should call callObject.resume', function () {
+        //TODO need a way to get access to rtcManager
       var resumeSpy = sinon.spy(),
-        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
           return {
             getCallObject: function () {
               return {
@@ -165,8 +181,9 @@ describe('Phone', function () {
     });
 
     it('should publish error if restore throws exception', function () {
+        //TODO need a way to get access to rtcManager
       var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
           return {
             getCallObject: function () {
               return {
@@ -183,30 +200,47 @@ describe('Phone', function () {
       publishStub.restore();
       sessionContextStub.restore();
     });
+
+    //TODO need a way to get access to rtcManager
+    it('should throw an error when resume is called before call', function () {
+      var publishStub = sinon.stub(ATT.Error, 'publish'),
+        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
+          return {
+            getCurrentCall: function () {
+              return null;
+            }
+          };
+        });
+
+      ATT.rtc.Phone.hold();
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
+      sessionContextStub.restore();
+    });
   });
   describe('hangup', function () {
-    var myCallManager = cmgmt.CallManager.getInstance();
 
-    it('should call callObject.end', function () {
-      var hangupSpy = sinon.spy(),
-        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+    //TODO need a way to get access to rtcManager
+    it('should throw an error when hangup is called before call', function () {
+      var publishStub = sinon.stub(ATT.Error, 'publish'),
+        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
           return {
-            getCallObject: function () {
-              return {
-                end: hangupSpy
-              };
+            getCurrentCall: function () {
+              return null;
             }
           };
         });
 
       ATT.rtc.Phone.hangup();
-      expect(hangupSpy.called).to.equal(true);
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
       sessionContextStub.restore();
     });
 
+
     it('should publish error if end throws exception', function () {
       var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
+        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
           return {
             getCallObject: function () {
               return {
@@ -221,6 +255,23 @@ describe('Phone', function () {
       ATT.rtc.Phone.hangup();
       expect(publishStub.called).to.equal(true);
       publishStub.restore();
+      sessionContextStub.restore();
+    });
+    //Shoud be handled in rtc-manager
+    xit('should call callObject.hangup', function () {
+      var hangupSpy = sinon.spy(),
+        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
+          return {
+            getCallObject: function () {
+              return {
+                end: hangupSpy
+              };
+            }
+          };
+        });
+
+      ATT.rtc.Phone.hangup();
+      expect(hangupSpy.called).to.equal(true);
       sessionContextStub.restore();
     });
   });
