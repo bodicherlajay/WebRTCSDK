@@ -76,24 +76,4 @@ describe('ATT.phoneNumber', function () {
       countryCode = 'us';
     expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal('11234567890');
   });
-
-  it('getCallable2', function () {
-    var number = '425-080-FEDX';
-    expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('14250803339');
-  });
-
-  it('getCallable2', function () {
-    var number = '911';
-    expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('911');
-  });
-
-  xit('getCallable2', function () {
-    var number = '*69';
-    expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('*69');
-  });
-
-  it('getCallable2', function () {
-    var number = '451**(123*(5627';
-    expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('14511235627');
-  });
 });
