@@ -440,7 +440,7 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        session.getCurrentCall().setLocalSdp(sdp);
+        this.session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -449,7 +449,8 @@
         // send hold signal...
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendHoldCall({
-          sdp : sdp.sdp
+          sdp : sdp.sdp,
+          session: this.session
         });
       } catch (e) {
         Error.publish('Send hold signal fail: ' + e.message);
@@ -484,7 +485,7 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        session.getCurrentCall().setLocalSdp(sdp);
+        this.session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -493,7 +494,8 @@
         // send resume signal...
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendResumeCall({
-          sdp : sdp.sdp
+          sdp : sdp.sdp,
+          session: this.session
         });
       } catch (e) {
         Error.publish('Send resume call Fail: ' + e.message);
