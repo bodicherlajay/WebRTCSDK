@@ -88,7 +88,8 @@
 
   function processCurrentEvent () {
     var currentEvent = this.getCurrentEvent(),
-      state = currentEvent.state;
+      state = currentEvent.state,
+      action_data = {};
 
     switch(state) {
     case app.SessionEvents.RTC_SESSION_CREATED:
@@ -127,29 +128,55 @@
       });
       break;
     case app.RTCCallEvents.MODIFICATION_RECEIVED:
+      action_data = {
+        action: 'accept-mods',
+        sdp: currentEvent.sdp,
+        modId: currentEvent.modId
+      };
       if (currentEvent.sdp.indexOf('recvonly') !== -1) {
+        // Received hold request...
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.HOLD,
           from: currentEvent.from
-        }), {
-          action: 'accept-mods',
-          sdp: currentEvent.sdp,
-          modId: currentEvent.modId
-        });
+        }), action_data);
+      } else if (currentEvent.sdp.indexOf('sendrecv') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().indexOf('recvonly') !== -1) {
+        // Received resume request...
+        this.onEvent(rtcEvent.createRTCEvent({
+          state: app.CallStatus.RESUMED,
+          from: currentEvent.from
+        }), action_data);
       } else {
-        this.onEvent(null, {
-          action: 'accept-mods',
-          sdp: currentEvent.sdp,
-          modId: currentEvent.modId
-        });
+        this.onEvent(null, action_data);
       }
       break;
     case app.RTCCallEvents.MODIFICATION_TERMINATED:
-      this.onEvent(null, {
+      action_data = {
         action: 'term-mods',
         sdp: currentEvent.sdp,
         modId: currentEvent.modId
-      });
+      };
+      if (currentEvent.reason !== 'success') {
+        this.onEvent(rtcEvent.createRTCEvent({
+          state: app.CallStatus.ERROR,
+          from: currentEvent.from
+        }), action_data);
+      }
+      if (currentEvent.sdp && currentEvent.reason !== 'success') {
+        if (currentEvent.sdp.indexOf('sendonly') !== -1 && event.sdp.indexOf('sendrecv') === -1) {
+          // Hold call successful...other party is waiting...
+          this.onEvent(rtcEvent.createRTCEvent({
+            state: app.CallStatus.HOLD,
+            from: currentEvent.from
+          }), action_data);
+        }
+        if (currentEvent.sdp.indexOf('sendrecv') !== -1) {
+          // Resume call successful...call is ongoing...
+          this.onEvent(rtcEvent.createRTCEvent({
+            state: app.CallStatus.RESUMED,
+            from: currentEvent.from
+          }), action_data);
+        }
+      }
       break;
     case app.RTCCallEvents.SESSION_OPEN:
       this.onEvent(rtcEvent.createRTCEvent({

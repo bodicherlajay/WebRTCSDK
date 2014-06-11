@@ -79,7 +79,9 @@
   }
 
   function handleCallOpen(data) {
-    peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
+    if (data.sdp) {
+      peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
+    }
   }
 
   function answerCall(options) {
