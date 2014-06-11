@@ -14,10 +14,6 @@
     peerConnSvc,
     logger;
 
-  function setupAnswer(sdp, modId) {
-    peerConnSvc.setRemoteAndCreateAnswer(sdp, modId);
-  }
-
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
 
@@ -67,6 +63,23 @@
     }
     logger.logInfo('The formated Number' + callable);
     return ATT.phoneNumber.stringify(callable);
+  }
+
+  function handleCallMediaModifications(data) {
+    peerConnSvc.setRemoteAndCreateAnswer(data.sdp, data.modId);
+  }
+
+  function handleCallMediaTerminations(data) {
+    if (data.modId) {
+      peerConnService.setModificationId(data.modId);
+    }
+    if (data.sdp) {
+      peerConnService.setTheRemoteDescription(data.sdp, 'answer');
+    }
+  }
+
+  function handleCallOpen(data) {
+    peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
   }
 
   function answerCall(options) {
@@ -188,7 +201,9 @@
       getRemoteSdp: function () {
         return remoteSdp;
       },
-      setupAnswer: setupAnswer,
+      handleCallMediaModifications: handleCallMediaModifications,
+      handleCallMediaTerminations: handleCallMediaTerminations,
+      handleCallOpen: handleCallOpen,
       answer: answerCall,
       hold: holdCall,
       resume: resumeCall,

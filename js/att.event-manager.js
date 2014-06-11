@@ -119,19 +119,38 @@
       this.onEvent(rtcEvent.createRTCEvent({
         state: app.CallStatus.RINGING,
         from: currentEvent.from
-      }), { from: currentEvent.from,
-            remoteSdp: currentEvent.sdp,
-            id: currentEvent.resourceURL.split('/')[6],
-            mediaType: mediaType });
+      }), {
+        id: currentEvent.resourceURL.split('/')[6],
+        from: currentEvent.from,
+        mediaType: mediaType,
+        remoteSdp: currentEvent.sdp
+      });
       break;
     case app.RTCCallEvents.MODIFICATION_RECEIVED:
-      this.onEvent({ sdp: currentEvent.sdp,
-                     modId: currentEvent.modId });
+      this.onEvent(null, {
+        action: 'accept-mods',
+        sdp: currentEvent.sdp,
+        modId: currentEvent.modId
+      });
+      break;
+    case app.RTCCallEvents.MODIFICATION_TERMINATED:
+      this.onEvent(null, {
+        action: 'term-mods',
+        sdp: currentEvent.sdp,
+        modId: currentEvent.modId
+      });
       break;
     case app.RTCCallEvents.SESSION_OPEN:
       this.onEvent(rtcEvent.createRTCEvent({
         state: app.CallStatus.ESTABLISHED,
         from: currentEvent.from
+      }), {
+        sdp: currentEvent.sdp
+      });
+      break;
+    case app.RTCCallEvents.CALL_IN_PROGRESS:
+      this.onEvent(rtcEvent.createRTCEvent({
+        state: app.CallStatus.INPROGRESS
       }));
       break;
     case app.RTCCallEvents.SESSION_TERMINATED:
@@ -264,11 +283,12 @@
 
     // event handler for callbacks
     evtMgr.onEvent = function(event, data) {
+      var callback = event ? mapEventNameToCallback(event.state) : null;
       if (typeof evtMgr.onSessionEventCallback === 'function') {
-        evtMgr.onSessionEventCallback(mapEventNameToCallback(event.state), event, data);
+        evtMgr.onSessionEventCallback(callback, event, data);
       }
       if (typeof evtMgr.onCallEventCallback === 'function') {
-        evtMgr.onCallEventCallback(mapEventNameToCallback(event.state), event, data);
+        evtMgr.onCallEventCallback(callback, event, data);
       }
     }
   }
