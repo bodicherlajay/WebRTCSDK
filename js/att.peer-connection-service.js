@@ -50,7 +50,6 @@
       setError(app.Error);
       setEventEmitter(app.event);
 
-      eventEmitter.subscribe(ATT.SdkEvents.USER_MEDIA_INITIALIZED, module.initPeerConnection, module);
     } catch (e) {
       console.log("Unable to initialize dependencies for PeerConnectionService module");
     }
@@ -191,7 +190,7 @@
             try {
               self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
-              session.getCurrentCall().setLocalSdp(sdp);
+              self.session.getCurrentCall().setLocalSdp(sdp);
             } catch (e) {
               Error.publish('Could not set local description. Exception: ' + e.message);
             }
@@ -440,7 +439,7 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        session.getCurrentCall().setLocalSdp(sdp);
+        this.session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -484,7 +483,7 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        session.getCurrentCall().setLocalSdp(sdp);
+        this.session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
