@@ -37,8 +37,8 @@
 
   module = {
     sessionId: null,
-    localVideoElement: null,
-    remoteVideoElement: null,
+    localVideo: null,
+    remoteVideo: null,
     localStream: null,
     remoteStream: null,
 
@@ -55,9 +55,9 @@
       logger.logTrace('starting call');
 
       this.sessionId = options.session.getSessionId(); // TODO: UM shouldn't use session
-      this.localVideoElement = options.localVideo;
-      this.remoteVideoElement = options.remoteVideo;
-      
+      this.localVideo = options.localVideo;
+      this.remoteVideo = options.remoteVideo;
+
       options.mediaConstraints = options.mediaConstraints || defaultMediaConstraints;
 
       // get a local stream, show it in a self-view and add it to be sent
@@ -66,7 +66,7 @@
       });
 
       // set up listener for remote video start
-      this.onRemoteVideoStart(options.remoteVideo);
+      this.onRemoteVideoStart();
     },
 
     /**
@@ -96,8 +96,8 @@
     * @param {HTMLElement} remoteVideo The remote video element
     * @returns {HTMLElement} remoteVideo
     */
-    onRemoteVideoStart: function (remoteVideo) {
-      remoteVideo.addEventListener('playing', function () {
+    onRemoteVideoStart: function () {
+      this.remoteVideo.addEventListener('playing', function () {
         eventEmitter.publish(this.sessionId + '.responseEvent', {
           state : ATT.RTCCallEvents.CALL_IN_PROGRESS
         });
@@ -121,10 +121,10 @@
       try {
         if (args.localOrRemote === 'remote') {
           this.remoteStream = args.stream;
-          videoStreamEl = this.remoteVideoElement;
+          videoStreamEl = this.remoteVideo;
         } else {
           this.localStream = args.stream;
-          videoStreamEl = this.localVideoElement;
+          videoStreamEl = this.localVideo;
           videoStreamEl.setAttribute('muted', '');
         }
 
@@ -143,11 +143,11 @@
     stopStream: function () {
       logger.logTrace('stopping streams...');
       try {
-        if (this.localVideoElement) {
-          this.localVideoElement.src = '';
+        if (this.localVideo) {
+          this.localVideo.src = '';
         }
-        if (this.remoteVideoElement) {
-          this.remoteVideoElement.src = '';
+        if (this.remoteVideo) {
+          this.remoteVideo.src = '';
         }
         if (this.localStream) {
           this.localStream.stop();
