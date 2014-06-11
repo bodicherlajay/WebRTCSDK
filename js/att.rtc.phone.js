@@ -506,7 +506,19 @@ if (Env === undefined) {
     }
   }
 
-
+  /**
+   * @summary
+   * Cancel an outgoing call before it's completed.
+   * @desc
+   * Similar to hangup, but before the call is connected.
+   */
+  function cancel(){
+    try{
+      currentCall().end();
+    } catch (e){
+      ATT.Error.publish('SDK-20024', null);
+    }
+  }
 
   // The SDK public API.
   function configurePublicAPIs() {
