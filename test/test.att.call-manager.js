@@ -74,6 +74,21 @@ describe('Call Management', function () {
       expect(sessionContext.getCallState()).to.equal('Outgoing');
     });
 
+    it('should be able to cancel a call', function () {
+      var config = {
+        to: '1-800-call-junhua',
+        mediaConstraints: {audio: true, video: true}
+      };
+      callmgr.CreateOutgoingCall(config);
+      callmgr.cancel
+      sessionContext = callmgr.getSessionContext();
+      expect(sessionContext.getCallObject()).to.be.an('object');
+      assert.isNull(sessionContext.getCallObject().caller());
+      expect(sessionContext.getCallObject().callee()).to.equal('1-800-call-junhua');
+      expect(sessionContext.getCallState()).to.equal('Outgoing');
+    });
+
+
     xit('should clean a phone number with extra characters', function () {
       var config = {
         to: '1.800-43/3.23+42',

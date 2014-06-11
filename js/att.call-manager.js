@@ -92,6 +92,7 @@ cmgmt = (function () {
   //Session state enumeration
   SessionState = {
     OUTGOING_CALL : 'Outgoing',
+    DIALING : 'Dialing',
     INCOMING_CALL : 'Incoming',
     MOVE_CALL : 'Move Call',
     HOLD_CALL : 'Hold Call',
