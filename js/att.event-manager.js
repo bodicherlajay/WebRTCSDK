@@ -133,13 +133,13 @@
         sdp: currentEvent.sdp,
         modId: currentEvent.modId
       };
-      if (currentEvent.sdp.indexOf('sendonly') !== -1) {
+      if (currentEvent.sdp.indexOf('recvonly') !== -1) {
         // Received hold request...
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.HOLD,
           from: currentEvent.from
         }), action_data);
-      } else if (currentEvent.sdp.indexOf('sendrecv') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().sdp.indexOf('sendonly') !== -1) {
+      } else if (currentEvent.sdp.indexOf('sendrecv') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().sdp.indexOf('recvonly') !== -1) {
         // Received resume request...
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.RESUMED,
