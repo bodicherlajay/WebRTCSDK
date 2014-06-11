@@ -2,7 +2,7 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
 
-describe.only('rtc Management', function () {
+describe('rtc Management', function () {
   'use strict';
 
 
