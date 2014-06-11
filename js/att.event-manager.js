@@ -180,8 +180,7 @@
       break;
     case app.RTCCallEvents.SESSION_OPEN:
       this.onEvent(rtcEvent.createRTCEvent({
-        state: app.CallStatus.ESTABLISHED,
-        from: currentEvent.from
+        state: app.CallStatus.ESTABLISHED
       }), {
         sdp: currentEvent.sdp
       });
