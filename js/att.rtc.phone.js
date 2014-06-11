@@ -47,20 +47,19 @@ if (Env === undefined) {
    */
 
   function currentCall() {
-    var activecallobject = null;
+    var currentCallObject = null;
     if (!rtcManager) {
       throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
     }
     if (!rtcManager.getSession()) {
       throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
     }
-    activecallobject = rtcManager.getSession().getCurrentCall();
-    if (!activecallobject) {
+    currentCallObject = rtcManager.getSession().getCurrentCall();
+    if (!currentCallObject) {
       throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
     }
 
-    return activecallobject;
-
+    return currentCallObject;
   }
 
   function getMediaType() {
@@ -506,7 +505,19 @@ if (Env === undefined) {
     }
   }
 
-
+  /**
+   * @summary
+   * Cancel an outgoing call before it's completed.
+   * @desc
+   * Similar to hangup, but before the call is connected.
+   */
+  function cancel(){
+    try{
+      currentCall().end();
+    } catch (e){
+      ATT.Error.publish('SDK-20024', null);
+    }
+  }
 
   // The SDK public API.
   function configurePublicAPIs() {

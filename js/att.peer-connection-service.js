@@ -448,7 +448,8 @@
         // send hold signal...
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendHoldCall({
-          sdp : sdp.sdp
+          sdp : sdp.sdp,
+          session: this.session
         });
       } catch (e) {
         Error.publish('Send hold signal fail: ' + e.message);
@@ -492,7 +493,8 @@
         // send resume signal...
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendResumeCall({
-          sdp : sdp.sdp
+          sdp : sdp.sdp,
+          session: this.session
         });
       } catch (e) {
         Error.publish('Send resume call Fail: ' + e.message);

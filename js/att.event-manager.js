@@ -127,11 +127,22 @@
       });
       break;
     case app.RTCCallEvents.MODIFICATION_RECEIVED:
-      this.onEvent(null, {
-        action: 'accept-mods',
-        sdp: currentEvent.sdp,
-        modId: currentEvent.modId
-      });
+      if (currentEvent.sdp.indexOf('recvonly') !== -1) {
+        this.onEvent(rtcEvent.createRTCEvent({
+          state: app.CallStatus.HOLD,
+          from: currentEvent.from
+        }), {
+          action: 'accept-mods',
+          sdp: currentEvent.sdp,
+          modId: currentEvent.modId
+        });
+      } else {
+        this.onEvent(null, {
+          action: 'accept-mods',
+          sdp: currentEvent.sdp,
+          modId: currentEvent.modId
+        });
+      }
       break;
     case app.RTCCallEvents.MODIFICATION_TERMINATED:
       this.onEvent(null, {
