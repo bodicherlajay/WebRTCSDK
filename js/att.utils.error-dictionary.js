@@ -17,10 +17,10 @@
 
     var prototypeError = {
         userErrorCode: '',    //5 digit error code
+        errorType: '',        //Error type
         operationName: '',    //Name of the REST operation
         httpStatusCode: '',   //HTTP Status code
         messageId: '',        //SVC or POL Error
-        helpText: '',         //Help text which can be displayed on UI
         reasonText: '',       //High level reason text, invalid input, forbidden
         errorDescription: '', //Error Description
         moduleID: '',
@@ -32,6 +32,7 @@
     function addFormatter(error) {
       error.formatError = function () {
         var errorString = error.moduleID + '-' + error.userErrorCode + '-'
+          + error.errorType + '-'
           + error.operationName + '-' + error.httpStatusCode + '-'
           + error.messageId + '-' + error.errorDescription + '-' + error.reasonText;
         return errorString;
