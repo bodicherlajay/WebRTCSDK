@@ -76,7 +76,7 @@
         params: {
           url: [
             session.getSessionId(),
-            session.getCurrentCallId()
+            session.getCurrentCall().id()
           ],
           headers: {
             'Authorization' : 'Bearer ' + session.getAccessToken()

@@ -148,7 +148,7 @@
         if (sdp && sdp.indexOf('sendonly') !== -1) {
           call.setRemoteSdp(sdp.replace(/sendonly/g, 'sendrecv'));
         }
-        this.setTheRemoteDescription(event.sdp, 'offer');
+        this.setTheRemoteDescription(sdp, 'offer');
         this.createAnswer();
       }
     },
@@ -191,7 +191,7 @@
             try {
               self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
-              //session.getCurrentCall().setLocalSdp(sdp);
+              session.getCurrentCall().setLocalSdp(sdp);
             } catch (e) {
               Error.publish('Could not set local description. Exception: ' + e.message);
             }
@@ -204,15 +204,11 @@
                   session: self.session,
                   calledParty: self.calledParty,
                   sdp: self.localDescription,
-                  success: function (responseData) {
-                    if (responseData) {
-                      if (responseData.callId) {
-                        if (responseData.xState && responseData.xState === 'invitation-sent') {
-                          logger.logInfo('success for offer sent, outgoing call');
-                          // trigger callback meaning successfully sent the offer
-                          return self.onOfferSent(responseData.callId, self.localDescription);
-                        }
-                      }
+                  success: function (response) {
+                    if (response && response.callId && response.xState && response.xState === 'invitation-sent') {
+                      logger.logInfo('success for offer sent, outgoing call');
+                      // trigger callback meaning successfully sent the offer
+                      return self.onOfferSent(response.callId, self.localDescription);
                     }
                     Error.publish('Failed to send offer', 'SendOffer');
                   },
@@ -229,7 +225,19 @@
               logger.logInfo('incoming call, sending answer');
               try {
                 SignalingService.sendAnswer({
-                  sdp : self.localDescription
+                  session: self.session,
+                  sdp : self.localDescription,
+                  success: function (response) {
+                    if (response && response.xState && response.xState === 'accepted') {
+                      logger.logInfo('success for answer sent, incoming call');
+                      // trigger callback meaning successfully sent the answer
+                      return self.onAnswerSent();
+                    }
+                    Error.publish('Failed to send answer', 'SendAnswer');
+                  },
+                  error: function (error) {
+                    Error.publish(error, 'SendAnswer');
+                  }
                 });
               } catch (e) {
                 Error.publish('incoming call, could not send answer. Exception: ' + e.message);

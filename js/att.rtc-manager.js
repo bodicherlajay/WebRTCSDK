@@ -218,7 +218,10 @@ function formatNumber(number) {
       throw 'No session found to answer a call. Please login first';
     }
     session.getCurrentCall().answer(app.utils.extend(options, {
-      session: session
+      session: session,
+      onCallAnswered: function() {
+        logger.logInfo('Successfully answered the incoming call');
+      }
     }));
   }
   /**

@@ -34,36 +34,52 @@
    *  Removes extra characters from the phone number and formats it for
    *  clear display
    */
-  function cleanPhoneNumber(number, options) {
-    var cleaned = ATT.phoneNumber.stringify(number);
+  function cleanPhoneNumber(number) {
+    var callable, cleaned;
+    //removes the spaces form the number
+    callable = number.replace(/\s/g, '');
+    callable = ATT.phoneNumber.getCallable(callable);
 
-    logger.logInfo('Cleaned phone number: ' + cleaned + ', callable: ' +
-      ATT.phoneNumber.getCallable(cleaned));
-
-    if (!ATT.phoneNumber.getCallable(cleaned)) {
-      logger.logWarning('Phone number not callable.');
-      if (number.charAt(0) === '*') {
-        cleaned = '*' + cleaned;
-      }
-      logger.logWarning('checking number: ' + cleaned);
-      if (!ATT.SpecialNumbers[cleaned]) {
-        ATT.Error.publish('SDK-20027', null, options.onError);
-      } else {
-        logger.logWarning('found number in special numbers list');
-      }
+    if (callable) {
+      return callable;
     }
-    return cleaned;
+    logger.logWarning('Phone number not callable, will check special numbers list.');
+    logger.logInfo('checking number: ' + callable);
+
+    cleaned = ATT.phoneNumber.translate(number);
+    console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
+    if (number.charAt(0) === '*') {
+      cleaned = '*' + cleaned;
+    }
+    if (ATT.SpecialNumbers[cleaned]) {
+      return cleaned;
+    }
+    ATT.Error.publish('SDK-20027', null, function (error) {
+      logger.logWarning('Undefined `onError`: ' + error);
+    });
+  }
+
+  function formatNumber(number) {
+    var callable = cleanPhoneNumber(number);
+    if (!callable) {
+      logger.logWarning('Phone number not formatable .');
+      return;
+    }
+    logger.logInfo('The formated Number' + callable);
+    return ATT.phoneNumber.stringify(callable);
   }
 
   function answerCall(options) {
 
-    var mediaType = this.getMediaType(),
+    var from = this.from(),
+      mediaType = this.getMediaType(),
       mediaConstraints = {
         audio: true,
         video: mediaType === 'video'
       };
     app.utils.extend (options, {
       type: app.CallTypes.INCOMING,
+      from: from,
       mediaConstraints: mediaConstraints
     });
 
@@ -141,7 +157,7 @@
   * @param {String} mediaConstraints 'audio' or 'video'
   */
   function call(options) {
-    var id = options.callId,
+    var id = options.id,
       from = options.from,
       to = options.to,
       mediaType = options.mediaType,
@@ -198,7 +214,7 @@
     var callObj = call({
       id: options.id,
       type: options.type,
-      from: options.from,
+      from: cleanPhoneNumber(options.from),
       mediaType: options.mediaType,
       remoteSdp: options.remoteSdp
     });
