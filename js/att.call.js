@@ -96,19 +96,12 @@
       mediaConstraints: mediaConstraints
     });
 
-    userMediaSvc.startCall(app.utils.extend(options, {
-      // enable this code once startCall returns callbacks
-      // onCallStarted: function(obj) {
-        // var callObj = call({
-          // to: options.to,
-          // type: app.CallTypes.OUTGOING,
-          // mediaConstraints: options.mediaConstraints
-        // });
-// 
-        // logger.logInfo('Incoming call created successfully');
-        // options.onOutgoingCallCreated(callObj);
-      // },
-      // onCallError: handleError.bind(this, 'CreateIncomingCall', options.onError)
+    userMediaSvc.getUserMedia(app.utils.extend(options, {
+      onUserMedia: function(userMedia) {
+        app.utils.extend(options, userMedia);
+        peerConnSvc.initPeerConnection(options);
+      },
+      onError: handleError.bind(this, 'AnswerCall', options.onError)
     }));
 
     // TODO: patch work
@@ -246,24 +239,17 @@
   * })
   */
   function createOutgoingCall(options) {
-    logger.logDebug('createIncomingCall');
+    logger.logDebug('createOutgoingCall');
 
-    logger.logInfo('Creating incoming call');
+    logger.logInfo('Creating outgoing call');
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
-    userMediaSvc.startCall(app.utils.extend(options, {
-      // enable this code once startCall returns callbacks
-      // onCallStarted: function(obj) {
-        // var callObj = call({
-          // to: options.to,
-          // type: app.CallTypes.OUTGOING,
-          // mediaConstraints: options.mediaConstraints
-        // });
-// 
-        // logger.logInfo('Incoming call created successfully');
-        // options.onOutgoingCallCreated(callObj);
-      // },
-      // onCallError: handleError.bind(this, 'CreateIncomingCall', options.onError)
+    userMediaSvc.getUserMedia(app.utils.extend(options, {
+      onUserMedia: function(userMedia) {
+        app.utils.extend(options, userMedia);
+        peerConnSvc.initPeerConnection(options);
+      },
+      onError: handleError.bind(this, 'createOutgoingCall', options.onError)
     }));
 
     // TODO: patch work
