@@ -515,7 +515,7 @@ if (Env === undefined) {
     try{
       currentCall().end();
     } catch (e){
-      ATT.Error.publish('SDK-20024', null);
+      ATT.Error.publish('SDK-20034', null);
     }
   }
 

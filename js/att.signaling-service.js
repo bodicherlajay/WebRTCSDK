@@ -318,6 +318,57 @@
           }
         }
       });
+    },
+
+    /**
+     * Send Cancel Call
+     * @param {Object} config the UI options
+     */
+    sendCancelCall: function (config) {
+      config = config || {};
+
+      var session = config.session;
+
+      logger.logTrace('canceling call');
+      resourceManager.doOperation('cancelCall', {
+        params: {
+          url: [
+            session.getSessionId(),
+            session.getCurrentCallId()
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + session.getAccessToken()
+          }
+        },
+        success: function (response) {
+          if (response.getResponseStatus() === 204) {
+            logger.logTrace('Call termination success.');
+            if (typeof config.success === 'function') {
+              config.success();
+            }
+          } else {
+            logger.logError('CALL CANCELLATION ERROR, status:', response.getResponseStatus());
+            ATT.Error.publish('SDK-20026', null);
+            if (typeof config.error === 'function') {
+              config.error();
+            }
+          }
+        },
+        error: function (err) {
+          logger.logError('CALL CANCELLATION ERROR', err);
+          ATT.Error.publish('SDK-20034', null);
+          if (typeof config.error === 'function') {
+            config.error();
+          }
+        },
+        ontimeout: function (err) {
+          logger.logError('CALL TERMINATION ERROR', err);
+          ATT.Error.publish('SDK-20026', null);
+          if (typeof config.error === 'function') {
+            config.error();
+          }
+        }
+      });
     }
   };
 }(ATT || {}));

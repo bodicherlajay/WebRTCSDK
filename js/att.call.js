@@ -79,7 +79,9 @@
   }
 
   function handleCallOpen(data) {
-    peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
+    if (data.sdp) {
+      peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
+    }
   }
 
   function answerCall(options) {
@@ -145,6 +147,21 @@
       }
     });
   }
+
+  /**
+   * Call cancel
+   * @param {Object} options The phone.js facade options
+   */
+  function cancelCall(options) {
+    logger.logInfo('Canceling up...');
+    ATT.SignalingService.sendCancelCall({
+      error: function () {
+        ATT.Error.publish('SDK-20034', null, options.onError);
+        logger.logWarning('Cancel request failed.');
+      }
+    });
+  }
+
 
   /**
   * Call Prototype

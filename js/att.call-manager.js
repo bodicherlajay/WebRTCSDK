@@ -364,6 +364,22 @@ cmgmt = (function () {
     });
   };
 
+  /**
+   * Call cancel
+   * @param {Object} options The phone.js facade options
+   */
+  Call.cancel = function (options) {
+    logger.logInfo('Canceling call up...');
+    ATT.SignalingService.sendCancelCall({
+      error: function () {
+        ATT.Error.publish('SDK-20034', null, options.onError);
+        logger.logWarning('Cancel request failed.');
+      }
+    });
+    DeleteCallObject();
+  };
+
+
   module.getInstance = function () {
     if (!instance) {
       instance = init();
