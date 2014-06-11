@@ -123,7 +123,7 @@ function formatNumber(number) {
                         userMediaSvc: userMediaSvc,
                         peerConnSvc: peerConnSvc
                       }));
-                    } else if (event.state === app.CallStatus.SESSION_OPEN) {
+                    } else if (event.state === app.CallStatus.ESTABLISHED) {
                       session.getCurrentCall().handleCallOpen(data);
                       options.onCallbackCalled(callback, event);
                     }

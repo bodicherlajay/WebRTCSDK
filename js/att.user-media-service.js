@@ -41,7 +41,6 @@
     remoteVideoElement: null,
     localStream: null,
     remoteStream: null,
-    mediaConstraints: null,
 
     /**
     * Start Call
@@ -52,36 +51,29 @@
     * @attribute {Object} mediaConstraints
     * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
     */
-    startCall: function (config) {
+    getUserMedia: function (options) {
       logger.logTrace('starting call');
 
-      this.sessionId = config.session.getSessionId(); // TODO: UM shouldn't use session
-      this.localVideoElement = config.localVideo;
-      this.remoteVideoElement = config.remoteVideo;
-      this.mediaConstraints = config.mediaConstraints || defaultMediaConstraints;
-
-      var args = {
-        from: config.from,
-        to: config.to,
-        mediaConstraints: this.mediaConstraints,
-        type: config.type,
-        session: config.session  // TODO: UM shouldn't use session
-      };
+      this.sessionId = options.session.getSessionId(); // TODO: UM shouldn't use session
+      this.localVideoElement = options.localVideo;
+      this.remoteVideoElement = options.remoteVideo;
+      
+      options.mediaConstraints = options.mediaConstraints || defaultMediaConstraints;
 
       // get a local stream, show it in a self-view and add it to be sent
-      getUserMedia(this.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function () {
-        Error.publish('Get user media failed');
+      getUserMedia(options.mediaConstraints, this.getUserMediaSuccess.bind(this, options), function (err) {
+        options.onError(Error.create('Get user media failed: ' + err));
       });
 
       // set up listener for remote video start
-      this.onRemoteVideoStart(config.remoteVideo);
+      this.onRemoteVideoStart(options.remoteVideo);
     },
 
     /**
     * getUserMediaSuccess
     * @param {Object} stream The media stream
     */
-    getUserMediaSuccess: function (args, stream) {
+    getUserMediaSuccess: function (options, stream) {
       logger.logDebug('getUserMediaSuccess');
 
       // call the user media service to show stream
@@ -90,10 +82,13 @@
         stream: stream
       });
 
-      // set local stream
-      args.localStream = stream;
+      // created user media object
+      var userMedia = {
+        mediaConstraints: options.mediaConstraints,
+        localStream: stream,
+      };
 
-      eventEmitter.publish(ATT.SdkEvents.USER_MEDIA_INITIALIZED, args);
+      options.onUserMedia(userMedia);
     },
 
     /**

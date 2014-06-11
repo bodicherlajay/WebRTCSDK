@@ -127,7 +127,7 @@
         params: {
           url: [
             session.getSessionId(),
-            session.getEventObject().resourceURL.split('/')[6]
+            session.getCurrentCall().id()
           ],
           headers : {
             'Authorization' : 'Bearer ' + session.getAccessToken(),
@@ -176,7 +176,7 @@
         params: {
           url: [
             session.getSessionId(),
-            session.getCurrentCallId()
+            session.getCurrentCall().id()
           ],
           headers: {
             'Authorization' : 'Bearer ' + session.getAccessToken(),
@@ -231,7 +231,7 @@
         params: {
           url: [
             session.getSessionId(),
-            session.getCurrentCallId()
+            session.getCurrentCall().id()
           ],
           headers: {
             'Authorization': 'Bearer ' + session.getAccessToken(),
