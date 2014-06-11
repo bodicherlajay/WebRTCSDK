@@ -30,6 +30,7 @@ describe('ErrorDictionaryModule', function () {
       };
       errorSpec = {
         userErrorCode: '00000',    //5 digit error code
+        errorType: 'API',
         operationName: 'Create Session',    //Name of the REST operation
         httpStatusCode: '400',   //HTTP Status code
         messageId: 'SVC0002',        //SVC or POL Error
@@ -71,7 +72,7 @@ describe('ErrorDictionaryModule', function () {
 
       it('should format error messages properly', function () {
         var err = errorDictionary.createError(errorSpec);
-        expect(err.formatError()).to.equal('RTC-00000-Create Session-400-SVC0002-invalidinput-Request payload does not conform as documented');
+        expect(err.formatError()).to.equal('RTC-00000-API-Create Session-400-SVC0002-invalidinput-Request payload does not conform as documented');
       });
     });
   });

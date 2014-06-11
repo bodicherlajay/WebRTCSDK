@@ -4,50 +4,56 @@
 /** Exports an object to obtain the list of errors specific to the SDK. **/
 (function () {
   'use strict';
-  var allErrors = [
+  var errorType = {
+    SDK:'SDK',
+    API:'API',
+    BROWSER: 'BROWSER'
+  },
+  allErrors = [
     //SDK-00000 range reserved for appConfigModule, APIConfigs, ErrorDictionary
     // This is the error thrown if the configured error is not found in the error dictionary
     {
       userErrorCode: 'SDK-00000',    //5 digit error code
+      type: errorType.SDK,
       moduleID: 'ERROR_DICT',
       operationName: 'ErrorConfig',    //Name of the operation
       httpStatusCode: '',   //HTTP Status code
       messageId: '',        //SVC or POL Error
       errorDescription: 'Error not configured', //Error Description
-      reasonText: 'The specified error code is not configured in the error dictionary',  //High level reason text, invalid input, forbidden
-      helpText: 'Please configure the error in the error dictionary' //Help text which can be displayed on UI
+      reasonText: 'The specified error code is not configured in the error dictionary' //High level reason text, invalid input, forbidden
     },
     // This is the default error, can be used for all purposes. Shouldn't use it since doesn't provide much information
     {
       userErrorCode: 'SDK-00001',    //5 digit error code
+      type: errorType.SDK,
       moduleID: 'GENERAL',
       operationName: 'GeneralOperation',  //Name of the operation
       httpStatusCode: '',   //HTTP Status code
       messageId: '',        //SVC or POL Error
       errorDescription: 'Error performing the operation', //Error Description
-      reasonText: 'There was an error performing the operation',   //High level reason text, invalid input, forbidden
-      helpText: 'Please look at tracelog for further information' //Help text which can be displayed on UI
+      reasonText: 'There was an error performing the operation'   //High level reason text, invalid input, forbidden
     },
     //SDK-10000 range reserved for RESOURCE_MGR module
     {
       userErrorCode: 'SDK-10000',   //5 digit error code
+      type: errorType.SDK,
       moduleID: 'RESOURCE_MGR',
       operationName: 'doOperation', //Name of the REST operation
       httpStatusCode: '',           //HTTP Status code
       errorDescription: 'XHR request error', //Error Description
-      reasonText: 'There was an error in sending the XHR request',//High level reason text, invalid input, forbidden
-      helpText: 'Please look at tracelog for further information'         //Help text which can be displayed on UI
+      reasonText: 'There was an error in sending the XHR request'//High level reason text, invalid input, forbidden
     },
     //SDK-20000 range reserved for webRTC module
     {
       userErrorCode: 'SDK-20000',    //5 digit error code
-      helpText: 'Unable to complete login..text to be filled in by marketing', //Help text which can be displayed on UI
+      type: errorType.SDK,
       reasonText: 'configerror',       //High level reason text, invalid input, forbidden
       errorDescription: 'Fatal Error XHR Request failed', //Error Description
       moduleID: 'RTC'
     },
     {
       moduleID : 'RTC',
+      type: errorType.SDK,
       userErrorCode : 'SDK-20001',
       operationName : 'Login',
       httpStatusCode : '<optional>',
@@ -57,6 +63,7 @@
     {
       moduleID : 'RTC',
       userErrorCode : 'SDK-20002',
+      type: errorType.API,
       operationName : 'CreateSession',
       httpStatusCode : '400',
       errorDescription : 'Unable to create Session',
@@ -65,6 +72,7 @@
     {
       moduleID : 'RTC',
       userErrorCode : 'SDK-20003',
+      type: errorType.API,
       operationName : 'CreateSession',
       httpStatusCode : '400',
       errorDescription : 'Unable to create Session',
@@ -73,6 +81,7 @@
     {
       moduleID : 'RTC',
       userErrorCode : 'SDK-20004',
+      type: errorType.API,
       operationName : 'CreateSession',
       httpStatusCode : '400',
       errorDescription : 'Unable to create Session',
@@ -80,6 +89,7 @@
     },
     {
       userErrorCode : 'SDK-20005',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'SVC0004',
       operationName : 'CreateSession',
@@ -89,6 +99,7 @@
     },
     {
       userErrorCode : 'SDK-20006',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'SVC8510',
       operationName : 'CreateSession',
@@ -98,6 +109,7 @@
     },
     {
       userErrorCode : 'SDK-20007',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'SVC8511',
       operationName : 'CreateSession',
@@ -107,6 +119,7 @@
     },
     {
       userErrorCode : 'SDK-20008',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'SVC8512',
       operationName : 'CreateSession',
@@ -116,6 +129,7 @@
     },
     {
       userErrorCode : 'SDK-20009',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'SVC8513',
       operationName : 'CreateSession',
@@ -125,6 +139,7 @@
     },
     {
       userErrorCode : 'SDK-20010',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'POL0001',
       operationName : 'CreateSession',
@@ -134,6 +149,7 @@
     },
     {
       userErrorCode : 'SDK-20011',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'POL0002',
       operationName : 'CreateSession',
@@ -143,6 +159,7 @@
     },
     {
       userErrorCode : 'SDK-20012',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'POL0003',
       operationName : 'CreateSession',
@@ -152,6 +169,7 @@
     },
     {
       userErrorCode : 'SDK-20013',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'POL0009',
       operationName : 'CreateSession',
@@ -161,6 +179,7 @@
     },
     {
       userErrorCode : 'SDK-20014',
+      type: errorType.API,
       moduleID : 'RTC',
       messageId : 'POL1100',
       operationName : 'CreateSession',
@@ -170,6 +189,7 @@
     },
     {
       userErrorCode : 'SDK-20015',
+      type: errorType.API,
       moduleID : 'RTC',
       operationName: 'RefreshSession',
       httpStatusCode: '<optional>',
@@ -178,6 +198,7 @@
     },
     {
       moduleID: 'RTC',
+      type: errorType.API,
       userErrorCode: 'SDK-20016',
       operationName: 'DeleteSession',
       messageId: 'SVC0001',
@@ -186,6 +207,7 @@
     },
     {
       userErrorCode: 'SDK-20017',
+      type: errorType.API,
       moduleID: 'RTC',
       operationName: 'DeleteSession',
       messageId: 'SVC0002',
@@ -196,6 +218,7 @@
     {
       moduleID: 'RTC',
       userErrorCode: 'SDK-20018',
+      type: errorType.API,
       operationName: 'DeleteSession',
       messageId: 'SVC0003',
       errorDescription: 'Unable to Delete Session',
@@ -203,6 +226,7 @@
     },
     {
       userErrorCode: 'SDK-20019',
+      type: errorType.API,
       moduleID: 'RTC',
       operationName: 'DeleteSession',
       messageId: 'SVC0004',
@@ -211,6 +235,7 @@
     },
     {
       userErrorCode: 'SDK-20020',
+      type: errorType.API,
       moduleID: 'RTC',
       messageId: 'POL0001',
       operationName: 'DeleteSession',
@@ -220,6 +245,7 @@
     },
     {
       userErrorCode: 'SDK-20021',
+      type: errorType.API,
       moduleID: 'RTC',
       messageId: 'POL0002',
       operationName: 'DeleteSession',
@@ -229,6 +255,7 @@
     },
     {
       userErrorCode: 'SDK-20022',
+      type: errorType.API,
       moduleID: 'RTC',
       messageId: 'POL0003',
       operationName: 'DeleteSession',
@@ -238,6 +265,7 @@
     },
     {
       userErrorCode: 'SDK-20023',
+      type: errorType.API,
       messageId: 'POL1102',
       operationName: 'DeleteSession',
       httpStatusCode: '403',
@@ -247,6 +275,7 @@
     },
     {
       userErrorCode: 'SDK-20024',
+      type: errorType.SDK,
       operationName: 'HangUp failed',
       errorDescription: 'Unable to hangup',
       reasonText: 'Cannot hangup before establishing a call',
@@ -254,6 +283,7 @@
     },
     {
       userErrorCode: 'SDK-20025',
+      type: errorType.API,
       operationName: 'AnswerCall',
       httpStatusCode: '403',
       errorDescription: 'Unable to AnswerCall',
@@ -262,70 +292,71 @@
     },
     {
       userErrorCode: 'SDK-20026',
+      type: errorType.SDK,
       operationName: 'HangUp failed',
       errorDescription: 'Unable to hangup',
       reasonText: 'Hangup request network error',
-      helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
     {
       userErrorCode: 'SDK-20027',
+      type: errorType.SDK,
       operationName: 'Call Failed',
       errorDescription: 'Invalid phone number',
       reasonText: 'The provided phone number is not valid.',
-      helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
     {
       userErrorCode: 'SDK-20028',
+      type: errorType.SDK,
       operationName: 'Mute Failed',
       errorDescription: 'Cannot mute call',
       reasonText: 'The local audio stream is not currently established',
-      helpText: 'Please make a call first',
       moduleID: 'RTC'
     },
     {
       userErrorCode: 'SDK-20029',
+      type: errorType.SDK,
       operationName: 'Unmute Failed',
       errorDescription: 'Cannot unmute call',
       reasonText: 'The local audio stream is not currently established',
-      helpText: 'Please make a call first',
       moduleID: 'RTC'
     },
     {
       userErrorCode: 'SDK-20030',
+      type: errorType.SDK,
       operationName: 'Hold failed',
       errorDescription: 'Cannot hold call',
       reasonText: 'No call object',
-      helpText: 'Please make a call first',
       moduleID: 'RTC'
     },
     {
       userErrorCode: 'SDK-20031',
+      type: errorType.SDK,
       operationName: 'Resume failed',
       errorDescription: 'Cannot resume call',
       reasonText: 'No call object',
-      helpText: 'Please make a call first',
       moduleID: 'RTC'
     },
     {
       userErrorCode: 'SDK-20032',
+      type: errorType.SDK,
       operationName: 'Hold failed',
       errorDescription: 'Unable to hold',
       reasonText: 'Hold request network error',
-      helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
     {
       userErrorCode: 'SDK-20033',
+      type: errorType.SDK,
       operationName: 'Resume failed',
       errorDescription: 'Unable to resume',
       reasonText: 'Resume request network error',
-      helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
     {
       userErrorCode: 'SDK-20034',
+      type: errorType.SDK,
       operationName: 'Cancel failed',
       errorDescription: 'Unable to cancel',
       reasonText: 'Cancel request network error',
@@ -337,23 +368,23 @@
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
     {
       userErrorCode: 'SDK-50000',
+      type: errorType.SDK,
       moduleID: 'DHS',
       messageId: '',
       operationName: '',
       httpStatusCode: '',
       errorDescription: 'DHS Operation failed',
-      reasonText: '',
-      helpText: 'Please look at tracelog for further information' //Help text which can be displayed on UI
+      reasonText: ''
     },
     {
       userErrorCode: 'SDK-51000',
+      type: errorType.SDK,
       moduleID: 'DHS',
       messageId : 'SVC0016',
       operationName : 'createE911Id',
       httpStatusCode : '400',
       errorDescription : 'Unable to create E911 Id',
-      reasonText : 'Address could not be confirmed',
-      helpText: 'Please make sure that the address is valid or confirmed' //Help text which can be displayed on UI
+      reasonText : 'Address could not be confirmed'
     }];
 
   // freezes a list of objects
@@ -374,7 +405,8 @@
     window.ATT.utils.SDKErrorStore = {
       getAllErrors: function () {
         return freezeErrors(allErrors);
-      }
+      },
+      getErrorType: errorType
     };
   } catch (e) {
     throw new Error('Cannot export ATT.utils.SDKErrorStore.'
