@@ -55,6 +55,43 @@
     return cleaned;
   }
 
+  function answerCall(options) {
+
+    var mediaType = this.getMediaType(),
+      mediaConstraints = {
+        audio: true,
+        video: mediaType === 'video'
+      };
+    app.utils.extend (options, {
+      type: app.CallTypes.INCOMING,
+      mediaConstraints: mediaConstraints
+    });
+
+    userMediaSvc.startCall(app.utils.extend(options, {
+      // enable this code once startCall returns callbacks
+      // onCallStarted: function(obj) {
+        // var callObj = call({
+          // to: options.to,
+          // type: app.CallTypes.OUTGOING,
+          // mediaConstraints: options.mediaConstraints
+        // });
+// 
+        // logger.logInfo('Incoming call created successfully');
+        // options.onOutgoingCallCreated(callObj);
+      // },
+      // onCallError: handleError.bind(this, 'CreateIncomingCall', options.onError)
+    }));
+
+    // TODO: patch work
+    // setup callback for PeerConnectionService.onAnswerSent, will be used to
+    // indicate the RINGING state on an outgoing call
+    ATT.PeerConnectionService.onAnswerSent = function () {
+      logger.logInfo('onAnswerSent...');
+
+      options.onCallAnswered();
+    };
+  }
+
   function holdCall() {
     if (ATT.PeerConnectionService.peerConnection) {
       logger.logInfo('Putting call on hold...');
@@ -136,6 +173,7 @@
         return remoteSdp;
       },
       setupAnswer: setupAnswer,
+      answer: answerCall,
       hold: holdCall,
       resume: resumeCall,
       mute: muteCall,
@@ -158,9 +196,10 @@
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
     var callObj = call({
-      from: options.from,
-      type: options.type,
       id: options.id,
+      type: options.type,
+      from: options.from,
+      mediaType: options.mediaType,
       remoteSdp: options.remoteSdp
     });
 

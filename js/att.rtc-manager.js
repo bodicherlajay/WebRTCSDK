@@ -217,7 +217,12 @@
 
 
   function answerCall(options) {
-    session.getCurrentCall().answer(options);
+    if (!session) {
+      throw 'No session found to answer a call. Please login first';
+    }
+    session.getCurrentCall().answer(app.utils.extend(options, {
+      session: session
+    }));
   }
   /**
   * Create a new RTC Manager
@@ -239,6 +244,7 @@
       getSession: getSession,
       deleteSession: deleteSession,
       dialCall: dialCall,
+      answerCall: answerCall,
       cleanPhoneNumber: cleanPhoneNumber,
       formatNumber: formatNumber
     };
