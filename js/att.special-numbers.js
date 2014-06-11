@@ -15,7 +15,8 @@ if (!ATT) {
   module.SpecialNumbers = {
     "911": true,
     "411": true,
-    "611": true
+    "611": true,
+    "*69": true
   };
 
 
