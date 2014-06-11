@@ -161,8 +161,8 @@
           from: currentEvent.from
         }), action_data);
       }
-      if (currentEvent.sdp && currentEvent.reason !== 'success') {
-        if (currentEvent.sdp.indexOf('sendonly') !== -1 && event.sdp.indexOf('sendrecv') === -1) {
+      if (currentEvent.sdp && currentEvent.reason === 'success') {
+        if (currentEvent.sdp.indexOf('sendonly') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().indexOf('sendrecv') !== -1) {
           // Hold call successful...other party is waiting...
           this.onEvent(rtcEvent.createRTCEvent({
             state: app.CallStatus.HOLD,
