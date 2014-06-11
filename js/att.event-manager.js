@@ -112,12 +112,17 @@
       }));
       break;
     case app.RTCCallEvents.INVITATION_RECEIVED:
+      // Added a getCodec method to the util to get access the codec
+      var CODEC =  ATT.sdpFilter.getInstance().getCodecfromSDP(currentEvent.sdp),
+        mediaType = (CODEC.length === 1) ? 'audio' : 'video';
+
       this.onEvent(rtcEvent.createRTCEvent({
         state: app.CallStatus.RINGING,
-        to: currentEvent.to
+        from: currentEvent.from
       }), { from: currentEvent.from,
             remoteSdp: currentEvent.sdp,
-            id: currentEvent.resourceURL.split('/')[6] });
+            id: currentEvent.resourceURL.split('/')[6],
+            mediaType: mediaType });
       break;
     case app.RTCCallEvents.MODIFICATION_RECEIVED:
       this.onEvent({ sdp: currentEvent.sdp,
