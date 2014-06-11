@@ -133,13 +133,13 @@
         sdp: currentEvent.sdp,
         modId: currentEvent.modId
       };
-      if (currentEvent.sdp.indexOf('recvonly') !== -1) {
+      if (currentEvent.sdp.indexOf('sendonly') !== -1) {
         // Received hold request...
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.HOLD,
           from: currentEvent.from
         }), action_data);
-      } else if (currentEvent.sdp.indexOf('sendrecv') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().indexOf('recvonly') !== -1) {
+      } else if (currentEvent.sdp.indexOf('sendrecv') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().sdp.indexOf('sendonly') !== -1) {
         // Received resume request...
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.RESUMED,
@@ -162,7 +162,7 @@
         }), action_data);
       }
       if (currentEvent.sdp && currentEvent.reason === 'success') {
-        if (currentEvent.sdp.indexOf('sendonly') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().indexOf('sendrecv') !== -1) {
+        if (currentEvent.sdp.indexOf('sendonly') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().sdp.indexOf('sendrecv') !== -1) {
           // Hold call successful...other party is waiting...
           this.onEvent(rtcEvent.createRTCEvent({
             state: app.CallStatus.HOLD,

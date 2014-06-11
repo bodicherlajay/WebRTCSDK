@@ -312,6 +312,8 @@
         'sdp' : description,
         'type' : type
       };
+      this.session.getCurrentCall().setRemoteSdp(this.remoteDescription);
+
       try {
         this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
           logger.logInfo('Set Remote Description Success');
@@ -372,7 +374,8 @@
         try {
           SignalingService.sendAcceptMods({
             sdp : this.localDescription,
-            modId: this.modificationId
+            modId: this.modificationId,
+            session: this.session
           });
         } catch (e) {
           Error.publish('Accepting modification failed. Exception: ' + e.message);
