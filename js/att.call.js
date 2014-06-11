@@ -164,6 +164,21 @@
   }
 
   /**
+   * Call cancel
+   * @param {Object} options The phone.js facade options
+   */
+  function cancelCall(options) {
+    logger.logInfo('Canceling up...');
+    ATT.SignalingService.sendCancelCall({
+      error: function () {
+        ATT.Error.publish('SDK-20034', null, options.onError);
+        logger.logWarning('Cancel request failed.');
+      }
+    });
+  }
+
+
+  /**
   * Call Prototype
   * @param {String} from The caller
   * @param {String} to The callee

@@ -324,6 +324,14 @@
       helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
+    {
+      userErrorCode: 'SDK-20034',
+      operationName: 'Cancel failed',
+      errorDescription: 'Unable to cancel',
+      reasonText: 'Cancel request network error',
+      helpText: 'Please look at tracelog for further information',
+      moduleID: 'RTC'
+    },
 
     // range SDK-50000 is reserverd for DHS errors
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
