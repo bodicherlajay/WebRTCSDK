@@ -150,6 +150,7 @@ describe('Call Management', function () {
       callmgr.CreateIncomingCall(config);
       expect(sessionContext.getCallObject().caller()).to.equal('1800-foo-bar');
       callmgr.reject();
+      assert.isNull(sessionContext.getCallObject());
     });
 
     it('should be able to delete the call object', function () {
