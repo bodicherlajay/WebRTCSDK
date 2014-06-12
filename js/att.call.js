@@ -12,7 +12,8 @@
     resourceManager,
     userMediaSvc,
     peerConnSvc,
-    logger;
+    logger,
+    eventEmitter = ATT.event;
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -162,6 +163,24 @@
     });
   }
 
+  function dependencies() {
+
+  }
+
+  function on(event, handler) {
+
+    if ('connected' !== event) {
+      throw Error('Event not defined');
+    }
+
+    ATT.event.unsubscribe(event, handler);
+    ATT.event.subscribe(event, handler);
+    return true;
+  }
+
+  function connect(options) {
+    ATT.event.publish('connected');
+  }
 
   /**
   * Call Prototype
@@ -169,48 +188,35 @@
   * @param {String} to The callee
   * @param {String} mediaConstraints 'audio' or 'video'
   */
-  function call(options) {
-    var id = options.id,
-      from = options.from,
-      to = options.to,
-      mediaType = options.mediaType,
-      mediaConstraints = options.mediaConstraints,
-      localSdp = options.localSdp,
-      remoteSdp = options.remoteSdp;
+  function Call(options) {
+    if (!options) {
+      throw 'No input provided';
+    }
+    if (!options.peer) {
+      throw 'No peer provided';
+    }
+    if (!options.mediaType) {
+      throw 'No mediaType provided';
+    }
 
-    return {
-      id: function () { return id; },
-      from: function () { return from; },
-      to: function () { return to; },
-      mediaConstraints: function () { return mediaConstraints; },
-      setMediaType: function (type) {
-        mediaType = type;
-      },
-      getMediaType: function () {
-        return mediaType;
-      },
-      setLocalSdp: function (sdp) {
-        localSdp = sdp;
-      },
-      getLocalSdp: function () {
-        return localSdp;
-      },
-      setRemoteSdp: function (sdp) {
-        remoteSdp = sdp;
-      },
-      getRemoteSdp: function () {
-        return remoteSdp;
-      },
-      handleCallMediaModifications: handleCallMediaModifications,
-      handleCallMediaTerminations: handleCallMediaTerminations,
-      handleCallOpen: handleCallOpen,
-      answer: answerCall,
-      hold: holdCall,
-      resume: resumeCall,
-      mute: muteCall,
-      unmute: unmuteCall,
-      end: endCall
-    };
+    dependencies();
+
+    this.id = null;
+    this.peer = options.peer;
+    this.mediaType = options.mediaType;
+    this.localSdp = null;
+    this.remoteSdp = null;
+
+    this.on = on.bind(this);
+    this.connect = connect.bind(this);
+    this.handleCallMediaModifications = handleCallMediaModifications.bind(this);
+    this.handleCallMediaTerminations = handleCallMediaTerminations.bind(this);
+    this.handleCallOpen = handleCallOpen.bind(this);
+    this.hold = holdCall.bind(this);
+    this.resume = resumeCall.bind(this);
+    this.mute = muteCall.bind(this);
+    this.unmute = unmuteCall.bind(this);
+    this.end = endCall.bind(this);
   }
 
   /**
@@ -297,4 +303,10 @@
   }
 
   app.factories.createCall = createCall;
+
+  if (undefined === ATT.private) {
+    throw Error('Cannot export Call. ATT.private is undefined');
+  }
+  ATT.private.Call = Call;
+
 }(ATT || {}));

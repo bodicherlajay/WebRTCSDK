@@ -8,6 +8,8 @@
 
   // export global ATT namespace
   window.ATT = {
+    private: {
+    },
     //shared utilities
     utils: {
     },
