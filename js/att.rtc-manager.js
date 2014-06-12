@@ -277,7 +277,22 @@ function refreshSessionWithE911ID(args) {
     });
   }
 
-  function hangupCall() {
+function hangupCall() {
+    if (!session) {
+      throw 'No session found to answer a call. Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().hangupCall();
+  }
+
+
+  function holdCall() {
     if (!session) {
       throw 'No session found to answer a call. Please login first';
     }
@@ -390,6 +405,7 @@ function refreshSessionWithE911ID(args) {
       cancelCall: cancelCall,
       refreshSessionWithE911ID: refreshSessionWithE911ID,
       hangupCall: hangupCall,
+      holdCall: holdCall,
       cleanPhoneNumber: cleanPhoneNumber,
       formatNumber: formatNumber
     };
