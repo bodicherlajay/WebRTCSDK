@@ -134,6 +134,16 @@ function formatNumber(number) {
                 return;
               }
 
+              if (event.state === app.CallStatus.ENDED || event.state === app.CallStatus.ERROR) {
+                peerConnSvc.endCall();
+                userMediaSvc.stopStream();
+                var currentCall  = session.getCurrentCall();
+                if (currentCall) {
+                  session.deleteCall(currentCall.id());
+                  session.deleteCurrentCall();
+                }
+              }
+
               // for all other UI events
               options.onCallbackCalled(callback, event);
             };
@@ -195,6 +205,16 @@ function formatNumber(number) {
 
     // configure event manager for call event callbacks
     eventManager.onCallEventCallback = function (callback, event) {
+      if (event.state === app.CallStatus.ENDED || event.state === app.CallStatus.ERROR) {
+        peerConnSvc.endCall();
+        userMediaSvc.stopStream();
+        var currentCall  = session.getCurrentCall();
+        if (currentCall) {
+          session.deleteCall(currentCall.id());
+          session.deleteCurrentCall();
+        }
+      }
+
       options.onCallbackCalled(callback, event);
     };
 
