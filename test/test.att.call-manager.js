@@ -80,12 +80,13 @@ describe('Call Management', function () {
         mediaConstraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
-      callmgr.cancel
       sessionContext = callmgr.getSessionContext();
       expect(sessionContext.getCallObject()).to.be.an('object');
       assert.isNull(sessionContext.getCallObject().caller());
       expect(sessionContext.getCallObject().callee()).to.equal('1-800-call-junhua');
       expect(sessionContext.getCallState()).to.equal('Outgoing');
+      callmgr.cancel();
+      assert.isNull(sessionContext.getCallObject());
     });
 
 
