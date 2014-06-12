@@ -184,16 +184,16 @@
   function on(event, handler) {
 
     if ('connected' !== event) {
-      throw Error('Event not defined');
+      throw new Error('Event not defined');
     }
 
     ATT.event.unsubscribe(event, handler);
-    ATT.event.subscribe(event, handler);
+    ATT.event.subscribe(event, handler, this);
     return true;
   }
 
   function connect(options) {
-    ATT.event.publish('connected');
+    ATT.event.publish('connected', options);
   }
 
   /**

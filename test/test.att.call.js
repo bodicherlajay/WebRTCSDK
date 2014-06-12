@@ -41,33 +41,51 @@ describe.only('Call', function () {
       expect(call.on.bind(call, 'unknown')).to.throw(Error);
     });
 
-    it('Should register callback for events', function () {
-      expect(call.on.bind(call, 'connected')).to.not.throw(Error);
+    it('Should register callback for known events', function () {
+      var fn = sinon.spy();
+      expect(call.on.bind(call, 'connected', fn)).to.not.throw(Error);
     });
   });
 
   describe('Connect method', function () {
     var call;
 
-    function onConnected() { }
+    function onConnected() {
+      return true;
+    }
 
     beforeEach(function () {
       call = new ATT.private.Call({
         peer: '12345',
         mediaType: 'video'
       });
-
-      call.on('connected', onConnected);
     });
 
     it('Should exist', function () {
       expect(call.connect).to.be.a('function');
     });
 
-    it('Should execute the onConnected callback if connected successfully', function () {
-      var onConnectedSpy = sinon.spy(onConnected);
+    it('Should execute the onConnected callback if connected successfully', function (done) {
+      var onConnectedSpy = sinon.spy(function () {
+        expect(true).to.equal(true);
+        done();
+      });
 
-      expect(onConnectedSpy.called).to.equal(true);
+      call.on('connected', onConnectedSpy);
+
+      call.connect();
+
+      setTimeout(function () {
+        try {
+          expect(onConnectedSpy.called).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 100);
+
+//      expect(onConnectedSpy.called).to.equal(true);
+//      onConnectedSpy.restore();
     });
 
     it('Should execute the onError callback if there is an error');
