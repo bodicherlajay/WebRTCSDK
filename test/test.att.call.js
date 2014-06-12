@@ -2,7 +2,7 @@
  * @author Yogesh Randhawa
  */
 
-describe.only('Call', function () {
+describe('Call', function () {
   
   it('Should have a public constructor under ATT.private', function () {
     expect(ATT.private.Call).to.be.a('function');

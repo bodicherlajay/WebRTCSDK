@@ -52,7 +52,7 @@ module.exports = function (grunt) {
 //      'test/test.att.signaling.service.js',
       'test/test.att.utils.sdp-filter.js',
 //      'test/test.att.user-media-service.js',
-//      'test/test.att.rtc.phone.js',
+        'test/test.att.rtc.phone.js',
       'test/test.att.rtc.dhs.js',
       'test/test.att.main.js',
 //      'test/test.att.phonenumber.js'
