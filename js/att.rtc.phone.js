@@ -497,7 +497,7 @@ if (Env === undefined) {
   */
   function hold() {
     try {
-      currentCall().hold();
+      rtcManager.holdCall();
     } catch (e) {
       ATT.Error.publish('SDK-20030', null);
     }
@@ -514,7 +514,7 @@ if (Env === undefined) {
   */
   function resume() {
     try {
-      currentCall().resume();
+      rtcManager.resumeCall();
     } catch (e) {
       ATT.Error.publish('SDK-20031', null);
     }

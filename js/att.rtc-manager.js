@@ -246,6 +246,37 @@ function formatNumber(number) {
       peerConnSvc: peerConnSvc
     }));
   }
+
+  /**
+  * Hold call
+  *
+  */
+  function holdCall() {
+    if (!session) {
+      throw 'No session found to answer a call. Please login first';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().hold();
+  }
+
+  /**
+  * Resume call
+  *
+  */
+  function resumeCall() {
+    if (!session) {
+      throw 'No session found to answer a call. Please login first';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().resume();
+  }
+
   /**
   * Create a new RTC Manager
   * @param {Object} options The options
@@ -267,6 +298,8 @@ function formatNumber(number) {
       deleteSession: deleteSession,
       dialCall: dialCall,
       answerCall: answerCall,
+      holdCall: holdCall,
+      resumeCall: resumeCall,
       cleanPhoneNumber: cleanPhoneNumber,
       formatNumber: formatNumber
     };
