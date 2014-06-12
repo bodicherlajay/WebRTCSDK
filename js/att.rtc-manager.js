@@ -104,9 +104,9 @@ function formatNumber(number) {
               if (data) { // If data, SDK needs additional processing
                 if (data.modId) { // media modification event, SDK need to take action
                   if (data.action === 'accept-mods') {
-                    session.getCurrentCall().handleCallMediaModifications(data);
+                    session.getCurrentCall().handleCallMediaModifications(event, data);
                   } else if (data.action === 'term-mods') {
-                    session.getCurrentCall().handleCallMediaTerminations(data);
+                    session.getCurrentCall().handleCallMediaTerminations(event, data);
                   } 
                   
                 } else { // invitation-received, create incoming call before passing ui event to UI

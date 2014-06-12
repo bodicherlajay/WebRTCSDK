@@ -166,8 +166,9 @@
       logger.logTrace('sendHoldCall');
       var session = config.session,
         data = {
-          callsMediaModifications : {
-            sdp : config.sdp
+          callsMediaModifications: {
+            sdp: config.sdp.sdp,
+            type: config.sdp.type
           }
         };
 
@@ -221,8 +222,9 @@
       // request payload
       var session = config.session,
         data = {
-          callsMediaModifications : {
-            sdp : config.sdp
+          callsMediaModifications: {
+            sdp: config.sdp.sdp,
+            type: config.sdp.type
           }
         };
 

@@ -65,16 +65,28 @@
     return ATT.phoneNumber.stringify(callable);
   }
 
-  function handleCallMediaModifications(data) {
+  function handleCallMediaModifications(event, data) {
     peerConnSvc.setRemoteAndCreateAnswer(data.sdp, data.modId);
+    if (event.state === app.CallStatus.HOLD) {
+      userMediaSvc.muteStream();
+    } else if (event.state === app.CallStatus.RESUMED) {
+      userMediaSvc.unmuteStream();
+    }
   }
 
-  function handleCallMediaTerminations(data) {
+  function handleCallMediaTerminations(event, data) {
     if (data.modId) {
       peerConnSvc.setModificationId(data.modId);
     }
     if (data.sdp) {
       peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
+    }
+    if (event.state === app.CallStatus.HOLD) {
+      userMediaSvc.holdVideoStream();
+      userMediaSvc.muteStream();
+    } else if (event.state === app.CallStatus.RESUMED) {
+      userMediaSvc.resumeVideoStream();
+      userMediaSvc.unmuteStream();
     }
   }
 
