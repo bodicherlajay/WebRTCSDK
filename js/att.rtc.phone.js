@@ -536,6 +536,23 @@ if (Env === undefined) {
     }
   }
 
+  /**
+   * @summary
+   * Reject an incoming call
+   * @desc
+  * Rejects an incoming call
+  */
+  function reject() {
+    try {
+      if (!rtcManager) {
+        throw 'Unable to reject a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.rejectCall();
+    } catch (e) {
+      ATT.Error.publish('SDK-20035', null);
+    }
+  }
+
   // The SDK public API.
   function configurePublicAPIs() {
     resourceManager.addPublicMethod('login', login);
@@ -549,6 +566,7 @@ if (Env === undefined) {
     //resourceManager.addPublicMethod('initCallback', initCallbacks);
     resourceManager.addPublicMethod('getMediaType', getMediaType);
     resourceManager.addPublicMethod('hangup', hangup);
+    resourceManager.addPublicMethod('reject', reject);
     resourceManager.addPublicMethod('cleanPhoneNumber', rtcManager.cleanPhoneNumber);
     resourceManager.addPublicMethod('formatNumber', rtcManager.formatNumber);
 

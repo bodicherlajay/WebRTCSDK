@@ -315,4 +315,10 @@ describe('Phone', function () {
     afterEach(function () {
     });
   });
+
+  describe('Reject Call', function () {
+    it('should expose a reject method', function () {
+      assert.ok(ATT.rtc.Phone.reject);
+    });
+  });
 });
