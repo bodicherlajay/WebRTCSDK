@@ -13,9 +13,9 @@
 
   app.SignalingService = {
     /**
-    * Send offer
-    * @param {Object} config the peer conn config
-    */
+     * Send offer
+     * @param {Object} config the peer conn config
+     */
     sendOffer: function (config) {
       logger.logTrace('sendOffer');
 
@@ -24,11 +24,11 @@
 
       var session = config.session,
         description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
-        // call data
+      // call data
         data = {
-          call : {
-            calledParty : 'sip:' + config.calledParty + '@icmn.api.att.net',
-            sdp : description.sdp
+          call: {
+            calledParty: 'sip:' + config.calledParty + '@icmn.api.att.net',
+            sdp: description.sdp
           }
         };
 
@@ -36,7 +36,7 @@
         params: {
           url: [session.getSessionId()],
           headers: {
-            'Authorization' : 'Bearer ' + session.getAccessToken()
+            'Authorization': 'Bearer ' + session.getAccessToken()
           }
         },
         data: data,
@@ -44,8 +44,8 @@
           logger.logInfo('offer sent successfully');
 
           var responseData = {
-            callId : obj.getResponseHeader('Location') ? obj.getResponseHeader('Location').split('/')[6]: null,
-            xState : obj.getResponseHeader('x-state')
+            callId: obj.getResponseHeader('Location') ? obj.getResponseHeader('Location').split('/')[6] : null,
+            xState: obj.getResponseHeader('x-state')
           };
 
           config.success.call(null, responseData);
@@ -55,19 +55,19 @@
     },
 
     /**
-    * Send Answer
-    * @param {Object} config the peer conn config
-    */
+     * Send Answer
+     * @param {Object} config the peer conn config
+     */
     sendAnswer: function (config) {
       // fix description just before sending
       logger.logTrace('sendAnswer, pre-processing SDP', config.sdp);
 
       var session = config.session,
         description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
-        // call data
+      // call data
         data = {
-          callsMediaModifications : {
-            sdp : description.sdp
+          callsMediaModifications: {
+            sdp: description.sdp
           }
         };
 
@@ -79,23 +79,23 @@
             session.getCurrentCall().id()
           ],
           headers: {
-            'Authorization' : 'Bearer ' + session.getAccessToken()
+            'Authorization': 'Bearer ' + session.getAccessToken()
           }
         },
-        data : data,
-        success : function (obj) {
+        data: data,
+        success: function (obj) {
           logger.logInfo('answer sent successfully');
 
           var headers = {
-            location : obj.getResponseHeader('Location'),
-            xState : obj.getResponseHeader('x-state')
+            location: obj.getResponseHeader('Location'),
+            xState: obj.getResponseHeader('x-state')
           };
 
           if (typeof config.success === 'function') {
             config.success.call(null, headers);
           }
         },
-        error : function (err) {
+        error: function (err) {
           logger.logError(err.message);
 
           if (typeof config.error === 'function') {
@@ -106,19 +106,19 @@
     },
 
     /**
-    * Send Accept Modifications
-    * @param {Object} config the peer conn config
-    */
+     * Send Accept Modifications
+     * @param {Object} config the peer conn config
+     */
     sendAcceptMods: function (config) {
       // fix description just before sending
       logger.logTrace('sendAcceptMods, pre-processing sdp', config.sdp);
 
       var session = config.session,
         description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
-        // call data
+      // call data
         data = {
-          callsMediaModifications : {
-            sdp : description.sdp
+          callsMediaModifications: {
+            sdp: description.sdp
           }
         };
 
@@ -129,25 +129,25 @@
             session.getSessionId(),
             session.getCurrentCall().id()
           ],
-          headers : {
-            'Authorization' : 'Bearer ' + session.getAccessToken(),
-            'x-modId' : config.modId
+          headers: {
+            'Authorization': 'Bearer ' + session.getAccessToken(),
+            'x-modId': config.modId
           }
         },
-        data : data,
-        success : function (obj) {
+        data: data,
+        success: function (obj) {
           console.log('accepted modifications successfully');
 
           var headers = {
-              location : obj.getResponseHeader('Location'),
-              xState : obj.getResponseHeader('x-state')
-            };
+            location: obj.getResponseHeader('Location'),
+            xState: obj.getResponseHeader('x-state')
+          };
 
           if (typeof config.success === 'function') {
             config.success.call(null, headers);
           }
         },
-        error : function (err) {
+        error: function (err) {
           console.error(err.message);
 
           if (typeof config.error === 'function') {
@@ -158,9 +158,9 @@
     },
 
     /**
-    * Send Hold Call
-    * @param {Object} config The peer conn config
-    */
+     * Send Hold Call
+     * @param {Object} config The peer conn config
+     */
     sendHoldCall: function (config) {
       // request payload
       logger.logTrace('sendHoldCall');
@@ -180,8 +180,8 @@
             session.getCurrentCall().id()
           ],
           headers: {
-            'Authorization' : 'Bearer ' + session.getAccessToken(),
-            'x-calls-action' : 'initiate-call-hold'
+            'Authorization': 'Bearer ' + session.getAccessToken(),
+            'x-calls-action': 'initiate-call-hold'
           }
         },
         data: data,
@@ -215,9 +215,9 @@
     },
 
     /**
-    * Send Resume Call
-    * @param {Object} config the peer conn config
-    */
+     * Send Resume Call
+     * @param {Object} config the peer conn config
+     */
     sendResumeCall: function (config) {
       // request payload
       var session = config.session,
@@ -237,7 +237,7 @@
           ],
           headers: {
             'Authorization': 'Bearer ' + session.getAccessToken(),
-            'x-calls-action' : 'initiate-call-resume'
+            'x-calls-action': 'initiate-call-resume'
           }
         },
         data: data,
@@ -272,9 +272,9 @@
     },
 
     /**
-    * Send End Call
-    * @param {Object} config the UI options
-    */
+     * Send End Call
+     * @param {Object} config the UI options
+     */
     sendEndCall: function (config) {
       config = config || {};
 
@@ -359,6 +359,56 @@
         error: function (err) {
           logger.logError('CALL CANCELLATION ERROR', err);
           ATT.Error.publish('SDK-20034', null);
+          if (typeof config.error === 'function') {
+            config.error();
+          }
+        },
+        ontimeout: function (err) {
+          logger.logError('CALL TERMINATION ERROR', err);
+          ATT.Error.publish('SDK-20026', null);
+          if (typeof config.error === 'function') {
+            config.error();
+          }
+        }
+      });
+    },
+    /**
+     * Send Cancel Call
+     * @param {Object} config the UI options
+     */
+    sendRejectCall: function (config) {
+      config = config || {};
+
+      var session = config.session;
+
+      logger.logTrace('rejecting call');
+      resourceManager.doOperation('rejectCall', {
+        params: {
+          url: [
+            session.getSessionId(),
+            session.getCurrentCallId()
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + session.getAccessToken()
+          }
+        },
+        success: function (response) {
+          if (response.getResponseStatus() === 204) {
+            logger.logTrace('Call termination success.');
+            if (typeof config.success === 'function') {
+              config.success();
+            }
+          } else {
+            logger.logError('CALL CANCELLATION ERROR, status:', response.getResponseStatus());
+            ATT.Error.publish('SDK-20026', null);
+            if (typeof config.error === 'function') {
+              config.error();
+            }
+          }
+        },
+        error: function (err) {
+          logger.logError('CALL CANCELLATION ERROR', err);
+          ATT.Error.publish('SDK-20035', null);
           if (typeof config.error === 'function') {
             config.error();
           }

@@ -176,6 +176,20 @@
     });
   }
 
+  /**
+   * Call reject
+   * @param {Object} options The phone.js facade options
+   */
+  function rejectCall(options) {
+    logger.logInfo('Rejecting call...');
+    ATT.SignalingService.sendRejectCall({
+      error: function () {
+        ATT.Error.publish('SDK-20035', null, options.onError);
+        logger.logWarning('Cancel request failed.');
+      }
+    });
+  }
+
 
   /**
   * Call Prototype
@@ -223,7 +237,9 @@
       resume: resumeCall,
       mute: muteCall,
       unmute: unmuteCall,
-      end: endCall
+      end: endCall,
+      cancel: cancelCall,
+      reject: rejectCall
     };
   }
 
