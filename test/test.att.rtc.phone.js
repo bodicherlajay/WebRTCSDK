@@ -316,9 +316,19 @@ describe('Phone', function () {
     });
   });
 
-  describe('Reject Call', function () {
+  describe.only('Reject Call', function () {
     it('should expose a reject method', function () {
       assert.ok(ATT.rtc.Phone.reject);
+    });
+    it('should throw an error when reject is called before a valid rtcManager', function () {
+      var backupATT = ATT, publishStub = sinon.stub(ATT.Error, 'publish'),
+      phone = ATT.factories.createPhone({
+        rtcManager: null
+      });
+      ATT.rtc.Phone.reject();
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
+      ATT = backupATT;
     });
   });
 });
