@@ -528,8 +528,11 @@ if (Env === undefined) {
   */
   function hangup() {
     try {
-      currentCall().end();
-    } catch (e) {
+      if (!rtcManager) {
+        throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.hangupCall();
+      } catch (e) {
       ATT.Error.publish('SDK-20024', null);
     }
   }
