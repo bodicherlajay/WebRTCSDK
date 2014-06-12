@@ -189,9 +189,6 @@ function formatNumber(number) {
     if (!session) {
       throw 'No session found to start a call. Please login first';
     }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
-    }
     if (!eventManager) {
       throw 'No event manager found to start a call. Please login first';
     }
@@ -228,9 +225,6 @@ function formatNumber(number) {
   function answerCall(options) {
     if (!session) {
       throw 'No session found to answer a call. Please login first';
-    }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
     }
     if (!eventManager) {
       throw 'No event manager found to start a call. Please login first';
