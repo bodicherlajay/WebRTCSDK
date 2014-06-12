@@ -140,6 +140,18 @@ describe('Call Management', function () {
       expect(sessionContext.getCallObject().caller()).to.equal('1800-foo-bar');
     });
 
+    it('should reject an incoming call', function () {
+      var config = {
+        caller: '1-800-call-junhua',
+        mediaConstraints: {audio: true, video: true}
+      }, event = { caller: '1800-foo-bar' };
+      sessionContext = callmgr.getSessionContext();
+      sessionContext.setEventObject(event);
+      callmgr.CreateIncomingCall(config);
+      expect(sessionContext.getCallObject().caller()).to.equal('1800-foo-bar');
+      callmgr.reject();
+    });
+
     it('should be able to delete the call object', function () {
       var config = {
         to: '1-800-call-junhua',

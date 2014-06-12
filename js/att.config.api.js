@@ -327,6 +327,46 @@ if (!ATT) {
           headers: ATT.utils.extend({
             'x-delete-reason': 'terminate'
           }, DEFAULTS.headers)
+        },
+        /**
+         * Reject Call via RTCEndpoint
+         * @memberof WebRTC.APIConfigs
+         */
+        rejectCall: {
+          method: 'delete',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: ATT.utils.extend({
+            'x-delete-reason': 'decline'
+          }, DEFAULTS.headers)
+        },
+        /**
+         * Cancel Call via RTCEndpoint
+         * @memberof WebRTC.APIConfigs
+         */
+        cancelCall: {
+          method: 'delete',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: ATT.utils.extend({
+            'x-delete-reason': 'cancel'
+          }, DEFAULTS.headers)
         }
       };
     return APIConfigs;
