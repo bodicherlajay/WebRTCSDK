@@ -390,8 +390,37 @@ if (Env === undefined) {
       throw new TypeError('Cannot make a web rtc call, no remote media DOM element');
     }
 
+    var callbacks, errorHandler;
+
     try {
-      rtcManager.answerCall(answerParams);
+      if (!rtcManager) {
+        throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+
+      callbacks = answerParams.callbacks;
+      errorHandler = answerParams.callbacks.onCallError;
+
+      rtcManager.answerCall(ATT.utils.extend(answerParams, {
+        factories: factories,
+        onCallbackCalled: function (callback, event) {
+          try {
+            if (!callback) {
+              throw 'Null callback called';
+            }
+            if (!event) {
+              throw 'Callback called with empty event';
+            }
+            if (callbacks.hasOwnProperty(callback) && typeof callbacks[callback] === 'function') {
+              logger.logInfo(callback + ' trigger');
+
+              callbacks[callback](event);
+            }
+          } catch (err) {
+            handleError.call(this, 'AnswerCall', errorHandler, err);
+          }
+        },
+        onCallError: handleError.bind(this, 'AnswerCall', errorHandler)
+      }));
     } catch (e) {
       ATT.Error.publish(e, "AnswerCall");
     }
@@ -499,8 +528,11 @@ if (Env === undefined) {
   */
   function hangup() {
     try {
-      currentCall().end();
-    } catch (e) {
+      if (!rtcManager) {
+        throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.hangupCall();
+      } catch (e) {
       ATT.Error.publish('SDK-20024', null);
     }
   }

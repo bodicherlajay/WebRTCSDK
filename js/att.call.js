@@ -66,16 +66,28 @@
     return ATT.phoneNumber.stringify(callable);
   }
 
-  function handleCallMediaModifications(data) {
+  function handleCallMediaModifications(event, data) {
     peerConnSvc.setRemoteAndCreateAnswer(data.sdp, data.modId);
+    if (event.state === app.CallStatus.HOLD) {
+      userMediaSvc.muteStream();
+    } else if (event.state === app.CallStatus.RESUMED) {
+      userMediaSvc.unmuteStream();
+    }
   }
 
-  function handleCallMediaTerminations(data) {
+  function handleCallMediaTerminations(event, data) {
     if (data.modId) {
       peerConnSvc.setModificationId(data.modId);
     }
     if (data.sdp) {
       peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
+    }
+    if (event.state === app.CallStatus.HOLD) {
+      userMediaSvc.holdVideoStream();
+      userMediaSvc.muteStream();
+    } else if (event.state === app.CallStatus.RESUMED) {
+      userMediaSvc.resumeVideoStream();
+      userMediaSvc.unmuteStream();
     }
   }
 
@@ -141,12 +153,14 @@
   */
   function endCall(options) {
     logger.logInfo('Hanging up...');
-    ATT.SignalingService.sendEndCall({
+    ATT.SignalingService.sendEndCall(ATT.utils.extend(options, {
+      success: function  () {
+        options.onCallEnded();
+      },
       error: function () {
         ATT.Error.publish('SDK-20026', null, options.onError);
-        logger.logWarning('Hangup request failed.');
       }
-    });
+    }));
   }
 
   /**

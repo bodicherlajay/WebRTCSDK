@@ -16,7 +16,8 @@ if (!ATT) {
     "911": true,
     "411": true,
     "611": true,
-    "*69": true
+    "*69": true,
+    "#89": true
   };
 
 
