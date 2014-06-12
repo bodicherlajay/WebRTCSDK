@@ -497,6 +497,9 @@ if (Env === undefined) {
   */
   function hold() {
     try {
+      if (!rtcManager) {
+        throw 'Unable to resume a web rtc call. There is no valid RTC manager to perform this operation';
+      }
       rtcManager.holdCall();
     } catch (e) {
       ATT.Error.publish('SDK-20030', null);
@@ -514,6 +517,9 @@ if (Env === undefined) {
   */
   function resume() {
     try {
+      if (!rtcManager) {
+        throw 'Unable to resume a web rtc call. There is no valid RTC manager to perform this operation';
+      }
       rtcManager.resumeCall();
     } catch (e) {
       ATT.Error.publish('SDK-20031', null);
@@ -528,8 +534,11 @@ if (Env === undefined) {
   */
   function hangup() {
     try {
-      currentCall().end();
-    } catch (e) {
+      if (!rtcManager) {
+        throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.hangupCall();
+      } catch (e) {
       ATT.Error.publish('SDK-20024', null);
     }
   }

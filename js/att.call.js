@@ -152,12 +152,14 @@
   */
   function endCall(options) {
     logger.logInfo('Hanging up...');
-    ATT.SignalingService.sendEndCall({
+    ATT.SignalingService.sendEndCall(ATT.utils.extend(options, {
+      success: function  () {
+        options.onCallEnded();
+      },
       error: function () {
         ATT.Error.publish('SDK-20026', null, options.onError);
-        logger.logWarning('Hangup request failed.');
       }
-    });
+    }));
   }
 
   /**
