@@ -80,7 +80,7 @@ describe('Call Management', function () {
         mediaConstraints: {audio: true, video: true}
       };
       callmgr.CreateOutgoingCall(config);
-      callmgr.cancel
+      callmgr.cancel();
       sessionContext = callmgr.getSessionContext();
       expect(sessionContext.getCallObject()).to.be.an('object');
       assert.isNull(sessionContext.getCallObject().caller());
