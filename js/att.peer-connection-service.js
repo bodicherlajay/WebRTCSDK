@@ -429,6 +429,8 @@
 
       // adjust SDP for hold request
       sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
+      //sdp.sdp = sdp.sdp.replace(/a=setup:active/g, 'a=setup:actpass');
+      sdp.type = 'offer';
       SDPFilter.processChromeSDPOffer(sdp);
       this.incrementModCount();
 
@@ -451,7 +453,7 @@
         // send hold signal...
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendHoldCall({
-          sdp : sdp.sdp,
+          sdp : sdp,
           session: this.session
         });
       } catch (e) {
@@ -474,6 +476,7 @@
 
       // adjust SDP for resume request
       sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
+      sdp.type = 'offer';
       SDPFilter.processChromeSDPOffer(sdp);
       this.incrementModCount();
 
@@ -496,7 +499,7 @@
         // send resume signal...
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendResumeCall({
-          sdp : sdp.sdp,
+          sdp : sdp,
           session: this.session
         });
       } catch (e) {

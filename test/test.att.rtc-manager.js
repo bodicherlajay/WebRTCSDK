@@ -22,6 +22,11 @@ describe('rtc Management', function () {
       expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('*69');
     });
 
+    it('should be able to  #89', function () {
+      var number = '#89';
+      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('#89');
+    });
+
     it('should remove all the special character and return dialable number', function () {
       var number = '451**(123*(5627';
       expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('14511235627');
@@ -57,6 +62,11 @@ describe('rtc Management', function () {
     it('should be able to format *69', function () {
       var number = '*69';
       expect(ATT.rtc.Phone.formatNumber(number)).to.equal('*69');
+    });
+
+    it('should be able to format #89', function () {
+      var number = '#89';
+      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('#89');
     });
 
     it('should return a format number after removing special character', function () {
