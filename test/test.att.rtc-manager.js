@@ -89,4 +89,16 @@ describe('rtc Management', function () {
       expect(ATT.rtc.Phone.formatNumber(number)).to.equal('1 (451) 123-2756');
     });
   });
+
+  describe('Hold Call', function () {
+    it('should expose a holdCall method', function () {
+      assert.ok(ATT.rtc.Phone.rtcManager);
+    });
+  });
+
+  describe('Resume Call', function () {
+    it('should expose a resumeCall method', function () {
+      assert.ok(ATT.rtc.Phone.rtcManager);
+    });
+  });
 });

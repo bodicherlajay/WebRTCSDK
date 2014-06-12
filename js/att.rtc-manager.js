@@ -257,11 +257,27 @@ function refreshSessionWithE911ID(args) {
     }));
   }
 
-  /**
-  * Hold call
-  *
-  */
-  function holdCall() {
+  function rejectCall(options) {
+    if (!session) {
+      throw 'No session found to reject a call. Please login first';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to reject a call. Please login first';
+    }
+    // configure event manager for call event callbacks
+    eventManager.onCallEventCallback = function (callback, event) {
+      options.onCallbackCalled(callback, event);
+    };
+    session.getCurrentCall().end({
+      session: session,
+      onCallEnded: function() {
+        logger.logInfo('Call ended successfully');
+      },
+      onError: handleError.bind(this, 'EndCall')
+    });
+  }
+
+  function hangupCall() {
     if (!session) {
       throw 'No session found to answer a call. Please login first';
     }
@@ -368,12 +384,12 @@ function refreshSessionWithE911ID(args) {
       deleteSession: deleteSession,
       dialCall: dialCall,
       answerCall: answerCall,
-      holdCall: holdCall,
       unmuteCall: unmuteCall,
       muteCall: muteCall,
       resumeCall: resumeCall,
       cancelCall: cancelCall,
       refreshSessionWithE911ID: refreshSessionWithE911ID,
+      hangupCall: hangupCall,
       cleanPhoneNumber: cleanPhoneNumber,
       formatNumber: formatNumber
     };

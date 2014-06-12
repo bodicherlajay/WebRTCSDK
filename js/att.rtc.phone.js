@@ -406,6 +406,73 @@ if (Env === undefined) {
   }
 
   /**
+   * @summary
+   * Reject an incoming call
+   * @desc
+   * When call arrives via an incoming call event, call can be answered by using this method
+   * @memberof ATT.rtc.Phone
+   * @param {Object} rejectParams
+   * @param {function} rejectParams.onCallError        callback function for onCallError event
+   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallError         This callback function gets invoked when encountering issues during outgoing call flow
+   * @example
+   *  Preconditions: ATT.rtc.Phone.login() invocation is successful
+   * //Example 1
+   * //audio call
+   * ATT.rtc.Phone.answer(
+   * localVideo: “localvideo”,
+   * remoteVideo: “remotevideo”,
+   *   mediaConstraints: {
+   *     audio:true,
+   *     video:false
+   *   },
+   * onCallEnded: function(evt) {}
+   * onCallError: function(evt) {}
+   * }
+   );
+   */
+  function reject(rejectParams) {
+    if (!rejectParams) {
+      throw new TypeError('Cannot make a web rtc call, no answer configuration');
+    }
+
+    var callbacks, errorHandler;
+
+    try {
+      if (!rtcManager) {
+        throw 'There is no valid RTC manager to perform this operation';
+      }
+
+      callbacks = rejectParams.callbacks;
+      errorHandler = rejectParams.callbacks.onCallError;
+
+      rtcManager.answerCall(ATT.utils.extend(rejectParams, {
+        factories: factories,
+        onCallbackCalled: function (callback, event) {
+          try {
+            if (!callback) {
+              throw 'Null callback called';
+            }
+            if (!event) {
+              throw 'Callback called with empty event';
+            }
+            if (callbacks.hasOwnProperty(callback) && typeof callbacks[callback] === 'function') {
+              logger.logInfo(callback + ' trigger');
+
+              callbacks[callback](event);
+            }
+          } catch (err) {
+            handleError.call(this, 'AnswerCall', errorHandler, err);
+          }
+        },
+        onCallError: handleError.bind(this, 'AnswerCall', errorHandler)
+      }));
+    } catch (e) {
+      ATT.Error.publish(e, "AnswerCall");
+    }
+  }
+
+
+  /**
    * @memberof ATT.rtc.Phone
    * @summary
    * Mutes current call stream
