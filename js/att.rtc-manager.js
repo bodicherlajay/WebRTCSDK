@@ -48,7 +48,6 @@
     }
     logger.logWarning('Phone number not callable, will check special numbers list.');
     logger.logInfo('checking number: ' + callable);
-   
     cleaned = ATT.phoneNumber.translate(number);
     console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
     if (number.charAt(0) === '*') {
@@ -185,6 +184,17 @@ function formatNumber(number) {
     });
   }
 
+function refreshSessionWithE911ID(args) {
+    if (!session) {
+      throw 'No session found to delete. Please login first';
+    }
+    session.updateE911Id({
+      e911Id:args.e911Id,
+      onSuccess:args.onSuccess,
+      onError: args.onError
+    });
+  }
+
   function dialCall(options) {
     if (!session) {
       throw 'No session found to start a call. Please login first';
@@ -284,6 +294,60 @@ function formatNumber(number) {
   }
 
   /**
+  * mute call
+  *
+  */
+  function muteCall() {
+    if (!session) {
+      throw 'No session found . Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().mute();
+  }
+
+  /**
+  * unmute call
+  *
+  */
+  function unmuteCall() {
+    if (!session) {
+      throw 'No session found . Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().unmute();
+  }
+
+  /**
+  * cancel call
+  *
+  */
+  function cancelCall() {
+    if (!session) {
+      throw 'No session found . Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().cancelCall();
+  }
+
+  /**
   * Create a new RTC Manager
   * @param {Object} options The options
   * })
@@ -305,7 +369,11 @@ function formatNumber(number) {
       dialCall: dialCall,
       answerCall: answerCall,
       holdCall: holdCall,
+      unmuteCall: unmuteCall,
+      muteCall: muteCall,
       resumeCall: resumeCall,
+      cancelCall: cancelCall,
+      refreshSessionWithE911ID: refreshSessionWithE911ID,
       cleanPhoneNumber: cleanPhoneNumber,
       formatNumber: formatNumber
     };

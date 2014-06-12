@@ -530,7 +530,7 @@ if (Env === undefined) {
    */
   function cancel(){
     try{
-      currentCall().end();
+      rtcManager.cancelCall();
     } catch (e){
       ATT.Error.publish('SDK-20034', null);
     }
@@ -553,6 +553,27 @@ if (Env === undefined) {
     }
   }
 
+
+  /**
+   * @summary
+   * Refresh session on E911 Address Update
+   * @desc
+  * Update the Session 
+  */
+  function refreshSessionWithE911ID(args) {
+    try {
+      if (!args.e911Id || args.e911Id.trim().length === 0) {
+        throw new TypeError('E911Id Parameter Missing');
+      }
+      if (!rtcManager) {
+        throw 'Unable to reject a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.refreshSessionWithE911ID(args);
+    } catch (e) {
+      ATT.Error.publish('SDK-20035', null);
+    }
+  }
+
   // The SDK public API.
   function configurePublicAPIs() {
     resourceManager.addPublicMethod('login', login);
@@ -562,6 +583,7 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('hold', hold);
     resourceManager.addPublicMethod('resume', resume);
     resourceManager.addPublicMethod('mute', mute);
+    resourceManager.addPublicMethod('cancel', cancel);
     resourceManager.addPublicMethod('unmute', unmute);
     //resourceManager.addPublicMethod('initCallback', initCallbacks);
     resourceManager.addPublicMethod('getMediaType', getMediaType);
@@ -575,6 +597,7 @@ if (Env === undefined) {
     // creating the phone object:
     // createPhone({rtcManager: rsrcMgr }){ ... };
     resourceManager.addPublicMethod('rtcManager', rtcManager);
+    resourceManager.addPublicMethod('refreshSessionWithE911ID', refreshSessionWithE911ID);  
   }
 
   function createPhone(options) {

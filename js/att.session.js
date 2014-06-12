@@ -98,6 +98,40 @@
     resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
   }
 
+function updateE911Id(args) {
+    logger.logDebug('Updated e911ID in session object');   
+    this.setE911Id(args.e911Id);
+    logger.logDebug('Triggres the refresh session with new e911 address ');
+    refreshWebRTCSessionWithE911Id({
+        sessionId: this.getSessionId(),
+        token: this.getAccessToken(),
+        e911Id: this.getE911Id(),
+        onE911AddressUpdate: args.onRefreshSessionwithE911Id,
+        onError: args.onError
+      });
+    }
+
+ function refreshWebRTCSessionWithE911Id(args) {
+    var dataForRefreshWebRTCSession = {
+      params: {
+        url: [args.sessionId],
+        headers: {
+          'Authorization': args.token
+        },
+        body: {
+          "e911Association": { "e911Id": args.e911Id }
+        }
+      },
+      success: function () {
+        logger.logInfo('Successfully updated the e911Id to the session ');
+        args.onE911AddressUpdate();
+      },
+      error: args.onError
+    };
+
+    // Call BF to refresh WebRTC Session.
+    resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
+  }
   function deleteWebRTCSession(args) {
     var dataForDeleteWebRTCSession = {
       params: {
@@ -243,6 +277,7 @@
       clearKeepAlive: clearKeepAlive,
       clearSession: clearSession,
       startCall: startCall,
+      updateE911Id: updateE911Id,
       getCalls: function () {
         return calls;
       },
@@ -261,6 +296,9 @@
       },
       setCurrentCall: function (callObj) {
         currentCall = callObj;
+      },
+      setE911Id: function (callObj) {
+        e911Id = callObj;
       },
       deleteCurrentCall: function () {
         currentCall = null;
