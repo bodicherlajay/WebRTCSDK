@@ -363,7 +363,15 @@
       helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
-
+    {
+      userErrorCode: 'SDK-20035',
+      type: errorType.SDK,
+      operationName: 'Reject failed',
+      errorDescription: 'Unable to reject',
+      reasonText: 'Unable to reject a web rtc call. There is no valid RTC manager to perform this operation',
+      helpText: 'Please look at tracelog for further information',
+      moduleID: 'RTC'
+    },
     // range SDK-50000 is reserverd for DHS errors
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
     {
