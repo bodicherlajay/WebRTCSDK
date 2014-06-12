@@ -23,7 +23,8 @@ describe.only('Call', function () {
     });
     expect(call).to.be.an('object');
   });
-  describe('On method', function () {
+
+  describe('method', function () {
     var call;
 
     beforeEach(function () {
@@ -33,70 +34,111 @@ describe.only('Call', function () {
       });
     });
 
-    it('Should exist', function () {
-      expect(call.on).to.be.a('function');
-    });
+    describe('On', function () {
 
-    it('Should fail if event is not recognized', function () {
-      expect(call.on.bind(call, 'unknown')).to.throw(Error);
-    });
+      it('Should exist', function () {
+        expect(call.on).to.be.a('function');
+      });
 
-    it('Should register callback for known events', function () {
-      var fn = sinon.spy();
-      expect(call.on.bind(call, 'connected', fn)).to.not.throw(Error);
-    });
-  });
+      it('Should fail if event is not recognized', function () {
+        expect(call.on.bind(call, 'unknown')).to.throw(Error);
+      });
 
-  describe('Connect method', function () {
-    var call;
-
-    function onConnected() {
-      return true;
-    }
-
-    beforeEach(function () {
-      call = new ATT.private.Call({
-        peer: '12345',
-        mediaType: 'video'
+      it('Should register callback for known events', function () {
+        var fn = sinon.spy();
+        expect(call.on.bind(call, 'connecting', fn)).to.not.throw(Error);
       });
     });
 
-    it('Should exist', function () {
-      expect(call.connect).to.be.a('function');
-    });
+    describe('Connect', function () {
+      var onConnectingSpy,
+        onCallingSpy,
+        onEstablishedSpy;
 
-    it('Should execute the onConnected callback if connected successfully', function (done) {
-      var onConnectedSpy = sinon.spy(function () {
-        expect(true).to.equal(true);
-        done();
+      beforeEach(function () {
+
+        onConnectingSpy = sinon.spy();
+        onCallingSpy = sinon.spy();
+        onEstablishedSpy = sinon.spy();
+        onErrorSpy = sinon.spy();
+
+        call.on('connecting', onConnectingSpy);
+        call.on('calling', onCallingSpy);
+        call.on('established', onEstablishedSpy);
       });
 
-      call.on('connected', onConnectedSpy);
+      it('Should exist', function () {
+        expect(call.connect).to.be.a('function');
+      });
 
-      call.connect();
+      it('Should execute the onConnecting callback immediately', function (done) {
+        call.connect();
 
-      setTimeout(function () {
-        try {
-          expect(onConnectedSpy.called).to.equal(true);
-          done();
-        } catch (e) {
-          done(e);
-        }
-      }, 100);
+        setTimeout(function () {
+          try {
+            expect(onConnectingSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
 
-//      expect(onConnectedSpy.called).to.equal(true);
-//      onConnectedSpy.restore();
+      });
+
+      it('Should execute the onCalling callback on setting the call id on the call', function (done) {
+        var callId = '12345';
+
+        call.setCallId(callId);
+
+        setTimeout(function () {
+          try {
+            expect(call.id).to.equal(callId);
+            expect(onCallingSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('Should execute the onEstablished callback on setting the remote SDP', function () {
+        var remoteSdp = 'JFGLSDFDJKS';
+
+        call.setRemoteSdp(remoteSdp);
+
+        setTimeout(function () {
+          try {
+            expect(call.remoteSdp).to.equal(remoteSdp);
+            expect(onEstablishedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('Should execute the onError callback if there is an error');
     });
 
-    it('Should execute the onError callback if there is an error');
+    describe('Disconnect', function () {
+      var onDisconnectedSpy;
+
+      it('Should exist', function () {
+        expect(call.disconnect).to.be.a('function');
+      });
+
+      it('Should execute the onDisconnected callback if no error', function () {
+        call.disconnect();
+
+        setTimeout(function () {
+          try {
+            expect(onDisconnectedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+    });
   });
-
-  describe('Disconnect method', function () {
-    it('Should exist');
-
-    it('Should execute the onDisconnected callback if no error');
-
-    it('Should execute the onError callback if there is an error');
-  });
-
 });

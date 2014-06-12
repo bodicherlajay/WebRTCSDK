@@ -183,19 +183,33 @@
 
   function on(event, handler) {
 
-    if ('connected' !== event) {
+    if ('connecting' !== event &&
+      'calling' !== event &&
+      'established' !== event) {
       throw new Error('Event not defined');
     }
 
     ATT.event.unsubscribe(event, handler);
     ATT.event.subscribe(event, handler, this);
-    return true;
   }
 
-  function connect(options) {
-    ATT.event.publish('connected', options);
+  function connect() {
+    ATT.event.publish('connecting');
   }
 
+  function disconnect() {
+    ATT.event.publish('disconnected');
+  }
+
+  function setCallId(callId) {
+    this.id  = callId;
+    ATT.event.publish('calling');
+  }
+
+  function setRemoteSdp(remoteSdp) {
+    this.remoteSdp = remoteSdp;
+    ATT.event.publish('established');
+  }
   /**
   * Call Prototype
   * @param {String} from The caller
@@ -223,6 +237,9 @@
 
     this.on = on.bind(this);
     this.connect = connect.bind(this);
+    this.disconnect = disconnect.bind(this);
+    this.setCallId = setCallId.bind(this);
+    this.setRemoteSdp = setRemoteSdp.bind(this);
     this.handleCallMediaModifications = handleCallMediaModifications.bind(this);
     this.handleCallMediaTerminations = handleCallMediaTerminations.bind(this);
     this.handleCallOpen = handleCallOpen.bind(this);
