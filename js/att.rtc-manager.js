@@ -205,10 +205,9 @@ function formatNumber(number) {
       to: options.to
     });
 
-    session.startCall(ATT.utils.extend(options, {
+    session.startCall(app.utils.extend(options, {
       type: app.CallTypes.OUTGOING,
       onCallStarted: function (callObj) {
-        // fire the session created event
         eventManager.publishEvent({
           state: app.RTCCallEvents.CALL_RINGING,
           to: callObj.to()
@@ -227,11 +226,24 @@ function formatNumber(number) {
     if (!session) {
       throw 'No session found to answer a call. Please login first';
     }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+    // configure event manager for call event callbacks
+    eventManager.onCallEventCallback = function (callback, event) {
+      options.onCallbackCalled(callback, event);
+    };
     session.getCurrentCall().answer(app.utils.extend(options, {
+      type: app.CallTypes.INCOMING,
       session: session,
       onCallAnswered: function() {
         logger.logInfo('Successfully answered the incoming call');
-      }
+      },
+      onCallError: handleError.bind(this, 'StartCall', options.onCallError),
+      errorManager: errMgr,
+      resourceManager: resourceManager,
+      userMediaSvc: userMediaSvc,
+      peerConnSvc: peerConnSvc
     }));
   }
   /**
