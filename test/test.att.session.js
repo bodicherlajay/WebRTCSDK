@@ -26,8 +26,11 @@ describe.only('Session', function () {
 
   describe('method', function () {
     var session,
+      call,
+      secondCall,
       onConnectingSpy,
       onConnectedSpy,
+      onDisconnectingSpy,
       onDisconnectedSpy;
 
     beforeEach(function () {
@@ -36,12 +39,26 @@ describe.only('Session', function () {
         e911Id: 'sdfghfds'
       });
 
+      call = new ATT.private.Call({
+        id: '12345',
+        peer: '12345',
+        mediaType: 'audio'
+      });
+
+      secondCall = new ATT.private.Call({
+        id: '98765',
+        peer: '12452',
+        mediaType: 'video'
+      });
+
       onConnectingSpy = sinon.spy();
       onConnectedSpy = sinon.spy();
+      onDisconnectingSpy = sinon.spy();
       onDisconnectedSpy = sinon.spy();
 
       session.on('connecting', onConnectingSpy);
       session.on('connected', onConnectedSpy);
+      session.on('disconnecting', onDisconnectingSpy);
       session.on('disconnected', onDisconnectedSpy);
 
     });
@@ -111,18 +128,52 @@ describe.only('Session', function () {
 
     });
 
+    describe('AddCall', function () {
+
+      it('Should exist', function () {
+        expect(session.addCall).to.be.a('function');
+      });
+
+      it('Should add a call to the session', function () {
+        session.addCall(call);
+
+        expect(session.getCall(call.id)).to.equal(call);
+      });
+
+    });
+
+    describe('GetCall', function () {
+
+      beforeEach(function() {
+        session.addCall(call);
+      });
+
+      it('Should exist', function() {
+        expect(session.getCall).to.be.a('function');
+      });
+
+      it('Should return a call by id', function () {
+        expect(session.getCall(call.id)).to.equal(call);
+      });
+
+      it('Should return undefined if the call doesn\'t exist', function () {
+        expect(session.getCall('11111')).to.equal(undefined);
+      });
+
+    });
+
     describe('Disconnect', function () {
 
       it('Should exist', function () {
         expect(session.disconnect).to.be.a('function');
       });
 
-      it('Should execute the onDisconnected callback if no error', function () {
+      it('Should execute the onDisconnecting callback immediately', function (done) {
         session.disconnect();
 
         setTimeout(function () {
           try {
-            expect(onDisconnectedSpy.called).to.equal(true);
+            expect(onDisconnectingSpy.called).to.equal(true);
             done();
           } catch (e) {
             done(e);
@@ -130,5 +181,73 @@ describe.only('Session', function () {
         }, 100);
       });
     });
+
+    describe('TerminateCalls', function () {
+
+      beforeEach(function() {
+        session.addCall(call);
+        session.addCall(secondCall);
+      });
+
+      it('Should exist', function () {
+        expect(session.terminateCalls).to.be.a('function');
+      });
+
+      it('Should call disconnect on all calls in the session', function () {
+        var disconnectSpy1 = sinon.spy(call, 'disconnect');
+        var disconnectSpy2 = sinon.spy(secondCall, 'disconnect');
+
+        session.terminateCalls();
+
+        expect(disconnectSpy1.called).to.equal(true);
+        expect(disconnectSpy2.called).to.equal(true);
+
+        disconnectSpy1.restore();
+        disconnectSpy2.restore();
+      });
+
+    });
+
+    describe('DeleteCall', function () {
+
+      beforeEach(function () {
+        session.addCall(call);
+      });
+
+      it('Should exist', function () {
+        expect(session.deleteCall).to.be.a('function');
+      });
+
+      it('Should throw an error if the call doesn\'t exist', function () {
+        expect(session.deleteCall.bind(session, '00000')).to.throw('Call not found');
+      });
+
+      it('Should delete the call from the session', function () {
+        var callId = call.id;
+        session.deleteCall(callId);
+        expect(session.getCall(callId)).to.equal(undefined);
+      });
+
+      it('Should fire oncallsterminated after the last call is deleted', function (done) {
+        var onAllCallsTerminated = sinon.spy();
+
+        session.on('allcallsterminated', onAllCallsTerminated);
+
+        session.deleteCall(call.id);
+
+        setTimeout(function () {
+          try {
+            expect(onAllCallsTerminated.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+
+      });
+
+    });
+
   });
+
 });

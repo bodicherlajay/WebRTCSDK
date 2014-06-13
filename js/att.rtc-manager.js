@@ -137,11 +137,8 @@ function formatNumber(number) {
               if (event.state === app.CallStatus.ENDED || event.state === app.CallStatus.ERROR) {
                 peerConnSvc.endCall();
                 userMediaSvc.stopStream();
-                var currentCall  = session.getCurrentCall();
-                if (currentCall) {
-                  session.deleteCall(currentCall.id());
-                  session.deleteCurrentCall();
-                }
+                session.deleteCall(session.getCurrentCall().id());
+                session.deleteCurrentCall();
               }
 
               // for all other UI events
@@ -210,7 +207,7 @@ function formatNumber(number) {
         userMediaSvc.stopStream();
         var currentCall  = session.getCurrentCall();
         if (currentCall) {
-          session.deleteCall(currentCall.id());
+          session.deleteCall(session.getCurrentCall().id());
           session.deleteCurrentCall();
         }
       }

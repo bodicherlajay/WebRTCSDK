@@ -16,12 +16,20 @@ describe('Call', function () {
     expect(fn.bind(null, { peer: '12345' })).to.throw('No mediaType provided');
   });
 
-  it('Should create a call object', function () {
-    var call = new ATT.private.Call({
-      peer: '12345',
-      mediaType: 'audio'
-    });
+  it('Should create a call object with the options passed in', function () {
+    var options = {
+        id: '12334',
+        peer: '12345',
+        mediaType: 'audio'
+      },
+      call;
+
+    call = new ATT.private.Call(options);
+
     expect(call).to.be.an('object');
+    expect(call.id).to.equal(options.id);
+    expect(call.peer).to.equal(options.peer);
+    expect(call.mediaType).to.equal(options.mediaType);
   });
 
   describe('method', function () {
@@ -29,6 +37,7 @@ describe('Call', function () {
       onConnectingSpy,
       onCallingSpy,
       onEstablishedSpy,
+      onDisconnectingSpy,
       onDisconnectedSpy;
 
     beforeEach(function () {
@@ -40,11 +49,13 @@ describe('Call', function () {
       onConnectingSpy = sinon.spy();
       onCallingSpy = sinon.spy();
       onEstablishedSpy = sinon.spy();
+      onDisconnectingSpy = sinon.spy();
       onDisconnectedSpy = sinon.spy();
 
       call.on('connecting', onConnectingSpy);
       call.on('calling', onCallingSpy);
       call.on('established', onEstablishedSpy);
+      call.on('disconnecting', onDisconnectingSpy);
       call.on('disconnected', onDisconnectedSpy);
 
     });
@@ -95,12 +106,12 @@ describe('Call', function () {
       it('Should execute the onCalling callback on setting the call id on the call', function (done) {
         var callId = '12345';
 
-        call.setCallId(callId);
+        call.setId(callId);
 
         setTimeout(function () {
           try {
-            expect(call.id).to.equal(callId);
             expect(onCallingSpy.called).to.equal(true);
+            expect(call.id).to.equal(callId);
             done();
           } catch (e) {
             done(e);
@@ -108,7 +119,7 @@ describe('Call', function () {
         }, 100);
       });
 
-      it('Should execute the onEstablished callback on setting the remote SDP', function () {
+      it('Should execute the onEstablished callback on setting the remote SDP', function (done) {
         var remoteSdp = 'JFGLSDFDJKS';
 
         call.setRemoteSdp(remoteSdp);
@@ -133,8 +144,28 @@ describe('Call', function () {
         expect(call.disconnect).to.be.a('function');
       });
 
-      it('Should execute the onDisconnected callback if no error', function () {
+      it('Should execute the onDisconnecting callback if no error', function (done) {
         call.disconnect();
+
+        setTimeout(function () {
+          try {
+            expect(onDisconnectingSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+    });
+
+    describe('SetId', function () {
+
+      it('Should exist', function () {
+        expect(call.setId).to.be.a('function');
+      });
+
+      it('Should execute the onDisconnected callback if id is null', function (done) {
+        call.setId(null);
 
         setTimeout(function () {
           try {

@@ -205,18 +205,20 @@
       onCallError: handleError.bind(session, 'CreateCall', options.onCallError)
     }));
   }
-  function endCall(call) {
-    call.on('disconnected', function () {
-      deleteCall(call.id);
-    })
-    call.disconnect();
-  }
+//  function endCall(call) {
+//    call.on('disconnected', function () {
+//      deleteCall(call.id);
+//    })
+//    call.disconnect();
+//  }
 
   function on(event, handler) {
 
     if ('connecting' !== event &&
       'connected' !== event &&
-      'disconnected' !== event) {
+      'disconnecting' !== event &&
+      'disconnected' !== event &&
+      'allcallsterminated' !== event) {
       throw new Error('Event not defined');
     }
 
@@ -235,24 +237,17 @@
     ATT.event.publish('connected');
   }
 
-  function deleteCall(callId) {
-    calls[callId] = null;
-    delete calls[callId];
-    if (Object.keys(calls).length === 0) {
-      ATT.event.publish('allcallsdisconnected');
-    }
-  }
-
   function disconnect() {
-    var call;
-
-    on('allcallsdisconnected', function () {
-      ATT.event.publish('disconnecting');
-    });
-
-    for (call in calls) {
-      endCall(call);
-    }
+    ATT.event.publish('disconnecting');
+//    var call;
+//
+//    on('allcallsdisconnected', function () {
+//      ATT.event.publish('disconnecting');
+//    });
+//
+//    for (call in calls) {
+//      endCall(call);
+//    }
   }
   /**
   * session prototype
@@ -287,14 +282,41 @@
     this.connect = connect.bind(this);
     this.update = update.bind(this);
     this.disconnect = disconnect.bind(this);
+
+    this.terminateCalls = function () {
+      var callId;
+      for (callId in calls) {
+        if (calls.hasOwnProperty(callId)) {
+          calls[callId].disconnect();
+        }
+      }
+    };
+
     this.keepAlive = keepAlive.bind(this);
     this.clearKeepAlive = clearKeepAlive.bind(this);
     this.clearSession = clearSession.bind(this);
     this.startCall = startCall.bind(this);
+
     this.addCall = function (callObj) {
-      calls[callObj.id()] = callObj;
+      calls[callObj.id] = callObj;
     };
-    this.deleteCall = deleteCall.bind(this);
+
+    this.getCall = function (callId) {
+      return calls[callId];
+    };
+
+    this.deleteCall =   function deleteCall(callId) {
+      var call = this.getCall(callId);
+      if (call === undefined) {
+        throw new Error("Call not found");
+      }
+      delete calls[call.id];
+      call = null;
+
+      if(Object.keys(calls).length === 0) {
+        ATT.event.publish('allcallsterminated');
+      }
+    };
   }
 
 //  function () {

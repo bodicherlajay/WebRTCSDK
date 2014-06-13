@@ -186,6 +186,7 @@
     if ('connecting' !== event &&
       'calling' !== event &&
       'established' !== event &&
+      'disconnecting' !== event &&
       'disconnected' !== event ) {
       throw new Error('Event not defined');
     }
@@ -199,12 +200,16 @@
   }
 
   function disconnect() {
-    ATT.event.publish('disconnected');
+    ATT.event.publish('disconnecting');
   }
 
-  function setCallId(callId) {
+  function setId(callId) {
     this.id  = callId;
-    ATT.event.publish('calling');
+    if (this.id === null) {
+      ATT.event.publish('disconnected');
+    } else {
+      ATT.event.publish('calling');
+    }
   }
 
   function setRemoteSdp(remoteSdp) {
@@ -228,9 +233,7 @@
       throw 'No mediaType provided';
     }
 
-    dependencies();
-
-    this.id = null;
+    this.id = options.id;
     this.peer = options.peer;
     this.mediaType = options.mediaType;
     this.localSdp = null;
@@ -239,7 +242,7 @@
     this.on = on.bind(this);
     this.connect = connect.bind(this);
     this.disconnect = disconnect.bind(this);
-    this.setCallId = setCallId.bind(this);
+    this.setId = setId.bind(this);
     this.setRemoteSdp = setRemoteSdp.bind(this);
     this.handleCallMediaModifications = handleCallMediaModifications.bind(this);
     this.handleCallMediaTerminations = handleCallMediaTerminations.bind(this);
