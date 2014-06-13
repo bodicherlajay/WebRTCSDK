@@ -205,7 +205,55 @@
       onCallError: handleError.bind(session, 'CreateCall', options.onCallError)
     }));
   }
+  function endCall(call) {
+    call.on('disconnected', function () {
+      deleteCall(call.id);
+    })
+    call.disconnect();
+  }
 
+  function on(event, handler) {
+
+    if ('connecting' !== event &&
+      'connected' !== event &&
+      'disconnected' !== event) {
+      throw new Error('Event not defined');
+    }
+
+    ATT.event.unsubscribe(event, handler);
+    ATT.event.subscribe(event, handler, this);
+  }
+
+  function connect() {
+    ATT.event.publish('connecting');
+  }
+
+  function update(options) {
+    this.id = options.sessionId;
+    this.expiration = options.expiration;
+
+    ATT.event.publish('connected');
+  }
+
+  function deleteCall(callId) {
+    calls[callId] = null;
+    delete calls[callId];
+    if (Object.keys(calls).length === 0) {
+      ATT.event.publish('allcallsdisconnected');
+    }
+  }
+
+  function disconnect() {
+    var call;
+
+    on('allcallsdisconnected', function () {
+      ATT.event.publish('disconnecting');
+    });
+
+    for (call in calls) {
+      endCall(call);
+    }
+  }
   /**
   * session prototype
   * @param {String} sessionId The sessionId
@@ -213,60 +261,72 @@
   * @param {String} token The access token
   * @param {String} e9Id The e911Id
   */
-  function session(args) {
+  function Session(options) {
+    if (!options) {
+      throw 'No input provided';
+    }
+    if (!options.token) {
+      throw 'No access token provided';
+    }
+
     // private attributes
-    var sessionId = args.sessionId,
-      expiration = args.expiration,
-      accessToken = args.token,
-      e911Id = args.e911Id,
-      currentCall = null,
-      calls = {};
+    var calls = {};
 
-    return {
-      // public attributes
-      keepAliveInterval: null,
+    // public attributes
+    this.sessionId = null;
+    this.expiration = null;
+    this.accessToken = options.token;
+    this.e911Id = options.e911Id;
+    this.currentCall = null;
 
-      // public methods
-      getSessionId: function () {
-        return sessionId;
-      },
-      getExpiration: function () {
-        return expiration;
-      },
-      getAccessToken: function () {
-        return accessToken;
-      },
-      getE911Id: function () {
-        return e911Id;
-      },
-      keepAlive: keepAlive,
-      clearKeepAlive: clearKeepAlive,
-      clearSession: clearSession,
-      startCall: startCall,
-      getCalls: function () {
-        return calls;
-      },
-      getCall: function (callId) {
-        return calls[callId];
-      },
-      setCall: function (callObj) {
-        calls[callObj.id()] = callObj;
-      },
-      deleteCall: function (callId) {
-        calls[callId] = null;
-        delete calls[callId];
-      },
-      getCurrentCall: function () {
-        return currentCall;
-      },
-      setCurrentCall: function (callObj) {
-        currentCall = callObj;
-      },
-      deleteCurrentCall: function () {
-        currentCall = null;
-      }
+    // TODO: cleanup later
+    this.keepAliveInterval = null;
+
+    // public methods
+    this.on = on.bind(this);
+    this.connect = connect.bind(this);
+    this.update = update.bind(this);
+    this.disconnect = disconnect.bind(this);
+    this.keepAlive = keepAlive.bind(this);
+    this.clearKeepAlive = clearKeepAlive.bind(this);
+    this.clearSession = clearSession.bind(this);
+    this.startCall = startCall.bind(this);
+    this.addCall = function (callObj) {
+      calls[callObj.id()] = callObj;
     };
+    this.deleteCall = deleteCall.bind(this);
   }
+
+//  function () {
+//    var call = new Call();
+//
+//    call.on('connecting', function () {
+//      updateUI();
+//      usermedia.getUM(gotUM)
+//    })
+//
+//    gotUM(){
+//      PC.sendOf(gotOffer)
+//    }
+//
+//    gotOffer(){
+//      call.setSDP(sdp)
+//    }
+//    call.on('calling', function () {
+//
+//    })
+//
+//    call.on('error', function () {
+//
+//    })
+//
+//    call.connect();
+//
+//    connect(){
+//      publish(connecting)
+//      publish('')
+//    }
+//  }
 
   /**
   * Create a new session
@@ -311,4 +371,10 @@
   }
 
   app.factories.createSession = createSession;
+
+  if (undefined === ATT.private) {
+    throw Error('Cannot export Session. ATT.private is undefined');
+  }
+  ATT.private.Session = Session;
+
 }(ATT || {}));

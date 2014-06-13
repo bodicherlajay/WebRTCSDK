@@ -185,7 +185,8 @@
 
     if ('connecting' !== event &&
       'calling' !== event &&
-      'established' !== event) {
+      'established' !== event &&
+      'disconnected' !== event ) {
       throw new Error('Event not defined');
     }
 

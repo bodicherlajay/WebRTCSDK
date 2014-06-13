@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe.only('Call', function () {
+describe('Call', function () {
   
   it('Should have a public constructor under ATT.private', function () {
     expect(ATT.private.Call).to.be.a('function');
@@ -25,13 +25,28 @@ describe.only('Call', function () {
   });
 
   describe('method', function () {
-    var call;
+    var call,
+      onConnectingSpy,
+      onCallingSpy,
+      onEstablishedSpy,
+      onDisconnectedSpy;
 
     beforeEach(function () {
       call = new ATT.private.Call({
         peer: '12345',
         mediaType: 'video'
       });
+
+      onConnectingSpy = sinon.spy();
+      onCallingSpy = sinon.spy();
+      onEstablishedSpy = sinon.spy();
+      onDisconnectedSpy = sinon.spy();
+
+      call.on('connecting', onConnectingSpy);
+      call.on('calling', onCallingSpy);
+      call.on('established', onEstablishedSpy);
+      call.on('disconnected', onDisconnectedSpy);
+
     });
 
     describe('On', function () {
@@ -45,27 +60,19 @@ describe.only('Call', function () {
       });
 
       it('Should register callback for known events', function () {
-        var fn = sinon.spy();
+        var fn = sinon.spy(),
+          subscribeSpy = sinon.spy(ATT.event, 'subscribe');
+
         expect(call.on.bind(call, 'connecting', fn)).to.not.throw(Error);
+
+        expect(subscribeSpy.called).to.equal(true);
+
+        subscribeSpy.restore();
+
       });
     });
 
     describe('Connect', function () {
-      var onConnectingSpy,
-        onCallingSpy,
-        onEstablishedSpy;
-
-      beforeEach(function () {
-
-        onConnectingSpy = sinon.spy();
-        onCallingSpy = sinon.spy();
-        onEstablishedSpy = sinon.spy();
-        onErrorSpy = sinon.spy();
-
-        call.on('connecting', onConnectingSpy);
-        call.on('calling', onCallingSpy);
-        call.on('established', onEstablishedSpy);
-      });
 
       it('Should exist', function () {
         expect(call.connect).to.be.a('function');
@@ -121,7 +128,6 @@ describe.only('Call', function () {
     });
 
     describe('Disconnect', function () {
-      var onDisconnectedSpy;
 
       it('Should exist', function () {
         expect(call.disconnect).to.be.a('function');

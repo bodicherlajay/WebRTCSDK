@@ -43,6 +43,7 @@ module.exports = function (grunt) {
       'test/test.att.resource-manager.js',
       'test/test.att.enum.js',
       'test/test.att.call.js',
+      'test/test.att.session.js',
       'test/test.att.rtc-manager.js',
       'test/test.att.utils.error-dictionary.js',
       'test/test.att.utils.event-channel.js',
