@@ -119,10 +119,10 @@
 
       this.onEvent(rtcEvent.createRTCEvent({
         state: app.CallStatus.RINGING,
-        from: currentEvent.from
+        from: currentEvent.from ? currentEvent.from.split('@')[0].split(':')[1] : ''
       }), {
         id: currentEvent.resourceURL.split('/')[6],
-        from: currentEvent.from,
+        from: currentEvent.from ? currentEvent.from.split('@')[0].split(':')[1] : '',
         mediaType: mediaType,
         remoteSdp: currentEvent.sdp
       });
@@ -137,13 +137,13 @@
         // Received hold request...
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.HOLD,
-          from: currentEvent.from
+          from: this.getSession().getCurrentCall().from
         }), action_data);
       } else if (currentEvent.sdp.indexOf('sendrecv') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().sdp.indexOf('recvonly') !== -1) {
         // Received resume request...
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.RESUMED,
-          from: currentEvent.from
+          from: this.getSession().getCurrentCall().from
         }), action_data);
       } else {
         this.onEvent(null, action_data);
@@ -158,7 +158,7 @@
       if (currentEvent.reason !== 'success') {
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.ERROR,
-          from: currentEvent.from
+          from: this.getSession().getCurrentCall().from
         }), action_data);
       }
       if (currentEvent.sdp && currentEvent.reason === 'success') {
@@ -166,14 +166,14 @@
           // Hold call successful...other party is waiting...
           this.onEvent(rtcEvent.createRTCEvent({
             state: app.CallStatus.HOLD,
-            from: currentEvent.from
+            from: this.getSession().getCurrentCall().from
           }), action_data);
         }
         if (currentEvent.sdp.indexOf('sendrecv') !== -1) {
           // Resume call successful...call is ongoing...
           this.onEvent(rtcEvent.createRTCEvent({
             state: app.CallStatus.RESUMED,
-            from: currentEvent.from
+            from: this.getSession().getCurrentCall().from
           }), action_data);
         }
       }
