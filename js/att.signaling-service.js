@@ -324,7 +324,7 @@
 
     /**
      * Send Cancel Call
-     * @param {Object} config the UI options
+     * @param {Object} config The dependencies
      */
     sendCancelCall: function (config) {
       config = config || {};
@@ -336,7 +336,7 @@
         params: {
           url: [
             session.getSessionId(),
-            session.getCurrentCallId()
+            session.getCurrentCall().id()
           ],
           headers: {
             'Authorization': 'Bearer ' + session.getAccessToken()
@@ -374,7 +374,7 @@
     },
     /**
      * Send Cancel Call
-     * @param {Object} config the UI options
+     * @param {Object} config The dependencies
      */
     sendRejectCall: function (config) {
       config = config || {};
@@ -386,7 +386,7 @@
         params: {
           url: [
             session.getSessionId(),
-            session.getCurrentCallId()
+            session.getCurrentCall().id()
           ],
           headers: {
             'Authorization': 'Bearer ' + session.getAccessToken()
@@ -394,12 +394,12 @@
         },
         success: function (response) {
           if (response.getResponseStatus() === 204) {
-            logger.logTrace('Call termination success.');
+            logger.logTrace('Call rejection success.');
             if (typeof config.success === 'function') {
               config.success();
             }
           } else {
-            logger.logError('CALL CANCELLATION ERROR, status:', response.getResponseStatus());
+            logger.logError('CALL REJECTION ERROR, status:', response.getResponseStatus());
             ATT.Error.publish('SDK-20026', null);
             if (typeof config.error === 'function') {
               config.error();
@@ -407,14 +407,14 @@
           }
         },
         error: function (err) {
-          logger.logError('CALL CANCELLATION ERROR', err);
+          logger.logError('CALL REJECTION ERROR', err);
           ATT.Error.publish('SDK-20035', null);
           if (typeof config.error === 'function') {
             config.error();
           }
         },
         ontimeout: function (err) {
-          logger.logError('CALL TERMINATION ERROR', err);
+          logger.logError('CALL REJECTION ERROR', err);
           ATT.Error.publish('SDK-20026', null);
           if (typeof config.error === 'function') {
             config.error();

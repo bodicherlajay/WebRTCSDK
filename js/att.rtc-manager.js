@@ -277,26 +277,6 @@ function refreshSessionWithE911ID(args) {
     });
   }
 
-  function cancelCall(options) {
-    if (!session) {
-      throw 'No session found to cancel a call. Please login first';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to cancel a call. Please login first';
-    }
-    // configure event manager for call event callbacks
-    eventManager.onCallEventCallback = function (callback, event) {
-      options.onCallbackCalled(callback, event);
-    };
-    session.getCurrentCall().cancel({
-      session: session,
-      onCallEnded: function() {
-        logger.logInfo('Call ended successfully');
-      },
-      onError: handleError.bind(this, 'EndCall')
-    });
-  }
-
 function hangupCall() {
     if (!session) {
       throw 'No session found to answer a call. Please login first';
@@ -395,7 +375,7 @@ function hangupCall() {
       throw 'No event manager found to start a call. Please login first';
     }
 
-    session.getCurrentCall().cancelCall();
+    session.getCurrentCall().cancel(session);
   }
 
   /**

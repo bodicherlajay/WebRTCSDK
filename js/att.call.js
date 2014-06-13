@@ -164,29 +164,31 @@
 
   /**
    * Call cancel
-   * @param {Object} options The phone.js facade options
+   * @param {Object} options The options
    */
-  function cancelCall(options) {
+  function cancelCall(session) {
     logger.logInfo('Canceling up...');
     ATT.SignalingService.sendCancelCall({
       error: function () {
         ATT.Error.publish('SDK-20034', null, options.onError);
         logger.logWarning('Cancel request failed.');
-      }
+      },
+      session: session
     });
   }
 
   /**
    * Call reject
-   * @param {Object} options The phone.js facade options
+   * @param {Object} options The options
    */
-  function rejectCall(options) {
+  function rejectCall(session) {
     logger.logInfo('Rejecting call...');
     ATT.SignalingService.sendRejectCall({
       error: function () {
         ATT.Error.publish('SDK-20035', null, options.onError);
         logger.logWarning('Cancel request failed.');
-      }
+      },
+      session: session
     });
   }
 
