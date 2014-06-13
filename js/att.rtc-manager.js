@@ -348,14 +348,18 @@ function refreshSessionWithE911ID(args) {
     if (!session) {
       throw 'No session found . Please login first';
     }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
-    }
     if (!eventManager) {
       throw 'No event manager found to start a call. Please login first';
     }
 
-    session.getCurrentCall().cancel(session);
+    if (session.getCurrentCall() && session.getCurrentCall().id()) {
+      session.getCurrentCall().cancel(session);
+    } else {
+      peerConnSvc.notifyCallCancelation();
+      eventManager.publishEvent({
+        state: app.RTCCallEvents.SESSION_TERMINATED,
+      });
+    }
   }
 
   /**
