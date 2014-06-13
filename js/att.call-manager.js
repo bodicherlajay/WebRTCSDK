@@ -380,6 +380,21 @@ cmgmt = (function () {
     DeleteCallObject();
   };
 
+  /**
+   * Call reject
+   * @param {Object} options The phone.js facade options
+   */
+  Call.reject = function (options) {
+    logger.logInfo('Rejecting incoming call...');
+    ATT.SignalingService.sendEndCall({
+      error: function () {
+        ATT.Error.publish('SDK-20035', null, options.onError);
+        logger.logWarning('Reject request failed.');
+      }
+    });
+    DeleteCallObject();
+  };
+
 
   module.getInstance = function () {
     if (!instance) {

@@ -257,27 +257,7 @@ function refreshSessionWithE911ID(args) {
     }));
   }
 
-  function rejectCall(options) {
-    if (!session) {
-      throw 'No session found to reject a call. Please login first';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to reject a call. Please login first';
-    }
-    // configure event manager for call event callbacks
-    eventManager.onCallEventCallback = function (callback, event) {
-      options.onCallbackCalled(callback, event);
-    };
-    session.getCurrentCall().end({
-      session: session,
-      onCallEnded: function() {
-        logger.logInfo('Call ended successfully');
-      },
-      onError: handleError.bind(this, 'EndCall')
-    });
-  }
-
-function hangupCall() {
+  function hangupCall() {
     if (!session) {
       throw 'No session found to answer a call. Please login first';
     }
@@ -375,7 +355,24 @@ function hangupCall() {
       throw 'No event manager found to start a call. Please login first';
     }
 
-    session.getCurrentCall().cancelCall();
+    session.getCurrentCall().cancel(session);
+  }
+
+  /**
+  * reject call
+  */
+  function rejectCall() {
+    if (!session) {
+      throw 'No session found . Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().reject(session);
   }
 
   /**
@@ -403,6 +400,7 @@ function hangupCall() {
       muteCall: muteCall,
       resumeCall: resumeCall,
       cancelCall: cancelCall,
+      rejectCall: rejectCall,
       refreshSessionWithE911ID: refreshSessionWithE911ID,
       hangupCall: hangupCall,
       holdCall: holdCall,
