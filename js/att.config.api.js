@@ -345,7 +345,7 @@ if (!ATT) {
             }
           },
           headers: ATT.utils.extend({
-            'x-delete-reason': 'decline'
+            'x-delete-reason': 'reject'
           }, DEFAULTS.headers)
         },
         /**
