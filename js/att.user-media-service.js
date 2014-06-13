@@ -97,8 +97,9 @@
     * @returns {HTMLElement} remoteVideo
     */
     onRemoteVideoStart: function () {
-      this.remoteVideo.addEventListener('playing', function () {
-        eventEmitter.publish(this.sessionId + '.responseEvent', {
+      var _self = this;
+      _self.remoteVideo.addEventListener('playing', function () {
+        eventEmitter.publish(_self.sessionId + '.responseEvent', {
           state : ATT.RTCCallEvents.CALL_IN_PROGRESS
         });
       });
