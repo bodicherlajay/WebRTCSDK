@@ -170,7 +170,7 @@
     logger.logInfo('Canceling up...');
     ATT.SignalingService.sendCancelCall({
       error: function () {
-        ATT.Error.publish('SDK-20034', null, options.onError);
+        ATT.Error.publish('SDK-20034', null, session.onError);
         logger.logWarning('Cancel request failed.');
       },
       session: session
