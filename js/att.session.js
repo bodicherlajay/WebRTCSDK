@@ -97,6 +97,8 @@
     // Call BF to refresh WebRTC Session.
     resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
   }
+
+   //Do put operation to set the new E911Id for the current session
   function refreshWebRTCSessionWithE911Id(args) {
     var dataForRefreshWebRTCSessionWithE911Id = {
       data: {
@@ -116,7 +118,9 @@
     resourceManager.doOperation('refreshWebRTCSessionWithE911Id', dataForRefreshWebRTCSessionWithE911Id);
   }
 
+   // methods takes on the e911Id and refresh the session with he new ID
   function updateE911Id(args) {
+    // the session object will contain the token ,sessionId
     var self = this;
     logger.logDebug('Updated e911ID in session object');
     logger.logDebug('Triggres the refresh session with new e911 address ');

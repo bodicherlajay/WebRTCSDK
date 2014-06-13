@@ -58,7 +58,7 @@
     });
   }
 
-function formatNumber(number) {
+  function formatNumber(number) {
     var callable = cleanPhoneNumber(number);
     if (!callable) {
       logger.logWarning('Phone number not formatable .');
@@ -106,15 +106,14 @@ function formatNumber(number) {
                     session.getCurrentCall().handleCallMediaModifications(event, data);
                   } else if (data.action === 'term-mods') {
                     session.getCurrentCall().handleCallMediaTerminations(event, data);
-                  } 
-                  
+                  }
                 } else { // invitation-received, create incoming call before passing ui event to UI
                   if (event) {
                     if (event.state === app.CallStatus.RINGING) {
                       ATT.utils.extend(options, data);
                       session.startCall(ATT.utils.extend(options, {
                         type: app.CallTypes.INCOMING,
-                        onCallStarted: function (callObj) {
+                        onCallStarted: function () {
                           logger.logInfo('onCallStarted ...');
                           options.onCallbackCalled(callback, event);
                         },
@@ -184,13 +183,14 @@ function formatNumber(number) {
     });
   }
 
-function refreshSessionWithE911ID(args) {
+  function refreshSessionWithE911ID(args) {
     if (!session) {
       throw 'No session found to delete. Please login first';
     }
+    logger.logInfo("Refreshing the session with the new e911Id ");
     session.updateE911Id({
-      e911Id:args.e911Id,
-      onSuccess:args.onSuccess,
+      e911Id: args.e911Id,
+      onSuccess: args.onSuccess,
       onError: args.onError
     });
   }
@@ -246,7 +246,7 @@ function refreshSessionWithE911ID(args) {
     session.getCurrentCall().answer(app.utils.extend(options, {
       type: app.CallTypes.INCOMING,
       session: session,
-      onCallAnswered: function() {
+      onCallAnswered: function () {
         logger.logInfo('Successfully answered the incoming call');
       },
       onCallError: handleError.bind(this, 'StartCall', options.onCallError),

@@ -5,8 +5,8 @@
 (function () {
   'use strict';
   var errorType = {
-    SDK:'SDK',
-    API:'API',
+    SDK: 'SDK',
+    API: 'API',
     BROWSER: 'BROWSER'
   },
   allErrors = [
@@ -372,6 +372,15 @@
       helpText: 'Please look at tracelog for further information',
       moduleID: 'RTC'
     },
+    {
+      userErrorCode: 'SDK-20036',
+      type: errorType.SDK,
+      operationName: 'E911 Update Failed',
+      errorDescription: 'Unable to Update E911Id',
+      reasonText: 'unable to update the session with the new E911Id, please Check the logs ',
+      helpText: 'Please look at trace log for further information',
+      moduleID: 'RTC'
+     },
     // range SDK-50000 is reserverd for DHS errors
     // SDK-50000 is reserverd for all DHS errors thrown within SDK (not API through DHS)
     {
