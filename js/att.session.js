@@ -97,41 +97,41 @@
     // Call BF to refresh WebRTC Session.
     resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
   }
-
-function updateE911Id(args) {
-    logger.logDebug('Updated e911ID in session object');   
-    this.setE911Id(args.e911Id);
-    logger.logDebug('Triggres the refresh session with new e911 address ');
-    refreshWebRTCSessionWithE911Id({
-        sessionId: this.getSessionId(),
-        token: this.getAccessToken(),
-        e911Id: this.getE911Id(),
-        onE911AddressUpdate: args.onRefreshSessionwithE911Id,
-        onError: args.onError
-      });
-    }
-
- function refreshWebRTCSessionWithE911Id(args) {
-    var dataForRefreshWebRTCSession = {
+  function refreshWebRTCSessionWithE911Id(args) {
+    var dataForRefreshWebRTCSessionWithE911Id = {
+      data: {
+        "e911Association": { "e911Id": args.e911Id }
+      },
       params: {
         url: [args.sessionId],
         headers: {
-          'Authorization': args.token
-        },
-        body: {
-          "e911Association": { "e911Id": args.e911Id }
+          'Authorization': args.token,
         }
       },
-      success: function () {
-        logger.logInfo('Successfully updated the e911Id to the session ');
-        args.onE911AddressUpdate();
-      },
+      success: args.onSuccess,
       error: args.onError
     };
 
     // Call BF to refresh WebRTC Session.
-    resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
+    resourceManager.doOperation('refreshWebRTCSessionWithE911Id', dataForRefreshWebRTCSessionWithE911Id);
   }
+
+  function updateE911Id(args) {
+    var self = this;
+    logger.logDebug('Updated e911ID in session object');
+    logger.logDebug('Triggres the refresh session with new e911 address ');
+    refreshWebRTCSessionWithE911Id({
+      sessionId: this.getSessionId(),
+      token: this.getAccessToken(),
+      e911Id: this.getE911Id(),
+      onSuccess: function () {
+        self.setE911Id(args.e911Id);
+        args.onSuccess();
+      },
+      onError: args.onError
+    });
+  }
+
   function deleteWebRTCSession(args) {
     var dataForDeleteWebRTCSession = {
       params: {

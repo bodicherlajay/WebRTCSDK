@@ -595,7 +595,7 @@ if (Env === undefined) {
    * @desc
    * Similar to hangup, but before the call is connected.
    */
-  function cancel(){
+  function cancel (){
     try{
       rtcManager.cancelCall();
     } catch (e){
@@ -627,7 +627,7 @@ if (Env === undefined) {
    * @desc
   * Update the Session 
   */
-  function refreshSessionWithE911ID(args) {
+  function updateE911Id(args) {
     try {
       if (!args.e911Id || args.e911Id.trim().length === 0) {
         throw new TypeError('E911Id Parameter Missing');
@@ -664,7 +664,7 @@ if (Env === undefined) {
     // creating the phone object:
     // createPhone({rtcManager: rsrcMgr }){ ... };
     resourceManager.addPublicMethod('rtcManager', rtcManager);
-    resourceManager.addPublicMethod('refreshSessionWithE911ID', refreshSessionWithE911ID);  
+    resourceManager.addPublicMethod('updateE911Id', updateE911Id);
   }
 
   function createPhone(options) {
