@@ -169,6 +169,9 @@
   function cancelCall(session) {
     logger.logInfo('Canceling up...');
     ATT.SignalingService.sendCancelCall({
+      success: function () {
+       session.deleteCall(session.getCurrentCall().id());
+      },
       error: function () {
         ATT.Error.publish('SDK-20034', null, options.onError);
         logger.logWarning('Cancel request failed.');
@@ -184,9 +187,12 @@
   function rejectCall(session) {
     logger.logInfo('Rejecting call...');
     ATT.SignalingService.sendRejectCall({
+      success: function () {
+        session.deleteCall(session.getCurrentCall().id());
+      },
       error: function () {
         ATT.Error.publish('SDK-20035', null, options.onError);
-        logger.logWarning('Cancel request failed.');
+        logger.logWarning('Reject request failed.');
       },
       session: session
     });
