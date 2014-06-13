@@ -191,15 +191,18 @@
       }));
       break;
     case app.RTCCallEvents.SESSION_TERMINATED:
+      action_data = {
+        action: 'term-session'
+      };
       if (currentEvent.reason) {
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.ERROR,
           error: errMgr.create(currentEvent.reason)
-        }));
+        }), action_data);
       } else {
         this.onEvent(rtcEvent.createRTCEvent({
           state: app.CallStatus.ENDED
-        }));
+        }), action_data);
       }
       break;
     default:

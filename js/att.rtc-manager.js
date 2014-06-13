@@ -99,7 +99,6 @@
 
             // configure event manager for session event callbacks
             eventManager.onSessionEventCallback = function (callback, event, data) {
-
               if (data) { // If data, SDK needs additional processing
                 if (data.modId) { // media modification event, SDK need to take action
                   if (data.action === 'accept-mods') {
@@ -108,6 +107,9 @@
                     session.getCurrentCall().handleCallMediaTerminations(event, data);
                   }
                 } else { // invitation-received, create incoming call before passing ui event to UI
+                  if (data.action === 'term-session') {
+                    session.deleteCall(session.getCurrentCall().id());
+                  }
                   if (event) {
                     if (event.state === app.CallStatus.RINGING) {
                       ATT.utils.extend(options, data);
@@ -125,6 +127,8 @@
                       }));
                     } else if (event.state === app.CallStatus.ESTABLISHED) {
                       session.getCurrentCall().handleCallOpen(data);
+                      options.onCallbackCalled(callback, event);
+                    } else if (event.state === app.CallStatus.ENDED) {
                       options.onCallbackCalled(callback, event);
                     }
                   }
