@@ -212,7 +212,8 @@
       mediaType = options.mediaType,
       mediaConstraints = options.mediaConstraints,
       localSdp = options.localSdp,
-      remoteSdp = options.remoteSdp;
+      remoteSdp = options.remoteSdp,
+      callState = null;
 
     return {
       id: function () { return id; },
@@ -224,6 +225,12 @@
       },
       getMediaType: function () {
         return mediaType;
+      },
+      setCallState: function (state) {
+        callState = state;
+      },
+      getCallState: function () {
+        return callState;
       },
       setLocalSdp: function (sdp) {
         localSdp = sdp;
