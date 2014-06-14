@@ -117,6 +117,7 @@
                         type: app.CallTypes.INCOMING,
                         onCallStarted: function () {
                           logger.logInfo('onCallStarted ...');
+                          session.getCurrentCall().setCallState(app.CallStates.INITIAL);
                           options.onCallbackCalled(callback, event);
                         },
                         onCallError: handleError.bind(this, 'StartCall', options.onCallError),
