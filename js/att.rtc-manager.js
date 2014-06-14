@@ -374,7 +374,7 @@
   */
   function rejectCall() {
     if (!session) {
-      throw 'No session found . Please login first';
+      throw 'No session found. Please login first';
     }
     if (!session.getCurrentCall()) {
       throw 'No current call. Please establish a call first.';
