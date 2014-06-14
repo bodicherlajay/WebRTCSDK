@@ -28,4 +28,8 @@ describe('Call', function () {
     it('Should execute the onError callback if there is an error');
   });
 
+  describe('Reject Call method', function () {
+    it('should delete the rejected call object after success');
+  });
+
 });
