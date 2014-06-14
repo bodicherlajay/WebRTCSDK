@@ -30,6 +30,7 @@ describe.only('Session', function () {
       secondCall,
       onConnectingSpy,
       onConnectedSpy,
+      onUpdatingSpy,
       onDisconnectingSpy,
       onDisconnectedSpy;
 
@@ -53,11 +54,13 @@ describe.only('Session', function () {
 
       onConnectingSpy = sinon.spy();
       onConnectedSpy = sinon.spy();
+      onUpdatingSpy = sinon.spy();
       onDisconnectingSpy = sinon.spy();
       onDisconnectedSpy = sinon.spy();
 
       session.on('connecting', onConnectingSpy);
       session.on('connected', onConnectedSpy);
+      session.on('updating', onUpdatingSpy);
       session.on('disconnecting', onDisconnectingSpy);
       session.on('disconnected', onDisconnectedSpy);
 
@@ -105,19 +108,17 @@ describe.only('Session', function () {
 
       });
 
-      it('Should execute the onConnected callback on updating the session id and expiration', function (done) {
-        var sessionId = '12345',
-          expiration = '10000';
+    });
 
-        session.update({
-          sessionId: sessionId,
-          expiration: expiration
-        });
+    describe('setId', function () {
+
+      it('Should execute the onConnected callback', function (done) {
+        var sessionId = '12345';
+
+        session.setId(sessionId);
 
         setTimeout(function () {
           try {
-            expect(session.id).to.equal(sessionId);
-            expect(session.expiration).to.equal(expiration);
             expect(onConnectedSpy.called).to.equal(true);
             done();
           } catch (e) {
@@ -125,6 +126,53 @@ describe.only('Session', function () {
           }
         }, 100);
       });
+
+    });
+
+    describe('getId', function () {
+
+      it('Should exist', function () {
+        expect(session.getId).to.be.a('function');
+      });
+
+      it('Should return the session id', function () {
+        session.setId('12345');
+        expect(session.getId()).to.equal('12345');
+      });
+    });
+
+    describe('Update', function () {
+
+      it('Should exist', function () {
+        expect(session.update).to.be.a('function');
+      });
+
+      it('Should throw and error if no options', function () {
+        expect(session.update.bind(session)).to.throw('No options provided');
+      });
+
+      it('Should trigger onUpdating callback with options', function (done) {
+        var options = {};
+
+        session.update(options);
+
+        setTimeout(function () {
+          try {
+            expect(onUpdatingSpy.calledWith(options)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      describe('timeout', function () {
+
+        it('Should throw an error if the timeout value is not a number');
+
+        it('Should set the timeout');
+
+      })
 
     });
 
@@ -245,6 +293,18 @@ describe.only('Session', function () {
         }, 100);
 
       });
+
+    });
+
+  });
+
+  describe('Event', function () {
+
+    describe('NeedsRefresh', function () {
+
+      it('Should be triggered 60 000 ms before timeout');
+
+      it('Should be triggered exactly after `timeout` milliseconds if `timeout` is less that 60 000 ms');
 
     });
 

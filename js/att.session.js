@@ -216,6 +216,7 @@
 
     if ('connecting' !== event &&
       'connected' !== event &&
+      'updating' !== event &&
       'disconnecting' !== event &&
       'disconnected' !== event &&
       'allcallsterminated' !== event) {
@@ -231,23 +232,19 @@
   }
 
   function update(options) {
-    this.id = options.sessionId;
-    this.expiration = options.expiration;
+    if (options === undefined) {
+      throw new Error('No options provided');
+    }
 
-    ATT.event.publish('connected');
+    this.timeout = options.timeout || this.timeout;
+    this.token = options.token || this.token;
+    this.e911Id = options.e911Id || this.e911Id;
+
+    ATT.event.publish('updating', options);
   }
 
   function disconnect() {
     ATT.event.publish('disconnecting');
-//    var call;
-//
-//    on('allcallsdisconnected', function () {
-//      ATT.event.publish('disconnecting');
-//    });
-//
-//    for (call in calls) {
-//      endCall(call);
-//    }
   }
   /**
   * session prototype
@@ -265,21 +262,29 @@
     }
 
     // private attributes
-    var calls = {};
+    var id = null,
+      calls = {};
 
     // public attributes
-    this.sessionId = null;
-    this.expiration = null;
-    this.accessToken = options.token;
+    this.timeout = null;
+    this.token = options.token;
     this.e911Id = options.e911Id;
     this.currentCall = null;
-
-    // TODO: cleanup later
-    this.keepAliveInterval = null;
 
     // public methods
     this.on = on.bind(this);
     this.connect = connect.bind(this);
+
+    this.getId = function () {
+      return id;
+    }
+    this.setId = function (sessionId) {
+      id = sessionId;
+
+      ATT.event.publish('connected');
+    };
+
+
     this.update = update.bind(this);
     this.disconnect = disconnect.bind(this);
 
@@ -291,11 +296,6 @@
         }
       }
     };
-
-    this.keepAlive = keepAlive.bind(this);
-    this.clearKeepAlive = clearKeepAlive.bind(this);
-    this.clearSession = clearSession.bind(this);
-    this.startCall = startCall.bind(this);
 
     this.addCall = function (callObj) {
       calls[callObj.id] = callObj;
