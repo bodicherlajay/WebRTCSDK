@@ -92,13 +92,19 @@ describe('rtc Management', function () {
 
   describe('Hold Call', function () {
     it('should expose a holdCall method', function () {
-      assert.ok(ATT.rtc.Phone.rtcManager);
+      assert.ok(ATT.RTCManager.holdCall);
     });
   });
 
   describe('Resume Call', function () {
     it('should expose a resumeCall method', function () {
-      assert.ok(ATT.rtc.Phone.rtcManager);
+      assert.ok(ATT.RTCManager.resumeCall);
+    });
+  });
+
+  describe('Reject Call', function () {
+    it('should expose a rejectCall method', function () {
+      assert.ok(ATT.RTCManager.rejectCall);
     });
   });
 });
