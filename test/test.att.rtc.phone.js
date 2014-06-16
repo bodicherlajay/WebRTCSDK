@@ -84,64 +84,6 @@ describe('Phone', function () {
     });
   });
 
-  describe('hold', function () {
-    var myCallManager = cmgmt.CallManager.getInstance();
-    //manage in Rtc -manager
-    xit('should call callObject.hold', function () {
-      var holdSpy = sinon.spy(),
-        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
-          return {
-            getCallObject: function () {
-              return {
-                hold: holdSpy
-              };
-            }
-          };
-        });
-
-      ATT.rtc.Phone.hold();
-      expect(holdSpy.called).to.equal(true);
-      sessionContextStub.restore();
-    });
-
-    it('should publish error if hold throws exception', function () {
-      var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(myCallManager, 'getSessionContext', function () {
-          return {
-            getCallObject: function () {
-              return {
-                hold: function () {
-                  throw new Error();
-                }
-              };
-            }
-          };
-        });
-
-      ATT.rtc.Phone.hold();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      sessionContextStub.restore();
-    });
-    //TODO need a way to get access to rtcManager
-    it('should throw an error when hold is called before call', function () {
-      var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
-          return {
-            getCurrentCall: function () {
-              return null;
-            }
-          };
-        });
-
-      ATT.rtc.Phone.hold();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      sessionContextStub.restore();
-    });
-  });
-
-
   describe('getMediaType', function () {
    //TODO need to replace this with object constructor pattern
     //var currentcall = ATT.rtc.Phone.rtcManager.getSession().getCurrentCall();
@@ -162,26 +104,48 @@ describe('Phone', function () {
     });
   });
 
-  describe('resume', function () {
-    xit('should call callObject.resume', function () {
-        //TODO need a way to get access to rtcManager
-      var resumeSpy = sinon.spy(),
+  describe('hold', function () {
+    it('should publish error if hold throws exception', function () {
+      //TODO need a way to get access to rtcManager
+      var publishStub = sinon.stub(ATT.Error, 'publish'),
         sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
           return {
-            getCallObject: function () {
+            getCurrentCall: function () {
               return {
-                resume: resumeSpy
+                resume: function () {
+                  throw new Error();
+                }
               };
             }
           };
         });
+
       ATT.rtc.Phone.resume();
-      expect(resumeSpy.called).to.equal(true);
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
       sessionContextStub.restore();
     });
+    it('should throw an error when hold is called before call', function () {
+      //TODO need a way to get access to rtcManager
+      var publishStub = sinon.stub(ATT.Error, 'publish'),
+        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
+          return {
+            getCurrentCall: function () {
+              return null;
+            }
+          };
+        });
 
-    it('should publish error if restore throws exception', function () {
-        //TODO need a way to get access to rtcManager
+      ATT.rtc.Phone.hold();
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
+      sessionContextStub.restore();
+    });
+  });
+
+  describe('resume', function () {
+    it('should publish error if resume throws exception', function () {
+      //TODO need a way to get access to rtcManager
       var publishStub = sinon.stub(ATT.Error, 'publish'),
         sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
           return {
@@ -349,6 +313,22 @@ describe('Phone', function () {
     it('should trigger the `onCallEstablished` after `onCalling`');
 
     afterEach(function () {
+    });
+  });
+
+  describe('Reject Call', function () {
+    it('should expose a reject method', function () {
+      assert.ok(ATT.rtc.Phone.reject);
+    });
+    it('should throw an error when reject is called before a valid rtcManager', function () {
+      var backupATT = ATT, publishStub = sinon.stub(ATT.Error, 'publish'),
+      phone = ATT.factories.createPhone({
+        rtcManager: null
+      });
+      ATT.rtc.Phone.reject();
+      expect(publishStub.called).to.equal(true);
+      publishStub.restore();
+      ATT = backupATT;
     });
   });
 });

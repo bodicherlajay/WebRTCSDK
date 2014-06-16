@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe('Call', function () {
+describe.only('Call', function () {
   
   it('Should have a public constructor under ATT.private', function () {
     expect(ATT.private.Call).to.be.a('function');
@@ -178,4 +178,9 @@ describe('Call', function () {
       });
     });
   });
+
+  describe('Reject Call method', function () {
+    it('should delete the rejected call object after success');
+  });
+
 });

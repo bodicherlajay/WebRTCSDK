@@ -96,6 +96,12 @@
 
     isModInitiator: false,
 
+    callCanceled: false,
+
+    notifyCallCancelation: function () {
+      this.callCanceled = true;
+    },
+
     configureICEServers: function (servers) {
       this.pcConfig.iceServers = servers;
     },
@@ -190,12 +196,16 @@
             try {
               self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
-              self.session.getCurrentCall().setLocalSdp(sdp);
+              if (self.session.getCurrentCall()) { self.session.getCurrentCall().setLocalSdp(sdp) }
             } catch (e) {
               Error.publish('Could not set local description. Exception: ' + e.message);
             }
 
             if (callType === ATT.CallTypes.OUTGOING) {
+              if (self.callCanceled === true) {
+                self.callCanceled = false;
+                return;
+              }
               // send offer...
               logger.logInfo('sending offer');
               try {

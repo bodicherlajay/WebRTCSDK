@@ -98,6 +98,44 @@
     resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
   }
 
+   //Do put operation to set the new E911Id for the current session
+  function refreshWebRTCSessionWithE911Id(args) {
+    var dataForRefreshWebRTCSessionWithE911Id = {
+      data: {
+        "e911Association": { "e911Id": args.e911Id }
+      },
+      params: {
+        url: [args.sessionId],
+        headers: {
+          'Authorization': args.token,
+        }
+      },
+      success: args.onSuccess,
+      error: args.onError
+    };
+
+    // Call BF to refresh WebRTC Session.
+    resourceManager.doOperation('refreshWebRTCSessionWithE911Id', dataForRefreshWebRTCSessionWithE911Id);
+  }
+
+   // methods takes on the e911Id and refresh the session with he new ID
+  function updateE911Id(args) {
+    // the session object will contain the token ,sessionId
+    var self = this;
+    logger.logDebug('Updated e911ID in session object');
+    logger.logDebug('Triggres the refresh session with new e911 address ');
+    refreshWebRTCSessionWithE911Id({
+      sessionId: this.getSessionId(),
+      token: this.getAccessToken(),
+      e911Id: this.getE911Id(),
+      onSuccess: function () {
+        self.setE911Id(args.e911Id);
+        args.onSuccess();
+      },
+      onError: args.onError
+    });
+  }
+
   function deleteWebRTCSession(args) {
     var dataForDeleteWebRTCSession = {
       params: {

@@ -48,7 +48,6 @@
     }
     logger.logWarning('Phone number not callable, will check special numbers list.');
     logger.logInfo('checking number: ' + callable);
-   
     cleaned = ATT.phoneNumber.translate(number);
     console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
     if (number.charAt(0) === '*') {
@@ -59,7 +58,7 @@
     });
   }
 
-function formatNumber(number) {
+  function formatNumber(number) {
     var callable = cleanPhoneNumber(number);
     if (!callable) {
       logger.logWarning('Phone number not formatable .');
@@ -100,22 +99,23 @@ function formatNumber(number) {
 
             // configure event manager for session event callbacks
             eventManager.onSessionEventCallback = function (callback, event, data) {
-
               if (data) { // If data, SDK needs additional processing
                 if (data.modId) { // media modification event, SDK need to take action
                   if (data.action === 'accept-mods') {
                     session.getCurrentCall().handleCallMediaModifications(event, data);
                   } else if (data.action === 'term-mods') {
                     session.getCurrentCall().handleCallMediaTerminations(event, data);
-                  } 
-                  
+                  }
                 } else { // invitation-received, create incoming call before passing ui event to UI
+                  if (data.action === 'term-session') {
+                    session.deleteCall(session.getCurrentCall().id());
+                  }
                   if (event) {
                     if (event.state === app.CallStatus.RINGING) {
                       ATT.utils.extend(options, data);
                       session.startCall(ATT.utils.extend(options, {
                         type: app.CallTypes.INCOMING,
-                        onCallStarted: function (callObj) {
+                        onCallStarted: function () {
                           logger.logInfo('onCallStarted ...');
                           options.onCallbackCalled(callback, event);
                         },
@@ -127,6 +127,8 @@ function formatNumber(number) {
                       }));
                     } else if (event.state === app.CallStatus.ESTABLISHED) {
                       session.getCurrentCall().handleCallOpen(data);
+                      options.onCallbackCalled(callback, event);
+                    } else if (event.state === app.CallStatus.ENDED) {
                       options.onCallbackCalled(callback, event);
                     }
                   }
@@ -192,6 +194,18 @@ function formatNumber(number) {
     });
   }
 
+  function refreshSessionWithE911ID(args) {
+    if (!session) {
+      throw 'No session found to delete. Please login first';
+    }
+    logger.logInfo("Refreshing the session with the new e911Id ");
+    session.updateE911Id({
+      e911Id: args.e911Id,
+      onSuccess: args.onSuccess,
+      onError: args.onError
+    });
+  }
+
   function dialCall(options) {
     if (!session) {
       throw 'No session found to start a call. Please login first';
@@ -253,7 +267,7 @@ function formatNumber(number) {
     session.getCurrentCall().answer(app.utils.extend(options, {
       type: app.CallTypes.INCOMING,
       session: session,
-      onCallAnswered: function() {
+      onCallAnswered: function () {
         logger.logInfo('Successfully answered the incoming call');
       },
       onCallError: handleError.bind(this, 'StartCall', options.onCallError),
@@ -264,7 +278,7 @@ function formatNumber(number) {
     }));
   }
 
-  function hangupCall() {
+    function hangupCall() {
     if (!session) {
       throw 'No session found to answer a call. Please login first';
     }
@@ -279,6 +293,116 @@ function formatNumber(number) {
       onError: handleError.bind(this, 'EndCall')
     });
   }
+
+
+
+  function holdCall() {
+    if (!session) {
+      throw 'No session found to answer a call. Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().hold();
+  }
+
+  /**
+  * Resume call
+  *
+  */
+  function resumeCall() {
+    if (!session) {
+      throw 'No session found to answer a call. Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().resume();
+  }
+
+  /**
+  * mute call
+  *
+  */
+  function muteCall() {
+    if (!session) {
+      throw 'No session found . Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().mute();
+  }
+
+  /**
+  * unmute call
+  *
+  */
+  function unmuteCall() {
+    if (!session) {
+      throw 'No session found . Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().unmute();
+  }
+
+  /**
+  * cancel call
+  *
+  */
+  function cancelCall() {
+    if (!session) {
+      throw 'No session found . Please login first';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    if (session.getCurrentCall() && session.getCurrentCall().id()) {
+      session.getCurrentCall().cancel(session);
+    } else {
+      peerConnSvc.notifyCallCancelation();
+      eventManager.publishEvent({
+        state: app.RTCCallEvents.SESSION_TERMINATED,
+      });
+    }
+  }
+
+  /**
+  * reject call
+  */
+  function rejectCall() {
+    if (!session) {
+      throw 'No session found. Please login first';
+    }
+    if (!session.getCurrentCall()) {
+      throw 'No current call. Please establish a call first.';
+    }
+    if (!eventManager) {
+      throw 'No event manager found to start a call. Please login first';
+    }
+
+    session.getCurrentCall().reject(session);
+  }
+
   /**
   * Create a new RTC Manager
   * @param {Object} options The options
@@ -300,7 +424,14 @@ function formatNumber(number) {
       deleteSession: deleteSession,
       dialCall: dialCall,
       answerCall: answerCall,
+      unmuteCall: unmuteCall,
+      muteCall: muteCall,
+      resumeCall: resumeCall,
+      cancelCall: cancelCall,
+      rejectCall: rejectCall,
+      refreshSessionWithE911ID: refreshSessionWithE911ID,
       hangupCall: hangupCall,
+      holdCall: holdCall,
       cleanPhoneNumber: cleanPhoneNumber,
       formatNumber: formatNumber
     };

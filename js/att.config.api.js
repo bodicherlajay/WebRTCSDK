@@ -180,6 +180,24 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
+        * Refresh WebRTC session with e911Id from RTCEndpoint
+        * @memberof ATT.APIConfigs
+        */
+        refreshWebRTCSessionWithE911Id: {
+          method: 'put',
+          formatters: {
+            url: function (sessionId) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + sessionId;
+            },
+            headers: {
+              'Authorization': function (oAuthToken) {
+                return 'Bearer ' + oAuthToken;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
+        },
+        /**
         * Delete WebRTC session from RTCEndpoint
         * @memberof ATT.APIConfigs
         */
@@ -326,6 +344,46 @@ if (!ATT) {
           },
           headers: ATT.utils.extend({
             'x-delete-reason': 'terminate'
+          }, DEFAULTS.headers)
+        },
+        /**
+         * Reject Call via RTCEndpoint
+         * @memberof WebRTC.APIConfigs
+         */
+        rejectCall: {
+          method: 'delete',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: ATT.utils.extend({
+            'x-delete-reason': 'reject'
+          }, DEFAULTS.headers)
+        },
+        /**
+         * Cancel Call via RTCEndpoint
+         * @memberof WebRTC.APIConfigs
+         */
+        cancelCall: {
+          method: 'delete',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: ATT.utils.extend({
+            'x-delete-reason': 'cancel'
           }, DEFAULTS.headers)
         }
       };

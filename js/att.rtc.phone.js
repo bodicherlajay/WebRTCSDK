@@ -41,27 +41,6 @@ if (Env === undefined) {
     }
   }
 
-  /** 
-   * method to validate the Rtc manager, session and Call object
-   * Throws the corresponding error when Called and object not presend
-   */
-
-  function currentCall() {
-    var currentCallObject = null;
-    if (!rtcManager) {
-      throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
-    }
-    if (!rtcManager.getSession()) {
-      throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
-    }
-    currentCallObject = rtcManager.getSession().getCurrentCall();
-    if (!currentCallObject) {
-      throw 'Unable to login to web rtc. There is no valid RTC manager to perform this operation';
-    }
-
-    return currentCallObject;
-  }
-
   function getMediaType() {
     var mediaType = null;
     logger.logDebug('Call type Audio/Video');
@@ -426,6 +405,7 @@ if (Env === undefined) {
     }
   }
 
+
   /**
    * @memberof ATT.rtc.Phone
    * @summary
@@ -445,10 +425,10 @@ if (Env === undefined) {
   */
   function mute(muteParams) {
     try {
-      currentCall().mute();
-      if (muteParams && muteParams.success) {
-        muteParams.success();
+      if (!rtcManager) {
+        throw 'Unable to resume a web rtc call. There is no valid RTC manager to perform this operation';
       }
+      rtcManager.muteCall();
     } catch (e) {
       if (muteParams && muteParams.error) {
         ATT.Error.publish('SDK-20028', null, muteParams.error);
@@ -475,10 +455,10 @@ if (Env === undefined) {
   */
   function unmute(unmuteParams) {
     try {
-      currentCall().unmute();
-      if (unmuteParams && unmuteParams.success) {
-        unmuteParams.success();
+      if (!rtcManager) {
+        throw 'Unable to resume a web rtc call. There is no valid RTC manager to perform this operation';
       }
+      rtcManager.unmuteCall();
     } catch (e) {
       if (unmuteParams && unmuteParams.error) {
         ATT.Error.publish('SDK-20029', null, unmuteParams.error);
@@ -497,7 +477,10 @@ if (Env === undefined) {
   */
   function hold() {
     try {
-      currentCall().hold();
+      if (!rtcManager) {
+        throw 'Unable to resume a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.holdCall();
     } catch (e) {
       ATT.Error.publish('SDK-20030', null);
     }
@@ -514,7 +497,10 @@ if (Env === undefined) {
   */
   function resume() {
     try {
-      currentCall().resume();
+      if (!rtcManager) {
+        throw 'Unable to resume a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.resumeCall();
     } catch (e) {
       ATT.Error.publish('SDK-20031', null);
     }
@@ -532,7 +518,7 @@ if (Env === undefined) {
         throw 'Unable to dial a web rtc call. There is no valid RTC manager to perform this operation';
       }
       rtcManager.hangupCall();
-      } catch (e) {
+    } catch (e) {
       ATT.Error.publish('SDK-20024', null);
     }
   }
@@ -543,11 +529,63 @@ if (Env === undefined) {
    * @desc
    * Similar to hangup, but before the call is connected.
    */
-  function cancel(){
-    try{
-      currentCall().end();
-    } catch (e){
+  function cancel() {
+    try {
+      rtcManager.cancelCall();
+    } catch (e) {
       ATT.Error.publish('SDK-20034', null);
+    }
+  }
+
+  /**
+   * @summary
+   * Reject an incoming call
+   * @desc
+  * Rejects an incoming call
+  */
+  function reject() {
+    try {
+      if (!rtcManager) {
+        throw 'Unable to reject a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.rejectCall();
+    } catch (e) {
+      ATT.Error.publish('SDK-20035', null);
+    }
+  }
+
+    /**
+    * @summary
+    * Refresh session on E911 Address Update
+    * @desc
+    * When we have a E911ID we can update the session with the latest E911ID using this method
+    * @memberof ATT.rtc.Phone
+    * @param {Object} args
+    * @param {function} args.onCallError        callback function for onCallError event
+    * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallError         This callback function gets invoked when encountering issues during outgoing call flow
+    * @example
+    *  Preconditions: ATT.rtc.Phone.login() invocation is successful
+    * //Example 1
+    * //audio call
+    * ATT.rtc.Phone.updateE911Id(
+    * e911Id: “e911Id”,
+    * onCallEnded: function(evt) {}
+    * onCallError: function(evt) {}
+    * }
+    );
+    */
+
+  function updateE911Id(args) {
+    try {
+      if (!args.e911Id || args.e911Id.trim().length === 0) {
+        throw new TypeError('E911Id Parameter Missing');
+      }
+      if (!rtcManager) {
+        throw 'Unable to reject a web rtc call. There is no valid RTC manager to perform this operation';
+      }
+      rtcManager.refreshSessionWithE911ID(args);
+    } catch (e) {
+      ATT.Error.publish('SDK-20036', null);
     }
   }
 
@@ -560,10 +598,12 @@ if (Env === undefined) {
     resourceManager.addPublicMethod('hold', hold);
     resourceManager.addPublicMethod('resume', resume);
     resourceManager.addPublicMethod('mute', mute);
+    resourceManager.addPublicMethod('cancel', cancel);
     resourceManager.addPublicMethod('unmute', unmute);
     //resourceManager.addPublicMethod('initCallback', initCallbacks);
     resourceManager.addPublicMethod('getMediaType', getMediaType);
     resourceManager.addPublicMethod('hangup', hangup);
+    resourceManager.addPublicMethod('reject', reject);
     resourceManager.addPublicMethod('cleanPhoneNumber', rtcManager.cleanPhoneNumber);
     resourceManager.addPublicMethod('formatNumber', rtcManager.formatNumber);
 
@@ -572,6 +612,7 @@ if (Env === undefined) {
     // creating the phone object:
     // createPhone({rtcManager: rsrcMgr }){ ... };
     resourceManager.addPublicMethod('rtcManager', rtcManager);
+    resourceManager.addPublicMethod('updateE911Id', updateE911Id);
   }
 
   function createPhone(options) {
