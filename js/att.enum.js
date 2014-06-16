@@ -20,6 +20,7 @@
   };
 
   module.CallStates = {
+    INITIAL: 'Call Setting up',
     ONGOING: 'Call Ongoing',
     MOVED: 'Call Moved',
     HELD: 'Call Held',
