@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe('Session', function () {
+describe.only('Session', function () {
   
   it('Should have a public constructor under ATT.private', function () {
     expect(ATT.private.Session).to.be.a('function');
@@ -142,6 +142,10 @@ describe('Session', function () {
     });
 
     describe('Update', function () {
+      var options;
+      beforeEach(function () {
+        options = { timeout : 123};
+      });
 
       it('Should exist', function () {
         expect(session.update).to.be.a('function');
@@ -152,7 +156,6 @@ describe('Session', function () {
       });
 
       it('Should trigger onUpdating callback with options', function (done) {
-        var options = {};
 
         session.update(options);
 
@@ -168,12 +171,18 @@ describe('Session', function () {
 
       describe('timeout', function () {
 
-        it('Should throw an error if the timeout value is not a number');
+        it('Should throw an error if the timeout value is not a number', function () {
 
-        it('Should set the timeout');
+          options.timeout = '123';
+          expect(session.update.bind(session, options)).to.throw('Timeout is not a number.');
 
+        });
+
+        it('Should set the timeout', function () {
+          session.update(options);
+          expect(session.timeout).to.equal(123);
+        });
       })
-
     });
 
     describe('AddCall', function () {

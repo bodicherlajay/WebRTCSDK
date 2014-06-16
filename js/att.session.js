@@ -274,6 +274,10 @@
       throw new Error('No options provided');
     }
 
+    if ('number' !== typeof options.timeout) {
+      throw new Error('Timeout is not a number.');
+    }
+
     this.timeout = options.timeout || this.timeout;
     this.token = options.token || this.token;
     this.e911Id = options.e911Id || this.e911Id;
