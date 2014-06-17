@@ -4,7 +4,7 @@
 //Dependency: ATT.logManager
 
 
-(function (app) {
+(function () {
   'use strict';
 
   var errMgr,
@@ -71,103 +71,76 @@
     return ATT.phoneNumber.stringify(callable);
   }
 
+  function extractSessionInformation(responseObject) {
+    logger.logDebug('extractSessionInformation');
+
+    var sessionId = null,
+        expiration = null;
+
+    if (responseObject) {
+      if (responseObject.getResponseHeader('Location')) {
+        sessionId = responseObject.getResponseHeader('Location').split('/')[4];
+      }
+      if (responseObject.getResponseHeader('x-expires')) {
+        expiration = responseObject.getResponseHeader('x-expires');
+        expiration = Number(expiration);
+        expiration = isNaN(expiration) ? 0 : expiration * 1000; // convert to ms
+      }
+    }
+
+    if (!sessionId) {
+      throw 'Failed to retrieve session id';
+    }
+
+    return {
+      sessionId: sessionId,
+      expiration: expiration
+    };
+  }
+
   /**
   * start a new session
   * @param {Object} options The options
-  * rtcManager.startSession({
+  * rtcManager.connectSession({
   *   token: 'abcd'
   *   e911Id: 'e911Id'
   * })
   */
-  function startSession(options) {
-    logger.logDebug('startSession');
+  function connectSession(options) {
+    logger.logDebug('createWebRTCSession');
 
-    options.factories.createSession({
-      factories: options.factories,
-      token: options.token,
-      e911Id: options.e911Id,
-      onSessionCreated: function (sessionObj) {
-        session = sessionObj; // store the newly created session
-
-        options.factories.createEventManager({
-          session: session,
-          rtcEvent: rtcEvent,
-          resourceManager: resourceManager,
-          errorManager: errMgr,
-          onEventManagerCreated: function (evtMgr) {
-            eventManager = evtMgr;
-
-            // configure event manager for session event callbacks
-            eventManager.onSessionEventCallback = function (callback, event, data) {
-              if (data) { // If data, SDK needs additional processing
-                if (data.modId) { // media modification event, SDK need to take action
-                  if (data.action === 'accept-mods') {
-                    session.getCurrentCall().handleCallMediaModifications(event, data);
-                  } else if (data.action === 'term-mods') {
-                    session.getCurrentCall().handleCallMediaTerminations(event, data);
-                  }
-                } else { // invitation-received, create incoming call before passing ui event to UI
-                  if (data.action === 'term-session') {
-                    session.deleteCall(session.getCurrentCall().id());
-                  }
-                  if (event) {
-                    if (event.state === app.CallStatus.RINGING) {
-                      ATT.utils.extend(options, data);
-                      session.startCall(ATT.utils.extend(options, {
-                        type: app.CallTypes.INCOMING,
-                        onCallStarted: function () {
-                          logger.logInfo('onCallStarted ...');
-                          session.getCurrentCall().setCallState(app.CallStates.INITIAL);
-                          options.onCallbackCalled(callback, event);
-                        },
-                        onCallError: handleError.bind(this, 'StartCall', options.onCallError),
-                        errorManager: errMgr,
-                        resourceManager: resourceManager,
-                        userMediaSvc: userMediaSvc,
-                        peerConnSvc: peerConnSvc
-                      }));
-                    } else if (event.state === app.CallStatus.ESTABLISHED) {
-                      session.getCurrentCall().handleCallOpen(data);
-                      options.onCallbackCalled(callback, event);
-                    } else if (event.state === app.CallStatus.ENDED) {
-                      options.onCallbackCalled(callback, event);
-                    }
-                  }
-                }
-                return;
-              }
-
-              if (event.state === app.CallStatus.ENDED || event.state === app.CallStatus.ERROR) {
-                peerConnSvc.endCall();
-                userMediaSvc.stopStream();
-                session.deleteCall(session.getCurrentCall().id());
-                session.deleteCurrentCall();
-              }
-
-              // for all other UI events
-              options.onCallbackCalled(callback, event);
-            };
-
-            // fire the session created event
-            eventManager.publishEvent({
-              state: app.SessionEvents.RTC_SESSION_CREATED
-            });
-
-          },
-          onError: handleError.bind(this, 'CreateEventManager', options.onError)
-        });
+    resourceManager.doOperation('createWebRTCSession', {
+      data: {
+        'session': {
+          'mediaType': 'dtls-srtp',
+          'ice': 'true',
+          'services': [
+            'ip_voice_call',
+            'ip_video_call'
+          ]
+        }
       },
-      onError: handleError.bind(this, 'CreateSession', options.onError),
-      errorManager: errMgr,
-      resourceManager: resourceManager
+      params: {
+        headers: {
+          'Authorization': options.token,
+          'x-e911Id': options.e911Id || '',
+          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
+        }
+      },
+      success: function (response) {
+        logger.logInfo('Successfully created web rtc session on blackflag');
+        var sessionInfo = extractSessionInformation(response);
+        options.onSuccess(sessionInfo);
+      }
     });
+
   }
 
   function getSession() {
     return session;
   }
 
-  function deleteSession(options) {
+  function disconnectSession(options) {
     if (!session) {
       throw 'No session found to delete. Please login first';
     }
@@ -420,23 +393,13 @@
     logger.logDebug('createRTCManager');
 
     return {
-      startSession: startSession,
-      getSession: getSession,
-      deleteSession: deleteSession,
-      dialCall: dialCall,
-      answerCall: answerCall,
-      unmuteCall: unmuteCall,
-      muteCall: muteCall,
-      resumeCall: resumeCall,
-      cancelCall: cancelCall,
-      rejectCall: rejectCall,
-      refreshSessionWithE911ID: refreshSessionWithE911ID,
-      hangupCall: hangupCall,
-      holdCall: holdCall,
-      cleanPhoneNumber: cleanPhoneNumber,
-      formatNumber: formatNumber
+      connectSession: connectSession,
+      disconnectSession: disconnectSession
     };
   }
 
-  app.factories.createRTCManager = createRTCManager;
-}(ATT || {}));
+  if (undefined === ATT.factories) {
+    throw new Error('Error exporting `createRTCManager`');
+  }
+  ATT.factories.createRTCManager = createRTCManager;
+}());

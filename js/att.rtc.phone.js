@@ -139,7 +139,7 @@ if (Env === undefined) {
         services = services.slice(0, 1);
       }
 
-      rtcManager.startSession({
+      rtcManager.connectSession({
         factories: factories,
         token: token,
         e911Id: e911Id,
@@ -194,7 +194,7 @@ if (Env === undefined) {
         throw 'Unable to logout from web rtc. There is no valid RTC manager to perform this operation';
       }
 
-      rtcManager.deleteSession({
+      rtcManager.disconnectSession({
         onSessionDeleted: function () {
           logger.logInfo('Successfully deleted web rtc session on blackflag');
           if (typeof logoutParams.onLogout === 'function') {

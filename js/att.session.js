@@ -23,61 +23,7 @@
     }
   }
 
-  function extractSessionInformation(responseObject) {
-    logger.logDebug('extractSessionInformation');
 
-    var sessionId = null,
-      expiration = null;
-
-    if (responseObject) {
-      if (responseObject.getResponseHeader('Location')) {
-        sessionId = responseObject.getResponseHeader('Location').split('/')[4];
-      }
-      if (responseObject.getResponseHeader('x-expires')) {
-        expiration = responseObject.getResponseHeader('x-expires');
-        expiration = Number(expiration);
-        expiration = isNaN(expiration) ? 0 : expiration * 1000; // convert to ms
-      }
-    }
-
-    if (!sessionId) {
-      throw 'Failed to retrieve session id';
-    }
-
-    return {
-      sessionId: sessionId,
-      expiration: expiration
-    };
-  }
-
-  function createWebRTCSession(args) {
-    logger.logDebug('createWebRTCSession');
-
-    resourceManager.doOperation('createWebRTCSession', {
-      data: {
-        'session': {
-          'mediaType': 'dtls-srtp',
-          'ice': 'true',
-          'services': [
-            'ip_voice_call',
-            'ip_video_call'
-          ]
-        }
-      },
-      params: {
-        headers: {
-          'Authorization': args.token,
-          'x-e911Id': args.e911Id || '',
-          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
-        }
-      },
-      success: function (responseObj) {
-        logger.logInfo('Successfully created web rtc session on blackflag');
-        args.onWebRTCSessionCreated(extractSessionInformation(responseObj));
-      },
-      error: args.onError
-    });
-  }
 
   function refreshWebRTCSession(args) {
     var dataForRefreshWebRTCSession = {

@@ -1,110 +1,122 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
- before: true, sinon: true, expect: true, assert: true, xit: true, URL: true*/
+/*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL*/
 
-describe('rtc Management', function () {
+describe.only('RTC Manager', function () {
   'use strict';
 
-
-  describe('cleanPhoneNumber public method test  ', function () {
-    it('should convert alpha numeric to number ', function () {
-      var number = '425-080-FEDX';
-      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('14250803339');
+  describe('createRTCManager', function () {
+    it('should exist on ATT.factories', function () {
+      expect(ATT.factories.createRTCManager).to.be.a('function');
     });
 
-    it('should be able to call 911', function () {
-      var number = '911';
-      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('911');
-    });
+    it('should return an instance of RTCManager', function () {
 
-    it('should be able to  *69', function () {
-      var number = '*69';
-      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('*69');
-    });
+      var factories = ATT.factories,
+        resourceManagerStub,
+        options;
 
-    it('should be able to  #89', function () {
-      var number = '#89';
-      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('#89');
-    });
+      resourceManagerStub = {
+        getLogger : function () {
+          return {
+            logDebug : function () {}
+          };
+        }
+      };
 
-    it('should remove all the special character and return dialable number', function () {
-      var number = '451**(123*(5627';
-      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('14511235627');
-    });
+      options = {
+        userMediaSvc: {},
+        rtcEvent: {},
+        errorManager: {},
+        peerConnSvc: {},
+        resourceManager: resourceManagerStub
+      };
 
-    it('should remove only spaces from a number', function () {
-      var number = '45 1 123 562 7';
-      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('14511235627');
-    });
-
-    it('should be able to remove spaces and special characters ', function () {
-      var number = '451** (123 5627';
-      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('14511235627');
-    });
-
-    it('should be able to remove spaces and extra number if its >11 ', function () {
-      var number = '451123 275623434233237';
-      expect(ATT.rtc.Phone.cleanPhoneNumber(number)).to.equal('14511232756');
+      expect(factories.createRTCManager.bind(factories, options)).to.not.throw(Error);
+      expect(factories.createRTCManager(options)).to.be.an('object');
     });
   });
 
-  describe('formatNumber public method test  ', function () {
-    it('should convert ten digit number to a formated number ', function () {
-      var number = '425-080-FEDX';
-      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('1 (425) 080-3339');
+  describe('Methods', function () {
+    var rtcManager,
+      options,
+      resourceManager,
+      rtcEvent,
+      userMediaSvc,
+      peerConnSvc,
+      factories;
+
+    beforeEach(function () {
+      factories = ATT.factories;
+      resourceManager = Env.resourceManager.getInstance();
+      rtcEvent = ATT.RTCEvent.getInstance();
+      userMediaSvc = ATT.UserMediaService;
+      peerConnSvc = ATT.PeerConnectionService;
+
+      options = {
+        errorManager: ATT.Error,
+        resourceManager: resourceManager,
+        rtcEvent: rtcEvent,
+        userMediaSvc: userMediaSvc,
+        peerConnSvc: peerConnSvc,
+        factories: factories
+      };
+
+      rtcManager = ATT.factories.createRTCManager(options);
+
     });
 
-    it('should be able to format 911', function () {
-      var number = '911';
-      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('911');
+    describe('connectSession', function () {
+      it('should exist', function () {
+        expect(rtcManager.connectSession).to.be.a('function');
+      });
+
+      describe('Success', function () {
+        var doOperationStub,
+          onSuccessSpy,
+          onReadySpy;
+
+        beforeEach(function () {
+          doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) {
+            var response = {
+              getResponseHeader : function (name) {
+                switch (name) {
+                case 'Location':
+                  return '123/123/123/123/123';
+                case 'x-expires':
+                  return '1234';
+                default:
+                  break;
+                }
+              }
+            };
+            options.success(response);
+          });
+          onSuccessSpy = sinon.spy();
+          onReadySpy = sinon.spy();
+
+          options.onSuccess = onSuccessSpy;
+          rtcManager.connectSession(options);
+        });
+
+        it('should call doOperation on the resourceManager with `createWebRTCSession`', function () {
+          expect(doOperationStub.calledWith('createWebRTCSession')).to.equal(true);
+          doOperationStub.restore();
+        });
+
+        it('should execute the onSuccess callback', function () {
+          expect(onSuccessSpy.called).to.equal(true);
+        });
+        it('should call EventManager.setupEventChannel with the session id');
+        it('should execute onReady on receiving a `listening` event');
+      });
+
     });
 
-    it('should be able to format *69', function () {
-      var number = '*69';
-      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('*69');
-    });
-
-    it('should be able to format #89', function () {
-      var number = '#89';
-      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('#89');
-    });
-
-    it('should return a format number after removing special character', function () {
-      var number = '451**(123*(5627';
-      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('1 (451) 123-5627');
-    });
-
-    it('should format and remove  spaces from a number', function () {
-      var number = '45 1 123 562 7';
-      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('1 (451) 123-5627');
-    });
-
-    it('should be format , remove spaces and special characters ', function () {
-      var number = '451** (123 5627';
-      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('1 (451) 123-5627');
-    });
-
-    it('should be able to format, remove spaces and extra number if its >11 ', function () {
-      var number = '451123 275623434233237';
-      expect(ATT.rtc.Phone.formatNumber(number)).to.equal('1 (451) 123-2756');
+    describe('disconnectSession', function () {
+      it('should exist', function () {
+        expect(rtcManager.disconnectSession).to.be.a('function');
+      });
     });
   });
 
-  describe('Hold Call', function () {
-    it('should expose a holdCall method', function () {
-      assert.ok(ATT.RTCManager.holdCall);
-    });
-  });
-
-  describe('Resume Call', function () {
-    it('should expose a resumeCall method', function () {
-      assert.ok(ATT.RTCManager.resumeCall);
-    });
-  });
-
-  describe('Reject Call', function () {
-    it('should expose a rejectCall method', function () {
-      assert.ok(ATT.RTCManager.rejectCall);
-    });
-  });
 });
