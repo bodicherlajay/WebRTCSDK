@@ -97,7 +97,7 @@ describe('Event Manager', function () {
         expect(createEvtChanStub.called).to.equal(true);
       });
 
-      it('Should publish `listening` after starting the event channel', function () {
+      it('Should publish `listening` after starting the event channel', function (done) {
         eventManager.on('listening', onListeningSpy);
 
         eventManager.setup({

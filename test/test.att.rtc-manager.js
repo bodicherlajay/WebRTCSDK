@@ -145,7 +145,7 @@ describe('RTC Manager', function () {
           expect(setupStub.called).to.equal(true);
         });
 
-        it('should execute onReady on receiving a `listening` event', function () {
+        it('should execute onReady on receiving a `listening` event', function (done) {
 
           setTimeout(function () {
             try {
@@ -157,7 +157,7 @@ describe('RTC Manager', function () {
           }, 100);
         });
 
-        afterEach(function() {
+        afterEach(function () {
           doOperationStub.restore();
           onSpy.restore();
           setupStub.restore();
