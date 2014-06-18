@@ -1,34 +1,60 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, Env, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe('Session', function () {
+describe.only('Session', function () {
   'use strict';
+
+  var options,
+    session,
+    rtcManagerStub,
+    createRTCMgrStub,
+    connectSessionSpy;
+
+  beforeEach(function() {
+    options = {
+      token: 'dsfgdsdf',
+      e911Id: 'sdfghfds'
+    };
+    rtcManagerStub = {
+      connectSession: function (options) {
+        options.onSessionConnected({
+          sessionId: 'sessionid',
+          timeout: 100
+        });
+        options.onSessionReady();
+      }
+    };
+    connectSessionSpy = sinon.spy(rtcManagerStub, 'connectSession');
+    createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function() {
+      return rtcManagerStub;
+    });
+    session = new ATT.private.Session(options);
+  });
+
+  afterEach(function() {
+    createRTCMgrStub.restore();
+    connectSessionSpy.restore();
+  });
 
   it('Should have a public constructor under ATT.private', function () {
     expect(ATT.private.Session).to.be.a('function');
   });
 
   it('Should create a session object', function () {
-    var session = new ATT.private.Session();
     expect(session).to.be.an('object');
   });
 
   describe('method', function () {
-    var session,
-      call,
+    var call,
       secondCall,
       onConnectingSpy,
       onConnectedSpy,
       onUpdatingSpy,
+      onReadySpy,
       onDisconnectingSpy,
       onDisconnectedSpy;
 
     beforeEach(function () {
-      session = new ATT.private.Session({
-        token: 'dsfgdsdf',
-        e911Id: 'sdfghfds'
-      });
-
       call = new ATT.private.Call({
         id: '12345',
         peer: '12345',
@@ -44,15 +70,16 @@ describe('Session', function () {
       onConnectingSpy = sinon.spy();
       onConnectedSpy = sinon.spy();
       onUpdatingSpy = sinon.spy();
+      onReadySpy = sinon.spy();
       onDisconnectingSpy = sinon.spy();
       onDisconnectedSpy = sinon.spy();
 
       session.on('connecting', onConnectingSpy);
       session.on('connected', onConnectedSpy);
       session.on('updating', onUpdatingSpy);
+      session.on('ready', onReadySpy);
       session.on('disconnecting', onDisconnectingSpy);
       session.on('disconnected', onDisconnectedSpy);
-
     });
 
     describe('On', function () {
@@ -78,14 +105,6 @@ describe('Session', function () {
     });
 
     describe('Connect', function () {
-      var options;
-
-      beforeEach(function () {
-        options = {
-          token: 'dsfgdsdf',
-          e911Id: 'sdfghfds'
-        };
-      });
 
       it('Should exist', function () {
         expect(session.connect).to.be.a('function');
@@ -111,11 +130,53 @@ describe('Session', function () {
 
       });
 
-      it('should create/POST a session');
+      it('should call connectSession on RTC Manager', function () {
+        session.connect(options);
 
-      describe('Successful session Creation', function () {
-        it('should publish the `ready` event');
+        expect(connectSessionSpy.called).to.equal(true);
       });
+
+      describe('Connect session callbacks', function () {
+        var setIdSpy,
+          updateSpy;
+
+        beforeEach(function () {
+          setIdSpy = sinon.spy(session, 'setId');
+          updateSpy = sinon.spy(session, 'update');
+
+          session.connect(options);
+        });
+
+        afterEach(function () {
+          setIdSpy.restore();
+          updateSpy.restore();
+        });
+
+        describe('onSessionConnected', function () {
+          it('Should execute the setId on session with newly created session id', function () {
+            expect(setIdSpy.calledWith('sessionid')).to.equal(true);
+          });
+
+          it('Should execute the update on session with newly created timeout', function () {
+            expect(updateSpy.calledWith({timeout: 100})).to.equal(true);
+          });
+        })
+
+        describe('onSessionReady', function () {
+          it('should publish the ready event on session', function (done) {
+            setTimeout(function () {
+              try {
+                expect(onReadySpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+        });
+
+      });
+
     });
 
     describe('setId', function () {

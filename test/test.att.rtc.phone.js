@@ -95,7 +95,7 @@ describe('Phone', function () {
         connectSpy.restore();
       });
 
-      it('should trigger `onReady` callback on receiving the `ready` event from Session', function () {
+      it('should trigger `onReady` callback on receiving the `ready` event from Session', function (done) {
         phone.login(options);
 
         setTimeout(function () {
@@ -110,6 +110,5 @@ describe('Phone', function () {
 
     });
   });
-
 
 });

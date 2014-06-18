@@ -22,8 +22,6 @@
   var resourceManager,
     rtcEvent,
     eventManager,
-    userMediaSvc,
-    peerConnSvc,
     logMgr = ATT.logManager.getInstance(),
     logger,
     sdkErrors,
@@ -68,8 +66,7 @@
 
   resourceManager = Env.resourceManager.getInstance();
   rtcEvent = ATT.RTCEvent.getInstance();
-  userMediaSvc = ATT.UserMediaService;
-  peerConnSvc = ATT.PeerConnectionService;
+
 
   eventManager = ATT.factories.createEventManager({
     errorManager: ATT.Error,
@@ -77,18 +74,8 @@
     rtcEvent: rtcEvent
   });
 
-  ATT.RTCManager = ATT.factories.createRTCManager({
-    errorManager: ATT.Error,
-    resourceManager: resourceManager,
-    rtcEvent: rtcEvent,
-    userMediaSvc: userMediaSvc,
-    peerConnSvc: peerConnSvc,
-    eventManager: eventManager
-  });
-
   ATT.Phone = ATT.factories.createPhone({
     factories: ATT.factories,
-    rtcManager: ATT.RTCManager,
     resourceManager: resourceManager
   });
 

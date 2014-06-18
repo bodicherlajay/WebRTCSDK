@@ -7,7 +7,8 @@
 (function (app) {
   'use strict';
 
-  var errMgr,
+  var factories = ATT.factories,
+    errMgr,
     resourceManager,
     logger;
 
@@ -212,18 +213,6 @@
     ATT.event.subscribe(event, handler, this);
   }
 
-  function connect(options) {
-    if (!options) {
-      throw 'No input provided';
-    }
-    if (!options.token) {
-      throw 'No access token provided';
-    }
-    this.token = options.token;
-    this.e911Id = options.e911Id;
-    ATT.event.publish('connecting');
-  }
-
   function update(options) {
     if (options === undefined) {
       throw new Error('No options provided');
@@ -252,6 +241,11 @@
   */
   function Session(options) {
 
+    // dependencies
+    var rtcManager;
+
+    rtcManager = factories.createRTCManager({});
+
     // private attributes
     var id = null,
       calls = {};
@@ -264,7 +258,6 @@
 
     // public methods
     this.on = on.bind(this);
-    this.connect = connect.bind(this);
 
     this.getId = function () {
       return id;
@@ -275,8 +268,37 @@
       ATT.event.publish('connected');
     };
 
-
     this.update = update.bind(this);
+
+    this.connect =   function connect(options) {
+      if (!options) {
+        throw 'No input provided';
+      }
+      if (!options.token) {
+        throw 'No access token provided';
+      }
+      this.token = options.token;
+      this.e911Id = options.e911Id;
+
+      ATT.event.publish('connecting');
+
+      var session = this;
+
+      rtcManager.connectSession({
+        token: options.token,
+        e911Id: options.e911Id,
+        onSessionConnected: function (sessionInfo) {
+          session.setId(sessionInfo.sessionId);
+          session.update({
+            timeout: sessionInfo.timeout
+          });
+        },
+        onSessionReady: function () {
+          ATT.event.publish('ready');
+        }
+      })
+    };
+
     this.disconnect = disconnect.bind(this);
 
     this.terminateCalls = function () {
@@ -309,37 +331,6 @@
       }
     };
   }
-
-//  function () {
-//    var call = new Call();
-//
-//    call.on('connecting', function () {
-//      updateUI();
-//      usermedia.getUM(gotUM)
-//    })
-//
-//    gotUM(){
-//      PC.sendOf(gotOffer)
-//    }
-//
-//    gotOffer(){
-//      call.setSDP(sdp)
-//    }
-//    call.on('calling', function () {
-//
-//    })
-//
-//    call.on('error', function () {
-//
-//    })
-//
-//    call.connect();
-//
-//    connect(){
-//      publish(connecting)
-//      publish('')
-//    }
-//  }
 
   /**
   * Create a new session
