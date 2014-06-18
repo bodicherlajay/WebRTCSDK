@@ -109,6 +109,21 @@
   function connectSession(options) {
     logger.logDebug('createWebRTCSession');
 
+    var doOperationSuccess = function (response) {
+      logger.logInfo('Successfully created web rtc session on blackflag');
+      var sessionInfo = extractSessionInformation(response);
+      options.onSuccess(sessionInfo);
+
+      eventManager.on('listening', function () {
+
+      });
+
+      eventManager.setup({
+        sessionId: sessionInfo.sessionId,
+        token: options.token
+      });
+    };
+
     resourceManager.doOperation('createWebRTCSession', {
       data: {
         'session': {
@@ -127,11 +142,7 @@
           'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
         }
       },
-      success: function (response) {
-        logger.logInfo('Successfully created web rtc session on blackflag');
-        var sessionInfo = extractSessionInformation(response);
-        options.onSuccess(sessionInfo);
-      }
+      success: doOperationSuccess
     });
 
   }
@@ -388,9 +399,12 @@
     rtcEvent = options.rtcEvent;
     userMediaSvc = options.userMediaSvc;
     peerConnSvc = options.peerConnSvc;
+    eventManager = options.eventManager;
+
     logger = resourceManager.getLogger("RTCManager");
 
     logger.logDebug('createRTCManager');
+
 
     return {
       connectSession: connectSession,

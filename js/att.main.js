@@ -21,6 +21,7 @@
   'use strict';
   var resourceManager,
     rtcEvent,
+    eventManager,
     userMediaSvc,
     peerConnSvc,
     logMgr = ATT.logManager.getInstance(),
@@ -70,12 +71,19 @@
   userMediaSvc = ATT.UserMediaService;
   peerConnSvc = ATT.PeerConnectionService;
 
+  eventManager = ATT.factories.createEventManager({
+    errorManager: ATT.Error,
+    resourceManager: resourceManager,
+    rtcEvent: rtcEvent
+  });
+
   ATT.RTCManager = ATT.factories.createRTCManager({
     errorManager: ATT.Error,
     resourceManager: resourceManager,
     rtcEvent: rtcEvent,
     userMediaSvc: userMediaSvc,
-    peerConnSvc: peerConnSvc
+    peerConnSvc: peerConnSvc,
+    eventManager: eventManager
   });
 
   ATT.Phone = ATT.factories.createPhone({

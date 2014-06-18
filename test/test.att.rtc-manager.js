@@ -1,8 +1,20 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL*/
 
-describe.only('RTC Manager', function () {
+describe('RTC Manager', function () {
   'use strict';
+
+  var factories = ATT.factories,
+    resourceManagerStub;
+
+  resourceManagerStub = {
+    getLogger : function () {
+      return {
+        logDebug : function () {},
+        logInfo: function () {}
+      };
+    }
+  };
 
   describe('createRTCManager', function () {
     it('should exist on ATT.factories', function () {
@@ -11,19 +23,7 @@ describe.only('RTC Manager', function () {
 
     it('should return an instance of RTCManager', function () {
 
-      var factories = ATT.factories,
-        resourceManagerStub,
-        options;
-
-      resourceManagerStub = {
-        getLogger : function () {
-          return {
-            logDebug : function () {}
-          };
-        }
-      };
-
-      options = {
+     var options = {
         userMediaSvc: {},
         rtcEvent: {},
         errorManager: {},
@@ -38,30 +38,45 @@ describe.only('RTC Manager', function () {
 
   describe('Methods', function () {
     var rtcManager,
-      options,
+      eventManager,
       resourceManager,
       rtcEvent,
       userMediaSvc,
       peerConnSvc,
-      factories;
+      factories,
+      setupStub;
+
 
     beforeEach(function () {
+      var optionsForEM = {
+          rtcEvent: {},
+          errorManager: {},
+          resourceManager: resourceManagerStub
+        },
+        optionsForRTCM;
+
+      eventManager = ATT.factories.createEventManager(optionsForEM);
+      setupStub = sinon.stub(eventManager, 'setup', function () {
+        ATT.event.publish('listening');
+      });
+
       factories = ATT.factories;
       resourceManager = Env.resourceManager.getInstance();
       rtcEvent = ATT.RTCEvent.getInstance();
       userMediaSvc = ATT.UserMediaService;
       peerConnSvc = ATT.PeerConnectionService;
 
-      options = {
+      optionsForRTCM = {
         errorManager: ATT.Error,
         resourceManager: resourceManager,
         rtcEvent: rtcEvent,
         userMediaSvc: userMediaSvc,
         peerConnSvc: peerConnSvc,
+        eventManager: eventManager,
         factories: factories
       };
 
-      rtcManager = ATT.factories.createRTCManager(options);
+      rtcManager = ATT.factories.createRTCManager(optionsForRTCM);
 
     });
 
@@ -73,9 +88,18 @@ describe.only('RTC Manager', function () {
       describe('Success', function () {
         var doOperationStub,
           onSuccessSpy,
+          onSpy,
           onReadySpy;
 
         beforeEach(function () {
+
+          ATT.appConfig = {
+            EventChannelConfig: {
+              endpoint: 'endpoint',
+              type: 'longpolling'
+            }
+          };
+
           doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) {
             var response = {
               getResponseHeader : function (name) {
@@ -94,20 +118,51 @@ describe.only('RTC Manager', function () {
           onSuccessSpy = sinon.spy();
           onReadySpy = sinon.spy();
 
-          options.onSuccess = onSuccessSpy;
-          rtcManager.connectSession(options);
+          onSpy = sinon.spy(eventManager, 'on');
+
+          var optionsForConn = {
+            token: '123',
+            onSuccess: onSuccessSpy,
+            onReady: onReadySpy
+          };
+          rtcManager.connectSession(optionsForConn);
         });
 
         it('should call doOperation on the resourceManager with `createWebRTCSession`', function () {
           expect(doOperationStub.calledWith('createWebRTCSession')).to.equal(true);
-          doOperationStub.restore();
         });
 
         it('should execute the onSuccess callback', function () {
           expect(onSuccessSpy.called).to.equal(true);
         });
-        it('should call EventManager.setupEventChannel with the session id');
-        it('should execute onReady on receiving a `listening` event');
+
+        it('Should subscribe to event listening from the event manager', function () {
+          expect(onSpy.called).to.equal(true); //
+          expect(onSpy.getCall(0).args[0]).to.equal('listening');
+        });
+
+        it('should call EventManager.setup with the session id', function () {
+          expect(setupStub.called).to.equal(true);
+        });
+
+        it('should execute onReady on receiving a `listening` event', function () {
+
+          setTimeout(function () {
+            try {
+              expect(onReadySpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+
+        afterEach(function() {
+          doOperationStub.restore();
+          onSpy.restore();
+          setupStub.restore();
+        });
+
       });
 
     });

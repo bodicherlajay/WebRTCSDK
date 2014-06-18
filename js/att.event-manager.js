@@ -28,34 +28,31 @@
   function setupEventChannel(options) {
     logger.logDebug('setupEventChannel');
 
-    var session = this.getSession(),
       // Set event channel configuration
       // All parameters are required
       // Also, see appConfigModule
-      channelConfig = {
-        accessToken: session.getAccessToken(),
-        endpoint: app.appConfig.EventChannelConfig.endpoint,
-        sessionId: session.getSessionId(),
-        publisher: app.event,
+    var channelConfig = {
+        accessToken: options.token,
+        endpoint: ATT.appConfig.EventChannelConfig.endpoint,
+        sessionId: options.sessionId,
+        publisher: ATT.event,
         resourceManager: resourceManager,
         publicMethodName: 'getEvents',
-        usesLongPolling: (app.appConfig.EventChannelConfig.type === 'longpolling')
+        usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
       };
 
-    app.utils.eventChannel = app.utils.createEventChannel(channelConfig);
+    ATT.utils.eventChannel = ATT.utils.createEventChannel(channelConfig);
+
     if (ATT.utils.eventChannel) {
       logger.logInfo('Event channel up and running');
 
-      app.utils.eventChannel.startListening({
+      ATT.utils.eventChannel.startListening({
         success: function (msg) {
           logger.logInfo(msg);
+          ATT.event.publish('listening');
         },
         error: options.onError
       });
-
-      options.onEventChannelSetup();
-    } else {
-      throw 'Event channel setup failed';
     }
   }
 
@@ -68,20 +65,20 @@
 
   function mapEventNameToCallback(callEvent) {
     switch(callEvent) {
-    case app.CallStatus.SESSION_READY:  return  'onSessionReady';
-    case app.CallStatus.SESSION_DELETED:return  'onLogout';
-    case app.CallStatus.SESSION_ERROR:  return  'onError';
-    case app.CallStatus.CONNECTING:     return  'onConnecting';
-    case app.CallStatus.CALLING:        return  'onCalling';
-    case app.CallStatus.RINGING:        return  'onIncomingCall';
-    case app.CallStatus.ESTABLISHED:    return  'onCallEstablished';
-    case app.CallStatus.INPROGRESS:     return  'onCallInProgress';
-    case app.CallStatus.HOLD:           return  'onCallHold';
-    case app.CallStatus.RESUMED:        return  'onCallResume';
-    case app.CallStatus.TRANSITION:     return  'onSessionReady';
-    case app.CallStatus.WAITING:        return  'onCallWaiting';
-    case app.CallStatus.ENDED:          return  'onCallEnded';
-    case app.CallStatus.ERROR:          return  'onCallError';
+    case ATT.CallStatus.SESSION_READY:  return  'onSessionReady';
+    case ATT.CallStatus.SESSION_DELETED:return  'onLogout';
+    case ATT.CallStatus.SESSION_ERROR:  return  'onError';
+    case ATT.CallStatus.CONNECTING:     return  'onConnecting';
+    case ATT.CallStatus.CALLING:        return  'onCalling';
+    case ATT.CallStatus.RINGING:        return  'onIncomingCall';
+    case ATT.CallStatus.ESTABLISHED:    return  'onCallEstablished';
+    case ATT.CallStatus.INPROGRESS:     return  'onCallInProgress';
+    case ATT.CallStatus.HOLD:           return  'onCallHold';
+    case ATT.CallStatus.RESUMED:        return  'onCallResume';
+    case ATT.CallStatus.TRANSITION:     return  'onSessionReady';
+    case ATT.CallStatus.WAITING:        return  'onCallWaiting';
+    case ATT.CallStatus.ENDED:          return  'onCallEnded';
+    case ATT.CallStatus.ERROR:          return  'onCallError';
     default:                            return  null;
     }
   }
@@ -92,33 +89,33 @@
       action_data = {};
 
     switch(state) {
-    case app.SessionEvents.RTC_SESSION_CREATED:
+    case ATT.SessionEvents.RTC_SESSION_CREATED:
       this.onEvent(rtcEvent.createRTCEvent({
-        state: app.CallStatus.SESSION_READY,
+        state: ATT.CallStatus.SESSION_READY,
         data: {
           sessionId: this.getSession().getSessionId()
         }
       }));
       break;
-    case app.RTCCallEvents.CALL_CONNECTING:
+    case ATT.RTCCallEvents.CALL_CONNECTING:
       this.onEvent(rtcEvent.createRTCEvent({
-        state: app.CallStatus.CONNECTING,
+        state: ATT.CallStatus.CONNECTING,
         to: currentEvent.to
       }));
       break;
-    case app.RTCCallEvents.CALL_RINGING:
+    case ATT.RTCCallEvents.CALL_RINGING:
       this.onEvent(rtcEvent.createRTCEvent({
-        state: app.CallStatus.CALLING,
+        state: ATT.CallStatus.CALLING,
         to: currentEvent.to
       }));
       break;
-    case app.RTCCallEvents.INVITATION_RECEIVED:
+    case ATT.RTCCallEvents.INVITATION_RECEIVED:
       // Added a getCodec method to the util to get access the codec
       var CODEC =  ATT.sdpFilter.getInstance().getCodecfromSDP(currentEvent.sdp),
         mediaType = (CODEC.length === 1) ? 'audio' : 'video';
 
       this.onEvent(rtcEvent.createRTCEvent({
-        state: app.CallStatus.RINGING,
+        state: ATT.CallStatus.RINGING,
         from: currentEvent.from ? currentEvent.from.split('@')[0].split(':')[1] : ''
       }), {
         id: currentEvent.resourceURL.split('/')[6],
@@ -127,7 +124,7 @@
         remoteSdp: currentEvent.sdp
       });
       break;
-    case app.RTCCallEvents.MODIFICATION_RECEIVED:
+    case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
       action_data = {
         action: 'accept-mods',
         sdp: currentEvent.sdp,
@@ -136,20 +133,20 @@
       if (currentEvent.sdp.indexOf('recvonly') !== -1) {
         // Received hold request...
         this.onEvent(rtcEvent.createRTCEvent({
-          state: app.CallStatus.HOLD,
+          state: ATT.CallStatus.HOLD,
           from: this.getSession().getCurrentCall().from
         }), action_data);
       } else if (currentEvent.sdp.indexOf('sendrecv') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().sdp.indexOf('recvonly') !== -1) {
         // Received resume request...
         this.onEvent(rtcEvent.createRTCEvent({
-          state: app.CallStatus.RESUMED,
+          state: ATT.CallStatus.RESUMED,
           from: this.getSession().getCurrentCall().from
         }), action_data);
       } else {
         this.onEvent(null, action_data);
       }
       break;
-    case app.RTCCallEvents.MODIFICATION_TERMINATED:
+    case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
       action_data = {
         action: 'term-mods',
         sdp: currentEvent.sdp,
@@ -157,7 +154,7 @@
       };
       if (currentEvent.reason !== 'success') {
         this.onEvent(rtcEvent.createRTCEvent({
-          state: app.CallStatus.ERROR,
+          state: ATT.CallStatus.ERROR,
           from: this.getSession().getCurrentCall().from
         }), action_data);
       }
@@ -165,43 +162,43 @@
         if (currentEvent.sdp.indexOf('sendonly') !== -1 && currentEvent.sdp.indexOf('sendrecv') === -1) {
           // Hold call successful...other party is waiting...
           this.onEvent(rtcEvent.createRTCEvent({
-            state: app.CallStatus.HOLD,
+            state: ATT.CallStatus.HOLD,
             from: this.getSession().getCurrentCall().from
           }), action_data);
         }
         if (currentEvent.sdp.indexOf('sendrecv') !== -1) {
           // Resume call successful...call is ongoing...
           this.onEvent(rtcEvent.createRTCEvent({
-            state: app.CallStatus.RESUMED,
+            state: ATT.CallStatus.RESUMED,
             from: this.getSession().getCurrentCall().from
           }), action_data);
         }
       }
       break;
-    case app.RTCCallEvents.SESSION_OPEN:
+    case ATT.RTCCallEvents.SESSION_OPEN:
       this.onEvent(rtcEvent.createRTCEvent({
-        state: app.CallStatus.ESTABLISHED
+        state: ATT.CallStatus.ESTABLISHED
       }), {
         sdp: currentEvent.sdp
       });
       break;
-    case app.RTCCallEvents.CALL_IN_PROGRESS:
+    case ATT.RTCCallEvents.CALL_IN_PROGRESS:
       this.onEvent(rtcEvent.createRTCEvent({
-        state: app.CallStatus.INPROGRESS
+        state: ATT.CallStatus.INPROGRESS
       }));
       break;
-    case app.RTCCallEvents.SESSION_TERMINATED:
+    case ATT.RTCCallEvents.SESSION_TERMINATED:
       action_data = {
         action: 'term-session'
       };
       if (currentEvent.reason) {
         this.onEvent(rtcEvent.createRTCEvent({
-          state: app.CallStatus.ERROR,
+          state: ATT.CallStatus.ERROR,
           error: errMgr.create(currentEvent.reason)
         }), action_data);
       } else {
         this.onEvent(rtcEvent.createRTCEvent({
-          state: app.CallStatus.ENDED
+          state: ATT.CallStatus.ENDED
         }), action_data);
       }
       break;
@@ -241,11 +238,11 @@
       var sessionId = this.getSession().getSessionId();
  
       // unsubscribe first, to avoid double subscription from previous actions
-      app.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
+      ATT.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
       logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
   
       // subscribe to published events from event channel
-      app.event.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
+      ATT.event.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
       logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
 
       options.onEventInterceptorSetup();
@@ -271,6 +268,14 @@
     ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', event);
   }
 
+  function on(event, handler) {
+    if('listening' !== event) {
+      throw new Error('Event not found');
+    }
+    ATT.event.unsubscribe(event, handler);
+    ATT.event.subscribe(event, handler);
+  }
+
   function eventManager(options) {
     var session = options.session,
       callbacks = options.callbacks,
@@ -294,6 +299,32 @@
     };
   }
 
+  function setup(options) {
+    if (undefined === options) {
+      throw new Error('Options not defined');
+    }
+    if (undefined === options.sessionId) {
+      throw new Error('Session id is not defined');
+    }
+    if (undefined === options.token) {
+      throw new Error('Token not defined');
+    }
+
+    var sessionId = options.sessionId;
+
+    // unsubscribe first, to avoid double subscription from previous actions
+    ATT.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
+    logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
+
+    // subscribe to published events from event channel
+    ATT.event.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
+    logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
+
+    setupEventChannel(options);
+    
+    ATT.event.publish('listening');
+  }
+
   function createEventManager(options) {
     rtcEvent = options.rtcEvent;
     resourceManager = options.resourceManager;
@@ -302,36 +333,14 @@
 
     logger.logDebug('createEventManager');
 
-    var evtMgr = eventManager({
-      session: options.session
-    });
-
-    logger.logInfo("Setting up event channel...");
-    evtMgr.setupEventChannel({
-      onEventChannelSetup: function () {
-        logger.logInfo("Setting up events interceptor");
-        evtMgr.setupEventInterceptor({
-          onEventInterceptorSetup: function () {
-            logger.logInfo('Events interceptor setup successfully');
-            options.onEventManagerCreated(evtMgr);
-          },
-          onError: handleError.bind(this, 'SetupEventInterceptor', options.onError)
-        });
-      },
-      onError: handleError.bind(this, 'SetupEventChannel', options.onError)
-    });
-
-    // event handler for callbacks
-    evtMgr.onEvent = function(event, data) {
-      var callback = event ? mapEventNameToCallback(event.state) : null;
-      if (typeof evtMgr.onSessionEventCallback === 'function') {
-        evtMgr.onSessionEventCallback(callback, event, data);
-      }
-      if (typeof evtMgr.onCallEventCallback === 'function') {
-        evtMgr.onCallEventCallback(callback, event, data);
-      }
-    }
+    return {
+      on: on,
+      setup: setup
+    };
   }
 
-  app.factories.createEventManager = createEventManager;
-}(ATT || {}));
+  if (undefined === ATT.factories) {
+    throw new Error('Error exporting createEventManager');
+  }
+  ATT.factories.createEventManager = createEventManager;
+}());

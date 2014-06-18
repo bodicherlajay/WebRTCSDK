@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe.only('Session', function () {
+describe('Session', function () {
   
   it('Should have a public constructor under ATT.private', function () {
     expect(ATT.private.Session).to.be.a('function');
