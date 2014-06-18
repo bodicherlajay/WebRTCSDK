@@ -5,10 +5,7 @@
 describe.only('Phone', function () {
   'use strict';
 
-  var resourceManager = Env.resourceManager.getInstance(),
-    doOperation,
-    requests,
-    phone;
+  var phone;
 
   beforeEach(function () {
 
@@ -18,7 +15,7 @@ describe.only('Phone', function () {
     expect(ATT.factories.createPhone).to.be.a('function');
   });
 
-  describe('createPhone', function (){
+  describe('createPhone', function () {
     var sessionConstructorSpy;
 
     beforeEach(function () {
@@ -47,16 +44,20 @@ describe.only('Phone', function () {
       it('should return an instance of ATT.private.Session', function () {
         var session = phone.getSession();
         expect(session instanceof ATT.private.Session).to.equal(true);
-      })
+      });
     });
 
     describe('login', function () {
-      var session, options;
+      var session, options,
+        onReadySpy;
 
       beforeEach(function () {
         options = {
           token: '123',
-          e911Id: '123'
+          e911Id: '123',
+          onReady: function () {
+            return '123';
+          }
         };
         session = phone.getSession();
       });
@@ -77,6 +78,7 @@ describe.only('Phone', function () {
         phone.login(options);
 
         expect(onSpy.getCall(0).args[0]).to.equal('ready');
+
         onSpy.restore();
       });
       it('should execute Session.connect', function () {
@@ -88,21 +90,8 @@ describe.only('Phone', function () {
 
         connectSpy.restore();
       });
-      it('should respond to `connected` event from Session', function () {
-        var onConnectedSpy = sinon.spy();
 
-        phone.login(options);
-
-        setTimeout(function () {
-          try {
-            expect(onConnectedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
-      });
-      it('should execute onSessionReady on getting `ready` event from Session');
+      it('should trigger `onReady` callback on receiving the `ready` event from Session');
     });
   });
 

@@ -1,8 +1,9 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
+/*global ATT, Env, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
 describe('Session', function () {
-  
+  'use strict';
+
   it('Should have a public constructor under ATT.private', function () {
     expect(ATT.private.Session).to.be.a('function');
   });
@@ -77,6 +78,14 @@ describe('Session', function () {
     });
 
     describe('Connect', function () {
+      var options;
+
+      beforeEach(function () {
+        options = {
+          token: 'dsfgdsdf',
+          e911Id: 'sdfghfds'
+        };
+      });
 
       it('Should exist', function () {
         expect(session.connect).to.be.a('function');
@@ -89,10 +98,7 @@ describe('Session', function () {
       });
 
       it('Should execute the onConnecting callback immediately', function (done) {
-        session.connect({
-          token: 'dsfgdsdf',
-          e911Id: 'sdfghfds'
-        });
+        session.connect(options);
 
         setTimeout(function () {
           try {
@@ -105,6 +111,11 @@ describe('Session', function () {
 
       });
 
+      it('should create/POST a session');
+
+      describe('Successful session Creation', function () {
+        it('should publish the `ready` event');
+      });
     });
 
     describe('setId', function () {
