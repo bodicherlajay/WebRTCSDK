@@ -2,333 +2,109 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert*/
 
-describe('Phone', function () {
+describe.only('Phone', function () {
   'use strict';
 
   var resourceManager = Env.resourceManager.getInstance(),
     doOperation,
-    requests;
+    requests,
+    phone;
 
-  it('should exist', function () {
-    expect(ATT.rtc.Phone).to.be.an('object');
+  beforeEach(function () {
+
   });
 
-  describe('Login', function () {
+  it('should export ATT.factories.createPhone', function () {
+    expect(ATT.factories.createPhone).to.be.a('function');
+  });
+
+  describe('createPhone', function (){
+    var sessionConstructorSpy;
 
     beforeEach(function () {
-      this.xhr = sinon.useFakeXMLHttpRequest();
-      requests = [];
+      sessionConstructorSpy = sinon.spy(ATT.private, 'Session');
+      phone = ATT.factories.createPhone();
+    });
+    it('should create a Phone object', function () {
+      expect(phone).to.be.an('object');
+    });
 
-      this.xhr.onCreate = function (xhr) {
-        requests.push(xhr);
-      };
-      doOperation = sinon.spy(resourceManager, "doOperation");
+    it('should create a session on the Phone object', function () {
+      expect(sessionConstructorSpy.called).to.equal(true);
     });
 
     afterEach(function () {
-      this.xhr.restore();
-      resourceManager.doOperation.restore();
-    });
-
-    it('login method should have all the parameters needed to login', function () {
-      var params = { };
-      expect(ATT.rtc.Phone.login.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
-
-      params = { e911Id: "e911id", audioOnly: true, callbacks:
-        {onSessionReady: function () {return; }, onError : function () {return; }}};
-      expect(ATT.rtc.Phone.login.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
-
-      params = {token: "token", audioOnly: true, callbacks:
-        {onSessionReady: function () {return; }, onError : function () {return; }}};
-      expect(ATT.rtc.Phone.login.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
-    });
-
-    it('login with audio only service', function () {
-      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
-      ATT.rtc.Phone.login({token: "token", e911Id: "e911id", audioOnly: true, callbacks: {onSessionReady: function () {}, onError : function () {}}});
-      expect(doOperation.calledOnce).equals(true);
-      requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
-      expect(requests[0].requestBody).equals('{"session":{"mediaType":"dtls-srtp","ice":"true","services":["ip_voice_call"]}}');
-      expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
-      expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
-    });
-
-    it('login with audio and video service', function () {
-      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204";
-      ATT.rtc.Phone.login({token: "token", e911Id: "e911id", callbacks: {onSessionReady: function () {}, onError : function () {}}});
-      expect(doOperation.calledOnce).equals(true);
-      requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
-      expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
-      expect(requests[0].requestBody).equals('{"session":{"mediaType":"dtls-srtp","ice":"true","services":["ip_voice_call","ip_video_call"]}}');
-      expect(requests[0].method).equals('post');
-      expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
+      sessionConstructorSpy.restore();
     });
   });
 
-  describe('logout', function () {
-    xit('logout', function () {
-      var expectedLocationHeader = "/RTC/v1/sessions/4ba569b5-290d-4f1f-b3af-255731383204", hdr;
-      //stub = sinon.stub(ATT.UserMediaService, "stopStream");
-      ATT.rtc.Phone.logout({
-        success: function () {},
-        error : function () {}
+
+  describe('Methods', function () {
+    describe('getSession', function () {
+      it('should exist', function () {
+        expect(phone.getSession).to.be.a('function');
       });
-      expect(doOperation.calledOnce).equals(true);
-      requests[0].respond(200, {"Content-Type": "application/json", "location": expectedLocationHeader }, JSON.stringify({}));
-      expect(requests[0].getResponseHeader('location')).to.equal(expectedLocationHeader);
-      expect(requests[0].method).equals('delete');
-      hdr = requests[0].url.indexOf(expectedLocationHeader) !== -1 ? true : false;
-      expect(requests[0].requestHeaders.Authorization).to.equal('Bearer token');
-      expect(hdr).equals(true);
-      //stub.restore();
-    });
-  });
-
-  describe('getMediaType', function () {
-   //TODO need to replace this with object constructor pattern
-    //var currentcall = ATT.rtc.Phone.rtcManager.getSession().getCurrentCall();
-    it('Check if getMediaType returns null by default', function () {
-      expect(ATT.rtc.Phone.getMediaType()).equals(null);
-    });
-    it('Check if getMediaType returns video type for video calls', function () {
-      currentcall.setMediaType('video');
-      expect(ATT.rtc.Phone.getMediaType()).equals('video');
-    });
-    it('Check if getMediaType returns audio type for audio Calls', function () {
-      currentcall.setMediaType('audio');
-      expect(ATT.rtc.Phone.getMediaType()).equals('audio');
-    });
-    it('Check if getMediaType returns null on call terminated or ended ', function () {
-      currentcall.setMediaType(null);
-      expect(ATT.rtc.Phone.getMediaType()).equals(null);
-    });
-  });
-
-  describe('hold', function () {
-    it('should publish error if hold throws exception', function () {
-      //TODO need a way to get access to rtcManager
-      var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
-          return {
-            getCurrentCall: function () {
-              return {
-                resume: function () {
-                  throw new Error();
-                }
-              };
-            }
-          };
-        });
-
-      ATT.rtc.Phone.resume();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      sessionContextStub.restore();
-    });
-    it('should throw an error when hold is called before call', function () {
-      //TODO need a way to get access to rtcManager
-      var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
-          return {
-            getCurrentCall: function () {
-              return null;
-            }
-          };
-        });
-
-      ATT.rtc.Phone.hold();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      sessionContextStub.restore();
-    });
-  });
-
-  describe('resume', function () {
-    it('should publish error if resume throws exception', function () {
-      //TODO need a way to get access to rtcManager
-      var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
-          return {
-            getCallObject: function () {
-              return {
-                resume: function () {
-                  throw new Error();
-                }
-              };
-            }
-          };
-        });
-
-      ATT.rtc.Phone.resume();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      sessionContextStub.restore();
+      it('should return an instance of ATT.private.Session', function () {
+        var session = phone.getSession();
+        expect(session instanceof ATT.private.Session).to.equal(true);
+      })
     });
 
-    //TODO need a way to get access to rtcManager
-    it('should throw an error when resume is called before call', function () {
-      var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
-          return {
-            getCurrentCall: function () {
-              return null;
-            }
-          };
-        });
+    describe('login', function () {
+      var session, options;
 
-      ATT.rtc.Phone.hold();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      sessionContextStub.restore();
-    });
-  });
-  describe('hangup', function () {
-
-    //TODO need a way to get access to rtcManager
-    it('should throw an error when hangup is called before call', function () {
-      var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
-          return {
-            getCurrentCall: function () {
-              return null;
-            }
-          };
-        });
-
-      ATT.rtc.Phone.hangup();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      sessionContextStub.restore();
-    });
-
-
-    it('should publish error if end throws exception', function () {
-      var publishStub = sinon.stub(ATT.Error, 'publish'),
-        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
-          return {
-            getCallObject: function () {
-              return {
-                end: function () {
-                  throw new Error();
-                }
-              };
-            }
-          };
-        });
-
-      ATT.rtc.Phone.hangup();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      sessionContextStub.restore();
-    });
-    //Shoud be handled in rtc-manager
-    xit('should call callObject.hangup', function () {
-      var hangupSpy = sinon.spy(),
-        sessionContextStub = sinon.stub(ATT.rtc.Phone.rtcManager, 'getSession', function () {
-          return {
-            getCallObject: function () {
-              return {
-                end: hangupSpy
-              };
-            }
-          };
-        });
-
-      ATT.rtc.Phone.hangup();
-      expect(hangupSpy.called).to.equal(true);
-      sessionContextStub.restore();
-    });
-  });
-
-  describe('Mute', function () {
-    it('should have a mute method', function () {
-      assert.ok(ATT.rtc.Phone.mute);
-    });
-  });
-
-  describe('Unmute', function () {
-    it('should have a unmute method', function () {
-      assert.ok(ATT.rtc.Phone.unmute);
-    });
-  });
-
-  describe('Dial Method', function () {
-    var phone, dialOpts,
-      onCallingSpy,
-      createOutgoingCallStub;
-
-    beforeEach(function () {
-
-      phone = ATT.rtc.Phone;
-
-      dialOpts = {
-        to : '11234567890',
-        mediaConstraints : {},
-        localVideo : 'dummy',
-        remoteVideo : 'dummy',
-        callbacks : {}
-      };
-    });
-
-    it('dial method should have all the parameters needed to dial', function () {
-      var params = {};
-      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
-
-      params = {mediaConstraints : {}, localVideo : 'dummy', remoteVideo : 'dummy', callbacks : {} };
-      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
-
-      params = {to : '11234567890', localVideo : 'dummy', remoteVideo : 'dummy', callbacks : {} };
-      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
-
-      params = {to : '11234567890', mediaConstraints : {}, remoteVideo : 'dummy', callbacks : {} };
-      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
-
-      params = {to : '11234567890', mediaConstraints : {}, localVideo : 'dummy', callbacks : {} };
-      expect(ATT.rtc.Phone.dial.bind(ATT.rtc.Phone, params)).to.throw(TypeError);
-    });
-
-
-
-    it('should trigger `onConnecting` while dialing');
-
-    xit('should trigger the `onCalling` if dial is successful', function (done) {
-      // stub the resourceManager to force successful creation of the call
-      createOutgoingCallStub = sinon.stub(phone.callManager, 'CreateOutgoingCall', function () {
-        // assume it was successful, therefore execute onCallCreated
-        phone.callManager.onCallCreated();
+      beforeEach(function () {
+        options = {
+          token: '123',
+          e911Id: '123'
+        };
+        session = phone.getSession();
+      });
+      it('should exist', function () {
+        expect(phone.login).to.be.a('function');
       });
 
-      onCallingSpy = sinon.spy(function () {
-        expect(onCallingSpy.called).to.equal(true);
-        phone.hangup();
-        createOutgoingCallStub.restore();
-        done();
+      it('should throw error if no token in options', function () {
+        expect(phone.login.bind(phone)).to.throw('Options not defined');
+        expect(phone.login.bind(phone, {})).to.throw('Token not defined');
+        expect(phone.login.bind(phone, {token: '123'})).to.not.throw('Token not defined');
       });
 
-      dialOpts.callbacks.onCalling = onCallingSpy;
+      it('should register for event `ready` from Session', function () {
 
-      phone.dial(dialOpts);
-    });
+        var  onSpy = sinon.spy(session, 'on');
 
-    it('should trigger the `onCallEstablished` after `onCalling`');
+        phone.login(options);
 
-    afterEach(function () {
+        expect(onSpy.getCall(0).args[0]).to.equal('ready');
+        onSpy.restore();
+      });
+      it('should execute Session.connect', function () {
+        var connectSpy = sinon.spy(session, 'connect');
+
+        phone.login(options);
+
+        expect(connectSpy.called).to.equal(true);
+
+        connectSpy.restore();
+      });
+      it('should respond to `connected` event from Session', function () {
+        var onConnectedSpy = sinon.spy();
+
+        phone.login(options);
+
+        setTimeout(function () {
+          try {
+            expect(onConnectedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+      it('should execute onSessionReady on getting `ready` event from Session');
     });
   });
 
-  describe('Reject Call', function () {
-    it('should expose a reject method', function () {
-      assert.ok(ATT.rtc.Phone.reject);
-    });
-    it('should throw an error when reject is called before a valid rtcManager', function () {
-      var backupATT = ATT, publishStub = sinon.stub(ATT.Error, 'publish'),
-      phone = ATT.factories.createPhone({
-        rtcManager: null
-      });
-      ATT.rtc.Phone.reject();
-      expect(publishStub.called).to.equal(true);
-      publishStub.restore();
-      ATT = backupATT;
-    });
-  });
+
 });

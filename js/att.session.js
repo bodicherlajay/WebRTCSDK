@@ -198,7 +198,8 @@
 
   function on(event, handler) {
 
-    if ('connecting' !== event &&
+    if ('ready' !== event &&
+      'connecting' !== event &&
       'connected' !== event &&
       'updating' !== event &&
       'disconnecting' !== event &&
@@ -211,7 +212,15 @@
     ATT.event.subscribe(event, handler, this);
   }
 
-  function connect() {
+  function connect(options) {
+    if (!options) {
+      throw 'No input provided';
+    }
+    if (!options.token) {
+      throw 'No access token provided';
+    }
+    this.token = options.token;
+    this.e911Id = options.e911Id;
     ATT.event.publish('connecting');
   }
 
@@ -242,12 +251,6 @@
   * @param {String} e9Id The e911Id
   */
   function Session(options) {
-    if (!options) {
-      throw 'No input provided';
-    }
-    if (!options.token) {
-      throw 'No access token provided';
-    }
 
     // private attributes
     var id = null,
@@ -255,8 +258,8 @@
 
     // public attributes
     this.timeout = null;
-    this.token = options.token;
-    this.e911Id = options.e911Id;
+    this.token = null;
+    this.e911Id = null;
     this.currentCall = null;
 
     // public methods

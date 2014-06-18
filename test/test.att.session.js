@@ -7,20 +7,8 @@ describe('Session', function () {
     expect(ATT.private.Session).to.be.a('function');
   });
 
-  it('Should fail if no input options specified a session object', function () {
-    var fn = function (options) {
-      new ATT.private.Session(options);
-    };
-    expect(fn).to.throw('No input provided');
-    expect(fn.bind(null, {})).to.throw('No access token provided');
-
-  });
-
   it('Should create a session object', function () {
-    var session = new ATT.private.Session({
-      token: 'dsfgdsdf',
-      e911Id: 'sdfghfds'
-    });
+    var session = new ATT.private.Session();
     expect(session).to.be.an('object');
   });
 
@@ -94,8 +82,17 @@ describe('Session', function () {
         expect(session.connect).to.be.a('function');
       });
 
+      it('Should fail if no input options specified', function () {
+        expect(session.connect.bind(session)).to.throw('No input provided');
+        expect(session.connect.bind(session, {})).to.throw('No access token provided');
+        expect(session.connect.bind(session, {token: '123'})).to.not.throw('No access token provided');
+      });
+
       it('Should execute the onConnecting callback immediately', function (done) {
-        session.connect();
+        session.connect({
+          token: 'dsfgdsdf',
+          e911Id: 'sdfghfds'
+        });
 
         setTimeout(function () {
           try {
