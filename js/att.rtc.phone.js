@@ -586,6 +586,7 @@
     function getSession() {
       return session;
     }
+
     function login(options) {
       if (undefined === options) {
         throw new Error('Options not defined');
@@ -593,7 +594,8 @@
       if (undefined === options.token) {
         throw new Error('Token not defined');
       }
-      session.on('ready', function () {});
+
+      session.on('ready', options.onReady);
 
       session.connect(options);
     }
