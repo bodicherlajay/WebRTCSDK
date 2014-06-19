@@ -56,10 +56,11 @@ describe('Session', function () {
       onReadySpy,
       onDisconnectingSpy,
       onDisconnectedSpy,
-      resourceManagerStub;
+      resourceManagerStub,
+      onSessionReadyData;
 
     beforeEach(function () {
-
+      onSessionReadyData = {test: 'test'};
       resourceManagerStub = {
         doOperation: function (options) {
         },
@@ -77,11 +78,13 @@ describe('Session', function () {
         peerConnSvc: {},
         resourceManager: resourceManagerStub
       });
+
       connectSessionStub = sinon.stub(rtcManagerStub, 'connectSession', function (options) {
         options.onSessionConnected({
           sessionId: 'sessionid',
-          timeout: 100});
-        options.onSessionReady();
+          timeout: 100
+        });
+        options.onSessionReady(onSessionReadyData);
       });
       createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function() {
         return rtcManagerStub;
@@ -201,10 +204,10 @@ describe('Session', function () {
         })
 
         describe('onSessionReady', function () {
-          it('should publish the ready event on session', function (done) {
+          it('should publish the ready event with data on session', function (done) {
             setTimeout(function () {
               try {
-                expect(onReadySpy.called).to.equal(true);
+                expect(onReadySpy.calledWith(onSessionReadyData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);

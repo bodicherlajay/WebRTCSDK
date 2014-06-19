@@ -375,6 +375,20 @@
   * })
      */
     function connectSession(options) {
+
+      if (undefined === options) {
+        throw new Error('No options defined.');
+      }
+      if (undefined === options.token) {
+        throw new Error('No token defined.');
+      }
+      if (undefined === options.onSessionConnected) {
+        throw new Error('Callback onSessionConnected not defined.');
+      }
+      if (undefined === options.onSessionReady) {
+        throw new Error('Callback onSessionReady not defined.');
+      }
+
       logger.logDebug('createWebRTCSession');
 
       var doOperationSuccess = function (response) {
@@ -382,7 +396,11 @@
         var sessionInfo = extractSessionInformation(response);
         options.onSessionConnected(sessionInfo);
 
-        eventManager.on('listening', options.onReady);
+        eventManager.on('listening', function () {
+          options.onSessionReady({
+            sessionId: sessionInfo.sessionId
+          });
+        });
 
         eventManager.setup({
           sessionId: sessionInfo.sessionId,

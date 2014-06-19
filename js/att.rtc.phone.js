@@ -590,8 +590,8 @@
 
     var session = new ATT.rtc.Session();
 
-    session.on('ready', function () {
-      ATT.event.publish('session-ready');
+    session.on('ready', function (data) {
+      ATT.event.publish('session-ready', data);
     });
 
     function getSession() {

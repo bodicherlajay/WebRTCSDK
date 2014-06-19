@@ -300,8 +300,8 @@
             timeout: sessionInfo.timeout
           });
         },
-        onSessionReady: function () {
-          ATT.event.publish('ready');
+        onSessionReady: function (data) {
+          ATT.event.publish('ready', data);
         }
       })
     };

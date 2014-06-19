@@ -8,19 +8,26 @@ describe('RTC Manager', function () {
     resourceManagerStub,
     createEventManagerStub,
     eventManagerStub,
-    optionsForEM;
+    optionsForEM,
+    sessionInfo,
+    timeout;
 
   beforeEach(function () {
     factories = ATT.factories;
+    timeout = 1234;// time in seconds
+    sessionInfo = {
+      sessionId : '123',
+      timeout: timeout * 1000 // milliseconds
+    };
     resourceManagerStub = {
       doOperation: function (name, options) {
         var response = {
           getResponseHeader : function (name) {
             switch (name) {
               case 'Location':
-                return '123/123/123/123/123';
+                return '123/123/123/123/' + sessionInfo.sessionId;
               case 'x-expires':
-                return '1234';
+                return String(timeout); // seconds
               default:
                 break;
             }
@@ -123,11 +130,30 @@ describe('RTC Manager', function () {
         expect(rtcManager.connectSession).to.be.a('function');
       });
 
+      it('should throw error if invalid options', function () {
+        expect(rtcManager.connectSession.bind(rtcManager)).to.throw('No options defined.');
+        expect(rtcManager.connectSession.bind(rtcManager, {})).to.throw('No token defined.');
+        expect(rtcManager.connectSession.bind(rtcManager, {token: '123'})).to.throw('Callback onSessionConnected not defined.');
+        expect(rtcManager.connectSession.bind(rtcManager, {
+          token: '123',
+          onSessionConnected: function () {}
+        })).to.throw('Callback onSessionReady not defined.');
+        expect(rtcManager.connectSession.bind(rtcManager, {
+          token: '123',
+          onSessionReady: function () {}
+        })).to.throw('Callback onSessionConnected not defined.');
+        expect(rtcManager.connectSession.bind(rtcManager, {
+          token: '123',
+          onSessionConnected: function () {},
+          onSessionReady: function () {}
+        })).to.not.throw(Error);
+      });
+
       describe('Success', function () {
         var onSessionConnectedSpy,
           onSpy,
           doOperationSpy,
-          onReadySpy;
+          onSessionReadySpy;
 
         beforeEach(function () {
 
@@ -139,7 +165,7 @@ describe('RTC Manager', function () {
           };
 
           onSessionConnectedSpy = sinon.spy();
-          onReadySpy = sinon.spy();
+          onSessionReadySpy = sinon.spy();
 
           doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
           onSpy = sinon.spy(eventManagerStub, 'on');
@@ -147,7 +173,7 @@ describe('RTC Manager', function () {
           var optionsForConn = {
             token: '123',
             onSessionConnected: onSessionConnectedSpy,
-            onReady: onReadySpy
+            onSessionReady: onSessionReadySpy
           };
           rtcManager.connectSession(optionsForConn);
         });
@@ -162,8 +188,13 @@ describe('RTC Manager', function () {
           expect(doOperationSpy.getCall(0).args[0]).to.equal('createWebRTCSession');
         });
 
-        it('should execute the onSessionConnected callback', function () {
+        it('should execute the onSessionConnected callback with `sessionId` and `timeout`', function () {
+          var sessionId = onSessionConnectedSpy.getCall(0).args[0].sessionId,
+            timeout = onSessionConnectedSpy.getCall(0).args[0].timeout;
+
           expect(onSessionConnectedSpy.called).to.equal(true);
+          expect(sessionId).to.equal(sessionInfo.sessionId);
+          expect(timeout).to.equal(sessionInfo.timeout);
         });
 
         it('Should subscribe to event listening from the event manager', function () {
@@ -175,11 +206,14 @@ describe('RTC Manager', function () {
           expect(setupStub.called).to.equal(true);
         });
 
-        it('should execute onReady on receiving a `listening` event', function (done) {
+        it('should execute onSessionReady with data containing `sessionId` on receiving a `listening` event', function (done) {
+          var sessionId;
 
           setTimeout(function () {
             try {
-              expect(onReadySpy.called).to.equal(true);
+              expect(onSessionReadySpy.called).to.equal(true);
+              sessionId = onSessionReadySpy.getCall(0).args[0].sessionId;
+              expect(sessionId).to.equal(sessionInfo.sessionId);
               done();
             } catch (e) {
               done(e);

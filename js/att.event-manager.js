@@ -49,11 +49,11 @@
       ATT.utils.eventChannel.startListening({
         success: function (msg) {
           logger.logInfo(msg);
-          ATT.event.publish('listening');
         },
         error: options.onError
       });
     }
+    ATT.event.publish('listening');
   }
 
   function shutdownEventChannel() {
@@ -321,8 +321,6 @@
     logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
 
     setupEventChannel(options);
-    
-    ATT.event.publish('listening');
   }
 
   function createEventManager(options) {

@@ -144,16 +144,17 @@ describe('Phone', function () {
           connectSpy.restore();
         });
 
-        it('should trigger `onSessionReady` callback on receiving the `ready` event from Session', function (done) {
-          var connectStub = sinon.stub(session, 'connect', function () {
-            ATT.event.publish('ready');
-          });
+        it('should trigger `onSessionReady` callback with data on receiving the `ready` event from Session', function (done) {
+          var data = {test: 'test'},
+            connectStub = sinon.stub(session, 'connect', function () {
+              ATT.event.publish('ready', data);
+            });
 
           phone.login(options);
 
           setTimeout(function () {
             try {
-              expect(onSessionReadySpy.called).to.equal(true);
+              expect(onSessionReadySpy.calledWith(data)).to.equal(true);
               done();
             } catch (e) {
               done(e);

@@ -65,7 +65,7 @@ describe('Event Manager', function () {
             startListening: function (options) {
               options.success();
             }
-          }
+          };
         });
         onListeningSpy = sinon.spy();
       });
@@ -119,7 +119,7 @@ describe('Event Manager', function () {
       afterEach(function () {
         subscribeSpy.restore();
         createEvtChanStub.restore();
-      })
+      });
     });
 
   });
