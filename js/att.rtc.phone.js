@@ -614,6 +614,7 @@
     this.login = login.bind(this);
   }
 
+
   if (undefined === ATT.private) {
     throw new Error('Error exporting ATT.private.Phone.');
   }
@@ -635,4 +636,4 @@
     };
   }());
 
-}(ATT || {}));
+}());

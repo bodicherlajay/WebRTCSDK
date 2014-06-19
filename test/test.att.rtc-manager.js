@@ -38,7 +38,7 @@ describe('RTC Manager', function () {
     optionsForEM = {
       errorManager: {},
       resourceManager: resourceManagerStub
-    }
+    };
     eventManagerStub = ATT.factories.createEventManager(optionsForEM);
     createEventManagerStub = sinon.stub(ATT.factories, 'createEventManager', function () {
       return eventManagerStub;
@@ -124,7 +124,7 @@ describe('RTC Manager', function () {
       });
 
       describe('Success', function () {
-        var onSuccessSpy,
+        var onSessionConnectedSpy,
           onSpy,
           doOperationSpy,
           onReadySpy;
@@ -138,7 +138,7 @@ describe('RTC Manager', function () {
             }
           };
 
-          onSuccessSpy = sinon.spy();
+          onSessionConnectedSpy = sinon.spy();
           onReadySpy = sinon.spy();
 
           doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
@@ -146,7 +146,7 @@ describe('RTC Manager', function () {
 
           var optionsForConn = {
             token: '123',
-            onSuccess: onSuccessSpy,
+            onSessionConnected: onSessionConnectedSpy,
             onReady: onReadySpy
           };
           rtcManager.connectSession(optionsForConn);
@@ -162,8 +162,8 @@ describe('RTC Manager', function () {
           expect(doOperationSpy.getCall(0).args[0]).to.equal('createWebRTCSession');
         });
 
-        it('should execute the onSuccess callback', function () {
-          expect(onSuccessSpy.called).to.equal(true);
+        it('should execute the onSessionConnected callback', function () {
+          expect(onSessionConnectedSpy.called).to.equal(true);
         });
 
         it('Should subscribe to event listening from the event manager', function () {

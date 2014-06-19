@@ -75,16 +75,16 @@
     logger.logDebug('extractSessionInformation');
 
     var sessionId = null,
-        expiration = null;
+        timeout = null;
 
     if (responseObject) {
       if (responseObject.getResponseHeader('Location')) {
         sessionId = responseObject.getResponseHeader('Location').split('/')[4];
       }
       if (responseObject.getResponseHeader('x-expires')) {
-        expiration = responseObject.getResponseHeader('x-expires');
-        expiration = Number(expiration);
-        expiration = isNaN(expiration) ? 0 : expiration * 1000; // convert to ms
+        timeout = responseObject.getResponseHeader('x-expires');
+        timeout = Number(timeout);
+        timeout = isNaN(timeout) ? 0 : timeout * 1000; // convert to ms
       }
     }
 
@@ -94,7 +94,7 @@
 
     return {
       sessionId: sessionId,
-      expiration: expiration
+      timeout: timeout
     };
   }
 
@@ -380,7 +380,7 @@
       var doOperationSuccess = function (response) {
         logger.logInfo('Successfully created web rtc session on blackflag');
         var sessionInfo = extractSessionInformation(response);
-        options.onSuccess(sessionInfo);
+        options.onSessionConnected(sessionInfo);
 
         eventManager.on('listening', options.onReady);
 

@@ -79,26 +79,6 @@ Env = (function (app) {
       rest: {}
     };
     restOperationsObject = Env.rtc.rest;
-
-    // set the public api namespace object.
-    ATT.utils.createNamespace(app, 'rtc.Phone');
-
-    apiObject = ATT.rtc.Phone;
-
-    // configure publci apis
-    app.configurePublicAPIs();
-  };
-
-  /**
-   * Adds public SDK methods.
-   * @param name
-   * @param method
-   */
-  addPublicMethod = function (name, method) {
-    logger.logTrace('adding public method', name);
-    var apiObj = getAPIObject();
-
-    apiObj[name] = method;
   };
 
   module.getInstance = function () {
@@ -272,6 +252,7 @@ Env = (function (app) {
     configuredRESTOperation.restConfig = restConfig; // testability.
     return configuredRESTOperation;
   };
+
 
   module.configure = configure;
 
