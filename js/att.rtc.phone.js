@@ -614,9 +614,25 @@
     this.login = login.bind(this);
   }
 
+  if (undefined === ATT.private) {
+    throw new Error('Error exporting ATT.private.Phone.');
+  }
+  ATT.private.Phone = Phone;
+
   if (undefined === ATT.rtc) {
     throw new Error('Error exporting ATT.rtc.Phone.');
   }
-  ATT.rtc.Phone= Phone;
+  ATT.rtc.Phone = (function () {
+    var instance;
+
+    return {
+      getPhone: function () {
+        if (undefined === instance) {
+          instance = new ATT.private.Phone();
+        }
+        return instance;
+      }
+    };
+  }());
 
 }(ATT || {}));
