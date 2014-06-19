@@ -4,7 +4,7 @@
 //Dependency: ATT.logManager
 
 
-(function (app) {
+(function () {
   'use strict';
 
   var factories = ATT.factories,
@@ -106,7 +106,7 @@
   function keepAlive(args) {
     logger.logDebug('keepSessionAlive');
 
-    var keepAliveDuration = app.appConfig.KeepAlive || this.getExpiration(), // developer configured duration overrides the one set by API server
+    var keepAliveDuration = ATT.appConfig.KeepAlive || this.getExpiration(), // developer configured duration overrides the one set by API server
       timeBeforeExpiration = 5 * 60 * 1000, // refresh 5 minutes before expiration
       timeout = (keepAliveDuration > timeBeforeExpiration) ? (keepAliveDuration - timeBeforeExpiration) : keepAliveDuration;
 
@@ -173,7 +173,7 @@
     logger.logDebug('startCall');
     var session = this;
 
-    options.factories.createCall(app.utils.extend(options, {
+    options.factories.createCall(ATT.utils.extend(options, {
       session: session,  // TODO: this should not be needed once we refactor UM and PC 
       onCallCreated: function (callObj) {
         try {
@@ -381,11 +381,11 @@
     });
   }
 
-  app.factories.createSession = createSession;
+  factories.createSession = createSession;
 
-  if (undefined === ATT.private) {
-    throw Error('Cannot export Session. ATT.private is undefined');
+  if (undefined === ATT.rtc) {
+    throw Error('Cannot export Session. ATT.rtc is undefined');
   }
-  ATT.private.Session = Session;
+  ATT.rtc.Session = Session;
 
-}(ATT || {}));
+}());

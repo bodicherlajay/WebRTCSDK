@@ -5,15 +5,15 @@
 //Dependency: ATT.logManager
 
 
-(function (app) {
+(function () {
   'use strict';
 
-  var errMgr,
+  var factories = ATT.factories,
+    errMgr,
     resourceManager,
     userMediaSvc,
     peerConnSvc,
-    logger,
-    eventEmitter = ATT.event;
+    logger;
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -68,9 +68,9 @@
 
   function handleCallMediaModifications(event, data) {
     peerConnSvc.setRemoteAndCreateAnswer(data.sdp, data.modId);
-    if (event.state === app.CallStatus.HOLD) {
+    if (event.state === ATT.CallStatus.HOLD) {
       userMediaSvc.muteStream();
-    } else if (event.state === app.CallStatus.RESUMED) {
+    } else if (event.state === ATT.CallStatus.RESUMED) {
       userMediaSvc.unmuteStream();
     }
   }
@@ -82,10 +82,10 @@
     if (data.sdp) {
       peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
     }
-    if (event.state === app.CallStatus.HOLD) {
+    if (event.state === ATT.CallStatus.HOLD) {
       userMediaSvc.holdVideoStream();
       userMediaSvc.muteStream();
-    } else if (event.state === app.CallStatus.RESUMED) {
+    } else if (event.state === ATT.CallStatus.RESUMED) {
       userMediaSvc.resumeVideoStream();
       userMediaSvc.unmuteStream();
     }
@@ -105,15 +105,15 @@
         audio: true,
         video: mediaType === 'video'
       };
-    app.utils.extend (options, {
-      type: app.CallTypes.INCOMING,
+    ATT.utils.extend (options, {
+      type: ATT.CallTypes.INCOMING,
       from: from,
       mediaConstraints: mediaConstraints
     });
 
-    userMediaSvc.getUserMedia(app.utils.extend(options, {
+    userMediaSvc.getUserMedia(ATT.utils.extend(options, {
       onUserMedia: function(userMedia) {
-        app.utils.extend(options, userMedia);
+        ATT.utils.extend(options, userMedia);
         peerConnSvc.initPeerConnection(options);
       },
       onError: handleError.bind(this, 'AnswerCall', options.onError)
@@ -310,9 +310,9 @@
     logger.logInfo('Creating outgoing call');
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
-    userMediaSvc.getUserMedia(app.utils.extend(options, {
+    userMediaSvc.getUserMedia(ATT.utils.extend(options, {
       onUserMedia: function(userMedia) {
-        app.utils.extend(options, userMedia);
+        ATT.utils.extend(options, userMedia);
         peerConnSvc.initPeerConnection(options);
       },
       onError: handleError.bind(this, 'createOutgoingCall', options.onError)
@@ -344,22 +344,22 @@
 
     logger.logDebug('createCall');
 
-    if (options.type === app.CallTypes.INCOMING) {
-      createIncomingCall(app.utils.extend(options, {
+    if (options.type === ATT.CallTypes.INCOMING) {
+      createIncomingCall(ATT.utils.extend(options, {
         onIncomingCallCreated: options.onCallCreated
       }));
     } else {
-      createOutgoingCall(app.utils.extend(options, {
+      createOutgoingCall(ATT.utils.extend(options, {
         onOutgoingCallCreated: options.onCallCreated
       }));
     }
   }
 
-  app.factories.createCall = createCall;
+  factories.createCall = createCall;
 
-  if (undefined === ATT.private) {
-    throw Error('Cannot export Call. ATT.private is undefined');
+  if (undefined === ATT.rtc) {
+    throw Error('Cannot export Call. ATT.rtc is undefined');
   }
-  ATT.private.Call = Call;
+  ATT.rtc.Call = Call;
 
-}(ATT || {}));
+}());

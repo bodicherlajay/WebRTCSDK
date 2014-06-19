@@ -3,13 +3,13 @@
 
 describe('Call', function () {
   
-  it('Should have a public constructor under ATT.private', function () {
-    expect(ATT.private.Call).to.be.a('function');
+  it('Should have a public constructor under ATT.rtc', function () {
+    expect(ATT.rtc.Call).to.be.a('function');
   });
 
   it('Should fail if no input options specified a call object', function () {
     var fn = function (options) {
-      new ATT.private.Call(options);
+      new ATT.rtc.Call(options);
     };
     expect(fn).to.throw('No input provided');
     expect(fn.bind(null, {})).to.throw('No peer provided');
@@ -24,7 +24,7 @@ describe('Call', function () {
       },
       call;
 
-    call = new ATT.private.Call(options);
+    call = new ATT.rtc.Call(options);
 
     expect(call).to.be.an('object');
     expect(call.id).to.equal(options.id);
@@ -41,7 +41,7 @@ describe('Call', function () {
       onDisconnectedSpy;
 
     beforeEach(function () {
-      call = new ATT.private.Call({
+      call = new ATT.rtc.Call({
         peer: '12345',
         mediaType: 'video'
       });

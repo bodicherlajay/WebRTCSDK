@@ -577,11 +577,18 @@
 //    }
 //  }
 
+  function on(event, handler) {
+    if ('session-ready' !== event) {
+      throw new Error('Event not defined')
+    }
 
+    ATT.event.unsubscribe(event, handler);
+    ATT.event.subscribe(event, handler, this);
+  }
 
   function Phone(options) {
 
-    var session = new ATT.private.Session();
+    var session = new ATT.rtc.Session();
 
     session.on('ready', function () {
       ATT.event.publish('session-ready');
@@ -602,13 +609,14 @@
       session.connect(options);
     }
 
+    this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
   }
 
-  if (undefined === ATT.private) {
-    throw new Error('Error exporting ATT.private.Phone.');
+  if (undefined === ATT.rtc) {
+    throw new Error('Error exporting ATT.rtc.Phone.');
   }
-  ATT.private.Phone= Phone;
+  ATT.rtc.Phone= Phone;
 
 }(ATT || {}));

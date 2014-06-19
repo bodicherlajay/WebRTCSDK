@@ -64,21 +64,6 @@
     }
   }, ATT.utils);
 
-  resourceManager = Env.resourceManager.getInstance();
-  rtcEvent = ATT.RTCEvent.getInstance();
-
-
-  eventManager = ATT.factories.createEventManager({
-    errorManager: ATT.Error,
-    resourceManager: resourceManager,
-    rtcEvent: rtcEvent
-  });
-
-  ATT.Phone = ATT.factories.createPhone({
-    factories: ATT.factories,
-    resourceManager: resourceManager
-  });
-
   if (undefined !== ATT.errorDictionary) {
     logger.logTrace("Error Dictionary created.");
   }

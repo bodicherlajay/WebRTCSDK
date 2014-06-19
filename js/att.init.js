@@ -20,6 +20,8 @@
     RESTClient: {
     },
     event: {
+    },
+    rtc: {
     }
   };
 

@@ -2,26 +2,26 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert*/
 
-describe.only('Phone', function () {
+describe('Phone', function () {
   'use strict';
 
   var phone;
 
-  it('should export ATT.private.Phone', function () {
-    expect(ATT.private.Phone).to.be.a('function');
+  it('should export ATT.rtc.Phone', function () {
+    expect(ATT.rtc.Phone).to.be.a('function');
   });
 
   describe('Constructor', function () {
     var sessionConstructorSpy;
 
     it('should create a Phone object', function () {
-      phone = new ATT.private.Phone();
-      expect(phone instanceof ATT.private.Phone).to.equal(true);
+      phone = new ATT.rtc.Phone();
+      expect(phone instanceof ATT.rtc.Phone).to.equal(true);
     });
 
     it('should create a session on the Phone object', function () {
-      sessionConstructorSpy = sinon.spy(ATT.private, 'Session');
-      phone = new ATT.private.Phone();
+      sessionConstructorSpy = sinon.spy(ATT.rtc, 'Session');
+      phone = new ATT.rtc.Phone();
 
       expect(sessionConstructorSpy.called).to.equal(true);
 
@@ -30,13 +30,13 @@ describe.only('Phone', function () {
 
     it('should register for event `ready` from Session', function () {
       var onSpy = sinon.spy(),
-        sessionConstructorStub = sinon.stub(ATT.private, 'Session', function () {
+        sessionConstructorStub = sinon.stub(ATT.rtc, 'Session', function () {
           return {
             on: onSpy
           };
         });
 
-      phone = new ATT.private.Phone();
+      phone = new ATT.rtc.Phone();
 
       expect(onSpy.called).to.equal(true);
       expect(onSpy.getCall(0).args[0]).to.equal('ready');
@@ -50,7 +50,7 @@ describe.only('Phone', function () {
     var phone;
 
     beforeEach(function () {
-      phone = new ATT.private.Phone();
+      phone = new ATT.rtc.Phone();
     });
 
     describe('getSession', function () {
@@ -59,34 +59,48 @@ describe.only('Phone', function () {
         expect(phone.getSession).to.be.a('function');
       });
 
-      it('should return an instance of ATT.private.Session', function () {
+      it('should return an instance of ATT.rtc.Session', function () {
         var session = phone.getSession();
-        expect(session instanceof ATT.private.Session).to.equal(true);
+        expect(session instanceof ATT.rtc.Session).to.equal(true);
       });
 
     });
 
     describe('on', function () {
 
-      it('should exist');
+      it('should exist', function () {
+        expect(phone.on).to.be.a('function');
+      });
 
-      it('Should fail if event is not recognized');
+      it('Should fail if event is not recognized', function () {
+        expect(phone.on.bind(phone, 'unknown')).to.throw(Error);
+      });
 
-      it('Should register callback for known events');
+      it('Should register callback for known events', function () {
+        var fn = sinon.spy(),
+          subscribeSpy = sinon.spy(ATT.event, 'subscribe');
+
+        expect(phone.on.bind(phone, 'session-ready', fn)).to.not.throw(Error);
+        expect(subscribeSpy.called).to.equal(true);
+
+        subscribeSpy.restore();
+      });
     });
 
     describe('login', function () {
       var session,
         options,
-        onReadySpy;
+        onSessionReadySpy;
 
       beforeEach(function () {
-        onReadySpy = sinon.spy();
+        onSessionReadySpy = sinon.spy();
+
         options = {
           token: '123',
           e911Id: '123'
         };
 
+        phone.on('session-ready', onSessionReadySpy);
         session = phone.getSession();
       });
 
@@ -112,17 +126,23 @@ describe.only('Phone', function () {
         connectSpy.restore();
       });
 
-      it('should trigger `session-ready` callback on receiving the `ready` event from Session', function (done) {
+      it('should trigger `onSessionReady` callback on receiving the `ready` event from Session', function (done) {
+        var connectStub = sinon.stub(session, 'connect', function () {
+          ATT.event.publish('ready');
+        });
+
         phone.login(options);
 
         setTimeout(function () {
           try {
-            expect(onReadySpy.called).to.equal(true);
+            expect(onSessionReadySpy.called).to.equal(true);
             done();
           } catch (e) {
             done(e);
           }
         }, 100);
+
+        connectStub.restore();
       });
 
     });

@@ -91,7 +91,6 @@ describe('RTC Manager', function () {
       peerConnSvc,
       setupStub;
 
-
     beforeEach(function () {
       var optionsForRTCM;
 

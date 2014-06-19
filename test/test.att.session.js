@@ -20,8 +20,8 @@ describe('Session', function () {
   afterEach(function() {
   });
 
-  it('Should have a public constructor under ATT.private', function () {
-    expect(ATT.private.Session).to.be.a('function');
+  it('Should have a public constructor under ATT.rtc', function () {
+    expect(ATT.rtc.Session).to.be.a('function');
   });
 
   describe('Constructor', function () {
@@ -30,7 +30,7 @@ describe('Session', function () {
 
     beforeEach(function () {
       createRTCManagerSpy = sinon.spy(ATT.factories, 'createRTCManager');
-      session = new ATT.private.Session(options);
+      session = new ATT.rtc.Session(options);
     });
 
     afterEach(function () {
@@ -38,7 +38,7 @@ describe('Session', function () {
     });
 
     it('Should create a session object', function () {
-      expect(session instanceof ATT.private.Session).to.equal(true);
+      expect(session instanceof ATT.rtc.Session).to.equal(true);
     });
 
     it('should call ATT.factories.createRTCManager', function () {
@@ -86,15 +86,15 @@ describe('Session', function () {
       createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function() {
         return rtcManagerStub;
       });
-      session = new ATT.private.Session(options);
+      session = new ATT.rtc.Session(options);
 
-      call = new ATT.private.Call({
+      call = new ATT.rtc.Call({
         id: '12345',
         peer: '12345',
         mediaType: 'audio'
       });
 
-      secondCall = new ATT.private.Call({
+      secondCall = new ATT.rtc.Call({
         id: '98765',
         peer: '12452',
         mediaType: 'video'
