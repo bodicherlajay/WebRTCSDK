@@ -7,9 +7,9 @@
 (function () {
   'use strict';
 
-  var errMgr,
+  var factories = ATT.factories,
+    errMgr,
     session,
-    eventManager,
     rtcEvent,
     resourceManager,
     userMediaSvc,
@@ -98,54 +98,7 @@
     };
   }
 
-  /**
-  * start a new session
-  * @param {Object} options The options
-  * rtcManager.connectSession({
-  *   token: 'abcd'
-  *   e911Id: 'e911Id'
-  * })
-  */
-  function connectSession(options) {
-    logger.logDebug('createWebRTCSession');
 
-    var doOperationSuccess = function (response) {
-      logger.logInfo('Successfully created web rtc session on blackflag');
-      var sessionInfo = extractSessionInformation(response);
-      options.onSuccess(sessionInfo);
-
-      eventManager.on('listening', function () {
-
-      });
-
-      eventManager.setup({
-        sessionId: sessionInfo.sessionId,
-        token: options.token
-      });
-    };
-
-    resourceManager.doOperation('createWebRTCSession', {
-      data: {
-        'session': {
-          'mediaType': 'dtls-srtp',
-          'ice': 'true',
-          'services': [
-            'ip_voice_call',
-            'ip_video_call'
-          ]
-        }
-      },
-      params: {
-        headers: {
-          'Authorization': options.token,
-          'x-e911Id': options.e911Id || '',
-          'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
-        }
-      },
-      success: doOperationSuccess
-    });
-
-  }
 
   function getSession() {
     return session;
@@ -394,17 +347,71 @@
   * })
   */
   function createRTCManager(options) {
+    var eventManager;
+
     errMgr = options.errorManager;
     resourceManager = options.resourceManager;
     rtcEvent = options.rtcEvent;
     userMediaSvc = options.userMediaSvc;
     peerConnSvc = options.peerConnSvc;
-    eventManager = options.eventManager;
+
 
     logger = resourceManager.getLogger("RTCManager");
 
     logger.logDebug('createRTCManager');
 
+
+    eventManager = factories.createEventManager({
+      resourceManager: resourceManager,
+      errorManager: errMgr
+    });
+
+    /**
+     * start a new session
+     * @param {Object} options The options
+     * rtcManager.connectSession({
+  *   token: 'abcd'
+  *   e911Id: 'e911Id'
+  * })
+     */
+    function connectSession(options) {
+      logger.logDebug('createWebRTCSession');
+
+      var doOperationSuccess = function (response) {
+        logger.logInfo('Successfully created web rtc session on blackflag');
+        var sessionInfo = extractSessionInformation(response);
+        options.onSuccess(sessionInfo);
+
+        eventManager.on('listening', options.onReady);
+
+        eventManager.setup({
+          sessionId: sessionInfo.sessionId,
+          token: options.token
+        });
+      };
+
+      resourceManager.doOperation('createWebRTCSession', {
+        data: {
+          'session': {
+            'mediaType': 'dtls-srtp',
+            'ice': 'true',
+            'services': [
+              'ip_voice_call',
+              'ip_video_call'
+            ]
+          }
+        },
+        params: {
+          headers: {
+            'Authorization': options.token,
+            'x-e911Id': options.e911Id || '',
+            'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
+          }
+        },
+        success: doOperationSuccess
+      });
+
+    }
 
     return {
       connectSession: connectSession,

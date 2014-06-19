@@ -583,6 +583,10 @@
 
     var session = new ATT.private.Session();
 
+    session.on('ready', function () {
+      ATT.event.publish('session-ready');
+    });
+
     function getSession() {
       return session;
     }
@@ -594,8 +598,6 @@
       if (undefined === options.token) {
         throw new Error('Token not defined');
       }
-
-      session.on('ready', options.onReady);
 
       session.connect(options);
     }

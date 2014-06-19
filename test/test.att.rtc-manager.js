@@ -4,26 +4,57 @@
 describe('RTC Manager', function () {
   'use strict';
 
-  var factories = ATT.factories,
-    resourceManagerStub;
+  var factories,
+    resourceManagerStub,
+    createEventManagerStub,
+    eventManagerStub,
+    optionsForEM;
 
-  resourceManagerStub = {
-    getLogger : function () {
-      return {
-        logDebug : function () {},
-        logInfo: function () {}
-      };
+  beforeEach(function () {
+    factories = ATT.factories;
+    resourceManagerStub = {
+      doOperation: function (name, options) {
+        var response = {
+          getResponseHeader : function (name) {
+            switch (name) {
+              case 'Location':
+                return '123/123/123/123/123';
+              case 'x-expires':
+                return '1234';
+              default:
+                break;
+            }
+          }
+        };
+        options.success(response);
+      },
+      getLogger : function () {
+        return {
+          logDebug : function () {},
+          logInfo: function () {}
+        };
+      }
+    };
+    optionsForEM = {
+      errorManager: {},
+      resourceManager: resourceManagerStub
     }
-  };
-
-  describe('createRTCManager', function () {
-    it('should exist on ATT.factories', function () {
-      expect(ATT.factories.createRTCManager).to.be.a('function');
+    eventManagerStub = ATT.factories.createEventManager(optionsForEM);
+    createEventManagerStub = sinon.stub(ATT.factories, 'createEventManager', function () {
+      return eventManagerStub;
     });
 
-    it('should return an instance of RTCManager', function () {
+  });
 
-     var options = {
+  afterEach(function () {
+    createEventManagerStub.restore();
+  });
+
+  describe('createRTCManager', function () {
+    var options;
+
+    beforeEach(function () {
+      options = {
         userMediaSvc: {},
         rtcEvent: {},
         errorManager: {},
@@ -31,53 +62,61 @@ describe('RTC Manager', function () {
         resourceManager: resourceManagerStub
       };
 
-      expect(factories.createRTCManager.bind(factories, options)).to.not.throw(Error);
+    });
+
+    it('should exist on ATT.factories', function () {
+      expect(factories.createRTCManager).to.be.a('function');
+    });
+
+    it('should return an object', function () {
       expect(factories.createRTCManager(options)).to.be.an('object');
+    });
+
+    it('should not throw an error', function () {
+      expect(factories.createRTCManager.bind(factories, options)).to.not.throw(Error);
+    });
+
+    it('should call ATT.factories.createEventManager', function () {
+      factories.createRTCManager(options);
+      expect(createEventManagerStub.called).to.equal(true);
+
     });
   });
 
   describe('Methods', function () {
     var rtcManager,
-      eventManager,
       resourceManager,
       rtcEvent,
       userMediaSvc,
       peerConnSvc,
-      factories,
       setupStub;
 
 
     beforeEach(function () {
-      var optionsForEM = {
-          rtcEvent: {},
-          errorManager: {},
-          resourceManager: resourceManagerStub
-        },
-        optionsForRTCM;
+      var optionsForRTCM;
 
-      eventManager = ATT.factories.createEventManager(optionsForEM);
-      setupStub = sinon.stub(eventManager, 'setup', function () {
+      setupStub = sinon.stub(eventManagerStub, 'setup', function () {
         ATT.event.publish('listening');
       });
 
-      factories = ATT.factories;
-      resourceManager = Env.resourceManager.getInstance();
       rtcEvent = ATT.RTCEvent.getInstance();
       userMediaSvc = ATT.UserMediaService;
       peerConnSvc = ATT.PeerConnectionService;
 
       optionsForRTCM = {
         errorManager: ATT.Error,
-        resourceManager: resourceManager,
+        resourceManager: resourceManagerStub,
         rtcEvent: rtcEvent,
         userMediaSvc: userMediaSvc,
-        peerConnSvc: peerConnSvc,
-        eventManager: eventManager,
-        factories: factories
+        peerConnSvc: peerConnSvc
       };
 
-      rtcManager = ATT.factories.createRTCManager(optionsForRTCM);
+      rtcManager = factories.createRTCManager(optionsForRTCM);
 
+    });
+
+    afterEach(function () {
+      setupStub.restore();
     });
 
     describe('connectSession', function () {
@@ -86,9 +125,9 @@ describe('RTC Manager', function () {
       });
 
       describe('Success', function () {
-        var doOperationStub,
-          onSuccessSpy,
+        var onSuccessSpy,
           onSpy,
+          doOperationSpy,
           onReadySpy;
 
         beforeEach(function () {
@@ -100,25 +139,11 @@ describe('RTC Manager', function () {
             }
           };
 
-          doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) {
-            var response = {
-              getResponseHeader : function (name) {
-                switch (name) {
-                case 'Location':
-                  return '123/123/123/123/123';
-                case 'x-expires':
-                  return '1234';
-                default:
-                  break;
-                }
-              }
-            };
-            options.success(response);
-          });
           onSuccessSpy = sinon.spy();
           onReadySpy = sinon.spy();
 
-          onSpy = sinon.spy(eventManager, 'on');
+          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+          onSpy = sinon.spy(eventManagerStub, 'on');
 
           var optionsForConn = {
             token: '123',
@@ -128,8 +153,14 @@ describe('RTC Manager', function () {
           rtcManager.connectSession(optionsForConn);
         });
 
+        afterEach(function () {
+          onSpy.restore();
+          doOperationSpy.restore();
+        });
+
         it('should call doOperation on the resourceManager with `createWebRTCSession`', function () {
-          expect(doOperationStub.calledWith('createWebRTCSession')).to.equal(true);
+          expect(doOperationSpy.called).to.equal(true);
+          expect(doOperationSpy.getCall(0).args[0]).to.equal('createWebRTCSession');
         });
 
         it('should execute the onSuccess callback', function () {
@@ -155,12 +186,6 @@ describe('RTC Manager', function () {
               done(e);
             }
           }, 100);
-        });
-
-        afterEach(function () {
-          doOperationStub.restore();
-          onSpy.restore();
-          setupStub.restore();
         });
 
       });

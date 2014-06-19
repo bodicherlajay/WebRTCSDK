@@ -244,7 +244,14 @@
     // dependencies
     var rtcManager;
 
-    rtcManager = factories.createRTCManager({});
+    rtcManager = factories.createRTCManager({
+      errMgr : ATT.error,
+      resourceManager : Env.resourceManager.getInstance(),
+      rtcEvent : ATT.RTCEvent,
+      userMediaSvc : ATT.UserMediaService,
+      peerConnSvc : ATT.PeerConnectionService,
+      eventManager : {}
+    });
 
     // private attributes
     var id = null,

@@ -1,48 +1,51 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, Env, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe.only('Session', function () {
+describe('Session', function () {
   'use strict';
 
   var options,
     session,
     rtcManagerStub,
     createRTCMgrStub,
-    connectSessionSpy;
+    connectSessionStub;
 
   beforeEach(function() {
     options = {
       token: 'dsfgdsdf',
       e911Id: 'sdfghfds'
     };
-    rtcManagerStub = {
-      connectSession: function (options) {
-        options.onSessionConnected({
-          sessionId: 'sessionid',
-          timeout: 100
-        });
-        options.onSessionReady();
-      }
-    };
-    connectSessionSpy = sinon.spy(rtcManagerStub, 'connectSession');
-    createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function() {
-      return rtcManagerStub;
-    });
-    session = new ATT.private.Session(options);
   });
 
   afterEach(function() {
-    createRTCMgrStub.restore();
-    connectSessionSpy.restore();
   });
 
   it('Should have a public constructor under ATT.private', function () {
     expect(ATT.private.Session).to.be.a('function');
   });
 
-  it('Should create a session object', function () {
-    expect(session).to.be.an('object');
+  describe('Constructor', function () {
+    var createRTCManagerSpy,
+      session;
+
+    beforeEach(function () {
+      createRTCManagerSpy = sinon.spy(ATT.factories, 'createRTCManager');
+      session = new ATT.private.Session(options);
+    });
+
+    afterEach(function () {
+      createRTCManagerSpy.restore();
+    });
+
+    it('Should create a session object', function () {
+      expect(session instanceof ATT.private.Session).to.equal(true);
+    });
+
+    it('should call ATT.factories.createRTCManager', function () {
+      expect(createRTCManagerSpy.called).to.equal(true);
+    });
   });
+
 
   describe('method', function () {
     var call,
@@ -52,9 +55,39 @@ describe.only('Session', function () {
       onUpdatingSpy,
       onReadySpy,
       onDisconnectingSpy,
-      onDisconnectedSpy;
+      onDisconnectedSpy,
+      resourceManagerStub;
 
     beforeEach(function () {
+
+      resourceManagerStub = {
+        doOperation: function (options) {
+        },
+        getLogger : function () {
+          return {
+            logDebug : function () {},
+            logInfo: function () {}
+          };
+        }
+      };
+      rtcManagerStub = ATT.factories.createRTCManager({
+        userMediaSvc: {},
+        rtcEvent: {},
+        errorManager: {},
+        peerConnSvc: {},
+        resourceManager: resourceManagerStub
+      });
+      connectSessionStub = sinon.stub(rtcManagerStub, 'connectSession', function (options) {
+        options.onSessionConnected({
+          sessionId: 'sessionid',
+          timeout: 100});
+        options.onSessionReady();
+      });
+      createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function() {
+        return rtcManagerStub;
+      });
+      session = new ATT.private.Session(options);
+
       call = new ATT.private.Call({
         id: '12345',
         peer: '12345',
@@ -80,6 +113,11 @@ describe.only('Session', function () {
       session.on('ready', onReadySpy);
       session.on('disconnecting', onDisconnectingSpy);
       session.on('disconnected', onDisconnectedSpy);
+    });
+
+    afterEach(function () {
+      createRTCMgrStub.restore();
+      connectSessionStub.restore();
     });
 
     describe('On', function () {
@@ -133,7 +171,7 @@ describe.only('Session', function () {
       it('should call connectSession on RTC Manager', function () {
         session.connect(options);
 
-        expect(connectSessionSpy.called).to.equal(true);
+        expect(connectSessionStub.called).to.equal(true);
       });
 
       describe('Connect session callbacks', function () {

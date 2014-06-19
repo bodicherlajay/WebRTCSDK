@@ -2,7 +2,7 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert*/
 
-describe('Phone', function () {
+describe.only('Phone', function () {
   'use strict';
 
   var phone;
@@ -11,30 +11,47 @@ describe('Phone', function () {
     expect(ATT.private.Phone).to.be.a('function');
   });
 
-
   describe('Constructor', function () {
-    var sessionConstructorStub;
-
-    beforeEach(function () {
-      sessionConstructorStub = sinon.stub(ATT.private, 'Session');
-      phone = new ATT.private.Phone();
-    });
+    var sessionConstructorSpy;
 
     it('should create a Phone object', function () {
+      phone = new ATT.private.Phone();
       expect(phone instanceof ATT.private.Phone).to.equal(true);
     });
 
     it('should create a session on the Phone object', function () {
-      expect(sessionConstructorStub.called).to.equal(true);
+      sessionConstructorSpy = sinon.spy(ATT.private, 'Session');
+      phone = new ATT.private.Phone();
+
+      expect(sessionConstructorSpy.called).to.equal(true);
+
+      sessionConstructorSpy.restore();
     });
 
-    afterEach(function () {
+    it('should register for event `ready` from Session', function () {
+      var onSpy = sinon.spy(),
+        sessionConstructorStub = sinon.stub(ATT.private, 'Session', function () {
+          return {
+            on: onSpy
+          };
+        });
+
+      phone = new ATT.private.Phone();
+
+      expect(onSpy.called).to.equal(true);
+      expect(onSpy.getCall(0).args[0]).to.equal('ready');
+
       sessionConstructorStub.restore();
     });
 
   });
 
   describe('Methods', function () {
+    var phone;
+
+    beforeEach(function () {
+      phone = new ATT.private.Phone();
+    });
 
     describe('getSession', function () {
 
@@ -49,6 +66,15 @@ describe('Phone', function () {
 
     });
 
+    describe('on', function () {
+
+      it('should exist');
+
+      it('Should fail if event is not recognized');
+
+      it('Should register callback for known events');
+    });
+
     describe('login', function () {
       var session,
         options,
@@ -58,9 +84,9 @@ describe('Phone', function () {
         onReadySpy = sinon.spy();
         options = {
           token: '123',
-          e911Id: '123',
-          onReady: onReadySpy
+          e911Id: '123'
         };
+
         session = phone.getSession();
       });
 
@@ -76,16 +102,6 @@ describe('Phone', function () {
         })).to.not.throw('Token not defined');
       });
 
-      it('should register for event `ready` from Session', function () {
-        var  onSpy = sinon.spy(session, 'on');
-
-        phone.login(options);
-
-        expect(onSpy.getCall(0).args[0]).to.equal('ready');
-
-        onSpy.restore();
-      });
-
       it('should execute Session.connect', function () {
         var connectSpy = sinon.spy(session, 'connect');
 
@@ -96,7 +112,7 @@ describe('Phone', function () {
         connectSpy.restore();
       });
 
-      it('should trigger `onReady` callback on receiving the `ready` event from Session', function (done) {
+      it('should trigger `session-ready` callback on receiving the `ready` event from Session', function (done) {
         phone.login(options);
 
         setTimeout(function () {
