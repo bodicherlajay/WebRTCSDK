@@ -579,7 +579,7 @@
 
 
 
-  function createPhone(options) {
+  function Phone(options) {
 
     var session = new ATT.private.Session();
 
@@ -600,12 +600,13 @@
       session.connect(options);
     }
 
-    return {
-      getSession: getSession,
-      login: login
-    };
+    this.getSession = getSession.bind(this);
+    this.login = login.bind(this);
   }
 
-  ATT.factories.createPhone = createPhone;
+  if (undefined === ATT.private) {
+    throw new Error('Error exporting ATT.private.Phone.');
+  }
+  ATT.private.Phone= Phone;
 
 }(ATT || {}));

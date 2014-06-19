@@ -7,28 +7,29 @@ describe('Phone', function () {
 
   var phone;
 
-  it('should export ATT.factories.createPhone', function () {
-    expect(ATT.factories.createPhone).to.be.a('function');
+  it('should export ATT.private.Phone', function () {
+    expect(ATT.private.Phone).to.be.a('function');
   });
 
-  describe('createPhone', function () {
-    var sessionConstructorSpy;
+
+  describe('Constructor', function () {
+    var sessionConstructorStub;
 
     beforeEach(function () {
-      sessionConstructorSpy = sinon.spy(ATT.private, 'Session');
-      phone = ATT.factories.createPhone();
+      sessionConstructorStub = sinon.stub(ATT.private, 'Session');
+      phone = new ATT.private.Phone();
     });
 
     it('should create a Phone object', function () {
-      expect(phone).to.be.an('object');
+      expect(phone instanceof ATT.private.Phone).to.equal(true);
     });
 
     it('should create a session on the Phone object', function () {
-      expect(sessionConstructorSpy.called).to.equal(true);
+      expect(sessionConstructorStub.called).to.equal(true);
     });
 
     afterEach(function () {
-      sessionConstructorSpy.restore();
+      sessionConstructorStub.restore();
     });
 
   });
