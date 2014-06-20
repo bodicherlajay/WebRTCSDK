@@ -589,13 +589,6 @@
 
     var session = new ATT.rtc.Session();
 
-    session.on('ready', function (data) {
-      ATT.event.publish('session-ready', data);
-    });
-    session.on('disconnected', function (data) {
-      ATT.event.publish('session-disconnected', data);
-    });
-
     function getSession() {
       return session;
     }
@@ -608,10 +601,18 @@
         throw new Error('Token not defined');
       }
 
+      session.on('ready', function (data) {
+        ATT.event.publish('session-ready', data);
+      });
+
       session.connect(options);
     }
 
     function logout() {
+      session.on('disconnected', function (data) {
+        ATT.event.publish('session-disconnected', data);
+      });
+
       session.disconnect();
     }
 

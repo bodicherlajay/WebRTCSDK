@@ -11,18 +11,22 @@ describe('Phone', function () {
     it('should export ATT.rtc.Phone', function () {
       expect(ATT.rtc.Phone).to.be.a('object');
     });
+
     it('should have a method getPhone', function () {
       expect(ATT.rtc.Phone.getPhone).to.be.a('function');
     });
+
     it('should return an instance of ATT.private.Phone', function () {
       phone = ATT.rtc.Phone.getPhone();
       expect(phone instanceof ATT.private.Phone).to.equal(true);
     });
+
     it('should always return the same instance', function () {
       var phone1 = ATT.rtc.Phone.getPhone(),
         phone2 = ATT.rtc.Phone.getPhone();
       expect(phone1 === phone2).to.equal(true);
     });
+
   });
 
   describe('Pseudo Class', function () {
@@ -48,38 +52,6 @@ describe('Phone', function () {
         sessionConstructorSpy.restore();
       });
 
-      describe('Event registration', function () {
-        var onSpy,
-          sessionConstructorStub;
-
-        beforeEach(function () {
-          onSpy = sinon.spy();
-          sessionConstructorStub = sinon.stub(ATT.rtc, 'Session', function () {
-            return {
-              on: onSpy
-            };
-          });
-        });
-
-        afterEach(function () {
-          sessionConstructorStub.restore();
-        });
-
-        it('should register for event `ready` from Session', function () {
-          phone = new ATT.private.Phone();
-
-          expect(onSpy.called).to.equal(true);
-          expect(onSpy.getCall(0).args[0]).to.equal('ready');
-        });
-
-        it('should register for event `disconnected` from Session', function () {
-          phone = new ATT.private.Phone();
-
-          expect(onSpy.called).to.equal(true);
-          expect(onSpy.getCall(1).args[0]).to.equal('disconnected');
-        });
-
-      });
     });
 
     describe('Methods', function () {
@@ -159,6 +131,17 @@ describe('Phone', function () {
           })).to.not.throw('Token not defined');
         });
 
+        it('should register for event `ready` from Session', function () {
+          var onSpy = sinon.spy(session, 'on');
+
+          phone.login(options);
+
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.getCall(0).args[0]).to.equal('ready');
+
+          onSpy.restore();
+        });
+
         it('should execute Session.connect', function () {
           var connectSpy = sinon.spy(session, 'connect');
 
@@ -202,6 +185,18 @@ describe('Phone', function () {
 
         it('Should exist', function () {
           expect(phone.logout).to.be.a('function');
+        });
+
+        it('should register for event `disconnected` from Session', function () {
+          var onSpy = sinon.spy(session, 'on');
+
+          phone.logout();
+
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.getCall(0).args[0]).to.equal('disconnected');
+
+          onSpy.restore();
+
         });
 
         it('Should execute Session.disconnect', function () {
