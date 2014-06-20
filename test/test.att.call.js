@@ -1,15 +1,15 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
+/*global ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
 describe('Call', function () {
-  
+  'use strict';
   it('Should have a public constructor under ATT.rtc', function () {
     expect(ATT.rtc.Call).to.be.a('function');
   });
 
   it('Should fail if no input options specified a call object', function () {
     var fn = function (options) {
-      new ATT.rtc.Call(options);
+      return (new ATT.rtc.Call(options));
     };
     expect(fn).to.throw('No input provided');
     expect(fn.bind(null, {})).to.throw('No peer provided');
@@ -103,7 +103,7 @@ describe('Call', function () {
 
       });
 
-      it('Should execute the onCalling callback on setting the call id on the call', function (done) {
+      it('Should publish the `calling` event on setting the call id on the call', function (done) {
         var callId = '12345';
 
         call.setId(callId);
@@ -119,7 +119,7 @@ describe('Call', function () {
         }, 100);
       });
 
-      it('Should execute the onEstablished callback on setting the remote SDP', function (done) {
+      it('Should publish the `established` event on setting the remote SDP', function (done) {
         var remoteSdp = 'JFGLSDFDJKS';
 
         call.setRemoteSdp(remoteSdp);
@@ -164,7 +164,7 @@ describe('Call', function () {
         expect(call.setId).to.be.a('function');
       });
 
-      it('Should execute the onDisconnected callback if id is null', function (done) {
+      it('Should publish the `disconnected` event if id is null', function (done) {
         call.setId(null);
 
         setTimeout(function () {

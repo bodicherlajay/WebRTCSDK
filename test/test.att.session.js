@@ -11,20 +11,19 @@ describe('Session', function () {
     connectSessionStub,
     disconnectSessionStub;
 
-  beforeEach(function() {
+  beforeEach(function () {
     options = {
       token: 'dsfgdsdf',
       e911Id: 'sdfghfds'
     };
   });
 
-   it('Should have a public constructor under ATT.rtc', function () {
+  it('Should have a public constructor under ATT.rtc', function () {
     expect(ATT.rtc.Session).to.be.a('function');
   });
 
   describe('Constructor', function () {
-    var createRTCManagerSpy,
-      session;
+    var createRTCManagerSpy;
 
     beforeEach(function () {
       createRTCManagerSpy = sinon.spy(ATT.factories, 'createRTCManager');
@@ -60,12 +59,13 @@ describe('Session', function () {
     beforeEach(function () {
       onSessionReadyData = {test: 'test'};
       resourceManagerStub = {
-        doOperation: function (options) {
+        doOperation: function () {
+          return;
         },
         getLogger : function () {
           return {
-            logDebug : function () {},
-            logInfo: function () {}
+            logDebug : function () { return; },
+            logInfo: function () { return; }
           };
         }
       };
@@ -90,7 +90,7 @@ describe('Session', function () {
         options.onSessionDisconnected();
       });
 
-      createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function() {
+      createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function () {
         return rtcManagerStub;
       });
 
@@ -163,7 +163,7 @@ describe('Session', function () {
         expect(session.connect.bind(session, {token: '123'})).to.not.throw('No access token provided');
       });
 
-      it('Should execute the onConnecting callback immediately', function (done) {
+      it('Should publish the `connecting` event immediately', function (done) {
         session.connect(options);
 
         setTimeout(function () {
@@ -183,7 +183,7 @@ describe('Session', function () {
         expect(connectSessionStub.called).to.equal(true);
       });
 
-      describe('Connect session callbacks', function () {
+      describe('Success on session.connect', function () {
         var setIdSpy,
           updateSpy;
 
@@ -199,27 +199,23 @@ describe('Session', function () {
           updateSpy.restore();
         });
 
-        describe('onSessionConnected', function () {
-          it('Should execute the setId on session with newly created session id', function () {
-            expect(setIdSpy.calledWith('sessionid')).to.equal(true);
-          });
+        it('Should execute the setId on session with newly created session id', function () {
+          expect(setIdSpy.calledWith('sessionid')).to.equal(true);
+        });
 
-          it('Should execute the update on session with newly created timeout', function () {
-            expect(updateSpy.calledWith({timeout: 100})).to.equal(true);
-          });
-        })
+        it('Should execute the update on session with newly created timeout', function () {
+          expect(updateSpy.calledWith({timeout: 100})).to.equal(true);
+        });
 
-        describe('onSessionReady', function () {
-          it('should publish the ready event with data on session', function (done) {
-            setTimeout(function () {
-              try {
-                expect(onReadySpy.calledWith(onSessionReadyData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 100);
-          });
+        it('should publish the ready event with data on session', function (done) {
+          setTimeout(function () {
+            try {
+              expect(onReadySpy.calledWith(onSessionReadyData)).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
         });
 
       });
@@ -228,7 +224,7 @@ describe('Session', function () {
 
     describe('setId', function () {
 
-      it('Should execute the onConnected callback', function (done) {
+      it('Should publish the `connected` event', function (done) {
         var sessionId = '12345';
 
         session.setId(sessionId);
@@ -241,6 +237,20 @@ describe('Session', function () {
             done(e);
           }
         }, 100);
+      });
+
+      it('Should publish `disconnected` event if id is null', function (done) {
+
+        session.setId(null);
+        setTimeout(function () {
+          try {
+            expect(onDisconnectedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+
       });
 
     });
@@ -258,7 +268,6 @@ describe('Session', function () {
     });
 
     describe('Update', function () {
-      var options;
       beforeEach(function () {
         options = { timeout : 123};
       });
@@ -298,7 +307,7 @@ describe('Session', function () {
           session.update(options);
           expect(session.timeout).to.equal(123);
         });
-      })
+      });
     });
 
     describe('AddCall', function () {
@@ -317,11 +326,11 @@ describe('Session', function () {
 
     describe('GetCall', function () {
 
-      beforeEach(function() {
+      beforeEach(function () {
         session.addCall(call);
       });
 
-      it('Should exist', function() {
+      it('Should exist', function () {
         expect(session.getCall).to.be.a('function');
       });
 
@@ -336,8 +345,10 @@ describe('Session', function () {
     });
 
     describe('Disconnect', function () {
+      var onSetIdSpy;
 
       beforeEach(function () {
+        onSetIdSpy = sinon.spy(session, 'setId');
         session.disconnect();
       });
 
@@ -359,23 +370,18 @@ describe('Session', function () {
       it('Should execute RTCManager.disconnectSession', function () {
         expect(disconnectSessionStub.called).to.equal(true);
       });
-
-      it('Should trigger `disconnected` event on onSessionDisconnected', function (done) {
-        setTimeout(function () {
-          try {
-            expect(onDisconnectedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
-
+      describe('Success on session.disconnect', function () {
+        it('should execute setId(null) if successful', function () {
+          expect(onSetIdSpy.called).to.equal(true);
+          expect(onSetIdSpy.calledWith(null)).to.equal(true);
+        });
       });
+
     });
 
     describe('TerminateCalls', function () {
 
-      beforeEach(function() {
+      beforeEach(function () {
         session.addCall(call);
         session.addCall(secondCall);
       });
@@ -385,8 +391,8 @@ describe('Session', function () {
       });
 
       it('Should call disconnect on all calls in the session', function () {
-        var disconnectSpy1 = sinon.spy(call, 'disconnect');
-        var disconnectSpy2 = sinon.spy(secondCall, 'disconnect');
+        var disconnectSpy1 = sinon.spy(call, 'disconnect'),
+          disconnectSpy2 = sinon.spy(secondCall, 'disconnect');
 
         session.terminateCalls();
 

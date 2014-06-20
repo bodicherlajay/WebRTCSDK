@@ -174,7 +174,7 @@
     var session = this;
 
     options.factories.createCall(ATT.utils.extend(options, {
-      session: session,  // TODO: this should not be needed once we refactor UM and PC 
+      session: session,  // TODO: this should not be needed once we refactor UM and PC
       onCallCreated: function (callObj) {
         try {
           if (!callObj) {
@@ -268,6 +268,11 @@
     this.setId = function (sessionId) {
       id = sessionId;
 
+      if (null === sessionId) {
+        ATT.event.publish('disconnected');
+        return;
+      }
+
       ATT.event.publish('connected');
     };
 
@@ -312,7 +317,7 @@
         token: session.token,
         e911Id: session.e911Id,
         onSessionDisconnected: function () {
-          ATT.event.publish('disconnected');
+          session.setId(null);
         }
       });
     };
