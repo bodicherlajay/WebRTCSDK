@@ -14,8 +14,6 @@
 (function () {
   'use strict';
 
-  var factories,
-    resourceManager;
 //    logMgr = ATT.logManager.getInstance(),
 //    logger;
 //
@@ -580,19 +578,22 @@
   function on(event, handler) {
     if ('session-ready' !== event &&
       'session-disconnected' !== event) {
-      throw new Error('Event not defined')
+      throw new Error('Event not defined');
     }
 
     ATT.event.unsubscribe(event, handler);
     ATT.event.subscribe(event, handler, this);
   }
 
-  function Phone(options) {
+  function Phone() {
 
     var session = new ATT.rtc.Session();
 
     session.on('ready', function (data) {
       ATT.event.publish('session-ready', data);
+    });
+    session.on('disconnected', function (data) {
+      ATT.event.publish('session-disconnected', data);
     });
 
     function getSession() {

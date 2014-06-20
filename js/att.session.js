@@ -236,10 +236,13 @@
   * @param {String} token The access token
   * @param {String} e9Id The e911Id
   */
-  function Session(options) {
+  function Session() {
 
     // dependencies
-    var rtcManager;
+    var rtcManager,
+      // private attributes
+      id = null,
+      calls = {};
 
     rtcManager = factories.createRTCManager({
       errMgr : ATT.error,
@@ -249,10 +252,6 @@
       peerConnSvc : ATT.PeerConnectionService,
       eventManager : {}
     });
-
-    // private attributes
-    var id = null,
-      calls = {};
 
     // public attributes
     this.timeout = null;
@@ -265,7 +264,7 @@
 
     this.getId = function () {
       return id;
-    }
+    };
     this.setId = function (sessionId) {
       id = sessionId;
 
@@ -300,7 +299,7 @@
         onSessionReady: function (data) {
           ATT.event.publish('ready', data);
         }
-      })
+      });
     };
 
     this.disconnect =   function () {
@@ -343,14 +342,14 @@
       delete calls[call.id];
       call = null;
 
-      if(Object.keys(calls).length === 0) {
+      if (Object.keys(calls).length === 0) {
         ATT.event.publish('allcallsterminated');
       }
     };
   }
 
   if (undefined === ATT.rtc) {
-    throw Error('Cannot export Session. ATT.rtc is undefined');
+    throw new Error('Cannot export Session. ATT.rtc is undefined');
   }
   ATT.rtc.Session = Session;
 

@@ -2,7 +2,7 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert*/
 
-describe.only('Phone', function () {
+describe('Phone', function () {
   'use strict';
 
   describe('Singleton', function () {
@@ -21,7 +21,7 @@ describe.only('Phone', function () {
     it('should always return the same instance', function () {
       var phone1 = ATT.rtc.Phone.getPhone(),
         phone2 = ATT.rtc.Phone.getPhone();
-      expect(phone1).to.equal(phone2);
+      expect(phone1 === phone2).to.equal(true);
     });
   });
 
@@ -48,22 +48,38 @@ describe.only('Phone', function () {
         sessionConstructorSpy.restore();
       });
 
-      it('should register for event `ready` from Session', function () {
-        var onSpy = sinon.spy(),
-            sessionConstructorStub = sinon.stub(ATT.rtc, 'Session', function () {
-              return {
-                on: onSpy
-              };
-            });
+      describe('Event registration', function () {
+        var onSpy,
+          sessionConstructorStub;
 
-        phone = new ATT.private.Phone();
+        beforeEach(function () {
+          onSpy = sinon.spy();
+          sessionConstructorStub = sinon.stub(ATT.rtc, 'Session', function () {
+            return {
+              on: onSpy
+            };
+          });
+        });
 
-        expect(onSpy.called).to.equal(true);
-        expect(onSpy.getCall(0).args[0]).to.equal('ready');
+        afterEach(function () {
+          sessionConstructorStub.restore();
+        });
 
-        sessionConstructorStub.restore();
+        it('should register for event `ready` from Session', function () {
+          phone = new ATT.private.Phone();
+
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.getCall(0).args[0]).to.equal('ready');
+        });
+
+        it('should register for event `disconnected` from Session', function () {
+          phone = new ATT.private.Phone();
+
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.getCall(1).args[0]).to.equal('disconnected');
+        });
+
       });
-
     });
 
     describe('Methods', function () {
@@ -103,7 +119,7 @@ describe.only('Phone', function () {
 
         it('Should register callback for known events', function () {
           var fn = sinon.spy(),
-              subscribeSpy = sinon.spy(ATT.event, 'subscribe');
+            subscribeSpy = sinon.spy(ATT.event, 'subscribe');
 
           expect(phone.on.bind(phone, 'session-ready', fn)).to.not.throw(Error);
           expect(subscribeSpy.called).to.equal(true);
@@ -177,8 +193,7 @@ describe.only('Phone', function () {
 
       describe('logout', function () {
 
-        var phone,
-          session;
+        var session;
 
         beforeEach(function () {
           phone = new ATT.private.Phone();
@@ -202,7 +217,7 @@ describe.only('Phone', function () {
           disconnectSpy.restore();
         });
 
-        it('Should trigger `onSessionDisconnected` callback on receiving a `disconnected` event from Session', function () {
+        it('Should publish event `session-disconnected` on receiving a `disconnected` event from Session', function (done) {
           var onSessionDisconnectedSpy = sinon.spy(),
             disconnectStub = sinon.stub(session, 'disconnect', function () {
               ATT.event.publish('disconnected');
@@ -214,13 +229,14 @@ describe.only('Phone', function () {
           setTimeout(function () {
             try {
               expect(onSessionDisconnectedSpy.called).to.equal(true);
+              disconnectStub.restore();
               done();
             } catch (e) {
+              disconnectStub.restore();
               done(e);
             }
           }, 100);
 
-          disconnectStub.restore();
         });
 
       });

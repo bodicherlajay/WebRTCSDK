@@ -105,14 +105,14 @@
         audio: true,
         video: mediaType === 'video'
       };
-    ATT.utils.extend (options, {
+    ATT.utils.extend(options, {
       type: ATT.CallTypes.INCOMING,
       from: from,
       mediaConstraints: mediaConstraints
     });
 
     userMediaSvc.getUserMedia(ATT.utils.extend(options, {
-      onUserMedia: function(userMedia) {
+      onUserMedia: function (userMedia) {
         ATT.utils.extend(options, userMedia);
         peerConnSvc.initPeerConnection(options);
       },
@@ -154,7 +154,7 @@
   function endCall(options) {
     logger.logInfo('Hanging up...');
     ATT.SignalingService.sendEndCall(ATT.utils.extend(options, {
-      success: function  () {
+      success: function () {
         options.onCallEnded();
       },
       error: function () {
@@ -171,7 +171,7 @@
     logger.logInfo('Canceling up...');
     ATT.SignalingService.sendCancelCall({
       success: function () {
-       session.deleteCall(session.getCurrentCall().id());
+        session.deleteCall(session.getCurrentCall().id());
       },
       error: function () {
         ATT.Error.publish('SDK-20034', null, session.onError);
@@ -202,10 +202,10 @@
   function on(event, handler) {
 
     if ('connecting' !== event &&
-      'calling' !== event &&
-      'established' !== event &&
-      'disconnecting' !== event &&
-      'disconnected' !== event ) {
+        'calling' !== event &&
+        'established' !== event &&
+        'disconnecting' !== event &&
+        'disconnected' !== event) {
       throw new Error('Event not defined');
     }
 
@@ -285,7 +285,7 @@
     logger.logInfo('Creating incoming call');
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
-    var callObj = call({
+    var callObj = new Call({
       id: options.id,
       type: options.type,
       from: cleanPhoneNumber(options.from),
@@ -311,7 +311,7 @@
     logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
 
     userMediaSvc.getUserMedia(ATT.utils.extend(options, {
-      onUserMedia: function(userMedia) {
+      onUserMedia: function (userMedia) {
         ATT.utils.extend(options, userMedia);
         peerConnSvc.initPeerConnection(options);
       },
@@ -323,14 +323,14 @@
     // indicate the RINGING state on an outgoing call
     ATT.PeerConnectionService.onOfferSent = function (callId, localSdp) {
       logger.logInfo('onOfferSent... trigger RINGING event for outgoing call');
-      var callObj = call({
+      var callObj = new Call({
         id: callId,
         to: options.to,
         type: options.type,
         mediaConstraints: options.mediaConstraints,
         localSdp: localSdp
       });
-  
+
       options.onOutgoingCallCreated(callObj);
     };
   }
@@ -358,7 +358,7 @@
   factories.createCall = createCall;
 
   if (undefined === ATT.rtc) {
-    throw Error('Cannot export Call. ATT.rtc is undefined');
+    throw new Error('Cannot export Call. ATT.rtc is undefined');
   }
   ATT.rtc.Call = Call;
 

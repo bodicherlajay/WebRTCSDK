@@ -75,7 +75,7 @@
     logger.logDebug('extractSessionInformation');
 
     var sessionId = null,
-        timeout = null;
+      timeout = null;
 
     if (responseObject) {
       if (responseObject.getResponseHeader('Location')) {
@@ -188,7 +188,7 @@
     }));
   }
 
-    function hangupCall() {
+  function hangupCall() {
     if (!session) {
       throw 'No session found to answer a call. Please login first';
     }
