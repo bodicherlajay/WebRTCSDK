@@ -423,6 +423,8 @@
 
       logger.logDebug('disconnectSession');
 
+      eventManager.stop();
+
       // Call BF to delete WebRTC Session.
       resourceManager.doOperation('deleteWebRTCSession', {
         params: {
@@ -434,7 +436,6 @@
         },
         success: function () {
           logger.logInfo('Successfully deleted web rtc session on blackflag');
-          eventManager.stop();
           options.onSessionDisconnected();
         },
         error: function (error) {

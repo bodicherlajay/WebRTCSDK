@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL*/
 
-describe('RTC Manager', function () {
+describe.only('RTC Manager', function () {
   'use strict';
 
   var factories,
@@ -276,6 +276,12 @@ describe('RTC Manager', function () {
         })).to.not.throw(Error);
       });
 
+      it('should execute EventManager.stop', function () {
+        rtcManager.disconnectSession(optionsForDisconn);
+
+        expect(stopStub.calledBefore(doOperationSpy)).to.equal(true);
+      });
+
       it('should call doOperation on the resourceManager with `deleteWebRTCSession`', function () {
         rtcManager.disconnectSession(optionsForDisconn);
 
@@ -285,15 +291,9 @@ describe('RTC Manager', function () {
 
       describe('Success', function () {
 
-        beforeEach(function () {
-          rtcManager.disconnectSession(optionsForDisconn);
-        });
-
-        it('should execute EventManager.stop', function () {
-          expect(stopStub.called).to.equal(true);
-        });
-
         it('should execute the onSessionDisconnected callback', function () {
+          rtcManager.disconnectSession(optionsForDisconn);
+
           expect(onSessionDisconnectedSpy.called).to.equal(true);
         });
 
