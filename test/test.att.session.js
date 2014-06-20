@@ -8,7 +8,8 @@ describe('Session', function () {
     session,
     rtcManagerStub,
     createRTCMgrStub,
-    connectSessionStub;
+    connectSessionStub,
+    disconnectSessionStub;
 
   beforeEach(function() {
     options = {
@@ -17,10 +18,7 @@ describe('Session', function () {
     };
   });
 
-  afterEach(function() {
-  });
-
-  it('Should have a public constructor under ATT.rtc', function () {
+   it('Should have a public constructor under ATT.rtc', function () {
     expect(ATT.rtc.Session).to.be.a('function');
   });
 
@@ -47,7 +45,7 @@ describe('Session', function () {
   });
 
 
-  describe('method', function () {
+  describe('Methods', function () {
     var call,
       secondCall,
       onConnectingSpy,
@@ -71,6 +69,7 @@ describe('Session', function () {
           };
         }
       };
+
       rtcManagerStub = ATT.factories.createRTCManager({
         userMediaSvc: {},
         rtcEvent: {},
@@ -86,9 +85,15 @@ describe('Session', function () {
         });
         options.onSessionReady(onSessionReadyData);
       });
+
+      disconnectSessionStub = sinon.stub(rtcManagerStub, 'disconnectSession', function (options) {
+        options.onSessionDisconnected();
+      });
+
       createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function() {
         return rtcManagerStub;
       });
+
       session = new ATT.rtc.Session(options);
 
       call = new ATT.rtc.Call({
@@ -121,6 +126,7 @@ describe('Session', function () {
     afterEach(function () {
       createRTCMgrStub.restore();
       connectSessionStub.restore();
+      disconnectSessionStub.restore();
     });
 
     describe('On', function () {
@@ -331,13 +337,15 @@ describe('Session', function () {
 
     describe('Disconnect', function () {
 
+      beforeEach(function () {
+        session.disconnect();
+      });
+
       it('Should exist', function () {
         expect(session.disconnect).to.be.a('function');
       });
 
-      it('Should execute the onDisconnecting callback immediately', function (done) {
-        session.disconnect();
-
+      it('Should trigger the disconnecting event immediately', function (done) {
         setTimeout(function () {
           try {
             expect(onDisconnectingSpy.called).to.equal(true);
@@ -346,6 +354,22 @@ describe('Session', function () {
             done(e);
           }
         }, 100);
+      });
+
+      it('Should execute RTCManager.disconnectSession', function () {
+        expect(disconnectSessionStub.called).to.equal(true);
+      });
+
+      it('Should trigger `disconnected` event on onSessionDisconnected', function (done) {
+        setTimeout(function () {
+          try {
+            expect(onDisconnectedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+
       });
     });
 

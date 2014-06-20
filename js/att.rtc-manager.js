@@ -104,34 +104,6 @@
     return session;
   }
 
-  function disconnectSession(options) {
-    if (!session) {
-      throw 'No session found to delete. Please login first';
-    }
-
-    session.clearSession({
-      onSessionCleared: function () {
-        try {
-          session = null; // set session to null
-          if (eventManager) {
-            eventManager.shutDown({
-              onShutDown: function () {
-                eventManager = null;
-                options.onSessionDeleted();
-              },
-              onError: handleError.bind(this, 'DeleteSession', options.onError)
-            });
-          } else {
-            throw 'Session was cleared but there is no event manager instance to shut down.';
-          }
-        } catch (err) {
-          handleError.call(this, 'DeleteSession', options.onError, err);
-        }
-      },
-      onError: handleError.bind(this, 'DeleteSession', options.onError)
-    });
-  }
-
   function refreshSessionWithE911ID(args) {
     if (!session) {
       throw 'No session found to delete. Please login first';
@@ -389,7 +361,7 @@
         throw new Error('Callback onSessionReady not defined.');
       }
 
-      logger.logDebug('createWebRTCSession');
+      logger.logDebug('connectSession');
 
       var doOperationSuccess = function (response) {
         logger.logInfo('Successfully created web rtc session on blackflag');
@@ -426,9 +398,49 @@
             'x-Arg': 'ClientSDK=WebRTCTestAppJavascript1'
           }
         },
-        success: doOperationSuccess
+        success: doOperationSuccess,
+        error: function (error) {
+          logger.logError(error);
+        }
       });
 
+    }
+
+    function disconnectSession (options) {
+
+      if (undefined === options) {
+        throw new Error('No options defined.');
+      }
+      if (undefined === options.sessionId) {
+        throw new Error('No session id defined.');
+      }
+      if (undefined === options.token) {
+        throw new Error('No token defined.');
+      }
+      if (undefined === options.onSessionDisconnected) {
+        throw new Error('Callback onSessionDisconnected not defined.');
+      }
+
+      logger.logDebug('disconnectSession');
+
+      // Call BF to delete WebRTC Session.
+      resourceManager.doOperation('deleteWebRTCSession', {
+        params: {
+          url: [options.sessionId],
+          headers: {
+            'Authorization': options.token,
+            'x-e911Id': options.e911Id
+          }
+        },
+        success: function () {
+          logger.logInfo('Successfully deleted web rtc session on blackflag');
+          eventManager.stop();
+          options.onSessionDisconnected();
+        },
+        error: function (error) {
+          logger.logError(error);
+        }
+      });
     }
 
     return {

@@ -22,7 +22,32 @@ describe('Event Manager', function () {
         errorManager: {},
         resourceManager: resourceManagerStub
       },
-    eventManager = ATT.factories.createEventManager(options);
+      eventManager,
+      eventChannelStub,
+      createEvtChanStub,
+      stopListeningSpy;
+
+    beforeEach(function () {
+      stopListeningSpy = sinon.spy()
+
+      eventChannelStub = {
+        startListening: function (options) {
+          options.success();
+        },
+        stopListening: stopListeningSpy
+      };
+
+      createEvtChanStub = sinon.stub(ATT.utils, 'createEventChannel', function () {
+        return eventChannelStub;
+      });
+
+      eventManager = ATT.factories.createEventManager(options);
+
+    });
+
+    afterEach(function () {
+      createEvtChanStub.restore();
+    });
 
     describe('on', function () {
 
@@ -47,7 +72,6 @@ describe('Event Manager', function () {
 
     describe('setup', function () {
       var subscribeSpy,
-        createEvtChanStub,
         onListeningSpy;
 
       beforeEach(function () {
@@ -60,14 +84,12 @@ describe('Event Manager', function () {
         };
 
         subscribeSpy = sinon.spy(ATT.event, 'subscribe');
-        createEvtChanStub = sinon.stub(ATT.utils, 'createEventChannel', function () {
-          return {
-            startListening: function (options) {
-              options.success();
-            }
-          };
-        });
+
         onListeningSpy = sinon.spy();
+      });
+
+      afterEach(function () {
+        subscribeSpy.restore();
       });
 
       it('Should exist', function () {
@@ -116,11 +138,43 @@ describe('Event Manager', function () {
 
       });
 
-      afterEach(function () {
-        subscribeSpy.restore();
-        createEvtChanStub.restore();
-      });
     });
 
+    describe('stop', function () {
+
+      beforeEach(function () {
+        eventManager.setup({
+          sessionId: sessionId,
+          token: 'token'
+        });
+      });
+
+      it('Should exist', function () {
+        expect(eventManager.stop).to.be.a('function');
+      });
+
+      it('Should execute eventChannel.stopListening', function () {
+        eventManager.stop();
+
+        expect(stopListeningSpy.called).to.equal(true);
+      });
+
+      it('Should publish stop-listening after stopping the event channel', function (done) {
+        var onStopListeningSpy = sinon.spy();
+
+        eventManager.on('stop-listening', onStopListeningSpy);
+
+        eventManager.stop();
+
+        setTimeout(function () {
+          try {
+            expect(onStopListeningSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+    })
   });
 });

@@ -229,9 +229,6 @@
     ATT.event.publish('updating', options);
   }
 
-  function disconnect() {
-    ATT.event.publish('disconnecting');
-  }
   /**
   * session prototype
   * @param {String} sessionId The sessionId
@@ -306,7 +303,20 @@
       })
     };
 
-    this.disconnect = disconnect.bind(this);
+    this.disconnect =   function () {
+      ATT.event.publish('disconnecting');
+
+      var session = this;
+
+      rtcManager.disconnectSession({
+        sessionId: session.getId(),
+        token: session.token,
+        e911Id: session.e911Id,
+        onSessionDisconnected: function () {
+          ATT.event.publish('disconnected');
+        }
+      });
+    };
 
     this.terminateCalls = function () {
       var callId;
@@ -338,50 +348,6 @@
       }
     };
   }
-
-  /**
-  * Create a new session
-  * @param {Object} options The options
-  * createSession({
-  *   token: 'abcd'
-  *   e911Id: 'e911Id'
-  * })
-  */
-  function createSession(options) {
-    errMgr = options.errorManager;
-    resourceManager = options.resourceManager;
-    logger = resourceManager.getLogger('Session');
-
-    logger.logDebug('createSession');
-
-    createWebRTCSession({
-      token: options.token,
-      e911Id: options.e911Id,
-      onWebRTCSessionCreated: function (sessionInfo) {
-        if (sessionInfo) {
-          var sessObj = session({
-            sessionId: sessionInfo.sessionId,
-            token: options.token,
-            e911Id: options.e911Id,
-            expiration: sessionInfo.expiration
-          });
-
-          // keep web rtc session alive
-          sessObj.keepAlive({
-            onSessionAlive: function (msg) {
-              logger.logInfo(msg);
-            },
-            onError: handleError.bind(this, 'RefreshSession', options.onError)
-          });
-
-          options.onSessionCreated(sessObj);
-        }
-      },
-      onError: handleError.bind(this, 'CreateSession', options.onError)
-    });
-  }
-
-  factories.createSession = createSession;
 
   if (undefined === ATT.rtc) {
     throw Error('Cannot export Session. ATT.rtc is undefined');

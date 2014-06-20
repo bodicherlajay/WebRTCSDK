@@ -96,13 +96,18 @@ describe('RTC Manager', function () {
       rtcEvent,
       userMediaSvc,
       peerConnSvc,
-      setupStub;
+      setupStub,
+      stopStub;
 
     beforeEach(function () {
       var optionsForRTCM;
 
       setupStub = sinon.stub(eventManagerStub, 'setup', function () {
         ATT.event.publish('listening');
+      });
+
+      stopStub = sinon.stub(eventManagerStub, 'stop', function () {
+        ATT.event.publish('stop-listening');
       });
 
       rtcEvent = ATT.RTCEvent.getInstance();
@@ -123,6 +128,7 @@ describe('RTC Manager', function () {
 
     afterEach(function () {
       setupStub.restore();
+      stopStub.restore();
     });
 
     describe('connectSession', function () {
@@ -153,7 +159,8 @@ describe('RTC Manager', function () {
         var onSessionConnectedSpy,
           onSpy,
           doOperationSpy,
-          onSessionReadySpy;
+          onSessionReadySpy,
+          optionsForConn;
 
         beforeEach(function () {
 
@@ -170,11 +177,12 @@ describe('RTC Manager', function () {
           doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
           onSpy = sinon.spy(eventManagerStub, 'on');
 
-          var optionsForConn = {
+          optionsForConn = {
             token: '123',
             onSessionConnected: onSessionConnectedSpy,
             onSessionReady: onSessionReadySpy
           };
+
           rtcManager.connectSession(optionsForConn);
         });
 
@@ -226,8 +234,69 @@ describe('RTC Manager', function () {
     });
 
     describe('disconnectSession', function () {
+
+      var doOperationSpy,
+        optionsForDisconn,
+        onSessionDisconnectedSpy;
+
+      beforeEach(function () {
+        doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+        onSessionDisconnectedSpy = sinon.spy();
+
+        optionsForDisconn = {
+          sessionId: 'sessionid',
+          token: '123',
+          onSessionDisconnected: onSessionDisconnectedSpy
+        };
+
+      });
+
+      afterEach(function () {
+        doOperationSpy.restore();
+      });
+
       it('should exist', function () {
         expect(rtcManager.disconnectSession).to.be.a('function');
+      });
+
+      it('should throw an error if invalid options', function () {
+        expect(rtcManager.disconnectSession.bind(rtcManager)).to.throw('No options defined.');
+        expect(rtcManager.disconnectSession.bind(rtcManager, {})).to.throw('No session id defined.');
+        expect(rtcManager.disconnectSession.bind(rtcManager, {
+          sessionId: 'sessionid'
+        })).to.throw('No token defined.');
+        expect(rtcManager.disconnectSession.bind(rtcManager, {
+          sessionId: 'sessionid',
+          token: '123'
+        })).to.throw('Callback onSessionDisconnected not defined.');
+        expect(rtcManager.disconnectSession.bind(rtcManager, {
+          sessionId: 'sessionid',
+          token: '123',
+          onSessionDisconnected: function () {}
+        })).to.not.throw(Error);
+      });
+
+      it('should call doOperation on the resourceManager with `deleteWebRTCSession`', function () {
+        rtcManager.disconnectSession(optionsForDisconn);
+
+        expect(doOperationSpy.called).to.equal(true);
+        expect(doOperationSpy.getCall(0).args[0]).to.equal('deleteWebRTCSession');
+      });
+
+      describe('Success', function () {
+
+        beforeEach(function () {
+          rtcManager.disconnectSession(optionsForDisconn);
+        });
+
+        it('should execute EventManager.stop', function () {
+          expect(stopStub.called).to.equal(true);
+        });
+
+        it('should execute the onSessionDisconnected callback', function () {
+          expect(onSessionDisconnectedSpy.called).to.equal(true);
+        });
+
       });
     });
   });

@@ -578,7 +578,8 @@
 //  }
 
   function on(event, handler) {
-    if ('session-ready' !== event) {
+    if ('session-ready' !== event &&
+      'session-disconnected' !== event) {
       throw new Error('Event not defined')
     }
 
@@ -609,9 +610,14 @@
       session.connect(options);
     }
 
+    function logout() {
+      session.disconnect();
+    }
+
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
+    this.logout = logout.bind(this);
   }
 
 

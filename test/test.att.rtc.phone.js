@@ -2,12 +2,12 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert*/
 
-describe('Phone', function () {
+describe.only('Phone', function () {
   'use strict';
 
-  var phone;
-
   describe('Singleton', function () {
+    var phone;
+
     it('should export ATT.rtc.Phone', function () {
       expect(ATT.rtc.Phone).to.be.a('object');
     });
@@ -31,7 +31,8 @@ describe('Phone', function () {
     });
 
     describe('ATT.private.Phone Constructor', function () {
-      var sessionConstructorSpy;
+      var phone,
+        sessionConstructorSpy;
 
       it('should create a Phone object', function () {
         phone = new ATT.private.Phone();
@@ -67,11 +68,13 @@ describe('Phone', function () {
 
     describe('Methods', function () {
 
-      beforeEach(function () {
-        phone = new ATT.private.Phone();
-      });
+      var phone;
 
       describe('getSession', function () {
+
+        beforeEach(function () {
+          phone = new ATT.private.Phone();
+        });
 
         it('should exist', function () {
           expect(phone.getSession).to.be.a('function');
@@ -85,6 +88,10 @@ describe('Phone', function () {
       });
 
       describe('on', function () {
+
+        beforeEach(function () {
+          phone = new ATT.private.Phone();
+        });
 
         it('should exist', function () {
           expect(phone.on).to.be.a('function');
@@ -107,8 +114,8 @@ describe('Phone', function () {
 
       describe('login', function () {
         var session,
-            options,
-            onSessionReadySpy;
+          options,
+          onSessionReadySpy;
 
         beforeEach(function () {
           onSessionReadySpy = sinon.spy();
@@ -117,6 +124,8 @@ describe('Phone', function () {
             token: '123',
             e911Id: '123'
           };
+
+          phone = new ATT.private.Phone();
 
           phone.on('session-ready', onSessionReadySpy);
           session = phone.getSession();
@@ -165,8 +174,57 @@ describe('Phone', function () {
         });
 
       });
+
+      describe('logout', function () {
+
+        var phone,
+          session;
+
+        beforeEach(function () {
+          phone = new ATT.private.Phone();
+          session = phone.getSession();
+        });
+
+        it('Should exist', function () {
+          expect(phone.logout).to.be.a('function');
+        });
+
+        it('Should execute Session.disconnect', function () {
+          var disconnectSpy = sinon.spy(session, 'disconnect');
+
+          // logout checks for session id
+          session.id = 'sessionid';
+
+          phone.logout();
+
+          expect(disconnectSpy.called).to.equal(true);
+
+          disconnectSpy.restore();
+        });
+
+        it('Should trigger `onSessionDisconnected` callback on receiving a `disconnected` event from Session', function () {
+          var onSessionDisconnectedSpy = sinon.spy(),
+            disconnectStub = sinon.stub(session, 'disconnect', function () {
+              ATT.event.publish('disconnected');
+            });
+
+          phone.on('session-disconnected', onSessionDisconnectedSpy);
+          phone.logout();
+
+          setTimeout(function () {
+            try {
+              expect(onSessionDisconnectedSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+
+          disconnectStub.restore();
+        });
+
+      });
     });
   });
-
 
 });
