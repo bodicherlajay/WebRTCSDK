@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL*/
 
-describe.only('RTC Manager', function () {
+describe('RTC Manager', function () {
   'use strict';
 
   var factories,
