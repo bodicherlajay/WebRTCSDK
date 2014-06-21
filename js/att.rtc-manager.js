@@ -327,11 +327,9 @@
     userMediaSvc = options.userMediaSvc;
     peerConnSvc = options.peerConnSvc;
 
-
     logger = resourceManager.getLogger("RTCManager");
 
     logger.logDebug('createRTCManager');
-
 
     eventManager = factories.createEventManager({
       resourceManager: resourceManager,
