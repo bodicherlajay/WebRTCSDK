@@ -43,10 +43,10 @@ module.exports = function (grunt) {
 //      'test/test.att.config.api.js',
 //      'test/test.att.resource-manager.js',
 //      'test/test.att.enum.js',
-      'test/test.att.event-manager.js',
-      'test/test.att.call.js',
-      'test/test.att.session.js',
-      'test/test.att.rtc-manager.js',
+//      'test/test.att.event-manager.js',
+//      'test/test.att.call.js',
+      'test/test.att.session.js'
+//      'test/test.att.rtc-manager.js',
 //      'test/test.att.utils.error-dictionary.js',
 //      'test/test.att.utils.event-channel.js',
 //      'test/test.att.peer-connection-service.js',
@@ -54,11 +54,10 @@ module.exports = function (grunt) {
 //      'test/test.att.signaling.service.js',
 //      'test/test.att.utils.sdp-filter.js',
 //      'test/test.att.user-media-service.js',
-      'test/test.att.rtc.phone.js'
+//      'test/test.att.rtc.phone.js'
 //      'test/test.att.rtc.dhs.js',
 //      'test/test.att.main.js',
 //      'test/test.att.phonenumber.js'
-
     ],
     logLevel: 'INFO',
     port: 9876,

@@ -1,11 +1,10 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, Env, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe('Session', function () {
+describe.only('Session', function () {
   'use strict';
 
   var options,
-    session,
     rtcManagerStub,
     createRTCMgrStub,
     connectSessionStub,
@@ -23,7 +22,8 @@ describe('Session', function () {
   });
 
   describe('Constructor', function () {
-    var createRTCManagerSpy;
+    var session,
+      createRTCManagerSpy;
 
     beforeEach(function () {
       createRTCManagerSpy = sinon.spy(ATT.factories, 'createRTCManager');
@@ -32,6 +32,7 @@ describe('Session', function () {
 
     afterEach(function () {
       createRTCManagerSpy.restore();
+      session = null;
     });
 
     it('Should create a session object', function () {
@@ -43,9 +44,9 @@ describe('Session', function () {
     });
   });
 
-
   describe('Methods', function () {
-    var call,
+    var session,
+      call,
       secondCall,
       onConnectingSpy,
       onConnectedSpy,
@@ -81,7 +82,7 @@ describe('Session', function () {
       connectSessionStub = sinon.stub(rtcManagerStub, 'connectSession', function (options) {
         options.onSessionConnected({
           sessionId: 'sessionid',
-          timeout: 100
+          timeout: 120000
         });
         options.onSessionReady(onSessionReadyData);
       });
@@ -204,7 +205,9 @@ describe('Session', function () {
         });
 
         it('Should execute the update on session with newly created timeout', function () {
-          expect(updateSpy.calledWith({timeout: 100})).to.equal(true);
+          expect(updateSpy.calledWith({
+            timeout: 120000
+          })).to.equal(true);
         });
 
         it('should publish the ready event with data on session', function (done) {
@@ -218,6 +221,41 @@ describe('Session', function () {
           }, 100);
         });
 
+      });
+
+    });
+
+    describe('Disconnect', function () {
+      var onSetIdSpy;
+
+      beforeEach(function () {
+        onSetIdSpy = sinon.spy(session, 'setId');
+        session.disconnect();
+      });
+
+      it('Should exist', function () {
+        expect(session.disconnect).to.be.a('function');
+      });
+
+      it('Should trigger the disconnecting event immediately', function (done) {
+        setTimeout(function () {
+          try {
+            expect(onDisconnectingSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('Should execute RTCManager.disconnectSession', function () {
+        expect(disconnectSessionStub.called).to.equal(true);
+      });
+      describe('Success on session.disconnect', function () {
+        it('should execute setId(null) if successful', function () {
+          expect(onSetIdSpy.called).to.equal(true);
+          expect(onSetIdSpy.calledWith(null)).to.equal(true);
+        });
       });
 
     });
@@ -344,41 +382,6 @@ describe('Session', function () {
 
     });
 
-    describe('Disconnect', function () {
-      var onSetIdSpy;
-
-      beforeEach(function () {
-        onSetIdSpy = sinon.spy(session, 'setId');
-        session.disconnect();
-      });
-
-      it('Should exist', function () {
-        expect(session.disconnect).to.be.a('function');
-      });
-
-      it('Should trigger the disconnecting event immediately', function (done) {
-        setTimeout(function () {
-          try {
-            expect(onDisconnectingSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
-      });
-
-      it('Should execute RTCManager.disconnectSession', function () {
-        expect(disconnectSessionStub.called).to.equal(true);
-      });
-      describe('Success on session.disconnect', function () {
-        it('should execute setId(null) if successful', function () {
-          expect(onSetIdSpy.called).to.equal(true);
-          expect(onSetIdSpy.calledWith(null)).to.equal(true);
-        });
-      });
-
-    });
-
     describe('TerminateCalls', function () {
 
       beforeEach(function () {
@@ -448,10 +451,48 @@ describe('Session', function () {
   });
 
   describe('Event', function () {
+    var session;
+
+    beforeEach(function () {
+      session = new ATT.rtc.Session(options);
+    });
+
+    afterEach(function () {
+      session = null;
+    });
 
     describe('NeedsRefresh', function () {
 
-      it('Should be triggered 60 000 ms before timeout');
+      it('Should be triggered every 60000 ms before timeout', function (done) {
+
+        var i = 0,
+          count = 3,
+          onNeedsRefreshSpy = sinon.spy(),
+          timeout = 60200,
+          refreshTimeout = timeout - 60000 + 100; // we wait an extra 100 ms because publish event is async
+
+        session.on('needs-refresh', onNeedsRefreshSpy);
+
+        session.update({
+          timeout: timeout
+        });
+
+        expect(onNeedsRefreshSpy.called).to.equal(false);
+
+          setTimeout(function () {
+            try {
+              for (i = 0; i < count; i++) {
+                console.log(i);
+                console.log(onNeedsRefreshSpy.getCall(i).args[0]);
+                expect(onNeedsRefreshSpy.getCall(i).args[0]).to.equal(i);
+              }
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, refreshTimeout * count);
+
+      });
 
       it('Should be triggered exactly after `timeout` milliseconds if `timeout` is less that 60 000 ms');
 

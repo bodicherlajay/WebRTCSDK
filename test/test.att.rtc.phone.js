@@ -152,7 +152,7 @@ describe('Phone', function () {
           connectSpy.restore();
         });
 
-        it('should trigger `onSessionReady` callback with data on receiving the `ready` event from Session', function (done) {
+        it('should trigger `session-ready` event with data on receiving the `ready` event from Session', function (done) {
           var data = {test: 'test'},
             connectStub = sinon.stub(session, 'connect', function () {
               ATT.event.publish('ready', data);

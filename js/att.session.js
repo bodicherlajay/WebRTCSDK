@@ -200,33 +200,18 @@
   function on(event, handler) {
 
     if ('ready' !== event &&
-        'connecting' !== event &&
-        'connected' !== event &&
-        'updating' !== event &&
-        'disconnecting' !== event &&
-        'disconnected' !== event &&
-        'allcallsterminated' !== event) {
+      'connecting' !== event &&
+      'connected' !== event &&
+      'updating' !== event &&
+      'needs-refresh' !== event &&
+      'disconnecting' !== event &&
+      'disconnected' !== event &&
+      'allcallsterminated' !== event) {
       throw new Error('Event not defined');
     }
 
     ATT.event.unsubscribe(event, handler);
     ATT.event.subscribe(event, handler, this);
-  }
-
-  function update(options) {
-    if (options === undefined) {
-      throw new Error('No options provided');
-    }
-
-    if ('number' !== typeof options.timeout) {
-      throw new Error('Timeout is not a number.');
-    }
-
-    this.timeout = options.timeout || this.timeout;
-    this.token = options.token || this.token;
-    this.e911Id = options.e911Id || this.e911Id;
-
-    ATT.event.publish('updating', options);
   }
 
   /**
@@ -249,8 +234,7 @@
       resourceManager : Env.resourceManager.getInstance(),
       rtcEvent : ATT.RTCEvent,
       userMediaSvc : ATT.UserMediaService,
-      peerConnSvc : ATT.PeerConnectionService,
-      eventManager : {}
+      peerConnSvc : ATT.PeerConnectionService
     });
 
     // public attributes
@@ -258,6 +242,7 @@
     this.token = null;
     this.e911Id = null;
     this.currentCall = null;
+    this.timer = null;
 
     // public methods
     this.on = on.bind(this);
@@ -265,6 +250,7 @@
     this.getId = function () {
       return id;
     };
+
     this.setId = function (sessionId) {
       id = sessionId;
 
@@ -276,7 +262,31 @@
       ATT.event.publish('connected');
     };
 
-    this.update = update.bind(this);
+    this.update = function update(options) {
+      if (options === undefined) {
+        throw new Error('No options provided');
+      }
+
+      if ('number' !== typeof options.timeout) {
+        throw new Error('Timeout is not a number.');
+      }
+
+      this.timeout = options.timeout || this.timeout;
+      this.token = options.token || this.token;
+      this.e911Id = options.e911Id || this.e911Id;
+
+      ATT.event.publish('updating', options);
+
+      if (undefined !== options.timeout) {
+        var i = 0;
+        if (this.timer !== null) {
+          clearInterval(this.timer);
+        }
+        this.timer = setInterval(function () {
+          ATT.event.publish('needs-refresh', i++);
+        }, this.timeout - 60000);
+      }
+    };
 
     this.connect =   function connect(options) {
       if (!options) {
