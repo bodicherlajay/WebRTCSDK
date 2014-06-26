@@ -2,18 +2,22 @@
 /*global ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
 describe('Call', function () {
+
   'use strict';
+
   it('Should have a public constructor under ATT.rtc', function () {
     expect(ATT.rtc.Call).to.be.a('function');
   });
 
-  it('Should fail if no input options specified a call object', function () {
-    var fn = function (options) {
-      return (new ATT.rtc.Call(options));
+  it('Should throw an error if invalid options', function () {
+    var func = function (options) {
+      return new ATT.rtc.Call(options);
     };
-    expect(fn).to.throw('No input provided');
-    expect(fn.bind(null, {})).to.throw('No peer provided');
-    expect(fn.bind(null, { peer: '12345' })).to.throw('No mediaType provided');
+    expect(func).to.throw('No input provided');
+    expect(func.bind(null, {})).to.throw('No peer provided');
+    expect(func.bind(null, {
+      peer: '12345'
+    })).to.not.throw(Error);
   });
 
   it('Should create a call object with the options passed in', function () {
@@ -89,7 +93,7 @@ describe('Call', function () {
         expect(call.connect).to.be.a('function');
       });
 
-      it('Should execute the onConnecting callback immediately', function (done) {
+      it('Should trigger `connecting` event immediately', function (done) {
         call.connect();
 
         setTimeout(function () {
@@ -177,10 +181,7 @@ describe('Call', function () {
         }, 100);
       });
     });
-  });
 
-  describe('Reject Call method', function () {
-    it('should delete the rejected call object after success');
   });
 
 });
