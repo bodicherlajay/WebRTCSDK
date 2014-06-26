@@ -576,8 +576,16 @@
 //  }
 
   function on(event, handler) {
-    if ('session-ready' !== event &&
-      'session-disconnected' !== event) {
+    if ('session-ready' !== event
+      && 'session-disconnected' !== event
+      && 'call-connecting' !== event
+      && 'call-calling' !== event
+      && 'call-canceled' !== event
+      && 'call-rejected' !== event
+      && 'call-connected' !== event
+      && 'call-established' !== event
+      && 'call-ended' !== event
+      && 'call-error' !== event) {
       throw new Error('Event not defined');
     }
 
@@ -627,6 +635,31 @@
       var call = session.createCall({
         peer: options.destination,
         mediaType: options.mediaType
+      });
+
+      call.on('connecting', function () {
+        ATT.event.publish('call-connecting');
+      });
+      call.on('calling', function () {
+        ATT.event.publish('call-calling');
+      });
+      call.on('canceled', function () {
+        ATT.event.publish('call-canceled');
+      });
+      call.on('rejected', function () {
+        ATT.event.publish('call-rejected');
+      });
+      call.on('connected', function () {
+        ATT.event.publish('call-connected');
+      });
+      call.on('established', function () {
+        ATT.event.publish('call-established');
+      });
+      call.on('ended', function () {
+        ATT.event.publish('call-ended');
+      });
+      call.on('error', function () {
+        ATT.event.publish('call-error');
       });
 
       call.connect();

@@ -202,10 +202,15 @@
   function on(event, handler) {
 
     if ('connecting' !== event &&
-        'calling' !== event &&
-        'established' !== event &&
-        'disconnecting' !== event &&
-        'disconnected' !== event) {
+      'calling' !== event &&
+      'canceled' !== event &&
+      'rejected' !== event &&
+      'connected' !== event &&
+      'established' !== event &&
+      'ended' !== event &&
+      'error' !== event &&
+      'disconnecting' !== event &&
+      'disconnected' !== event) {
       throw new Error('Event not defined');
     }
 
