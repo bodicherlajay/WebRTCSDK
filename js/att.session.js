@@ -210,7 +210,7 @@
       throw new Error('Event not defined');
     }
 
-    event.unsubscribe(event, handler);
+    ATT.event.unsubscribe(event, handler);
     ATT.event.subscribe(event, handler, this);
   }
 
