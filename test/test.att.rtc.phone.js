@@ -30,6 +30,7 @@ describe('Phone', function () {
   });
 
   describe('Pseudo Class', function () {
+
     it('should export ATT.private.Phone', function () {
       expect(ATT.private.Phone).to.be.a('function');
     });
@@ -234,6 +235,65 @@ describe('Phone', function () {
 
         });
 
+      });
+
+      describe('dial', function () {
+
+        var session,
+          options;
+
+        beforeEach(function () {
+          session = phone.getSession();
+          options = {
+            destination: '12345',
+            mediaType: 'audio'
+          };
+        });
+
+        it('should exist', function () {
+          expect(phone.dial).to.be.a('function');
+        });
+
+        it('should throw an error if options are invalid', function () {
+          expect(phone.dial).to.throw('Options not defined');
+          expect(phone.dial.bind(phone, {})).to.throw('Destination not defined');
+          expect(phone.dial.bind(phone, {
+            destination: '12345'
+          })).to.not.throw(Error);
+        });
+
+        it('should call session.createCall', function () {
+          var sessionCreateCallSpy = sinon.spy(session, 'createCall');
+
+          phone.dial(options);
+
+          expect(sessionCreateCallSpy.called).to.equal(true);
+
+          sessionCreateCallSpy.restore();
+        });
+
+        it('should execute Call.connect', function () {
+          var call,
+            createCallStub,
+            callConnectSpy;
+
+          call = new ATT.rtc.Call({
+            peer: '123456'
+          });
+
+          callConnectSpy = sinon.spy(call, 'connect');
+
+          createCallStub = sinon.stub(session, 'createCall', function () {
+            return call;
+          });
+
+          phone.dial(options);
+
+          expect(callConnectSpy.called).to.equal(true);
+
+          callConnectSpy.restore();
+          createCallStub.restore();
+        });
       });
     });
   });

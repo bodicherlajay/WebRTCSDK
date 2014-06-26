@@ -335,6 +335,11 @@
       });
     };
 
+    this.createCall = function (options) {
+      this.currentCall = new ATT.rtc.Call(options);
+      return this.currentCall;
+    };
+
     this.terminateCalls = function () {
       var callId;
       for (callId in calls) {

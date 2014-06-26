@@ -616,10 +616,27 @@
       session.disconnect();
     }
 
+    function dial(options) {
+      if (undefined === options) {
+        throw new Error('Options not defined');
+      }
+      if (undefined === options.destination) {
+        throw new Error('Destination not defined');
+      }
+
+      var call = session.createCall({
+        peer: options.destination,
+        mediaType: options.mediaType
+      });
+
+      call.connect();
+    }
+
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
     this.logout = logout.bind(this);
+    this.dial = dial.bind(this);
   }
 
 

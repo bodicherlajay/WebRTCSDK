@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, Env, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe.only('Session', function () {
+describe('Session', function () {
   'use strict';
 
   var options,
@@ -366,6 +366,41 @@ describe.only('Session', function () {
       });
     });
 
+    describe('createCall', function () {
+      var callOpts;
+
+      beforeEach(function () {
+        callOpts = {
+          peer: '12345'
+        };
+      });
+
+      it('should exist', function () {
+        expect(session.createCall).to.be.a('function');
+      });
+
+      it('should call ATT.rtc.Call', function () {
+        var callConstructorSpy = sinon.spy(ATT.rtc, 'Call');
+
+        session.createCall(callOpts);
+
+        expect(callConstructorSpy.called).to.equal(true);
+
+        callConstructorSpy.restore();
+      });
+
+      it('should return the newly created call object', function () {
+        var call = session.createCall(callOpts);
+        expect(call instanceof ATT.rtc.Call).to.equal(true);
+      });
+
+      it('should set the currentCall as the newly created call', function () {
+        var call = session.createCall(callOpts);
+
+        expect(session.currentCall).to.equal(call);
+      });
+    });
+
     describe('AddCall', function () {
 
       it('Should exist', function () {
@@ -481,7 +516,7 @@ describe.only('Session', function () {
 
     describe('NeedsRefresh', function () {
 
-      it('Should be triggered every 60000 ms before timeout', function (done) {
+      xit('Should be triggered every 60000 ms before timeout', function (done) {
 
         var onNeedsRefreshSpy = sinon.spy(),
           timeout = 60200;

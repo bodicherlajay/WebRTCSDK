@@ -241,14 +241,11 @@
   * @param {String} mediaConstraints 'audio' or 'video'
   */
   function Call(options) {
-    if (!options) {
-      throw 'No input provided';
+    if (undefined === options) {
+      throw new Error('No input provided');
     }
-    if (!options.peer) {
-      throw 'No peer provided';
-    }
-    if (!options.mediaType) {
-      throw 'No mediaType provided';
+    if (undefined === options.peer) {
+      throw new Error('No peer provided');
     }
 
     this.id = options.id;
@@ -272,92 +269,7 @@
     this.end = endCall.bind(this);
   }
 
-  /**
-  * Create an Incoming Call
-  * @param {Object} config The configuration
-  * callmgr.CreateIncomingCall({
-  *   mediaConstraints: {audio: true, video: true}
-  * })
-  */
-  function createIncomingCall(options) {
-    logger.logDebug('createIncomingCall');
-
-    logger.logInfo('Creating incoming call');
-    logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
-
-    var callObj = new Call({
-      id: options.id,
-      type: options.type,
-      from: cleanPhoneNumber(options.from),
-      mediaType: options.mediaType,
-      remoteSdp: options.remoteSdp
-    });
-
-    options.onIncomingCallCreated(callObj);
-  }
-
-  /**
-  * Create an Outgoing Call
-  * @param {Object} config The configuration
-  * callmgr.CreateOutgoingCall({
-  *   to: '1-800-foo-bar,
-  *   mediaConstraints: {audio: true, video: true}
-  * })
-  */
-  function createOutgoingCall(options) {
-    logger.logDebug('createOutgoingCall');
-
-    logger.logInfo('Creating outgoing call');
-    logger.logInfo('caller: ' + options.from + ', constraints: ' + options.mediaConstraints);
-
-    userMediaSvc.getUserMedia(ATT.utils.extend(options, {
-      onUserMedia: function (userMedia) {
-        ATT.utils.extend(options, userMedia);
-        peerConnSvc.initPeerConnection(options);
-      },
-      onError: handleError.bind(this, 'createOutgoingCall', options.onError)
-    }));
-
-    // TODO: patch work
-    // setup callback for PeerConnectionService.onOfferSent, will be used to
-    // indicate the RINGING state on an outgoing call
-    ATT.PeerConnectionService.onOfferSent = function (callId, localSdp) {
-      logger.logInfo('onOfferSent... trigger RINGING event for outgoing call');
-      var callObj = new Call({
-        id: callId,
-        to: options.to,
-        type: options.type,
-        mediaConstraints: options.mediaConstraints,
-        localSdp: localSdp
-      });
-
-      options.onOutgoingCallCreated(callObj);
-    };
-  }
-
-  function createCall(options) {
-    errMgr = options.errorManager;
-    resourceManager = options.resourceManager;
-    userMediaSvc = options.userMediaSvc;
-    peerConnSvc = options.peerConnSvc;
-    logger = resourceManager.getLogger("Call");
-
-    logger.logDebug('createCall');
-
-    if (options.type === ATT.CallTypes.INCOMING) {
-      createIncomingCall(ATT.utils.extend(options, {
-        onIncomingCallCreated: options.onCallCreated
-      }));
-    } else {
-      createOutgoingCall(ATT.utils.extend(options, {
-        onOutgoingCallCreated: options.onCallCreated
-      }));
-    }
-  }
-
-  factories.createCall = createCall;
-
-  if (undefined === ATT.rtc) {
+   if (undefined === ATT.rtc) {
     throw new Error('Cannot export Call. ATT.rtc is undefined');
   }
   ATT.rtc.Call = Call;
