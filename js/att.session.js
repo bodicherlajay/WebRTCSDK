@@ -25,63 +25,63 @@
   }
 
 
+//
+//  function refreshWebRTCSession(args) {
+//    var dataForRefreshWebRTCSession = {
+//      params: {
+//        url: [args.sessionId],
+//        headers: {
+//          'Authorization': args.token
+//        }
+//      },
+//      success: function () {
+//        logger.logInfo('Successfully refreshed web rtc session on blackflag');
+//        args.onWebRTCSessionRefreshed();
+//      },
+//      error: args.onError
+//    };
+//
+//    // Call BF to refresh WebRTC Session.
+//    resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
+//  }
 
-  function refreshWebRTCSession(args) {
-    var dataForRefreshWebRTCSession = {
-      params: {
-        url: [args.sessionId],
-        headers: {
-          'Authorization': args.token
-        }
-      },
-      success: function () {
-        logger.logInfo('Successfully refreshed web rtc session on blackflag');
-        args.onWebRTCSessionRefreshed();
-      },
-      error: args.onError
-    };
+//   //Do put operation to set the new E911Id for the current session
+//  function refreshWebRTCSessionWithE911Id(args) {
+//    var dataForRefreshWebRTCSessionWithE911Id = {
+//      data: {
+//        "e911Association": { "e911Id": args.e911Id }
+//      },
+//      params: {
+//        url: [args.sessionId],
+//        headers: {
+//          'Authorization': args.token,
+//        }
+//      },
+//      success: args.onSuccess,
+//      error: args.onError
+//    };
+//
+//    // Call BF to refresh WebRTC Session.
+//    resourceManager.doOperation('refreshWebRTCSessionWithE911Id', dataForRefreshWebRTCSessionWithE911Id);
+//  }
 
-    // Call BF to refresh WebRTC Session.
-    resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
-  }
-
-   //Do put operation to set the new E911Id for the current session
-  function refreshWebRTCSessionWithE911Id(args) {
-    var dataForRefreshWebRTCSessionWithE911Id = {
-      data: {
-        "e911Association": { "e911Id": args.e911Id }
-      },
-      params: {
-        url: [args.sessionId],
-        headers: {
-          'Authorization': args.token,
-        }
-      },
-      success: args.onSuccess,
-      error: args.onError
-    };
-
-    // Call BF to refresh WebRTC Session.
-    resourceManager.doOperation('refreshWebRTCSessionWithE911Id', dataForRefreshWebRTCSessionWithE911Id);
-  }
-
-   // methods takes on the e911Id and refresh the session with he new ID
-  function updateE911Id(args) {
-    // the session object will contain the token ,sessionId
-    var self = this;
-    logger.logDebug('Updated e911ID in session object');
-    logger.logDebug('Triggres the refresh session with new e911 address ');
-    refreshWebRTCSessionWithE911Id({
-      sessionId: this.getSessionId(),
-      token: this.getAccessToken(),
-      e911Id: this.getE911Id(),
-      onSuccess: function () {
-        self.setE911Id(args.e911Id);
-        args.onSuccess();
-      },
-      onError: args.onError
-    });
-  }
+//   // methods takes on the e911Id and refresh the session with he new ID
+//  function updateE911Id(args) {
+//    // the session object will contain the token ,sessionId
+//    var self = this;
+//    logger.logDebug('Updated e911ID in session object');
+//    logger.logDebug('Triggres the refresh session with new e911 address ');
+//    refreshWebRTCSessionWithE911Id({
+//      sessionId: this.getSessionId(),
+//      token: this.getAccessToken(),
+//      e911Id: this.getE911Id(),
+//      onSuccess: function () {
+//        self.setE911Id(args.e911Id);
+//        args.onSuccess();
+//      },
+//      onError: args.onError
+//    });
+//  }
 
   function deleteWebRTCSession(args) {
     var dataForDeleteWebRTCSession = {
@@ -103,32 +103,32 @@
     resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
   }
 
-  function keepAlive(args) {
-    logger.logDebug('keepSessionAlive');
-
-    var keepAliveDuration = ATT.appConfig.KeepAlive || this.getExpiration(), // developer configured duration overrides the one set by API server
-      timeBeforeExpiration = 5 * 60 * 1000, // refresh 5 minutes before expiration
-      timeout = (keepAliveDuration > timeBeforeExpiration) ? (keepAliveDuration - timeBeforeExpiration) : keepAliveDuration;
-
-    this.keepAliveInterval = setInterval(function () {
-      logger.logInfo('Trying to refresh session after ' + (timeout / 1000) + ' seconds');
-
-      refreshWebRTCSession({
-        sessionId: this.getSessionId(),
-        token: this.getAccessToken(),
-        onWebRTCSessionRefreshed: function () {
-          args.onSessionAlive('Next refresh in ' + (timeout / 1000) + ' seconds');
-        },
-        onError: args.onError
-      });
-    }, timeout);
-  }
-
-  function clearKeepAlive() {
-    logger.logDebug('clearKeepAlive');
-    clearInterval(this.keepAliveInterval);
-    this.keepAliveInterval = null;
-  }
+//  function keepAlive(args) {
+//    logger.logDebug('keepSessionAlive');
+//
+//    var keepAliveDuration = ATT.appConfig.KeepAlive || this.getExpiration(), // developer configured duration overrides the one set by API server
+//      timeBeforeExpiration = 5 * 60 * 1000, // refresh 5 minutes before expiration
+//      timeout = (keepAliveDuration > timeBeforeExpiration) ? (keepAliveDuration - timeBeforeExpiration) : keepAliveDuration;
+//
+//    this.keepAliveInterval = setInterval(function () {
+//      logger.logInfo('Trying to refresh session after ' + (timeout / 1000) + ' seconds');
+//
+//      refreshWebRTCSession({
+//        sessionId: this.getSessionId(),
+//        token: this.getAccessToken(),
+//        onWebRTCSessionRefreshed: function () {
+//          args.onSessionAlive('Next refresh in ' + (timeout / 1000) + ' seconds');
+//        },
+//        onError: args.onError
+//      });
+//    }, timeout);
+//  }
+//
+//  function clearKeepAlive() {
+//    logger.logDebug('clearKeepAlive');
+//    clearInterval(this.keepAliveInterval);
+//    this.keepAliveInterval = null;
+//  }
 
   function clearSession(args) {
     var session = this,
@@ -210,7 +210,7 @@
       throw new Error('Event not defined');
     }
 
-    ATT.event.unsubscribe(event, handler);
+    event.unsubscribe(event, handler);
     ATT.event.subscribe(event, handler, this);
   }
 
@@ -276,16 +276,19 @@
       this.e911Id = options.e911Id || this.e911Id;
 
       ATT.event.publish('updating', options);
+      this.timer = setInterval(function () {
+        ATT.event.publish('needs-refresh');
+      }, this.timeout - 60000);
 
-      if (undefined !== options.timeout) {
-        var i = 0;
-        if (this.timer !== null) {
-          clearInterval(this.timer);
-        }
-        this.timer = setInterval(function () {
-          ATT.event.publish('needs-refresh', i++);
-        }, this.timeout - 60000);
-      }
+//      if (undefined !== options.timeout) {
+//        var i = 0;
+//        if (this.timer !== null) {
+//          clearInterval(this.timer);
+//        }
+//        this.timer = setInterval(function () {
+//          ATT.event.publish('needs-refresh', i++);
+//        }, this.timeout - 60000);
+//      }
     };
 
     this.connect =   function connect(options) {
