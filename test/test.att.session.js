@@ -314,11 +314,11 @@ describe('Session', function () {
         expect(session.update).to.be.a('function');
       });
 
-      xit('Should throw and error if no options', function () {
+      it('Should throw and error if no options', function () {
         expect(session.update.bind(session)).to.throw('No options provided');
       });
 
-      xit('Should trigger onUpdating callback with options', function (done) {
+      it('Should trigger onUpdating callback with options', function (done) {
 
         session.update(options);
 
@@ -334,19 +334,19 @@ describe('Session', function () {
 
       describe('timeout', function () {
 
-        xit('Should throw an error if the timeout value is not a number', function () {
+        it('Should throw an error if the timeout value is not a number', function () {
 
           options.timeout = '123';
           expect(session.update.bind(session, options)).to.throw('Timeout is not a number.');
 
         });
 
-        xit('Should set the timeout', function () {
+        it('Should set the timeout', function () {
           session.update(options);
           expect(session.timeout).to.equal(123);
         });
 
-        xit('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function (done) {
+        it('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function (done) {
           var onNeedsRefreshSpy = sinon.spy();
           options.timeout = 60200;
           session.on('needs-refresh', onNeedsRefreshSpy);
@@ -390,12 +390,12 @@ describe('Session', function () {
       });
 
       it('should return the newly created call object', function () {
-        var call = session.createCall(callOpts);
+        call = session.createCall(callOpts);
         expect(call instanceof ATT.rtc.Call).to.equal(true);
       });
 
       it('should set the currentCall as the newly created call', function () {
-        var call = session.createCall(callOpts);
+        call = session.createCall(callOpts);
 
         expect(session.currentCall).to.equal(call);
       });
@@ -518,8 +518,7 @@ describe('Session', function () {
 
       xit('Should be triggered every 60000 ms before timeout', function (done) {
 
-        var onNeedsRefreshSpy = sinon.spy(),
-          timeout = 60200;
+        var onNeedsRefreshSpy = sinon.spy();
 
         session2.on('needs-refresh', onNeedsRefreshSpy);
         options.timeout = 60200;
@@ -532,7 +531,7 @@ describe('Session', function () {
         setTimeout(function () {
           try {
            // for (i = 0; i < count; i++) {
-              expect(onNeedsRefreshSpy.called).to.equal(true);
+            expect(onNeedsRefreshSpy.called).to.equal(true);
             //}
             done();
           } catch (e) {

@@ -21,9 +21,9 @@ module.exports = function (grunt) {
       'js/att.config.app.js',
       'js/att.enum.js',
       'js/att.event-manager.js',
+      'js/att.rtc-manager.js',
       'js/att.call.js',
       'js/att.session.js',
-      'js/att.rtc-manager.js',
       'js/eventDispatcher.js',
       'js/att.rtc.event.js',
       'js/adapter.js',
@@ -44,9 +44,9 @@ module.exports = function (grunt) {
 //      'test/test.att.resource-manager.js',
 //      'test/test.att.enum.js',
 //      'test/test.att.event-manager.js',
-//      'test/test.att.call.js'
-//      'test/test.att.session.js'
-//      'test/test.att.rtc-manager.js',
+      'test/test.att.call.js',
+      'test/test.att.session.js',
+      'test/test.att.rtc-manager.js',
 //      'test/test.att.utils.error-dictionary.js',
 //      'test/test.att.utils.event-channel.js',
 //      'test/test.att.peer-connection-service.js',

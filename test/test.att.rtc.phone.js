@@ -243,6 +243,7 @@ describe('Phone', function () {
           options;
 
         beforeEach(function () {
+          phone = new ATT.private.Phone();
           session = phone.getSession();
           options = {
             destination: '12345',
