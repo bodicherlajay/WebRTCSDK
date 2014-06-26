@@ -9,31 +9,30 @@ describe('Call', function () {
     expect(ATT.rtc.Call).to.be.a('function');
   });
 
-  it('Should throw an error if invalid options', function () {
-    var func = function (options) {
-      return new ATT.rtc.Call(options);
-    };
-    expect(func).to.throw('No input provided');
-    expect(func.bind(null, {})).to.throw('No peer provided');
-    expect(func.bind(null, {
-      peer: '12345'
-    })).to.not.throw(Error);
-  });
+  describe('Constructor', function () {
+    it('Should throw an error if invalid options', function () {
+      var func = function (options) {
+        return new ATT.rtc.Call(options);
+      };
+      expect(func).to.throw('No input provided');
+      expect(func.bind(null, {})).to.throw('No peer provided');
+    });
 
-  it('Should create a call object with the options passed in', function () {
-    var options = {
-        id: '12334',
-        peer: '12345',
-        mediaType: 'audio'
-      },
-      call;
+    it('Should create a call object with the options passed in', function () {
+      var options = {
+          id: '12334',
+          peer: '12345',
+          mediaType: 'audio'
+        },
+        call;
 
-    call = new ATT.rtc.Call(options);
+      call = new ATT.rtc.Call(options);
 
-    expect(call).to.be.an('object');
-    expect(call.id).to.equal(options.id);
-    expect(call.peer).to.equal(options.peer);
-    expect(call.mediaType).to.equal(options.mediaType);
+      expect(call).to.be.an('object');
+      expect(call.id).to.equal(options.id);
+      expect(call.peer).to.equal(options.peer);
+      expect(call.mediaType).to.equal(options.mediaType);
+    });
   });
 
   describe('method', function () {
