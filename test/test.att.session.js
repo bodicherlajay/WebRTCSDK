@@ -1,14 +1,10 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, Env, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe('Session', function () {
+describe.only('Session', function () {
   'use strict';
 
-  var options,
-    rtcManagerStub,
-    createRTCMgrStub,
-    connectSessionStub,
-    disconnectSessionStub;
+  var options;
 
   beforeEach(function () {
     options = {
@@ -21,11 +17,13 @@ describe('Session', function () {
     expect(ATT.rtc.Session).to.be.a('function');
   });
 
-  describe.only('Constructor', function () {
+  describe('Constructor', function () {
     var session,
+      createEventEmitterSpy,
       getRTCManagerStub;
 
     beforeEach(function () {
+      createEventEmitterSpy = sinon.spy(ATT.private, 'createEventEmitter');
       getRTCManagerStub = sinon.stub(ATT.private.RTCManager, 'getRTCManager', function () {
         return {};
       });
@@ -33,12 +31,17 @@ describe('Session', function () {
     });
 
     afterEach(function () {
+      createEventEmitterSpy.restore();
       getRTCManagerStub.restore();
       session = null;
     });
 
     it('Should create a session object', function () {
       expect(session instanceof ATT.rtc.Session).to.equal(true);
+    });
+
+    it('should create an instance of event emitter', function () {
+      expect(createEventEmitterSpy.called).to.equal(true);
     });
 
     it('should call ATT.private.RTCManager.getRTCManager', function () {
@@ -50,36 +53,33 @@ describe('Session', function () {
     var session,
       call,
       secondCall,
+      emitter,
       onConnectingSpy,
       onConnectedSpy,
       onUpdatingSpy,
       onReadySpy,
       onDisconnectingSpy,
       onDisconnectedSpy,
-      resourceManagerStub,
-      onSessionReadyData;
+      onSessionReadyData,
+      createEventEmitterStub,
+      createEventMgrStub,
+      rtcManagerStub,
+      createRTCMgrStub,
+      connectSessionStub,
+      disconnectSessionStub;
 
     beforeEach(function () {
       onSessionReadyData = {test: 'test'};
-      resourceManagerStub = {
-        doOperation: function () {
-          return;
-        },
-        getLogger : function () {
-          return {
-            logDebug : function () { return; },
-            logInfo: function () { return; }
-          };
-        }
-      };
 
-      rtcManagerStub = ATT.factories.createRTCManager({
-        userMediaSvc: {},
-        rtcEvent: {},
-        errorManager: {},
-        peerConnSvc: {},
-        resourceManager: resourceManagerStub
+      emitter = ATT.private.createEventEmitter();
+
+      createEventEmitterStub = sinon.stub(ATT.private, 'createEventEmitter', function () {
+        return emitter;
       });
+
+      createEventMgrStub = sinon.stub(ATT.factories, 'createEventManager');
+
+      rtcManagerStub = ATT.private.RTCManager.getRTCManager();
 
       connectSessionStub = sinon.stub(rtcManagerStub, 'connectSession', function (options) {
         options.onSessionConnected({
@@ -93,7 +93,7 @@ describe('Session', function () {
         options.onSessionDisconnected();
       });
 
-      createRTCMgrStub = sinon.stub(ATT.factories, 'createRTCManager', function () {
+      createRTCMgrStub = sinon.stub(ATT.private.RTCManager, 'getRTCManager', function () {
         return rtcManagerStub;
       });
 
@@ -127,6 +127,8 @@ describe('Session', function () {
     });
 
     afterEach(function () {
+      createEventEmitterStub.restore();
+      createEventMgrStub.restore();
       createRTCMgrStub.restore();
       connectSessionStub.restore();
       disconnectSessionStub.restore();
@@ -144,12 +146,16 @@ describe('Session', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          subscribeSpy = sinon.spy(ATT.event, 'subscribe');
+          unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
+          subscribeSpy = sinon.spy(emitter, 'subscribe');
 
         expect(session.on.bind(session, 'connected', fn)).to.not.throw(Error);
         expect(session.on.bind(session, 'disconnected', fn)).to.not.throw(Error);
+
+        expect(unsubscribeSpy.called).to.equal(true);
         expect(subscribeSpy.called).to.equal(true);
 
+        unsubscribeSpy.restore();
         subscribeSpy.restore();
       });
     });

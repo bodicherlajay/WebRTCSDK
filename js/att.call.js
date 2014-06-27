@@ -199,46 +199,6 @@
     });
   }
 
-  function on(event, handler) {
-
-    if ('dialing' !== event &&
-      'connecting' !== event &&
-      'canceled' !== event &&
-      'rejected' !== event &&
-      'connected' !== event &&
-      'established' !== event &&
-      'ended' !== event &&
-      'error' !== event &&
-      'disconnecting' !== event &&
-      'disconnected' !== event) {
-      throw new Error('Event not defined');
-    }
-
-    ATT.event.unsubscribe(event, handler);
-    ATT.event.subscribe(event, handler, this);
-  }
-
-  function connect() {
-    ATT.event.publish('dialing');
-  }
-
-  function disconnect() {
-    ATT.event.publish('disconnecting');
-  }
-
-  function setId(callId) {
-    this.id  = callId;
-    if (this.id === null) {
-      ATT.event.publish('disconnected');
-    } else {
-      ATT.event.publish('connecting');
-    }
-  }
-
-  function setRemoteSdp(remoteSdp) {
-    this.remoteSdp = remoteSdp;
-    ATT.event.publish('established');
-  }
   /**
   * Call Prototype
   * @param {String} from The caller
@@ -251,6 +211,49 @@
     }
     if (undefined === options.peer) {
       throw new Error('No peer provided');
+    }
+
+    var emitter = ATT.private.createEventEmitter();
+
+    function on(event, handler) {
+
+      if ('dialing' !== event &&
+        'connecting' !== event &&
+        'canceled' !== event &&
+        'rejected' !== event &&
+        'connected' !== event &&
+        'established' !== event &&
+        'ended' !== event &&
+        'error' !== event &&
+        'disconnecting' !== event &&
+        'disconnected' !== event) {
+        throw new Error('Event not defined');
+      }
+
+      emitter.unsubscribe(event, handler);
+      emitter.subscribe(event, handler, this);
+    }
+
+    function connect() {
+      emitter.publish('dialing');
+    }
+
+    function disconnect() {
+      emitter.publish('disconnecting');
+    }
+
+    function setId(callId) {
+      this.id  = callId;
+      if (this.id === null) {
+        emitter.publish('disconnected');
+      } else {
+        emitter.publish('connecting');
+      }
+    }
+
+    function setRemoteSdp(remoteSdp) {
+      this.remoteSdp = remoteSdp;
+      emitter.publish('established');
     }
 
     this.id = options.id;

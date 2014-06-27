@@ -575,30 +575,31 @@
 //    }
 //  }
 
-  function on(event, handler) {
-    if ('session-ready' !== event
-      && 'session-disconnected' !== event
-      && 'call-dialing' !== event
-      && 'call-connecting' !== event
-      && 'call-canceled' !== event
-      && 'call-rejected' !== event
-      && 'call-connected' !== event
-      && 'call-established' !== event
-      && 'call-ended' !== event
-      && 'call-error' !== event) {
-      throw new Error('Event not defined');
-    }
-
-    ATT.event.unsubscribe(event, handler);
-    ATT.event.subscribe(event, handler, this);
-  }
-
   function Phone() {
 
-    var session = new ATT.rtc.Session();
+    var emitter = ATT.private.createEventEmitter(),
+      session = new ATT.rtc.Session();
 
     function getSession() {
       return session;
+    }
+
+    function on(event, handler) {
+      if ('session-ready' !== event
+        && 'session-disconnected' !== event
+        && 'call-dialing' !== event
+        && 'call-connecting' !== event
+        && 'call-canceled' !== event
+        && 'call-rejected' !== event
+        && 'call-connected' !== event
+        && 'call-established' !== event
+        && 'call-ended' !== event
+        && 'call-error' !== event) {
+        throw new Error('Event not defined');
+      }
+
+      emitter.unsubscribe(event, handler);
+      emitter.subscribe(event, handler, this);
     }
 
     function login(options) {
@@ -610,7 +611,7 @@
       }
 
       session.on('ready', function (data) {
-        ATT.event.publish('session-ready', data);
+        emitter.publish('session-ready', data);
       });
 
       session.connect(options);
@@ -618,7 +619,7 @@
 
     function logout() {
       session.on('disconnected', function (data) {
-        ATT.event.publish('session-disconnected', data);
+        emitter.publish('session-disconnected', data);
       });
 
       session.disconnect();
@@ -638,28 +639,28 @@
       });
 
       call.on('dialing', function () {
-        ATT.event.publish('call-dialing');
+        emitter.publish('call-dialing');
       });
       call.on('connecting', function () {
-        ATT.event.publish('call-connecting');
+        emitter.publish('call-connecting');
       });
       call.on('canceled', function () {
-        ATT.event.publish('call-canceled');
+        emitter.publish('call-canceled');
       });
       call.on('rejected', function () {
-        ATT.event.publish('call-rejected');
+        emitter.publish('call-rejected');
       });
       call.on('connected', function () {
-        ATT.event.publish('call-connected');
+        emitter.publish('call-connected');
       });
       call.on('established', function () {
-        ATT.event.publish('call-established');
+        emitter.publish('call-established');
       });
       call.on('ended', function () {
-        ATT.event.publish('call-ended');
+        emitter.publish('call-ended');
       });
       call.on('error', function () {
-        ATT.event.publish('call-error');
+        emitter.publish('call-error');
       });
 
       call.connect();

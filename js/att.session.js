@@ -197,23 +197,6 @@
 //    call.disconnect();
 //  }
 
-  function on(event, handler) {
-
-    if ('ready' !== event &&
-      'connecting' !== event &&
-      'connected' !== event &&
-      'updating' !== event &&
-      'needs-refresh' !== event &&
-      'disconnecting' !== event &&
-      'disconnected' !== event &&
-      'allcallsterminated' !== event) {
-      throw new Error('Event not defined');
-    }
-
-    ATT.event.unsubscribe(event, handler);
-    ATT.event.subscribe(event, handler, this);
-  }
-
   /**
   * session prototype
   * @param {String} sessionId The sessionId
@@ -224,12 +207,34 @@
   function Session() {
 
     // dependencies
-    var rtcManager,
+    var emitter,
+      rtcManager,
       // private attributes
       id = null,
       calls = {};
 
+    // instantiate event emitter
+    emitter = ATT.private.createEventEmitter();
+
+    // get the RTC Manager
     rtcManager = ATT.private.RTCManager.getRTCManager();
+
+    function on(event, handler) {
+
+      if ('ready' !== event &&
+        'connecting' !== event &&
+        'connected' !== event &&
+        'updating' !== event &&
+        'needs-refresh' !== event &&
+        'disconnecting' !== event &&
+        'disconnected' !== event &&
+        'allcallsterminated' !== event) {
+        throw new Error('Event not defined');
+      }
+
+      emitter.unsubscribe(event, handler);
+      emitter.subscribe(event, handler, this);
+    }
 
     // public attributes
     this.timeout = null;
@@ -249,11 +254,11 @@
       id = sessionId;
 
       if (null === sessionId) {
-        ATT.event.publish('disconnected');
+        emitter.publish('disconnected');
         return;
       }
 
-      ATT.event.publish('connected');
+      emitter.publish('connected');
     };
 
     this.update = function update(options) {
@@ -269,9 +274,9 @@
       this.token = options.token || this.token;
       this.e911Id = options.e911Id || this.e911Id;
 
-      ATT.event.publish('updating', options);
+      emitter.publish('updating', options);
       this.timer = setInterval(function () {
-        ATT.event.publish('needs-refresh');
+        emitter.publish('needs-refresh');
       }, this.timeout - 60000);
 
 //      if (undefined !== options.timeout) {
@@ -280,7 +285,7 @@
 //          clearInterval(this.timer);
 //        }
 //        this.timer = setInterval(function () {
-//          ATT.event.publish('needs-refresh', i++);
+//          emitter.publish('needs-refresh', i++);
 //        }, this.timeout - 60000);
 //      }
     };
@@ -295,7 +300,7 @@
       this.token = options.token;
       this.e911Id = options.e911Id;
 
-      ATT.event.publish('connecting');
+      emitter.publish('connecting');
 
       var session = this;
 
@@ -309,13 +314,13 @@
           });
         },
         onSessionReady: function (data) {
-          ATT.event.publish('ready', data);
+          emitter.publish('ready', data);
         }
       });
     };
 
     this.disconnect =   function () {
-      ATT.event.publish('disconnecting');
+      emitter.publish('disconnecting');
 
       var session = this;
 
@@ -360,7 +365,7 @@
       call = null;
 
       if (Object.keys(calls).length === 0) {
-        ATT.event.publish('allcallsterminated');
+        emitter.publish('allcallsterminated');
       }
     };
   }

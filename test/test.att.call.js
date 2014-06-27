@@ -10,6 +10,27 @@ describe('Call', function () {
   });
 
   describe('Constructor', function () {
+    var options,
+      createEventEmitterSpy,
+      call;
+
+    beforeEach(function () {
+      options = {
+        id: '12334',
+        peer: '12345',
+        mediaType: 'audio'
+      };
+
+      createEventEmitterSpy = sinon.spy(ATT.private, 'createEventEmitter');
+
+      call = new ATT.rtc.Call(options);
+
+    });
+
+    afterEach(function () {
+      createEventEmitterSpy.restore();
+    });
+
     it('Should throw an error if invalid options', function () {
       var func = function (options) {
         return new ATT.rtc.Call(options);
@@ -19,25 +40,21 @@ describe('Call', function () {
     });
 
     it('Should create a call object with the options passed in', function () {
-      var options = {
-          id: '12334',
-          peer: '12345',
-          mediaType: 'audio',
-
-        },
-        call;
-
-      call = new ATT.rtc.Call(options);
-
       expect(call).to.be.an('object');
       expect(call.id).to.equal(options.id);
       expect(call.peer).to.equal(options.peer);
       expect(call.mediaType).to.equal(options.mediaType);
     });
+
+    it('should create an instance of event emitter', function () {
+      expect(createEventEmitterSpy.called).to.equal(true);
+    });
   });
 
-  describe('method', function () {
-    var call,
+  describe('Methods', function () {
+    var emitter,
+      createEventEmitterStub,
+      call,
       onDialingSpy,
       onConnectingSpy,
       onEstablishedSpy,
@@ -45,6 +62,12 @@ describe('Call', function () {
       onDisconnectedSpy;
 
     beforeEach(function () {
+      emitter = ATT.private.createEventEmitter();
+
+      createEventEmitterStub = sinon.stub(ATT.private, 'createEventEmitter', function () {
+        return emitter;
+      });
+
       call = new ATT.rtc.Call({
         peer: '12345',
         mediaType: 'video'
@@ -64,6 +87,10 @@ describe('Call', function () {
 
     });
 
+    afterEach(function () {
+      createEventEmitterStub.restore();
+    })
+
     describe('On', function () {
 
       it('Should exist', function () {
@@ -76,12 +103,15 @@ describe('Call', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          subscribeSpy = sinon.spy(ATT.event, 'subscribe');
+          unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
+          subscribeSpy = sinon.spy(emitter, 'subscribe');
 
         expect(call.on.bind(call, 'dialing', fn)).to.not.throw(Error);
 
+        expect(unsubscribeSpy.called).to.equal(true);
         expect(subscribeSpy.called).to.equal(true);
 
+        unsubscribeSpy.restore();
         subscribeSpy.restore();
 
       });
