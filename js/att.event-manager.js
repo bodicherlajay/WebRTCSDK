@@ -227,32 +227,6 @@
     ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', event);
   }
 
-  function eventManager(options) {
-    var session = options.session,
-      callbacks = options.callbacks,
-      currentEvent = null,
-      emitter = options.emitter;
-    return {
-      getSession: function () {
-        return session;
-      },
-      getCurrentEvent: function () {
-        return currentEvent;
-      },
-      setCurrentEvent: function (evt) {
-        currentEvent = evt;
-      },
-      getEventEmitter: function () {
-        emitter = emitter;
-      },
-      setupEventChannel: setupEventChannel,
-      setupEventInterceptor: setupEventInterceptor,
-      processCurrentEvent: processCurrentEvent,
-      createRTCEvent: createRTCEvent,
-      publishEvent: publishEvent,
-      shutDown: shutDown
-    };
-  }
 
   function createEventManager(options) {
 
@@ -271,6 +245,30 @@
       }
       emitter.unsubscribe(event, handler);
       emitter.subscribe(event, handler);
+    }
+
+    function setup(options) {
+      if (undefined === options) {
+        throw new Error('Options not defined');
+      }
+      if (undefined === options.sessionId) {
+        throw new Error('Session id is not defined');
+      }
+      if (undefined === options.token) {
+        throw new Error('Token not defined');
+      }
+
+      var sessionId = options.sessionId;
+
+      // unsubscribe first, to avoid double subscription from previous actions
+      emitter.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
+      logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
+
+      // subscribe to published events from event channel
+      emitter.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
+      logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
+
+      setupEventChannel(options);
     }
 
     function setupEventChannel(options) {
@@ -301,39 +299,17 @@
           error: options.onError
         });
       }
-      ATT.event.publish('listening');
+      emitter.publish('listening');
     }
 
-    function setup(options) {
-      if (undefined === options) {
-        throw new Error('Options not defined');
-      }
-      if (undefined === options.sessionId) {
-        throw new Error('Session id is not defined');
-      }
-      if (undefined === options.token) {
-        throw new Error('Token not defined');
-      }
 
-      var sessionId = options.sessionId, emitter = options.emitter;
-
-      // unsubscribe first, to avoid double subscription from previous actions
-      emitter.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
-      logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
-
-      // subscribe to published events from event channel
-      emitter.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
-      logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
-
-      setupEventChannel(options);
-    }
 
     function stop () {
       if (eventChannel) {
         eventChannel.stopListening();
         logger.logInfo('Event channel shutdown successfully');
       }
-      this.getCurrentEvent().publish('stop-listening');
+      emitter.publish('stop-listening');
     }
 
     return {

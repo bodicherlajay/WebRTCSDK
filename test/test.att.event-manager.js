@@ -19,16 +19,13 @@ describe.only('Event Manager', function () {
 
   describe('Method', function () {
     var sessionId = 'sessionid',
-      options = {
-        rtcEvent: {},
-        errorManager: {},
-        resourceManager: resourceManagerStub
-      },
+      options,
       eventManager,
       eventChannelStub,
       createEvtChanStub,
       stopListeningSpy,
-      factories;
+      factories,
+      emitter;
 
     beforeEach(function () {
       factories = ATT.private.factories;
@@ -45,6 +42,13 @@ describe.only('Event Manager', function () {
         return eventChannelStub;
       });
 
+      emitter = factories.createEventEmitter();
+      options = {
+        emitter: emitter,
+        rtcEvent: {},
+        errorManager: {},
+        resourceManager: resourceManagerStub
+      };
       eventManager = ATT.private.factories.createEventManager(options);
 
     });
@@ -65,16 +69,14 @@ describe.only('Event Manager', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          emitter  = ATT.private.factories.createEventEmitter();
-//          subscribeSpy = sinon.spy(emitter, 'subscribe');
+          subscribeSpy;
 
-        options.emitter = emitter;
-        eventManager = factories.createEventManager(options);
+        subscribeSpy = sinon.spy(emitter, 'subscribe');
 
         expect(eventManager.on.bind(eventManager, 'listening', fn)).to.not.throw(Error);
-//        expect(subscribeSpy.called).to.equal(true);
+        expect(subscribeSpy.called).to.equal(true);
 
-//        subscribeSpy.restore();
+        subscribeSpy.restore();
       });
     });
 
@@ -83,7 +85,6 @@ describe.only('Event Manager', function () {
         onListeningSpy;
 
       beforeEach(function () {
-
         ATT.appConfig = {
           EventChannelConfig: {
             endpoint: 'endpoint',
@@ -91,7 +92,7 @@ describe.only('Event Manager', function () {
           }
         };
 
-        subscribeSpy = sinon.spy(ATT.event, 'subscribe');
+        subscribeSpy = sinon.spy(emitter, 'subscribe');
 
         onListeningSpy = sinon.spy();
       });
