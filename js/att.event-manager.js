@@ -339,8 +339,8 @@
     };
   }
 
-  if (undefined === ATT.factories) {
+  if (undefined === ATT.private.factories) {
     throw new Error('Error exporting createEventManager');
   }
-  ATT.factories.createEventManager = createEventManager;
+  ATT.private.factories.createEventManager = createEventManager;
 }());

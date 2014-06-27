@@ -214,7 +214,7 @@
       calls = {};
 
     // instantiate event emitter
-    emitter = ATT.private.createEventEmitter();
+    emitter = ATT.private.factories.createEventEmitter();
 
     // get the RTC Manager
     rtcManager = ATT.private.RTCManager.getRTCManager();

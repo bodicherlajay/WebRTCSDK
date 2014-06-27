@@ -213,7 +213,7 @@
       throw new Error('No peer provided');
     }
 
-    var emitter = ATT.private.createEventEmitter();
+    var emitter = ATT.private.factories.createEventEmitter();
 
     function on(event, handler) {
 

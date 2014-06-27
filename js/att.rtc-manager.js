@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var factories = ATT.factories,
+  var factories = ATT.private.factories,
     errMgr,
     session,
     rtcEvent,

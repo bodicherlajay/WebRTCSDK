@@ -11,8 +11,8 @@ describe('Event Manager', function () {
     }
   };
 
-  it('Should export ATT.factories.createEventManager', function () {
-    expect(ATT.factories.createEventManager).to.be.a('function');
+  it('Should export ATT.private.factories.createEventManager', function () {
+    expect(ATT.private.factories.createEventManager).to.be.a('function');
   });
 
   describe('Method', function () {

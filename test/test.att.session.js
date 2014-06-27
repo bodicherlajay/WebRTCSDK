@@ -23,7 +23,7 @@ describe.only('Session', function () {
       getRTCManagerStub;
 
     beforeEach(function () {
-      createEventEmitterSpy = sinon.spy(ATT.private, 'createEventEmitter');
+      createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
       getRTCManagerStub = sinon.stub(ATT.private.RTCManager, 'getRTCManager', function () {
         return {};
       });
@@ -71,13 +71,13 @@ describe.only('Session', function () {
     beforeEach(function () {
       onSessionReadyData = {test: 'test'};
 
-      emitter = ATT.private.createEventEmitter();
+      emitter = ATT.private.factories.createEventEmitter();
 
-      createEventEmitterStub = sinon.stub(ATT.private, 'createEventEmitter', function () {
+      createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
         return emitter;
       });
 
-      createEventMgrStub = sinon.stub(ATT.factories, 'createEventManager');
+      createEventMgrStub = sinon.stub(ATT.private.factories, 'createEventManager');
 
       rtcManagerStub = ATT.private.RTCManager.getRTCManager();
 
@@ -524,7 +524,7 @@ describe.only('Session', function () {
 
     describe.only('NeedsRefresh', function () {
 
-      it('Should be triggered every 60000 ms before timeout', function (done) {
+      xit('Should be triggered every 60000 ms before timeout', function (done) {
 
         var onNeedsRefreshSpy = sinon.spy();
 

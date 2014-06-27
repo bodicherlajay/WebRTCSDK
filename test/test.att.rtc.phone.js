@@ -86,9 +86,9 @@ describe('Phone', function () {
         createEventEmitterStub;
 
       beforeEach(function () {
-        emitter = ATT.private.createEventEmitter();
+        emitter = ATT.private.factories.createEventEmitter();
 
-        createEventEmitterStub = sinon.stub(ATT.private, 'createEventEmitter', function () {
+        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
           return emitter;
         });
 

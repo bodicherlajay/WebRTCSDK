@@ -577,7 +577,7 @@
 
   function Phone() {
 
-    var emitter = ATT.private.createEventEmitter(),
+    var emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session();
 
     function getSession() {
