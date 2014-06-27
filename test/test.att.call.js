@@ -22,7 +22,8 @@ describe('Call', function () {
       var options = {
           id: '12334',
           peer: '12345',
-          mediaType: 'audio'
+          mediaType: 'audio',
+
         },
         call;
 
@@ -37,8 +38,8 @@ describe('Call', function () {
 
   describe('method', function () {
     var call,
+      onDialingSpy,
       onConnectingSpy,
-      onCallingSpy,
       onEstablishedSpy,
       onDisconnectingSpy,
       onDisconnectedSpy;
@@ -49,14 +50,14 @@ describe('Call', function () {
         mediaType: 'video'
       });
 
+      onDialingSpy = sinon.spy();
       onConnectingSpy = sinon.spy();
-      onCallingSpy = sinon.spy();
       onEstablishedSpy = sinon.spy();
       onDisconnectingSpy = sinon.spy();
       onDisconnectedSpy = sinon.spy();
 
+      call.on('dialing', onDialingSpy);
       call.on('connecting', onConnectingSpy);
-      call.on('calling', onCallingSpy);
       call.on('established', onEstablishedSpy);
       call.on('disconnecting', onDisconnectingSpy);
       call.on('disconnected', onDisconnectedSpy);
@@ -77,7 +78,7 @@ describe('Call', function () {
         var fn = sinon.spy(),
           subscribeSpy = sinon.spy(ATT.event, 'subscribe');
 
-        expect(call.on.bind(call, 'connecting', fn)).to.not.throw(Error);
+        expect(call.on.bind(call, 'dialing', fn)).to.not.throw(Error);
 
         expect(subscribeSpy.called).to.equal(true);
 
@@ -92,12 +93,12 @@ describe('Call', function () {
         expect(call.connect).to.be.a('function');
       });
 
-      it('Should trigger `connecting` event immediately', function (done) {
+      it('Should trigger `dialing` event immediately', function (done) {
         call.connect();
 
         setTimeout(function () {
           try {
-            expect(onConnectingSpy.called).to.equal(true);
+            expect(onDialingSpy.called).to.equal(true);
             done();
           } catch (e) {
             done(e);
@@ -106,20 +107,15 @@ describe('Call', function () {
 
       });
 
-      it('Should publish the `calling` event on setting the call id on the call', function (done) {
-        var callId = '12345';
+      it('should execute RTCManager.connectCall', function () {
+        var connectCallSpy = sinon.spy();
+        expect(connectCallSpy.called).to.equal(true);
+      });
 
-        call.setId(callId);
+      describe('success on connectCall', function () {
 
-        setTimeout(function () {
-          try {
-            expect(onCallingSpy.called).to.equal(true);
-            expect(call.id).to.equal(callId);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
+        it('should execute Call.setId with the newly created call id');
+
       });
 
       it('Should publish the `established` event on setting the remote SDP', function (done) {
@@ -167,7 +163,25 @@ describe('Call', function () {
         expect(call.setId).to.be.a('function');
       });
 
-      it('Should publish the `disconnected` event if id is null', function (done) {
+      it('should set the newly created call id on the call');
+
+      it('Should publish the `connecting` event if call id is not null', function (done) {
+        var callId = '12345';
+
+        call.setId(callId);
+
+        setTimeout(function () {
+          try {
+            expect(onConnectingSpy.called).to.equal(true);
+            expect(call.id).to.equal(callId);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('Should publish the `disconnected` event if call id is null', function (done) {
         call.setId(null);
 
         setTimeout(function () {

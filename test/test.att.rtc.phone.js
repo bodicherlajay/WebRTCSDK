@@ -237,7 +237,7 @@ describe('Phone', function () {
 
       });
 
-      describe.only('dial', function () {
+      describe('dial', function () {
 
         var session,
           options,
@@ -245,8 +245,8 @@ describe('Phone', function () {
           createCallStub,
           onSpy,
           callConnectStub,
+          callDialingHandlerSpy,
           callConnectingHandlerSpy,
-          callCallingHandlerSpy,
           callCanceledHandlerSpy,
           callRejectedHandlerSpy,
           callConnectedHandlerSpy,
@@ -269,8 +269,8 @@ describe('Phone', function () {
 
           onSpy = sinon.spy(call, 'on');
           callConnectStub = sinon.stub(call, 'connect', function () {
+            ATT.event.publish('dialing');
             ATT.event.publish('connecting');
-            ATT.event.publish('calling');
             ATT.event.publish('canceled');
             ATT.event.publish('rejected');
             ATT.event.publish('connected');
@@ -283,8 +283,8 @@ describe('Phone', function () {
             return call;
           });
 
+          callDialingHandlerSpy = sinon.spy();
           callConnectingHandlerSpy = sinon.spy();
-          callCallingHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
           callRejectedHandlerSpy = sinon.spy();
           callConnectedHandlerSpy = sinon.spy();
@@ -292,8 +292,8 @@ describe('Phone', function () {
           callEndedHandlerSpy = sinon.spy();
           callErrorHandlerSpy = sinon.spy();
 
+          phone.on('call-dialing', callDialingHandlerSpy);
           phone.on('call-connecting', callConnectingHandlerSpy);
-          phone.on('call-calling', callCallingHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
           phone.on('call-connected', callConnectedHandlerSpy);
@@ -326,12 +326,12 @@ describe('Phone', function () {
           expect(createCallStub.called).to.equal(true);
         });
 
-        it('should register for the `connecting` event on the call object', function () {
-          expect(onSpy.calledWith('connecting')).to.equal(true);
+        it('should register for the `dialing` event on the call object', function () {
+          expect(onSpy.calledWith('dialing')).to.equal(true);
         });
 
-        it('should register for the `calling` event on the call object', function () {
-          expect(onSpy.calledWith('calling')).to.equal(true);
+        it('should register for the `connecting` event on the call object', function () {
+          expect(onSpy.calledWith('connecting')).to.equal(true);
         });
 
         it('should register for the `canceled` event on the call object', function () {
@@ -362,10 +362,10 @@ describe('Phone', function () {
           expect(callConnectStub.called).to.equal(true);
         });
 
-        it('should trigger `call-connecting` when call publishes `connecting` event', function (done) {
+        it('should trigger `call-dialing` when call publishes `dialing` event', function (done) {
           setTimeout(function () {
             try {
-              expect(callConnectingHandlerSpy.called).to.equal(true);
+              expect(callDialingHandlerSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -373,10 +373,10 @@ describe('Phone', function () {
           }, 300);
         });
 
-        it('should trigger `call-calling` when call publishes `calling` event', function (done) {
+        it('should trigger `call-connecting` when call publishes `connecting` event', function (done) {
           setTimeout(function () {
             try {
-              expect(callCallingHandlerSpy.called).to.equal(true);
+              expect(callConnectingHandlerSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);

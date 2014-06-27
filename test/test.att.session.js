@@ -21,17 +21,19 @@ describe('Session', function () {
     expect(ATT.rtc.Session).to.be.a('function');
   });
 
-  describe('Constructor', function () {
+  describe.only('Constructor', function () {
     var session,
-      createRTCManagerSpy;
+      getRTCManagerStub;
 
     beforeEach(function () {
-      createRTCManagerSpy = sinon.spy(ATT.factories, 'createRTCManager');
+      getRTCManagerStub = sinon.stub(ATT.private.RTCManager, 'getRTCManager', function () {
+        return {};
+      });
       session = new ATT.rtc.Session(options);
     });
 
     afterEach(function () {
-      createRTCManagerSpy.restore();
+      getRTCManagerStub.restore();
       session = null;
     });
 
@@ -39,8 +41,8 @@ describe('Session', function () {
       expect(session instanceof ATT.rtc.Session).to.equal(true);
     });
 
-    it('should call ATT.factories.createRTCManager', function () {
-      expect(createRTCManagerSpy.called).to.equal(true);
+    it('should call ATT.private.RTCManager.getRTCManager', function () {
+      expect(getRTCManagerStub.called).to.equal(true);
     });
   });
 
@@ -200,7 +202,7 @@ describe('Session', function () {
           updateSpy.restore();
         });
 
-        it('Should execute the setId on session with newly created session id', function () {
+        it('Should set the id on session with newly created session id', function () {
           expect(setIdSpy.calledWith('sessionid')).to.equal(true);
         });
 

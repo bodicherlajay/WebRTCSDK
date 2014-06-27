@@ -11,9 +11,6 @@
     errMgr,
     session,
     rtcEvent,
-    resourceManager,
-    userMediaSvc,
-    peerConnSvc,
     logger;
 
   function handleError(operation, errHandler, err) {
@@ -318,23 +315,25 @@
   * @param {Object} options The options
   * })
   */
-  function createRTCManager(options) {
-    var eventManager;
+  function RTCManagerImpl(options) {
 
-    errMgr = options.errorManager;
+    var eventManager,
+      resourceManager;
+//      userMediaSvc,
+//      peerConnSvc;
+
+//
+//    errMgr = options.errorManager;
     resourceManager = options.resourceManager;
-    rtcEvent = options.rtcEvent;
-    userMediaSvc = options.userMediaSvc;
-    peerConnSvc = options.peerConnSvc;
-
+//    rtcEvent = options.rtcEvent;
+//    userMediaSvc = options.userMediaSvc;
+//    peerConnSvc = options.peerConnSvc;
+//
     logger = resourceManager.getLogger("RTCManager");
 
     logger.logDebug('createRTCManager');
 
-    eventManager = factories.createEventManager({
-      resourceManager: resourceManager,
-      errorManager: errMgr
-    });
+    eventManager = factories.createEventManager();
 
     /**
      * start a new session
@@ -344,7 +343,7 @@
   *   e911Id: 'e911Id'
   * })
      */
-    function connectSession(options) {
+    function connectSession (options) {
 
       if (undefined === options) {
         throw new Error('No options defined.');
@@ -402,7 +401,7 @@
         }
       });
 
-    }
+    };
 
     function disconnectSession (options) {
 
@@ -442,14 +441,34 @@
       });
     }
 
-    return {
-      connectSession: connectSession,
-      disconnectSession: disconnectSession
-    };
+    this.connectSession = connectSession.bind(this);
+    this.disconnectSession = disconnectSession.bind(this);
   }
 
-  if (undefined === ATT.factories) {
-    throw new Error('Error exporting `createRTCManager`');
+  if (undefined === ATT.private) {
+    throw new Error('Error exporting `RTCManager`');
   }
-  ATT.factories.createRTCManager = createRTCManager;
+
+  ATT.private.RTCManagerImpl = RTCManagerImpl;
+
+  ATT.private.RTCManager = (function () {
+    var instance;
+
+    return {
+      getRTCManager: function () {
+        if (undefined === instance) {
+          instance = new RTCManagerImpl({
+            errorManager: ATT.Error,
+            resourceManager: Env.resourceManager.getInstance(),
+            rtcEvent: ATT.RTCEvent.getInstance(),
+            userMediaSvc: ATT.UserMediaService,
+            peerConnSvc: ATT.PeerConnectionService
+          });
+        }
+        return instance;
+      }
+    };
+
+  }());
+
 }());

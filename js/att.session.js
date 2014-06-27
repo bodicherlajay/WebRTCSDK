@@ -229,13 +229,7 @@
       id = null,
       calls = {};
 
-    rtcManager = factories.createRTCManager({
-      errMgr : ATT.error,
-      resourceManager : Env.resourceManager.getInstance(),
-      rtcEvent : ATT.RTCEvent,
-      userMediaSvc : ATT.UserMediaService,
-      peerConnSvc : ATT.PeerConnectionService
-    });
+    rtcManager = ATT.private.RTCManager.getRTCManager();
 
     // public attributes
     this.timeout = null;

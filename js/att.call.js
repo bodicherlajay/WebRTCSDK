@@ -201,8 +201,8 @@
 
   function on(event, handler) {
 
-    if ('connecting' !== event &&
-      'calling' !== event &&
+    if ('dialing' !== event &&
+      'connecting' !== event &&
       'canceled' !== event &&
       'rejected' !== event &&
       'connected' !== event &&
@@ -219,7 +219,7 @@
   }
 
   function connect() {
-    ATT.event.publish('connecting');
+    ATT.event.publish('dialing');
   }
 
   function disconnect() {
@@ -231,7 +231,7 @@
     if (this.id === null) {
       ATT.event.publish('disconnected');
     } else {
-      ATT.event.publish('calling');
+      ATT.event.publish('connecting');
     }
   }
 

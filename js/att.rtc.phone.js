@@ -578,8 +578,8 @@
   function on(event, handler) {
     if ('session-ready' !== event
       && 'session-disconnected' !== event
+      && 'call-dialing' !== event
       && 'call-connecting' !== event
-      && 'call-calling' !== event
       && 'call-canceled' !== event
       && 'call-rejected' !== event
       && 'call-connected' !== event
@@ -637,11 +637,11 @@
         mediaType: options.mediaType
       });
 
+      call.on('dialing', function () {
+        ATT.event.publish('call-dialing');
+      });
       call.on('connecting', function () {
         ATT.event.publish('call-connecting');
-      });
-      call.on('calling', function () {
-        ATT.event.publish('call-calling');
       });
       call.on('canceled', function () {
         ATT.event.publish('call-canceled');
