@@ -7,21 +7,22 @@
 (function () {
   'use strict';
 
-  // var errMgr,
-  //   resourceManager,
-  //   logger;
+  var factories = ATT.factories,
+    errMgr,
+    resourceManager,
+    logger;
 
-  // function handleError(operation, errHandler, err) {
-  //   logger.logDebug('handleError: ' + operation);
+  function handleError(operation, errHandler, err) {
+    logger.logDebug('handleError: ' + operation);
 
-  //   logger.logInfo('There was an error performing operation ' + operation);
+    logger.logInfo('There was an error performing operation ' + operation);
 
-  //   var error = errMgr.create(err, operation);
+    var error = errMgr.create(err, operation);
 
-  //   if (typeof errHandler === 'function') {
-  //     errHandler(error);
-  //   }
-  // }
+    if (typeof errHandler === 'function') {
+      errHandler(error);
+    }
+  }
 
 
 //
@@ -82,25 +83,25 @@
 //    });
 //  }
 
-  // function deleteWebRTCSession(args) {
-  //   var dataForDeleteWebRTCSession = {
-  //     params: {
-  //       url: [args.sessionId],
-  //       headers: {
-  //         'Authorization': args.token,
-  //         'x-e911Id': args.e911Id
-  //       }
-  //     },
-  //     success: function () {
-  //       logger.logInfo('Successfully deleted web rtc session on blackflag');
-  //       args.onWebRTCSessionDeleted();
-  //     },
-  //     error: args.onError
-  //   };
+  function deleteWebRTCSession(args) {
+    var dataForDeleteWebRTCSession = {
+      params: {
+        url: [args.sessionId],
+        headers: {
+          'Authorization': args.token,
+          'x-e911Id': args.e911Id
+        }
+      },
+      success: function () {
+        logger.logInfo('Successfully deleted web rtc session on blackflag');
+        args.onWebRTCSessionDeleted();
+      },
+      error: args.onError
+    };
 
-  //   // Call BF to delete WebRTC Session.
-  //   resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
-  // }
+    // Call BF to delete WebRTC Session.
+    resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
+  }
 
 //  function keepAlive(args) {
 //    logger.logDebug('keepSessionAlive');
@@ -129,66 +130,66 @@
 //    this.keepAliveInterval = null;
 //  }
 
-  // function clearSession(args) {
-  //   var session = this,
-  //     deleteAllCalls = function () {
-  //       var callId;
-  //       if (session.calls && Object.keys(session.calls) > 0) {
-  //         for (callId in session.calls) { // delete all exisinting calls
-  //           if (session.calls.hasOwnProperty(callId)) {
-  //             session.deleteCall(callId);
-  //           }
-  //         }
-  //       }
-  //     },
-  //     deleteSession = function () {
-  //       deleteWebRTCSession({
-  //         sessionId: session.getSessionId(),
-  //         token: session.getAccessToken(),
-  //         e911Id: session.getE911Id(),
-  //         onWebRTCSessionDeleted: function () {
-  //           session.clearKeepAlive(); // clear keep alive interval
-  //           args.onSessionCleared();
-  //         },
-  //         onError: handleError.bind(session, 'DeleteSession', args.onError)
-  //       });
-  //     };
+  function clearSession(args) {
+    var session = this,
+      deleteAllCalls = function () {
+        var callId;
+        if (session.calls && Object.keys(session.calls) > 0) {
+          for (callId in session.calls) { // delete all exisinting calls
+            if (session.calls.hasOwnProperty(callId)) {
+              session.deleteCall(callId);
+            }
+          }
+        }
+      },
+      deleteSession = function () {
+        deleteWebRTCSession({
+          sessionId: session.getSessionId(),
+          token: session.getAccessToken(),
+          e911Id: session.getE911Id(),
+          onWebRTCSessionDeleted: function () {
+            session.clearKeepAlive(); // clear keep alive interval
+            args.onSessionCleared();
+          },
+          onError: handleError.bind(session, 'DeleteSession', args.onError)
+        });
+      };
 
-  //   if (session.currentCall) {
-  //     session.currentCall.end({
-  //       onCallEndInitiated: function () {
-  //         deleteAllCalls();
-  //         deleteSession();
-  //       },
-  //       onError: handleError.bind(session, 'DeleteSession', args.onError)
-  //     });
-  //   } else {
-  //     deleteAllCalls();
-  //     deleteSession();
-  //   }
-  // }
+    if (session.currentCall) {
+      session.currentCall.end({
+        onCallEndInitiated: function () {
+          deleteAllCalls();
+          deleteSession();
+        },
+        onError: handleError.bind(session, 'DeleteSession', args.onError)
+      });
+    } else {
+      deleteAllCalls();
+      deleteSession();
+    }
+  }
 
-  // function startCall(options) {
-  //   logger.logDebug('startCall');
-  //   var session = this;
+  function startCall(options) {
+    logger.logDebug('startCall');
+    var session = this;
 
-  //   options.factories.createCall(ATT.utils.extend(options, {
-  //     session: session,  // TODO: this should not be needed once we refactor UM and PC
-  //     onCallCreated: function (callObj) {
-  //       try {
-  //         if (!callObj) {
-  //           throw 'Failed to create the call';
-  //         }
-  //         session.setCall(callObj);
-  //         session.setCurrentCall(callObj);
-  //         options.onCallStarted(callObj);
-  //       } catch (err) {
-  //         handleError.call(session, 'CreateCall', options.onCallError, err);
-  //       }
-  //     },
-  //     onCallError: handleError.bind(session, 'CreateCall', options.onCallError)
-  //   }));
-  // }
+    options.factories.createCall(ATT.utils.extend(options, {
+      session: session,  // TODO: this should not be needed once we refactor UM and PC
+      onCallCreated: function (callObj) {
+        try {
+          if (!callObj) {
+            throw 'Failed to create the call';
+          }
+          session.setCall(callObj);
+          session.setCurrentCall(callObj);
+          options.onCallStarted(callObj);
+        } catch (err) {
+          handleError.call(session, 'CreateCall', options.onCallError, err);
+        }
+      },
+      onCallError: handleError.bind(session, 'CreateCall', options.onCallError)
+    }));
+  }
 //  function endCall(call) {
 //    call.on('disconnected', function () {
 //      deleteCall(call.id);
@@ -199,13 +200,13 @@
   function on(event, handler) {
 
     if ('ready' !== event &&
-        'connecting' !== event &&
-        'connected' !== event &&
-        'updating' !== event &&
-        'needs-refresh' !== event &&
-        'disconnecting' !== event &&
-        'disconnected' !== event &&
-        'allcallsterminated' !== event) {
+      'connecting' !== event &&
+      'connected' !== event &&
+      'updating' !== event &&
+      'needs-refresh' !== event &&
+      'disconnecting' !== event &&
+      'disconnected' !== event &&
+      'allcallsterminated' !== event) {
       throw new Error('Event not defined');
     }
 
