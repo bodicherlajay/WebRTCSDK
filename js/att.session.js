@@ -200,13 +200,13 @@
   function on(event, handler) {
 
     if ('ready' !== event &&
-      'connecting' !== event &&
-      'connected' !== event &&
-      'updating' !== event &&
-      'needs-refresh' !== event &&
-      'disconnecting' !== event &&
-      'disconnected' !== event &&
-      'allcallsterminated' !== event) {
+        'connecting' !== event &&
+        'connected' !== event &&
+        'updating' !== event &&
+        'needs-refresh' !== event &&
+        'disconnecting' !== event &&
+        'disconnected' !== event &&
+        'allcallsterminated' !== event) {
       throw new Error('Event not defined');
     }
 
