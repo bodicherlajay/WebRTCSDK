@@ -516,9 +516,9 @@ describe('Session', function () {
       session2 = null;
     });
 
-    describe('NeedsRefresh', function () {
+    describe.only('NeedsRefresh', function () {
 
-      xit('Should be triggered every 60000 ms before timeout', function (done) {
+      it('Should be triggered every 60000 ms before timeout', function (done) {
 
         var onNeedsRefreshSpy = sinon.spy();
 
