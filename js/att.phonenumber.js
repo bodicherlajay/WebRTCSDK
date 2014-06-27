@@ -94,7 +94,10 @@
           digits += ch;
         }
       };
-      if(digits.length > 11){
+      if(digits.length >= 11 && cleaned.charAt(0) === '1'){
+        digits = digits.substring(0, 11);
+      } else if(digits.length > 11 && cleaned.charAt(0) != '1') {
+
         digits = digits.substring(0, 10);
       }
       return String(digits);
