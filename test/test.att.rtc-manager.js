@@ -13,12 +13,13 @@ describe('RTC Manager', function () {
     timeout;
 
   beforeEach(function () {
-    factories = ATT.factories;
+    factories = ATT.private.factories;
     timeout = 1234;// time in seconds
     sessionInfo = {
       sessionId : '123',
       timeout: timeout * 1000 // milliseconds
     };
+
     resourceManagerStub = {
       doOperation: function (name, options) {
         var response = {
@@ -46,8 +47,8 @@ describe('RTC Manager', function () {
       errorManager: {},
       resourceManager: resourceManagerStub
     };
-    eventManagerStub = ATT.factories.createEventManager(optionsForEM);
-    createEventManagerStub = sinon.stub(ATT.factories, 'createEventManager', function () {
+    eventManagerStub = ATT.private.factories.createEventManager(optionsForEM);
+    createEventManagerStub = sinon.stub(ATT.private.factories, 'createEventManager', function () {
       return eventManagerStub;
     });
   });
@@ -56,24 +57,24 @@ describe('RTC Manager', function () {
     createEventManagerStub.restore();
   });
 
-  describe('singleton', function () {
+  describe('Singleton', function () {
 
-    it('should export ATT.private.RTCManager', function () {
-      expect(ATT.private.RTCManager).to.be.a('object');
+    it('should export ATT.private.rtcManager', function () {
+      expect(ATT.private.rtcManager).to.be.a('object');
     });
 
     it('should have a method getRTCManager', function () {
-      expect(ATT.private.RTCManager.getRTCManager).to.be.a('function');
+      expect(ATT.private.rtcManager.getRTCManager).to.be.a('function');
     });
 
-    it('should return an instance of RTCManagerImpl', function () {
-      var rtcMgr = ATT.private.RTCManager.getRTCManager();
-      expect(rtcMgr instanceof ATT.private.RTCManagerImpl).to.equal(true);
+    it('should return an instance of RTCManager', function () {
+      var rtcMgr = ATT.private.rtcManager.getRTCManager();
+      expect(rtcMgr instanceof ATT.private.RTCManager).to.equal(true);
     });
 
     it('should always return the same instance', function () {
-      var rtcMgr1 = ATT.private.RTCManager.getRTCManager(),
-        rtcMgr2 = ATT.private.RTCManager.getRTCManager();
+      var rtcMgr1 = ATT.private.rtcManager.getRTCManager(),
+        rtcMgr2 = ATT.private.rtcManager.getRTCManager();
       expect(rtcMgr1 === rtcMgr2).to.equal(true);
     });
   });
@@ -101,20 +102,20 @@ describe('RTC Manager', function () {
 
     });
 
-    it('should export ATT.private.RTCManagerImpl', function () {
-      expect(ATT.private.RTCManagerImpl).to.be.a('function');
+    it('should export ATT.private.RTCManager', function () {
+      expect(ATT.private.RTCManager).to.be.a('function');
     });
 
-    describe('ATT.private.RTCManagerImpl Constructor', function () {
+    describe('ATT.private.RTCManager Constructor', function () {
       var rtcMgr;
 
-      it('should create a RTCManagerImpl object', function () {
-        rtcMgr = new ATT.private.RTCManagerImpl(optionsForRTCM);
-        expect(rtcMgr instanceof ATT.private.RTCManagerImpl).to.equal(true);
+      it('should return an instance of RTCManager', function () {
+        rtcMgr = new ATT.private.RTCManager(optionsForRTCM);
+        expect(rtcMgr instanceof ATT.private.RTCManager).to.equal(true);
       });
 
       it('should create an event manager object', function () {
-        rtcMgr = new ATT.private.RTCManagerImpl(optionsForRTCM);
+        rtcMgr = new ATT.private.RTCManager(optionsForRTCM);
 
         expect(createEventManagerStub.called).to.equal(true);
       });
@@ -135,7 +136,7 @@ describe('RTC Manager', function () {
           ATT.event.publish('stop-listening');
         });
 
-        rtcManager = new ATT.private.RTCManagerImpl(optionsForRTCM);
+        rtcManager = new ATT.private.RTCManager(optionsForRTCM);
 
       });
 
@@ -165,10 +166,8 @@ describe('RTC Manager', function () {
           })).to.throw('Callback onSessionConnected not defined.');
           expect(rtcManager.connectSession.bind(rtcManager, {
             token: '123',
-            onSessionConnected: function () {
-            },
-            onSessionReady: function () {
-            }
+            onSessionConnected: function () {},
+            onSessionReady: function () {}
           })).to.not.throw(Error);
         });
 

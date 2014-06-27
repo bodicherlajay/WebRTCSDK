@@ -7,8 +7,8 @@
 (function (app) {
   'use strict';
 
-  var callbacks = {},
-    logger;
+  var logger,
+    factories = ATT.private.factories;
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -194,14 +194,14 @@
     try {
       logger.logDebug("setupEventInterceptor");
   
-      var sessionId = this.getSession().getSessionId();
+      var sessionId = this.getSession().getSessionId(), emitter = this.getEventEmitter();
  
       // unsubscribe first, to avoid double subscription from previous actions
-      ATT.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
+      emitter.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
       logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
   
       // subscribe to published events from event channel
-      ATT.event.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
+      emitter.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
       logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
 
       options.onEventInterceptorSetup();
@@ -227,47 +227,49 @@
     ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', event);
   }
 
-  function on(event, handler) {
-    if('listening' !== event &&
-      'stop-listening' !== event) {
-      throw new Error('Event not found');
-    }
-    ATT.event.unsubscribe(event, handler);
-    ATT.event.subscribe(event, handler);
-  }
-
-  function eventManager(options) {
-    var session = options.session,
-      callbacks = options.callbacks,
-      currentEvent = null;
-    return {
-      getSession: function () {
-        return session;
-      },
-      getCurrentEvent: function () {
-        return currentEvent;
-      },
-      setCurrentEvent: function (evt) {
-        currentEvent = evt;
-      },
-      setupEventChannel: setupEventChannel,
-      setupEventInterceptor: setupEventInterceptor,
-      processCurrentEvent: processCurrentEvent,
-      createRTCEvent: createRTCEvent,
-      publishEvent: publishEvent,
-      shutDown: shutDown
-    };
-  }
 
   function createEventManager(options) {
 
     var eventChannel,
-      resourceManager = options.resourceManager;
+      resourceManager = options.resourceManager,
+      emitter = options.emitter;
 
     logger = resourceManager.getLogger("EventManager");
 
     logger.logDebug('createEventManager');
 
+    function on(event, handler) {
+      if('listening' !== event &&
+        'stop-listening' !== event) {
+        throw new Error('Event not found');
+      }
+      emitter.unsubscribe(event, handler);
+      emitter.subscribe(event, handler);
+    }
+
+    function setup(options) {
+      if (undefined === options) {
+        throw new Error('Options not defined');
+      }
+      if (undefined === options.sessionId) {
+        throw new Error('Session id is not defined');
+      }
+      if (undefined === options.token) {
+        throw new Error('Token not defined');
+      }
+
+      var sessionId = options.sessionId;
+
+      // unsubscribe first, to avoid double subscription from previous actions
+      emitter.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
+      logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
+
+      // subscribe to published events from event channel
+      emitter.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
+      logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
+
+      setupEventChannel(options);
+    }
 
     function setupEventChannel(options) {
       logger.logDebug('setupEventChannel');
@@ -279,7 +281,7 @@
         accessToken: options.token,
         endpoint: ATT.appConfig.EventChannelConfig.endpoint,
         sessionId: options.sessionId,
-        publisher: ATT.event,
+        publisher: options.emitter,
         resourceManager: resourceManager,
         publicMethodName: 'getEvents',
         usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
@@ -297,39 +299,17 @@
           error: options.onError
         });
       }
-      ATT.event.publish('listening');
+      emitter.publish('listening');
     }
 
-    function setup(options) {
-      if (undefined === options) {
-        throw new Error('Options not defined');
-      }
-      if (undefined === options.sessionId) {
-        throw new Error('Session id is not defined');
-      }
-      if (undefined === options.token) {
-        throw new Error('Token not defined');
-      }
 
-      var sessionId = options.sessionId;
-
-      // unsubscribe first, to avoid double subscription from previous actions
-      ATT.event.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
-      logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
-
-      // subscribe to published events from event channel
-      ATT.event.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
-      logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
-
-      setupEventChannel(options);
-    }
 
     function stop () {
       if (eventChannel) {
         eventChannel.stopListening();
         logger.logInfo('Event channel shutdown successfully');
       }
-      ATT.event.publish('stop-listening');
+      emitter.publish('stop-listening');
     }
 
     return {

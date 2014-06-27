@@ -1,7 +1,9 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL*/
 
-describe('Event Manager', function () {
+'use strict';
+
+describe.only('Event Manager', function () {
   var resourceManagerStub = {
     getLogger : function () {
       return {
@@ -17,18 +19,17 @@ describe('Event Manager', function () {
 
   describe('Method', function () {
     var sessionId = 'sessionid',
-      options = {
-        rtcEvent: {},
-        errorManager: {},
-        resourceManager: resourceManagerStub
-      },
+      options,
       eventManager,
       eventChannelStub,
       createEvtChanStub,
-      stopListeningSpy;
+      stopListeningSpy,
+      factories,
+      emitter;
 
     beforeEach(function () {
-      stopListeningSpy = sinon.spy()
+      factories = ATT.private.factories;
+      stopListeningSpy = sinon.spy();
 
       eventChannelStub = {
         startListening: function (options) {
@@ -41,7 +42,14 @@ describe('Event Manager', function () {
         return eventChannelStub;
       });
 
-      eventManager = ATT.factories.createEventManager(options);
+      emitter = factories.createEventEmitter();
+      options = {
+        emitter: emitter,
+        rtcEvent: {},
+        errorManager: {},
+        resourceManager: resourceManagerStub
+      };
+      eventManager = ATT.private.factories.createEventManager(options);
 
     });
 
@@ -61,7 +69,9 @@ describe('Event Manager', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          subscribeSpy = sinon.spy(ATT.event, 'subscribe');
+          subscribeSpy;
+
+        subscribeSpy = sinon.spy(emitter, 'subscribe');
 
         expect(eventManager.on.bind(eventManager, 'listening', fn)).to.not.throw(Error);
         expect(subscribeSpy.called).to.equal(true);
@@ -75,7 +85,6 @@ describe('Event Manager', function () {
         onListeningSpy;
 
       beforeEach(function () {
-
         ATT.appConfig = {
           EventChannelConfig: {
             endpoint: 'endpoint',
@@ -83,7 +92,7 @@ describe('Event Manager', function () {
           }
         };
 
-        subscribeSpy = sinon.spy(ATT.event, 'subscribe');
+        subscribeSpy = sinon.spy(emitter, 'subscribe');
 
         onListeningSpy = sinon.spy();
       });
@@ -175,6 +184,6 @@ describe('Event Manager', function () {
           }
         }, 100);
       });
-    })
+    });
   });
 });

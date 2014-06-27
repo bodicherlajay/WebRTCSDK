@@ -533,7 +533,6 @@ describe('Session', function () {
 //        session2.update({
 //          timeout: timeout
 //        });
-
        // expect(onNeedsRefreshSpy.called).to.equal(false);
 
         setTimeout(function () {

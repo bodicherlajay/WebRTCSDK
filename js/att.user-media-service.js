@@ -14,7 +14,8 @@
       audio: true,
       video: true
     },
-    logger = Env.resourceManager.getInstance().getLogger("UserMediaService");
+    logger = Env.resourceManager.getInstance().getLogger("UserMediaService"),
+    factories = ATT.private.factories;
 
   function setError(service) {
     Error = service;
@@ -30,7 +31,7 @@
     logger.logDebug("Setting the call manager");
 
     setError(app.Error);
-    setEventEmitter(app.event);
+    setEventEmitter(factories.createEventEmitter());
 
     eventEmitter.subscribe(ATT.SdkEvents.REMOTE_STREAM_ADDED, module.showStream, module);
   }
