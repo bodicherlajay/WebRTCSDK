@@ -522,7 +522,7 @@ describe.only('Session', function () {
       session2 = null;
     });
 
-    describe.only('NeedsRefresh', function () {
+    describe('NeedsRefresh', function () {
 
       xit('Should be triggered every 60000 ms before timeout', function (done) {
 
@@ -533,7 +533,6 @@ describe.only('Session', function () {
 //        session2.update({
 //          timeout: timeout
 //        });
-
        // expect(onNeedsRefreshSpy.called).to.equal(false);
 
         setTimeout(function () {

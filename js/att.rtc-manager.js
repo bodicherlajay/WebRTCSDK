@@ -9,8 +9,6 @@
 
   var factories = ATT.private.factories,
     errMgr,
-    session,
-    rtcEvent,
     logger;
 
   function handleError(operation, errHandler, err) {
@@ -171,6 +169,7 @@
     eventManager.onCallEventCallback = function (callback, event) {
       options.onCallbackCalled(callback, event);
     };
+
     session.getCurrentCall().answer(app.utils.extend(options, {
       type: app.CallTypes.INCOMING,
       session: session,
@@ -315,16 +314,19 @@
   * @param {Object} options The options
   * })
   */
-  function RTCManagerImpl(options) {
+  function RTCManager(options) {
 
     var eventManager,
-      resourceManager;
+      resourceManager,
+      emitter  = ATT.private.factories.createEventEmitter();
 //      userMediaSvc,
+
 //      peerConnSvc;
 
 //
 //    errMgr = options.errorManager;
     resourceManager = options.resourceManager;
+
 //    rtcEvent = options.rtcEvent;
 //    userMediaSvc = options.userMediaSvc;
 //    peerConnSvc = options.peerConnSvc;
@@ -333,7 +335,7 @@
 
     logger.logDebug('createRTCManager');
 
-    eventManager = factories.createEventManager();
+    eventManager = factories.createEventManager({resourceManager:resourceManager,emitter:emitter});
 
     /**
      * start a new session
@@ -343,7 +345,7 @@
   *   e911Id: 'e911Id'
   * })
      */
-    function connectSession (options) {
+    function connectSession(options) {
 
       if (undefined === options) {
         throw new Error('No options defined.');
@@ -449,15 +451,15 @@
     throw new Error('Error exporting `RTCManager`');
   }
 
-  ATT.private.RTCManagerImpl = RTCManagerImpl;
+  ATT.private.RTCManager = RTCManager;
 
-  ATT.private.RTCManager = (function () {
+  ATT.private.rtcManager = (function () {
     var instance;
 
     return {
       getRTCManager: function () {
         if (undefined === instance) {
-          instance = new RTCManagerImpl({
+          instance = new RTCManager({
             errorManager: ATT.Error,
             resourceManager: Env.resourceManager.getInstance(),
             rtcEvent: ATT.RTCEvent.getInstance(),
