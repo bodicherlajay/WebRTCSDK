@@ -53,7 +53,7 @@ describe('Phone', function () {
         sessionConstructorSpy;
 
       beforeEach(function () {
-        createEventEmitterSpy = sinon.spy(ATT.private, 'createEventEmitter');
+        createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
         sessionConstructorSpy = sinon.spy(ATT.rtc, 'Session');
 
         phone = new ATT.private.Phone();

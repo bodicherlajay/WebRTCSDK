@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, Env, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe.only('Session', function () {
+describe('Session', function () {
   'use strict';
 
   var options;
@@ -522,7 +522,7 @@ describe.only('Session', function () {
       session2 = null;
     });
 
-    describe.only('NeedsRefresh', function () {
+    describe('NeedsRefresh', function () {
 
       xit('Should be triggered every 60000 ms before timeout', function (done) {
 

@@ -21,7 +21,7 @@ describe('Call', function () {
         mediaType: 'audio'
       };
 
-      createEventEmitterSpy = sinon.spy(ATT.private, 'createEventEmitter');
+      createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
 
       call = new ATT.rtc.Call(options);
 
@@ -62,9 +62,9 @@ describe('Call', function () {
       onDisconnectedSpy;
 
     beforeEach(function () {
-      emitter = ATT.private.createEventEmitter();
+      emitter = ATT.private.factories.createEventEmitter();
 
-      createEventEmitterStub = sinon.stub(ATT.private, 'createEventEmitter', function () {
+      createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
         return emitter;
       });
 
