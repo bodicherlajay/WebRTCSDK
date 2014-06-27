@@ -209,23 +209,23 @@
 //   * @param {HTMLElement} dialParams.remoteVideo
 //   * @param {Object} dialParams.mediaConstraints
 //   * @param {function} dialParams.onConnecting callback function for onConnecting event
-//   * @param {function} dialParams.onCalling    callback function for onCalling event
+//   * @param {function} dialParams.onCalling  callback function for onCalling event
 //   * @param {function} dialParams.onCallEstablished  callback function for onCallEstablished event
 //   * @param {function} dialParams.onCallInProgress   callback function for onCallInProgress event
-//   * @param {function} dialParams.onCallHold         callback function for onCallHold event
-//   * @param {function} dialParams.onCallResume       callback function for onCallResume event
-//   * @param {function} dialParams.onCallEnded        callback function for onCallEnded event
-//   * @param {function} dialParams.onCallError        callback function for onCallError event
-//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCalling            This callback function gets invoked immediately after dial method is invoked
-//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onConnecting         This callback function gets invoked before the call
+//   * @param {function} dialParams.onCallHold callback function for onCallHold event
+//   * @param {function} dialParams.onCallResume callback function for onCallResume event
+//   * @param {function} dialParams.onCallEnded callback function for onCallEnded event
+//   * @param {function} dialParams.onCallError callback function for onCallError event
+//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCalling This callback function gets invoked immediately after dial method is invoked
+//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onConnecting This callback function gets invoked before the call
 //   *                                                          established and after onCalling callback is invoked
 //   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEstablished    This callback function gets invoked when both
 //   *                                                          parties are completed negotiation and engaged in active conversation
-//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallInProgress     This callback function gets invoked while encountering issue with outgoing/incoming call
-//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallHold         This callback function gets invoked when hold call is successful
-//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallResume         This callback function gets invoked when the current call successfully resumed
-//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEnded         This callback function gets invoked when outgoing call is ended
-//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallError         This callback function gets invoked when encountering issues during outgoing call flow
+//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallInProgress This callback function gets invoked while encountering issue with outgoing/incoming call
+//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallHold This callback function gets invoked when hold call is successful
+//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallResume This callback function gets invoked when the current call successfully resumed
+//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallEnded This callback function gets invoked when outgoing call is ended
+//   * @fires ATT.rtc.Phone.dial#[RTCEvent]onCallError This callback function gets invoked when encountering issues during outgoing call flow
 //   * @example
 //   * ATT.rtc.Phone.dial({
 //   *  “telephone number or sip uri”,
@@ -316,11 +316,11 @@
 //   * @param {function} answerParams.onCallError        callback function for onCallError event
 //   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallEstablished    This callback function gets invoked when both parties are completed negotiation
 //   *                                                            and engaged in active conversation
-//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallInProgress     This callback function gets invoked while encountering issue with incoming call
-//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallHold         This callback function gets invoked when hold call is successful
-//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallResume         This callback function gets invoked when the current call successfully resumed
-//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallEnded         This callback function gets invoked when outgoing call is ended
-//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallError         This callback function gets invoked when encountering issues during outgoing call flow
+//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallInProgress This callback function gets invoked while encountering issue with incoming call
+//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallHold This callback function gets invoked when hold call is successful
+//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallResume This callback function gets invoked when the current call successfully resumed
+//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallEnded This callback function gets invoked when outgoing call is ended
+//   * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallError This callback function gets invoked when encountering issues during outgoing call flow
 //   * @example
 //   *  Preconditions: ATT.rtc.Phone.login() invocation is successful
 //   * //Example 1
@@ -548,7 +548,7 @@
 //    * @memberof ATT.rtc.Phone
 //    * @param {Object} args
 //    * @param {function} args.onCallError        callback function for onCallError event
-//    * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallError         This callback function gets invoked when encountering issues during outgoing call flow
+//    * @fires ATT.rtc.Phone.answer#[RTCEvent]onCallError This callback function gets invoked when encountering issues during outgoing call flow
 //    * @example
 //    *  Preconditions: ATT.rtc.Phone.login() invocation is successful
 //    * //Example 1
