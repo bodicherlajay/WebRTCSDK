@@ -217,7 +217,7 @@
     emitter = ATT.private.factories.createEventEmitter();
 
     // get the RTC Manager
-    rtcManager = ATT.private.RTCManager.getRTCManager();
+    rtcManager = ATT.private.rtcManager.getRTCManager();
 
     function on(event, handler) {
 

@@ -3,7 +3,7 @@
 
 'use strict';
 
-describe.only('Event Manager', function () {
+describe('Event Manager', function () {
   var resourceManagerStub = {
     getLogger : function () {
       return {

@@ -8,7 +8,7 @@ describe('Phone', function () {
   var getRTCMgrStub;
 
   beforeEach(function () {
-    getRTCMgrStub = sinon.stub(ATT.private.RTCManager, 'getRTCManager', function () {
+    getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return {};
     });
   });

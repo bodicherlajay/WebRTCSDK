@@ -24,7 +24,7 @@ describe('Session', function () {
 
     beforeEach(function () {
       createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
-      getRTCManagerStub = sinon.stub(ATT.private.RTCManager, 'getRTCManager', function () {
+      getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return {};
       });
       session = new ATT.rtc.Session(options);
@@ -44,7 +44,7 @@ describe('Session', function () {
       expect(createEventEmitterSpy.called).to.equal(true);
     });
 
-    it('should call ATT.private.RTCManager.getRTCManager', function () {
+    it('should call ATT.private.rtcManager.getRTCManager', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
   });
@@ -79,7 +79,7 @@ describe('Session', function () {
 
       createEventMgrStub = sinon.stub(ATT.private.factories, 'createEventManager');
 
-      rtcManagerStub = ATT.private.RTCManager.getRTCManager();
+      rtcManagerStub = ATT.private.rtcManager.getRTCManager();
 
       connectSessionStub = sinon.stub(rtcManagerStub, 'connectSession', function (options) {
         options.onSessionConnected({
@@ -93,7 +93,7 @@ describe('Session', function () {
         options.onSessionDisconnected();
       });
 
-      createRTCMgrStub = sinon.stub(ATT.private.RTCManager, 'getRTCManager', function () {
+      createRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcManagerStub;
       });
 
