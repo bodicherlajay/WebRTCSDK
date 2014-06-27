@@ -9,17 +9,15 @@
   // export global ATT namespace
   window.ATT = {
     private: {
+      factories: {
+      }
     },
     //shared utilities
     utils: {
     },
-    factories: {
-    },
     logManager: {
     },
     RESTClient: {
-    },
-    event: {
     },
     rtc: {
     }
