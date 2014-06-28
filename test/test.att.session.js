@@ -512,34 +512,24 @@ describe('Session', function () {
   });
 
   describe('Event', function () {
-    var session2;
-
-    beforeEach(function () {
-      session2 = new ATT.rtc.Session(options);
-    });
-
-    afterEach(function () {
-      session2 = null;
-    });
+    var onNeedsRefreshSpy;
 
     describe('NeedsRefresh', function () {
 
-      xit('Should be triggered every 60000 ms before timeout', function (done) {
+      it('Should be triggered every 60000 ms before timeout', function (done) {
 
-        var onNeedsRefreshSpy = sinon.spy();
+        var session2 = new ATT.rtc.Session(options);
+        onNeedsRefreshSpy = sinon.spy();
 
         session2.on('needs-refresh', onNeedsRefreshSpy);
+
         options.timeout = 60200;
-//        session2.update({
-//          timeout: timeout
-//        });
-       // expect(onNeedsRefreshSpy.called).to.equal(false);
+
+        session2.update(options);
 
         setTimeout(function () {
           try {
-           // for (i = 0; i < count; i++) {
-            expect(onNeedsRefreshSpy.called).to.equal(true);
-            //}
+            expect(onNeedsRefreshSpy.calledOnce).to.equal(true);
             done();
           } catch (e) {
             done(e);
@@ -548,9 +538,7 @@ describe('Session', function () {
 
         setTimeout(function () {
           try {
-            // for (i = 0; i < count; i++) {
             expect(onNeedsRefreshSpy.calledTwice).to.equal(true);
-            //}
             done();
           } catch (e) {
             done(e);
@@ -559,7 +547,56 @@ describe('Session', function () {
 
       });
 
-      it('Should be triggered exactly after `timeout` milliseconds if `timeout` is less that 60 000 ms');
+      it('Should be triggered exactly after `timeout` milliseconds if `timeout` is less that 60 000 ms', function (done) {
+
+        var session3 = new ATT.rtc.Session(options);
+        onNeedsRefreshSpy = sinon.spy();
+
+        session3.on('needs-refresh', onNeedsRefreshSpy);
+        options.timeout = 500;
+
+        session3.update(options);
+
+        setTimeout(function () {
+          try {
+            expect(onNeedsRefreshSpy.calledOnce).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 600);
+      });
+
+      it('clear the old value for the timeout and only use the new value to publish', function (done) {
+        var session3 = new ATT.rtc.Session(options);
+        onNeedsRefreshSpy = sinon.spy();
+
+        session3.on('needs-refresh', onNeedsRefreshSpy);
+
+        options.timeout = 200;
+        session3.update(options);
+
+        options.timeout = 500;
+        session3.update(options);
+
+        setTimeout(function () {
+          try {
+            expect(onNeedsRefreshSpy.calledOnce).to.equal(false);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 300);
+
+        setTimeout(function () {
+          try {
+            expect(onNeedsRefreshSpy.calledOnce).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 600);
+      });
 
     });
 

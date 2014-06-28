@@ -222,13 +222,13 @@
     function on(event, handler) {
 
       if ('ready' !== event &&
-        'connecting' !== event &&
-        'connected' !== event &&
-        'updating' !== event &&
-        'needs-refresh' !== event &&
-        'disconnecting' !== event &&
-        'disconnected' !== event &&
-        'allcallsterminated' !== event) {
+          'connecting' !== event &&
+          'connected' !== event &&
+          'updating' !== event &&
+          'needs-refresh' !== event &&
+          'disconnecting' !== event &&
+          'disconnected' !== event &&
+          'allcallsterminated' !== event) {
         throw new Error('Event not defined');
       }
 
@@ -270,24 +270,24 @@
         throw new Error('Timeout is not a number.');
       }
 
-      this.timeout = options.timeout || this.timeout;
+      if (options.timeout < 60000) {
+        this.timeout = options.timeout;
+      } else {
+        this.timeout = options.timeout - 60000;
+      }
       this.token = options.token || this.token;
       this.e911Id = options.e911Id || this.e911Id;
 
       emitter.publish('updating', options);
+
+      if (this.timer !== null) {
+        clearInterval(this.timer);
+      }
+
       this.timer = setInterval(function () {
         emitter.publish('needs-refresh');
-      }, this.timeout - 60000);
+      }, this.timeout);
 
-//      if (undefined !== options.timeout) {
-//        var i = 0;
-//        if (this.timer !== null) {
-//          clearInterval(this.timer);
-//        }
-//        this.timer = setInterval(function () {
-//          emitter.publish('needs-refresh', i++);
-//        }, this.timeout - 60000);
-//      }
     };
 
     this.connect =   function connect(options) {
