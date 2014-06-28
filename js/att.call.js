@@ -213,7 +213,8 @@
       throw new Error('No peer provided');
     }
 
-    var emitter = ATT.private.factories.createEventEmitter();
+    var emitter = ATT.private.factories.createEventEmitter(),
+      rtcManager = ATT.private.rtcManager.getRTCManager();
 
     function on(event, handler) {
 

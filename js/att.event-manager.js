@@ -232,7 +232,7 @@
 
     var eventChannel,
       resourceManager = options.resourceManager,
-      emitter = options.emitter;
+      emitter = factories.createEventEmitter();
 
     logger = resourceManager.getLogger("EventManager");
 

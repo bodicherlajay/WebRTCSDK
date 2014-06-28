@@ -7,9 +7,11 @@ describe('RTC Manager', function () {
   var factories,
     resourceManagerStub,
     createEventManagerStub,
-    eventManagerStub,
+    eventManager,
     optionsForEM,
     sessionInfo,
+    emitter,
+    createEventEmitterStub,
     timeout;
 
   beforeEach(function () {
@@ -47,14 +49,19 @@ describe('RTC Manager', function () {
       errorManager: {},
       resourceManager: resourceManagerStub
     };
-    eventManagerStub = ATT.private.factories.createEventManager(optionsForEM);
-    createEventManagerStub = sinon.stub(ATT.private.factories, 'createEventManager', function () {
-      return eventManagerStub;
+    emitter = factories.createEventEmitter();
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function() {
+      return emitter;
+    })
+    eventManager = factories.createEventManager(optionsForEM);
+    createEventManagerStub = sinon.stub(factories, 'createEventManager', function () {
+      return eventManager;
     });
   });
 
   afterEach(function () {
     createEventManagerStub.restore();
+    createEventEmitterStub.restore();
   });
 
   describe('Singleton', function () {
@@ -99,7 +106,6 @@ describe('RTC Manager', function () {
         peerConnSvc: peerConnSvc
       };
 
-
     });
 
     it('should export ATT.private.RTCManager', function () {
@@ -123,29 +129,59 @@ describe('RTC Manager', function () {
 
     describe('Methods', function () {
       var rtcManager,
+        onSpy,
+        doOperationSpy,
         setupStub,
-        stopStub;
+        stopStub,
+        onSessionConnectedSpy,
+        onSessionReadySpy,
+        optionsForConn;
 
       beforeEach(function () {
 
-        setupStub = sinon.stub(eventManagerStub, 'setup', function () {
-          ATT.event.publish('listening');
+        onSpy = sinon.spy(eventManager, 'on');
+
+        setupStub = sinon.stub(eventManager, 'setup', function () {
+          emitter.publish('listening');
         });
 
-        stopStub = sinon.stub(eventManagerStub, 'stop', function () {
-          ATT.event.publish('stop-listening');
+        stopStub = sinon.stub(eventManager, 'stop', function () {
+          emitter.publish('stop-listening');
         });
 
         rtcManager = new ATT.private.RTCManager(optionsForRTCM);
 
+        doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+
+        ATT.appConfig = {
+          EventChannelConfig: {
+            endpoint: 'endpoint',
+            type: 'longpolling'
+          }
+        };
+
+        onSessionConnectedSpy = sinon.spy();
+        onSessionReadySpy = sinon.spy();
+
+        optionsForConn = {
+          token: '123',
+          onSessionConnected: onSessionConnectedSpy,
+          onSessionReady: onSessionReadySpy
+        };
+
+        rtcManager.connectSession(optionsForConn);
+
       });
 
       afterEach(function () {
+        doOperationSpy.restore();
+        onSpy.restore();
         setupStub.restore();
         stopStub.restore();
       });
 
       describe('connectSession', function () {
+
         it('should exist', function () {
           expect(rtcManager.connectSession).to.be.a('function');
         });
@@ -171,59 +207,19 @@ describe('RTC Manager', function () {
           })).to.not.throw(Error);
         });
 
+        it('should call doOperation on the resourceManager with `createWebRTCSession`', function () {
+          expect(doOperationSpy.called).to.equal(true);
+          expect(doOperationSpy.getCall(0).args[0]).to.equal('createWebRTCSession');
+        });
+
         describe('Success', function () {
-          var onSessionConnectedSpy,
-            onSpy,
-            doOperationSpy,
-            onSessionReadySpy,
-            optionsForConn;
-
-          beforeEach(function () {
-
-            ATT.appConfig = {
-              EventChannelConfig: {
-                endpoint: 'endpoint',
-                type: 'longpolling'
-              }
-            };
-
-            onSessionConnectedSpy = sinon.spy();
-            onSessionReadySpy = sinon.spy();
-
-            doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
-            onSpy = sinon.spy(eventManagerStub, 'on');
-
-            optionsForConn = {
-              token: '123',
-              onSessionConnected: onSessionConnectedSpy,
-              onSessionReady: onSessionReadySpy
-            };
-
-            rtcManager.connectSession(optionsForConn);
-          });
-
-          afterEach(function () {
-            onSpy.restore();
-            doOperationSpy.restore();
-          });
-
-          it('should call doOperation on the resourceManager with `createWebRTCSession`', function () {
-            expect(doOperationSpy.called).to.equal(true);
-            expect(doOperationSpy.getCall(0).args[0]).to.equal('createWebRTCSession');
-          });
 
           it('should execute the onSessionConnected callback with `sessionId` and `timeout`', function () {
-            var sessionId = onSessionConnectedSpy.getCall(0).args[0].sessionId,
-              timeout = onSessionConnectedSpy.getCall(0).args[0].timeout;
-
-            expect(onSessionConnectedSpy.called).to.equal(true);
-            expect(sessionId).to.equal(sessionInfo.sessionId);
-            expect(timeout).to.equal(sessionInfo.timeout);
+            expect(onSessionConnectedSpy.calledWith(sessionInfo)).to.equal(true);
           });
 
           it('Should subscribe to event listening from the event manager', function () {
-            expect(onSpy.called).to.equal(true); //
-            expect(onSpy.getCall(0).args[0]).to.equal('listening');
+            expect(onSpy.calledWith('listening')).to.equal(true);
           });
 
           it('should call EventManager.setup with the session id', function () {
@@ -235,9 +231,9 @@ describe('RTC Manager', function () {
 
             setTimeout(function () {
               try {
-                expect(onSessionReadySpy.called).to.equal(true);
-                sessionId = onSessionReadySpy.getCall(0).args[0].sessionId;
-                expect(sessionId).to.equal(sessionInfo.sessionId);
+                expect(onSessionReadySpy.calledWith({
+                  sessionId: sessionInfo.sessionId
+                })).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -249,12 +245,10 @@ describe('RTC Manager', function () {
 
       describe('disconnectSession', function () {
 
-        var doOperationSpy,
-          optionsForDisconn,
+        var optionsForDisconn,
           onSessionDisconnectedSpy;
 
         beforeEach(function () {
-          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
           onSessionDisconnectedSpy = sinon.spy();
 
           optionsForDisconn = {
@@ -263,10 +257,6 @@ describe('RTC Manager', function () {
             onSessionDisconnected: onSessionDisconnectedSpy
           };
 
-        });
-
-        afterEach(function () {
-          doOperationSpy.restore();
         });
 
         it('should exist', function () {
@@ -300,8 +290,7 @@ describe('RTC Manager', function () {
         it('should call doOperation on the resourceManager with `deleteWebRTCSession`', function () {
           rtcManager.disconnectSession(optionsForDisconn);
 
-          expect(doOperationSpy.called).to.equal(true);
-          expect(doOperationSpy.getCall(0).args[0]).to.equal('deleteWebRTCSession');
+          expect(doOperationSpy.calledWith('deleteWebRTCSession')).to.equal(true);
         });
 
         describe('Success', function () {

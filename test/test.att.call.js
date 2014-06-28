@@ -12,6 +12,7 @@ describe('Call', function () {
   describe('Constructor', function () {
     var options,
       createEventEmitterSpy,
+      getRTCManagerSpy,
       call;
 
     beforeEach(function () {
@@ -22,6 +23,7 @@ describe('Call', function () {
       };
 
       createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
+      getRTCManagerSpy = sinon.spy(ATT.private.rtcManager, 'getRTCManager');
 
       call = new ATT.rtc.Call(options);
 
@@ -29,6 +31,7 @@ describe('Call', function () {
 
     afterEach(function () {
       createEventEmitterSpy.restore();
+      getRTCManagerSpy.restore();
     });
 
     it('Should throw an error if invalid options', function () {
@@ -49,11 +52,18 @@ describe('Call', function () {
     it('should create an instance of event emitter', function () {
       expect(createEventEmitterSpy.called).to.equal(true);
     });
+
+    it('should get an instance of RTCManager', function() {
+      expect(getRTCManagerSpy.called).to.equal(true);
+    })
   });
 
   describe('Methods', function () {
     var emitter,
+      rtcMgr,
+      rtcMgrStub,
       createEventEmitterStub,
+      connectCallSpy,
       call,
       onDialingSpy,
       onConnectingSpy,
@@ -67,6 +77,14 @@ describe('Call', function () {
       createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
         return emitter;
       });
+
+      rtcMgr = ATT.private.rtcManager.getRTCManager();
+
+      rtcMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+        return rtcMgr;
+      });
+
+      connectCallSpy = sinon.spy(rtcMgr, 'connectCall');
 
       call = new ATT.rtc.Call({
         peer: '12345',
@@ -89,6 +107,8 @@ describe('Call', function () {
 
     afterEach(function () {
       createEventEmitterStub.restore();
+      rtcMgrStub.restore();
+      connectCallSpy.restore();
     })
 
     describe('On', function () {
@@ -138,7 +158,6 @@ describe('Call', function () {
       });
 
       it('should execute RTCManager.connectCall', function () {
-        var connectCallSpy = sinon.spy();
         expect(connectCallSpy.called).to.equal(true);
       });
 
