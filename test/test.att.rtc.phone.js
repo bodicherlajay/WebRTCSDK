@@ -480,6 +480,45 @@ describe('Phone', function () {
 
       });
 
+      describe('hangup', function () {
+
+        var session,
+          options,
+          call,
+          deleteCurrentCallStub;
+
+        beforeEach(function () {
+
+          options = {
+            destination: '12345',
+            mediaType: 'video'
+          };
+
+          call = new ATT.rtc.Call({
+            peer: '1234567'
+          });
+
+          session = phone.getSession();
+
+          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall', function () {
+            return call;
+          });
+
+          phone.hangup(options);
+        });
+
+        afterEach(function () {
+          deleteCurrentCallStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.hangup).to.be.a('function');
+        });
+
+        it('should call session.deleteCurrentCall', function () {
+          expect(deleteCurrentCallStub.called).to.equal(true);
+        });
+      });
     });
   });
 });

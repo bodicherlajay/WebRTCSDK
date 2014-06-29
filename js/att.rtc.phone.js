@@ -666,11 +666,16 @@
       call.connect();
     }
 
+    function hangup () {
+      session.deleteCurrentCall();
+    }
+
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
+    this.hangup = hangup.bind(this);
   }
 
 

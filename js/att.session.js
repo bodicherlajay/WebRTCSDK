@@ -356,6 +356,8 @@
       return calls[callId];
     };
 
+    this.deleteCurrentCall = function () {};
+    
     this.deleteCall =   function deleteCall(callId) {
       var call = this.getCall(callId);
       if (call === undefined) {
