@@ -509,6 +509,12 @@ describe('Session', function () {
 
     });
 
+    describe('DeleteCurrentCall', function () {
+
+      it('Should exist', function () {
+        expect(session.deleteCurrentCall).to.be.a('function');
+      });
+    });
   });
 
   describe('Event', function () {
