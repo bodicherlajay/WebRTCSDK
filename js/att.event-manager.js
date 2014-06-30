@@ -280,7 +280,7 @@
         accessToken: options.token,
         endpoint: ATT.appConfig.EventChannelConfig.endpoint,
         sessionId: options.sessionId,
-        publisher: options.emitter,
+        publisher: emitter,
         resourceManager: resourceManager,
         publicMethodName: 'getEvents',
         usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
