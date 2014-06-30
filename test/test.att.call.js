@@ -84,8 +84,6 @@ describe('Call', function () {
         return rtcMgr;
       });
 
-      connectCallSpy = sinon.spy(rtcMgr, 'connectCall');
-
       call = new ATT.rtc.Call({
         peer: '12345',
         mediaType: 'video'
@@ -108,7 +106,6 @@ describe('Call', function () {
     afterEach(function () {
       createEventEmitterStub.restore();
       rtcMgrStub.restore();
-      connectCallSpy.restore();
     })
 
     describe('On', function () {
@@ -138,6 +135,13 @@ describe('Call', function () {
     });
 
     describe('Connect', function () {
+      beforeEach(function () {
+        connectCallSpy = sinon.spy(rtcMgr, 'connectCall');
+      });
+
+      afterEach(function () {
+        connectCallSpy.restore();
+      });
 
       it('Should exist', function () {
         expect(call.connect).to.be.a('function');
@@ -154,7 +158,6 @@ describe('Call', function () {
             done(e);
           }
         }, 100);
-
       });
 
       it('should execute RTCManager.connectCall', function () {
@@ -192,7 +195,7 @@ describe('Call', function () {
         expect(call.disconnect).to.be.a('function');
       });
 
-      it('Should execute the onDisconnecting callback if no error', function (done) {
+      it('Should trigger `disconnecting` event immediately', function (done) {
         call.disconnect();
 
         setTimeout(function () {
