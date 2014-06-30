@@ -591,16 +591,16 @@
 
     function on(event, handler) {
       if ('session-ready' !== event
-        && 'session-disconnected' !== event
-        && 'call-dialing' !== event
-        && 'call-connecting' !== event
-        && 'call-disconnecting' !== event
-        && 'call-canceled' !== event
-        && 'call-rejected' !== event
-        && 'call-connected' !== event
-        && 'call-established' !== event
-        && 'call-ended' !== event
-        && 'call-error' !== event) {
+          && 'session-disconnected' !== event
+          && 'call-dialing' !== event
+          && 'call-connecting' !== event
+          && 'call-disconnecting' !== event
+          && 'call-canceled' !== event
+          && 'call-rejected' !== event
+          && 'call-connected' !== event
+          && 'call-established' !== event
+          && 'call-ended' !== event
+          && 'call-error' !== event) {
         throw new Error('Event not defined');
       }
 
@@ -672,13 +672,13 @@
       call.connect();
     }
 
-    function hangup () {
-      session.deleteCurrentCall();
-
+    function hangup() {
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
       });
       call.disconnect();
+
+      session.deleteCurrentCall();
     }
 
     this.on = on.bind(this);
