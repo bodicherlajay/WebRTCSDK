@@ -112,6 +112,24 @@ describe('Phone', function () {
 
       });
 
+      describe('getCall', function () {
+
+        it('should exist', function () {
+          expect(phone.getCall).to.be.a('function');
+        });
+
+        it('should return the latest instance of a call', function () {
+          phone.dial({
+            destination: '12345',
+            mediaType: 'video'
+          });
+
+          var callObj = phone.getCall();
+          expect(callObj instanceof ATT.rtc.Call).to.equal(true);
+        });
+
+      });
+
       describe('on', function () {
 
         it('should exist', function () {
@@ -485,30 +503,44 @@ describe('Phone', function () {
         var session,
           options,
           call,
-          deleteCurrentCallStub;
+          onSpy,
+          callDisconnectStub,
+          createCallStub,
+          deleteCurrentCallStub,
+          callDisconnectingHandlerSpy;
 
         beforeEach(function () {
 
           options = {
             destination: '12345',
-            mediaType: 'video'
+            mediaType: 'audio'
           };
 
           call = new ATT.rtc.Call({
             peer: '1234567'
           });
 
+          onSpy = sinon.spy(call, 'on');
+
           session = phone.getSession();
+
+          createCallStub = sinon.stub(session, 'createCall', function () {
+            return call;
+          });
 
           deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall', function () {
             return call;
           });
 
-          phone.hangup(options);
+          callDisconnectStub = sinon.spy(call, 'disconnect');
+
+          phone.dial(options);
+          phone.hangup();
         });
 
         afterEach(function () {
-          deleteCurrentCallStub.restore();
+          callDisconnectStub.restore();
+          createCallStub.restore();
         });
 
         it('should exist', function () {
@@ -517,6 +549,28 @@ describe('Phone', function () {
 
         it('should call session.deleteCurrentCall', function () {
           expect(deleteCurrentCallStub.called).to.equal(true);
+        });
+
+        it('should register for the `disconnecting` event on the call object', function () {
+          expect(onSpy.calledWith('disconnecting')).to.equal(true);
+        });
+
+        it('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
+          callDisconnectingHandlerSpy = sinon.spy();
+          phone.on('call-disconnecting', callDisconnectingHandlerSpy);
+
+          setTimeout(function () {
+            try {
+              expect(callDisconnectingHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
+        });
+
+        it('should execute call.disconnect', function () {
+          expect(callDisconnectStub.called).to.equal(true);
         });
       });
     });

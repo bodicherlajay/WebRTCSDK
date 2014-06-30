@@ -514,6 +514,11 @@ describe('Session', function () {
       it('Should exist', function () {
         expect(session.deleteCurrentCall).to.be.a('function');
       });
+
+      it('Should throw an error if there is no current call', function () {
+        session.terminateCalls();
+        expect(session.deleteCurrentCall.bind(session)).to.throw('Call not found');
+      });
     });
   });
 

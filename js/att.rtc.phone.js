@@ -578,10 +578,15 @@
   function Phone() {
 
     var emitter = ATT.private.factories.createEventEmitter(),
-      session = new ATT.rtc.Session();
+      session = new ATT.rtc.Session(),
+      call;
 
     function getSession() {
       return session;
+    }
+
+    function getCall() {
+      return call;
     }
 
     function on(event, handler) {
@@ -589,6 +594,7 @@
         && 'session-disconnected' !== event
         && 'call-dialing' !== event
         && 'call-connecting' !== event
+        && 'call-disconnecting' !== event
         && 'call-canceled' !== event
         && 'call-rejected' !== event
         && 'call-connected' !== event
@@ -633,7 +639,7 @@
         throw new Error('Destination not defined');
       }
 
-      var call = session.createCall({
+      call = session.createCall({
         peer: options.destination,
         mediaType: options.mediaType
       });
@@ -668,10 +674,16 @@
 
     function hangup () {
       session.deleteCurrentCall();
+
+      call.on('disconnecting', function () {
+        emitter.publish('call-disconnecting');
+      });
+      call.disconnect();
     }
 
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
+    this.getCall = getCall.bind(this);
     this.login = login.bind(this);
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
