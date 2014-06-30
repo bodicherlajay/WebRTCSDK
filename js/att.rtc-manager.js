@@ -318,19 +318,15 @@
 
     var eventManager,
       resourceManager,
-      emitter  = ATT.private.factories.createEventEmitter();
-//      userMediaSvc,
+      emitter,
+      userMediaSvc,
+      peerConnSvc;
 
-//      peerConnSvc;
-
-//
-//    errMgr = options.errorManager;
+    emitter = ATT.private.factories.createEventEmitter();
     resourceManager = options.resourceManager;
+    userMediaSvc = options.userMediaSvc;
+    peerConnSvc = options.peerConnSvc;
 
-//    rtcEvent = options.rtcEvent;
-//    userMediaSvc = options.userMediaSvc;
-//    peerConnSvc = options.peerConnSvc;
-//
     logger = resourceManager.getLogger("RTCManager");
 
     logger.logDebug('createRTCManager');
@@ -443,8 +439,35 @@
       });
     }
 
+    function connectCall(options) {
+      if (undefined === options) {
+        throw new Error('No options defined.');
+      }
+      if (undefined === options.peer) {
+        throw new Error('No peer defined.');
+      }
+      if (undefined === options.mediaType) {
+        throw new Error('No MediaType defined.');
+      }
+      if (undefined === options.onCallConnecting) {
+        throw new Error('Callback `onCallConnecting` not defined.')
+      }
+
+      userMediaSvc.getUserMedia({
+        onUserMedia: function () {
+          peerConnSvc.initPeerConnection({
+            onSuccess: function () {
+              options.onCallConnecting();
+            }
+          });
+        }
+      });
+
+    }
+
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
+    this.connectCall = connectCall.bind(this);
   }
 
   if (undefined === ATT.private) {

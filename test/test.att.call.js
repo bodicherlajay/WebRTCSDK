@@ -5,28 +5,29 @@ describe('Call', function () {
 
   'use strict';
 
+  var options;
+
+  beforeEach(function () {
+    options = {
+      peer: '12345',
+      mediaType: 'audio'
+    };
+  });
+
   it('Should have a public constructor under ATT.rtc', function () {
     expect(ATT.rtc.Call).to.be.a('function');
   });
 
   describe('Constructor', function () {
-    var options,
-      createEventEmitterSpy,
+    var createEventEmitterSpy,
       getRTCManagerSpy,
       call;
 
     beforeEach(function () {
-      options = {
-        id: '12334',
-        peer: '12345',
-        mediaType: 'audio'
-      };
-
       createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
       getRTCManagerSpy = sinon.spy(ATT.private.rtcManager, 'getRTCManager');
 
       call = new ATT.rtc.Call(options);
-
     });
 
     afterEach(function () {
@@ -61,9 +62,8 @@ describe('Call', function () {
   describe('Methods', function () {
     var emitter,
       rtcMgr,
-      rtcMgrStub,
+      getRTCManagerStub,
       createEventEmitterStub,
-      connectCallSpy,
       call,
       onDialingSpy,
       onConnectingSpy,
@@ -80,7 +80,7 @@ describe('Call', function () {
 
       rtcMgr = ATT.private.rtcManager.getRTCManager();
 
-      rtcMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+      getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcMgr;
       });
 
@@ -100,13 +100,12 @@ describe('Call', function () {
       call.on('established', onEstablishedSpy);
       call.on('disconnecting', onDisconnectingSpy);
       call.on('disconnected', onDisconnectedSpy);
-
     });
 
     afterEach(function () {
       createEventEmitterStub.restore();
-      rtcMgrStub.restore();
-    })
+      getRTCManagerStub.restore();
+    });
 
     describe('On', function () {
 
@@ -135,12 +134,27 @@ describe('Call', function () {
     });
 
     describe('Connect', function () {
+
+      var connectCallStub,
+        setIdSpy;
+
       beforeEach(function () {
-        connectCallSpy = sinon.spy(rtcMgr, 'connectCall');
+        connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
+          options.onCallConnecting({
+            callId: '1234'
+          });
+        });
+
+        setIdSpy = sinon.spy(call, 'setId');
+
+        call.connect({
+          onCallConnecting: function () {}
+        });
       });
 
       afterEach(function () {
-        connectCallSpy.restore();
+        connectCallStub.restore();
+        setIdSpy.restore();
       });
 
       it('Should exist', function () {
@@ -148,8 +162,6 @@ describe('Call', function () {
       });
 
       it('Should trigger `dialing` event immediately', function (done) {
-        call.connect();
-
         setTimeout(function () {
           try {
             expect(onDialingSpy.called).to.equal(true);
@@ -161,12 +173,14 @@ describe('Call', function () {
       });
 
       it('should execute RTCManager.connectCall', function () {
-        expect(connectCallSpy.called).to.equal(true);
+        expect(connectCallStub.called).to.equal(true);
       });
 
       describe('success on connectCall', function () {
 
-        it('should execute Call.setId with the newly created call id');
+        it('should execute Call.setId with the newly created call id', function () {
+          expect(setIdSpy.called).to.equal(true);
+        });
 
       });
 

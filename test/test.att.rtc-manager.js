@@ -303,6 +303,82 @@ describe('RTC Manager', function () {
 
         });
       });
+
+      describe('connectCall', function () {
+        var options,
+          getUserMediaStub,
+          initPeerConnectionStub,
+          onCallConnectingSpy;
+
+        beforeEach(function () {
+          onCallConnectingSpy = sinon.spy();
+
+          options = {
+            peer: '123',
+            mediaType: 'xyz',
+            onCallConnecting: onCallConnectingSpy
+          };
+
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+            options.onUserMedia();
+          });
+
+          initPeerConnectionStub = sinon.stub(ATT.PeerConnectionService, 'initPeerConnection', function (options) {
+            options.onSuccess();
+          });
+
+          rtcManager.connectCall(options);
+        });
+
+        afterEach(function () {
+          getUserMediaStub.restore();
+          initPeerConnectionStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(rtcManager.connectCall).to.be.a('function');
+        });
+
+        it('should throw and error if invalid options', function () {
+          expect(rtcManager.connectCall.bind(rtcManager)).to.throw('No options defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {})).to.throw('No peer defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            peer: '123'
+          })).to.throw('No MediaType defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            mediaType: 'audio'
+          })).to.throw('No peer defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            mediaType: 'audio',
+            peer: '1234'
+          })).to.throw('Callback `onCallConnecting` not defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            peer: '123',
+            mediaType: 'video',
+            onCallConnecting: function () {}
+          })).to.not.throw(Error);
+        });
+
+        it('should call getUserMedia on user media service', function () {
+          expect(getUserMediaStub.called).to.equal(true);
+        });
+
+        describe('success get user media', function () {
+
+          it('should invoke initPeerConnection', function () {
+            expect(initPeerConnectionStub.called).to.equal(true);
+          });
+
+          describe('success initPeerConnection', function () {
+
+            it('should invoke callback `onCallConnecting`', function () {
+              expect(onCallConnectingSpy.called).to.equal(true);
+            });
+          });
+
+        });
+
+      });
     });
   });
 

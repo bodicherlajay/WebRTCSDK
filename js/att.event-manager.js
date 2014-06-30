@@ -227,7 +227,6 @@
     ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', event);
   }
 
-
   function createEventManager(options) {
 
     var eventChannel,

@@ -235,8 +235,16 @@
       emitter.subscribe(event, handler, this);
     }
 
-    function connect() {
+    function connect(config) {
+      var call = this;
       emitter.publish('dialing');
+      rtcManager.connectCall({
+        peer: options.peer,
+        mediaType: options.mediaType,
+        onCallConnecting: function (callInfo) {
+          call.setId(callInfo.callId);
+        }
+      });
     }
 
     function disconnect() {
