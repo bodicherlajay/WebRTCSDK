@@ -227,7 +227,6 @@
     ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', event);
   }
 
-
   function createEventManager(options) {
 
     var eventChannel,
@@ -239,8 +238,9 @@
     logger.logDebug('createEventManager');
 
     function on(event, handler) {
-      if('listening' !== event &&
-        'stop-listening' !== event) {
+      if('listening' !== event
+        && 'stop-listening' !== event
+        && 'remote-sdp-set' !== event) {
         throw new Error('Event not found');
       }
       emitter.unsubscribe(event, handler);
@@ -281,7 +281,7 @@
         accessToken: options.token,
         endpoint: ATT.appConfig.EventChannelConfig.endpoint,
         sessionId: options.sessionId,
-        publisher: options.emitter,
+        publisher: emitter,
         resourceManager: resourceManager,
         publicMethodName: 'getEvents',
         usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')

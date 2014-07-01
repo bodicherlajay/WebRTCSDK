@@ -27,7 +27,7 @@ module.exports = function (grunt) {
       'js/eventDispatcher.js',
       'js/att.rtc.event.js',
       'js/adapter.js',
-//      'js/att.user-media-service.js',
+      'js/att.user-media-service.js',
       'js/att.utils.sdp-filter.js',
       'js/att.signaling-service.js',
       'js/att.error.js',

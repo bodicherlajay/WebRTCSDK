@@ -5,28 +5,29 @@ describe('Call', function () {
 
   'use strict';
 
+  var options;
+
+  beforeEach(function () {
+    options = {
+      peer: '12345',
+      mediaType: 'audio'
+    };
+  });
+
   it('Should have a public constructor under ATT.rtc', function () {
     expect(ATT.rtc.Call).to.be.a('function');
   });
 
   describe('Constructor', function () {
-    var options,
-      createEventEmitterSpy,
+    var createEventEmitterSpy,
       getRTCManagerSpy,
       call;
 
     beforeEach(function () {
-      options = {
-        id: '12334',
-        peer: '12345',
-        mediaType: 'audio'
-      };
-
       createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
       getRTCManagerSpy = sinon.spy(ATT.private.rtcManager, 'getRTCManager');
 
       call = new ATT.rtc.Call(options);
-
     });
 
     afterEach(function () {
@@ -59,30 +60,47 @@ describe('Call', function () {
   });
 
   describe('Methods', function () {
-    var emitter,
+    var emitterEM,
+      eventManager,
       rtcMgr,
-      rtcMgrStub,
+      getRTCManagerStub,
       createEventEmitterStub,
-      connectCallSpy,
+      createEventManagerStub,
       call,
       onDialingSpy,
       onConnectingSpy,
-      onEstablishedSpy,
+      onConnectedSpy,
       onDisconnectingSpy,
       onDisconnectedSpy;
 
     beforeEach(function () {
-      emitter = ATT.private.factories.createEventEmitter();
+      emitterEM = ATT.private.factories.createEventEmitter();
 
       createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-        return emitter;
+        return emitterEM;
+      });
+
+      eventManager = ATT.private.factories.createEventManager({
+        resourceManager: {
+          getLogger: function () {
+            return {
+              logDebug: function () {}
+            }
+          }
+        }
+      });
+
+      createEventManagerStub = sinon.stub(ATT.private.factories, 'createEventManager', function () {
+        return eventManager;
       });
 
       rtcMgr = ATT.private.rtcManager.getRTCManager();
 
-      rtcMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+      getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcMgr;
       });
+
+      createEventEmitterStub.restore();
 
       call = new ATT.rtc.Call({
         peer: '12345',
@@ -91,22 +109,21 @@ describe('Call', function () {
 
       onDialingSpy = sinon.spy();
       onConnectingSpy = sinon.spy();
-      onEstablishedSpy = sinon.spy();
+      onConnectedSpy = sinon.spy();
       onDisconnectingSpy = sinon.spy();
       onDisconnectedSpy = sinon.spy();
 
       call.on('dialing', onDialingSpy);
       call.on('connecting', onConnectingSpy);
-      call.on('established', onEstablishedSpy);
+      call.on('connected', onConnectedSpy);
       call.on('disconnecting', onDisconnectingSpy);
       call.on('disconnected', onDisconnectedSpy);
-
     });
 
     afterEach(function () {
-      createEventEmitterStub.restore();
-      rtcMgrStub.restore();
-    })
+      createEventManagerStub.restore();
+      getRTCManagerStub.restore();
+    });
 
     describe('On', function () {
 
@@ -134,13 +151,42 @@ describe('Call', function () {
       });
     });
 
-    describe('Connect', function () {
+    describe.only('Connect', function () {
+
+      var connectCallStub,
+        setIdSpy,
+        onSpy,
+        setRemoteSdpSpy,
+        remoteSdp;
+
       beforeEach(function () {
-        connectCallSpy = sinon.spy(rtcMgr, 'connectCall');
+        remoteSdp = 'JFGLSDFDJKS';
+
+        connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
+          options.onCallConnecting({
+            callId: '1234'
+          });
+          emitterEM.publish('remote-sdp-set', remoteSdp);
+        });
+
+        // TODO: Cleanup later. eventManager seems to be a different instance
+        onSpy = sinon.stub(rtcMgr, 'on', function (event, handler) {
+          eventManager.on(event, handler);
+        });
+
+        setIdSpy = sinon.spy(call, 'setId');
+        setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
+
+        call.connect({
+          onCallConnecting: function () {}
+        });
       });
 
       afterEach(function () {
-        connectCallSpy.restore();
+        connectCallStub.restore();
+        setIdSpy.restore();
+        onSpy.restore();
+        setRemoteSdpSpy.restore();
       });
 
       it('Should exist', function () {
@@ -148,8 +194,6 @@ describe('Call', function () {
       });
 
       it('Should trigger `dialing` event immediately', function (done) {
-        call.connect();
-
         setTimeout(function () {
           try {
             expect(onDialingSpy.called).to.equal(true);
@@ -160,30 +204,47 @@ describe('Call', function () {
         }, 100);
       });
 
+      it('should register for event `remote-sdp-set` from RTCManager', function () {
+        expect(onSpy.calledWith('remote-sdp-set')).to.equal(true);
+        expect(onSpy.getCall(0).args[1]).to.be.a('function');
+      });
+
       it('should execute RTCManager.connectCall', function () {
-        expect(connectCallSpy.called).to.equal(true);
+        expect(connectCallStub.called).to.equal(true);
       });
 
       describe('success on connectCall', function () {
 
-        it('should execute Call.setId with the newly created call id');
+        it('should execute Call.setId with the newly created call id', function () {
+          expect(setIdSpy.called).to.equal(true);
+        });
 
       });
 
-      it('Should publish the `established` event on setting the remote SDP', function (done) {
-        var remoteSdp = 'JFGLSDFDJKS';
+      describe('success events', function () {
 
-        call.setRemoteSdp(remoteSdp);
+        it('should execute setRemoteSdp on getting a `remote-sdp-set` event from RTCManager', function (done) {
+          setTimeout(function () {
+            try {
+              expect(setRemoteSdpSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
 
-        setTimeout(function () {
-          try {
-            expect(call.remoteSdp).to.equal(remoteSdp);
-            expect(onEstablishedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
+        it('Should publish the `connected` event on setting the remote SDP', function (done) {
+          setTimeout(function () {
+            try {
+              expect(call.remoteSdp).to.equal(remoteSdp);
+              expect(onConnectedSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
       });
 
       it('Should execute the onError callback if there is an error');

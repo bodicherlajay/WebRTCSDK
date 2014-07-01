@@ -129,7 +129,7 @@ describe('RTC Manager', function () {
 
     describe('Methods', function () {
       var rtcManager,
-        onSpy,
+        onStub,
         doOperationSpy,
         setupStub,
         stopStub,
@@ -139,7 +139,8 @@ describe('RTC Manager', function () {
 
       beforeEach(function () {
 
-        onSpy = sinon.spy(eventManager, 'on');
+        onStub = sinon.stub(eventManager, 'on', function () {
+        });
 
         setupStub = sinon.stub(eventManager, 'setup', function () {
           emitter.publish('listening');
@@ -175,9 +176,25 @@ describe('RTC Manager', function () {
 
       afterEach(function () {
         doOperationSpy.restore();
-        onSpy.restore();
+        onStub.restore();
         setupStub.restore();
         stopStub.restore();
+      });
+
+      describe('On', function () {
+
+        it('should exist', function () {
+          expect(rtcManager.on).to.be.a('function');
+        });
+
+        it('should call `eventManager.on` with the input parameters', function () {
+          var arg1 = 'xyz',
+            arg2 = function () {};
+
+          rtcManager.on(arg1, arg2);
+          
+          expect(onStub.calledWith(arg1, arg2)).to.equal(true);
+        });
       });
 
       describe('connectSession', function () {
@@ -219,7 +236,7 @@ describe('RTC Manager', function () {
           });
 
           it('Should subscribe to event listening from the event manager', function () {
-            expect(onSpy.calledWith('listening')).to.equal(true);
+            expect(onStub.calledWith('listening')).to.equal(true);
           });
 
           it('should call EventManager.setup with the session id', function () {
@@ -302,6 +319,82 @@ describe('RTC Manager', function () {
           });
 
         });
+      });
+
+      describe('connectCall', function () {
+        var options,
+          getUserMediaStub,
+          initPeerConnectionStub,
+          onCallConnectingSpy;
+
+        beforeEach(function () {
+          onCallConnectingSpy = sinon.spy();
+
+          options = {
+            peer: '123',
+            mediaType: 'xyz',
+            onCallConnecting: onCallConnectingSpy
+          };
+
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+            options.onUserMedia();
+          });
+
+          initPeerConnectionStub = sinon.stub(ATT.PeerConnectionService, 'initPeerConnection', function (options) {
+            options.onSuccess();
+          });
+
+          rtcManager.connectCall(options);
+        });
+
+        afterEach(function () {
+          getUserMediaStub.restore();
+          initPeerConnectionStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(rtcManager.connectCall).to.be.a('function');
+        });
+
+        it('should throw and error if invalid options', function () {
+          expect(rtcManager.connectCall.bind(rtcManager)).to.throw('No options defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {})).to.throw('No peer defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            peer: '123'
+          })).to.throw('No MediaType defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            mediaType: 'audio'
+          })).to.throw('No peer defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            mediaType: 'audio',
+            peer: '1234'
+          })).to.throw('Callback `onCallConnecting` not defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            peer: '123',
+            mediaType: 'video',
+            onCallConnecting: function () {}
+          })).to.not.throw(Error);
+        });
+
+        it('should call getUserMedia on user media service', function () {
+          expect(getUserMediaStub.called).to.equal(true);
+        });
+
+        describe('success get user media', function () {
+
+          it('should invoke initPeerConnection', function () {
+            expect(initPeerConnectionStub.called).to.equal(true);
+          });
+
+          describe('success initPeerConnection', function () {
+
+            it('should invoke callback `onCallConnecting`', function () {
+              expect(onCallConnectingSpy.called).to.equal(true);
+            });
+          });
+
+        });
+
       });
     });
   });

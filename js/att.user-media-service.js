@@ -86,7 +86,7 @@
       // created user media object
       var userMedia = {
         mediaConstraints: options.mediaConstraints,
-        localStream: stream,
+        localStream: stream
       };
 
       options.onUserMedia(userMedia);
