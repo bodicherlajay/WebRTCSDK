@@ -243,6 +243,10 @@
         call.setRemoteSdp(remoteSdp);
       });
 
+      rtcManager.on('media-established', function () {
+        emitter.publish('established');
+      });
+
       rtcManager.connectCall({
         peer: options.peer,
         mediaType: options.mediaType,

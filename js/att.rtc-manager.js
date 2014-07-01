@@ -459,6 +459,12 @@
 
       userMediaSvc.getUserMedia({
         onUserMedia: function () {
+
+          eventManager.on('remote-sdp', function (remoteSdp) {
+            peerConnSvc.setTheRemoteDescription(remoteSdp, 'answer');
+            console.log('setting remote..');
+          });
+
           peerConnSvc.initPeerConnection({
             onSuccess: function () {
               options.onCallConnecting();

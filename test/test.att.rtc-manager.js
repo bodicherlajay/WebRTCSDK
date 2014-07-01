@@ -52,7 +52,7 @@ describe('RTC Manager', function () {
     emitter = factories.createEventEmitter();
     createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function() {
       return emitter;
-    })
+    });
     eventManager = factories.createEventManager(optionsForEM);
     createEventManagerStub = sinon.stub(factories, 'createEventManager', function () {
       return eventManager;
@@ -321,11 +321,13 @@ describe('RTC Manager', function () {
         });
       });
 
-      describe('connectCall', function () {
+      describe.only('connectCall', function () {
         var options,
           getUserMediaStub,
           initPeerConnectionStub,
-          onCallConnectingSpy;
+          onCallConnectingSpy,
+          setRemoteSdpSpy,
+          remoteSdp;
 
         beforeEach(function () {
           onCallConnectingSpy = sinon.spy();
@@ -340,9 +342,14 @@ describe('RTC Manager', function () {
             options.onUserMedia();
           });
 
+          remoteSdp = 'abc';
+
           initPeerConnectionStub = sinon.stub(ATT.PeerConnectionService, 'initPeerConnection', function (options) {
             options.onSuccess();
+            emitter.publish('remote-sdp', remoteSdp);
           });
+
+          setRemoteSdpSpy = sinon.spy(ATT.PeerConnectionService, 'setTheRemoteDescription')
 
           rtcManager.connectCall(options);
         });
@@ -350,6 +357,7 @@ describe('RTC Manager', function () {
         afterEach(function () {
           getUserMediaStub.restore();
           initPeerConnectionStub.restore();
+          setRemoteSdpSpy.restore();
         });
 
         it('should exist', function () {
@@ -382,6 +390,10 @@ describe('RTC Manager', function () {
 
         describe('success get user media', function () {
 
+          it('should register for `remote-sdp` event on eventManager', function () {
+            expect(onStub.calledWith('remote-sdp')).to.equal(true);
+          });
+
           it('should invoke initPeerConnection', function () {
             expect(initPeerConnectionStub.called).to.equal(true);
           });
@@ -390,6 +402,20 @@ describe('RTC Manager', function () {
 
             it('should invoke callback `onCallConnecting`', function () {
               expect(onCallConnectingSpy.called).to.equal(true);
+            });
+          });
+
+          describe('success event', function () {
+
+            it('should call setRemoteSdp on the peer connection on getting `remote-sdp` event from eventManager', function (done) {
+              setTimeout(function () {
+                try {
+                  expect(setRemoteSdpSpy.calledWith(remoteSdp, 'answer')).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
             });
           });
 

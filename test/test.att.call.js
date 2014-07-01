@@ -165,7 +165,8 @@ describe('Call', function () {
         setIdSpy,
         onStub,
         setRemoteSdpSpy,
-        remoteSdp;
+        remoteSdp,
+        onEstablishedHandlerSpy;
 
       beforeEach(function () {
         remoteSdp = 'JFGLSDFDJKS';
@@ -175,6 +176,7 @@ describe('Call', function () {
             callId: '1234'
           });
           emitterEM.publish('remote-sdp-set', remoteSdp);
+          emitterEM.publish('media-established');
         });
 
         // TODO: Cleanup later. eventManager seems to be a different instance
@@ -184,6 +186,10 @@ describe('Call', function () {
 
         setIdSpy = sinon.spy(call, 'setId');
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
+
+        onEstablishedHandlerSpy = sinon.spy();
+
+        call.on('established', onEstablishedHandlerSpy);
 
         call.connect({
           onCallConnecting: function () {}
@@ -247,6 +253,17 @@ describe('Call', function () {
             try {
               expect(call.remoteSdp).to.equal(remoteSdp);
               expect(onConnectedSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+
+        it('should publish `established` event on getting a `media-established` event from RTC Manager', function (done) {
+          setTimeout(function () {
+            try {
+              expect(onEstablishedHandlerSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
