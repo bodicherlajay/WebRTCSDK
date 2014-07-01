@@ -48,7 +48,7 @@ module.exports = function (grunt) {
       'test/test.att.session.js',
       'test/test.att.rtc-manager.js',
 //      'test/test.att.utils.error-dictionary.js',
-//      'test/test.att.utils.event-channel.js',
+      'test/test.att.utils.event-channel.js',
 //      'test/test.att.peer-connection-service.js',
 //      'test/test.att.rtc.event.js',
 //      'test/test.att.signaling.service.js',

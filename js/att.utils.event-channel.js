@@ -6,10 +6,10 @@
  * Event channel objects can be used to listen to a given `channel` continuously.
  */
 
-(function (app) {
+(function () {
   'use strict';
 
-  var utils = {}, logger, resourceManager;
+  var utils = {}, logger, resourceManager, factories = ATT.private.factories;
 
   function setLogger(lgr) {
     logger = lgr;
@@ -54,19 +54,27 @@
       onError,
       onTimeOut,
       interval = 2000,
-      maxPollingTime = 64000;
+      maxPollingTime = 64000,
+      methodName = 'getEvents',
+      emitter;
 
     logger.logInfo("About to create event channel");
 
-    if (undefined === channelConfig || 0 === Object.keys(channelConfig)
-        || undefined === channelConfig.accessToken
-        || undefined === channelConfig.endpoint
-        || undefined === channelConfig.sessionId
-        || undefined === channelConfig.publicMethodName
-        || undefined === channelConfig.resourceManager
-        || undefined === channelConfig.usesLongPolling
-        || undefined === channelConfig.publisher) {
-      throw new Error('Invalid Options. Cannot create channel with options:' + JSON.stringify(channelConfig));
+    if (undefined === channelConfig
+        || 0 === Object.keys(channelConfig).length) {
+      throw new Error('No options');
+    }
+    if (undefined === channelConfig.accessToken) {
+      throw new Error('No Access Token');
+    }
+    if (undefined === channelConfig.endpoint) {
+      throw new Error('No Endpoint');
+    }
+    if (undefined === channelConfig.sessionId) {
+      throw new Error('No Session Id');
+    }
+    if (undefined === channelConfig.resourceManager) {
+      throw new Error('No Resource Manager');
     }
 
     if (channelConfig.interval !== undefined) {
@@ -78,6 +86,8 @@
       logger.logInfo("Configuring maximum polling time to " + channelConfig.maxPollingTime);
       maxPollingTime = channelConfig.maxPollingTime;
     }
+
+    emitter = factories.createEventEmitter();
 
     //logger.logDebug(httpConfig);
 
@@ -125,8 +135,10 @@
       } else {
         logger.logError("[FATAL] Response code was:" + response + " repolling again...");
       }
-      // continue polling
-      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+      setTimeout(function () {
+        // continue polling
+        channelConfig.resourceManager.doOperation(methodName, httpConfig);
+      }, 0);
     }
 
     // setup success and error callbacks
@@ -142,20 +154,20 @@
         logger.logDebug("Not processing response because event channel is not running");
         return;
       }
+
       if (true === channelConfig.usesLongPolling) { // long-polling
         logger.logDebug("Before processing messages");
-        if (response.getResponseStatus() === 204) {
-          logger.logInfo("No event response content, repolling again...");
-          // continue polling
-          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
-        } else if (response.getResponseStatus() === 200) {
+
+        if (response.getResponseStatus() === 200) {
           processMessages(response);
           logger.logDebug("Processed messages, repolling again...");
-          // continue polling
-          channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
-        } else {
-          retry();
         }
+
+        setTimeout(function () {
+          // continue polling
+          channelConfig.resourceManager.doOperation(methodName, httpConfig);
+        }, 0);
+
         return;
       }
 
@@ -211,7 +223,7 @@
         error: onError.bind(this, config),
         ontimeout: onTimeOut.bind(this, config)
       };
-      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+      channelConfig.resourceManager.doOperation(methodName, httpConfig);
     }
 
     channel = {
@@ -225,14 +237,10 @@
     return channel;
   }
 
-  utils.createEventChannel = createEventChannel;
-  // export method to ATT.createEventChannel
-  if (app.utils === undefined) {
-    app.utils = utils;
-  } else {
-    app.utils.createEventChannel = createEventChannel;
-    //Expose dependency modules
-    app.utils.setResourceManager = setResourceManager;
-    app.utils.setLogger = setLogger;
+  if (undefined === ATT.private.factories) {
+    throw new Error('Error exporting `createEventChannel`');
   }
-}(ATT));
+  ATT.private.factories.createEventChannel = createEventChannel;
+//  ATT.utils.setResourceManager = setResourceManager;
+//  ATT.utils.setLogger = setLogger;
+}());

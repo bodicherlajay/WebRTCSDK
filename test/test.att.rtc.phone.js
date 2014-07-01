@@ -5,16 +5,22 @@
 describe('Phone', function () {
   'use strict';
 
-  var getRTCMgrStub;
+  var getRTCManagerStub;
 
   beforeEach(function () {
-    getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
-      return {};
+
+    getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+      return {
+        on: function (event, handler) {
+          return {}
+        },
+        connectCall: function () {}
+      }
     });
   });
 
   afterEach(function () {
-    getRTCMgrStub.restore();
+    getRTCManagerStub.restore();
   });
 
   describe('Singleton', function () {
@@ -124,8 +130,13 @@ describe('Phone', function () {
             mediaType: 'video'
           });
 
+          phone.dial({
+            destination: '1-800-junhua',
+            mediaType: 'video'
+          });
+
           var callObj = phone.getCall();
-          expect(callObj instanceof ATT.rtc.Call).to.equal(true);
+          expect(callObj.peer).to.equal('1-800-junhua');
         });
 
       });

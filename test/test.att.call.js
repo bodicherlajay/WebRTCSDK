@@ -151,7 +151,7 @@ describe('Call', function () {
       });
     });
 
-    describe.only('Connect', function () {
+    describe('Connect', function () {
 
       var connectCallStub,
         setIdSpy,
