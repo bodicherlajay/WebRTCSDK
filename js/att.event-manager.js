@@ -287,7 +287,7 @@
         usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
       };
 
-      eventChannel = ATT.utils.createEventChannel(channelConfig);
+      eventChannel = ATT.private.factories.createEventChannel(channelConfig);
 
       if (eventChannel) {
         logger.logInfo('Event channel up and running');
