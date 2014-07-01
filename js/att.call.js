@@ -237,6 +237,7 @@
 
     function connect(config) {
       var call = this;
+
       emitter.publish('dialing');
 
       rtcManager.on('remote-sdp-set', function (remoteSdp) {

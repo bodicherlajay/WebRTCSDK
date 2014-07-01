@@ -37,7 +37,6 @@
   }
 
   module = {
-    sessionId: null,
     localVideo: null,
     remoteVideo: null,
     localStream: null,
@@ -55,19 +54,25 @@
     getUserMedia: function (options) {
       logger.logTrace('starting call');
 
-      this.sessionId = options.session.getSessionId(); // TODO: UM shouldn't use session
       this.localVideo = options.localVideo;
       this.remoteVideo = options.remoteVideo;
+      this.mediaConstraints = defaultMediaConstraints;
 
-      options.mediaConstraints = options.mediaConstraints || defaultMediaConstraints;
+      if(undefined !== options.mediaType) {
+        this.mediaConstraints.video = 'audio' !== options.mediaType
+      }
+
+      var args = {
+        mediaConstraints: this.mediaConstraints
+      };
 
       // get a local stream, show it in a self-view and add it to be sent
-      getUserMedia(options.mediaConstraints, this.getUserMediaSuccess.bind(this, options), function (err) {
+      getUserMedia(this.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function (err) {
         options.onError(Error.create('Get user media failed: ' + err));
       });
 
       // set up listener for remote video start
-      this.onRemoteVideoStart();
+      this.onRemoteVideoStart(options.onMediaEstablished);
     },
 
     /**
@@ -97,17 +102,10 @@
     * @param {HTMLElement} remoteVideo The remote video element
     * @returns {HTMLElement} remoteVideo
     */
-    onRemoteVideoStart: function () {
-      var _self = this;
-      _self.remoteVideo.addEventListener('playing', function () {
-        eventEmitter.publish(_self.sessionId + '.responseEvent', {
-          state : ATT.RTCCallEvents.CALL_IN_PROGRESS
-        });
+    onRemoteVideoStart: function (callback) {
+      this.remoteVideo.addEventListener('playing', function () {
+        callback();
       });
-
-      remoteVideo.src = '';
-
-      return remoteVideo;
     },
 
     /**

@@ -50,6 +50,8 @@ describe('RTC Manager', function () {
       resourceManager: resourceManagerStub
     };
     emitter = factories.createEventEmitter();
+    emitter.test = 'yogesh';
+
     createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function() {
       return emitter;
     });
@@ -129,7 +131,7 @@ describe('RTC Manager', function () {
 
     describe('Methods', function () {
       var rtcManager,
-        onStub,
+        onSpy,
         doOperationSpy,
         setupStub,
         stopStub,
@@ -139,8 +141,7 @@ describe('RTC Manager', function () {
 
       beforeEach(function () {
 
-        onStub = sinon.stub(eventManager, 'on', function () {
-        });
+        onSpy = sinon.spy(eventManager, 'on');
 
         setupStub = sinon.stub(eventManager, 'setup', function () {
           emitter.publish('listening');
@@ -176,7 +177,7 @@ describe('RTC Manager', function () {
 
       afterEach(function () {
         doOperationSpy.restore();
-        onStub.restore();
+        onSpy.restore();
         setupStub.restore();
         stopStub.restore();
       });
@@ -193,7 +194,7 @@ describe('RTC Manager', function () {
 
           rtcManager.on(arg1, arg2);
           
-          expect(onStub.calledWith(arg1, arg2)).to.equal(true);
+          expect(onSpy.calledWith(arg1, arg2)).to.equal(true);
         });
       });
 
@@ -236,7 +237,7 @@ describe('RTC Manager', function () {
           });
 
           it('Should subscribe to event listening from the event manager', function () {
-            expect(onStub.calledWith('listening')).to.equal(true);
+            expect(onSpy.calledWith('listening')).to.equal(true);
           });
 
           it('should call EventManager.setup with the session id', function () {
@@ -321,12 +322,12 @@ describe('RTC Manager', function () {
         });
       });
 
-      describe.only('connectCall', function () {
+      describe('connectCall', function () {
         var options,
           getUserMediaStub,
           initPeerConnectionStub,
           onCallConnectingSpy,
-          setRemoteSdpSpy,
+          setRemoteSdpStub,
           remoteSdp;
 
         beforeEach(function () {
@@ -349,7 +350,7 @@ describe('RTC Manager', function () {
             emitter.publish('remote-sdp', remoteSdp);
           });
 
-          setRemoteSdpSpy = sinon.spy(ATT.PeerConnectionService, 'setTheRemoteDescription')
+          setRemoteSdpStub = sinon.stub(ATT.PeerConnectionService, 'setTheRemoteDescription', function () {});
 
           rtcManager.connectCall(options);
         });
@@ -357,7 +358,7 @@ describe('RTC Manager', function () {
         afterEach(function () {
           getUserMediaStub.restore();
           initPeerConnectionStub.restore();
-          setRemoteSdpSpy.restore();
+          setRemoteSdpStub.restore();
         });
 
         it('should exist', function () {
@@ -391,7 +392,7 @@ describe('RTC Manager', function () {
         describe('success get user media', function () {
 
           it('should register for `remote-sdp` event on eventManager', function () {
-            expect(onStub.calledWith('remote-sdp')).to.equal(true);
+            expect(onSpy.calledWith('remote-sdp')).to.equal(true);
           });
 
           it('should invoke initPeerConnection', function () {
@@ -410,7 +411,7 @@ describe('RTC Manager', function () {
             it('should call setRemoteSdp on the peer connection on getting `remote-sdp` event from eventManager', function (done) {
               setTimeout(function () {
                 try {
-                  expect(setRemoteSdpSpy.calledWith(remoteSdp, 'answer')).to.equal(true);
+                  expect(setRemoteSdpStub.calledWith(remoteSdp, 'answer')).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);

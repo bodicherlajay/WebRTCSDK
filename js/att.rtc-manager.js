@@ -322,7 +322,6 @@
       userMediaSvc,
       peerConnSvc;
 
-    emitter = ATT.private.factories.createEventEmitter();
     resourceManager = options.resourceManager;
     userMediaSvc = options.userMediaSvc;
     peerConnSvc = options.peerConnSvc;
@@ -331,7 +330,9 @@
 
     logger.logDebug('createRTCManager');
 
-    eventManager = factories.createEventManager({resourceManager:resourceManager,emitter:emitter});
+    eventManager = factories.createEventManager({
+      resourceManager:resourceManager
+    });
 
     function on(event, handler) {
       eventManager.on(event, handler);
@@ -458,18 +459,20 @@
       }
 
       userMediaSvc.getUserMedia({
+//        mediaType: mediaType,
+//        localVideo: localVideo,
+//        remoteVideo: remoteVideo,
         onUserMedia: function () {
-
           eventManager.on('remote-sdp', function (remoteSdp) {
             peerConnSvc.setTheRemoteDescription(remoteSdp, 'answer');
-            console.log('setting remote..');
           });
-
           peerConnSvc.initPeerConnection({
             onSuccess: function () {
               options.onCallConnecting();
             }
           });
+        },
+        onMediaEstablished: function () {
         }
       });
 
