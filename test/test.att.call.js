@@ -155,7 +155,7 @@ describe('Call', function () {
 
       var connectCallStub,
         setIdSpy,
-        onSpy,
+        onStub,
         setRemoteSdpSpy,
         remoteSdp;
 
@@ -170,7 +170,7 @@ describe('Call', function () {
         });
 
         // TODO: Cleanup later. eventManager seems to be a different instance
-        onSpy = sinon.stub(rtcMgr, 'on', function (event, handler) {
+        onStub = sinon.stub(rtcMgr, 'on', function (event, handler) {
           eventManager.on(event, handler);
         });
 
@@ -185,7 +185,7 @@ describe('Call', function () {
       afterEach(function () {
         connectCallStub.restore();
         setIdSpy.restore();
-        onSpy.restore();
+        onStub.restore();
         setRemoteSdpSpy.restore();
       });
 
@@ -205,8 +205,8 @@ describe('Call', function () {
       });
 
       it('should register for event `remote-sdp-set` from RTCManager', function () {
-        expect(onSpy.calledWith('remote-sdp-set')).to.equal(true);
-        expect(onSpy.getCall(0).args[1]).to.be.a('function');
+        expect(onStub.calledWith('remote-sdp-set')).to.equal(true);
+        expect(onStub.getCall(0).args[1]).to.be.a('function');
       });
 
       it('should execute RTCManager.connectCall', function () {
