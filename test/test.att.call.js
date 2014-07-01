@@ -61,6 +61,7 @@ describe('Call', function () {
 
   describe('Methods', function () {
     var emitterEM,
+      emitterCall,
       eventManager,
       rtcMgr,
       getRTCManagerStub,
@@ -102,6 +103,12 @@ describe('Call', function () {
 
       createEventEmitterStub.restore();
 
+      emitterCall = ATT.private.factories.createEventEmitter();
+
+      createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+        return emitterCall;
+      });
+
       call = new ATT.rtc.Call({
         peer: '12345',
         mediaType: 'video'
@@ -121,6 +128,7 @@ describe('Call', function () {
     });
 
     afterEach(function () {
+      createEventEmitterStub.restore();
       createEventManagerStub.restore();
       getRTCManagerStub.restore();
     });
@@ -137,8 +145,8 @@ describe('Call', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
-          subscribeSpy = sinon.spy(emitter, 'subscribe');
+          unsubscribeSpy = sinon.spy(emitterCall, 'unsubscribe'),
+          subscribeSpy = sinon.spy(emitterCall, 'subscribe');
 
         expect(call.on.bind(call, 'dialing', fn)).to.not.throw(Error);
 
