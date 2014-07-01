@@ -11,10 +11,15 @@ describe('Event Manager', function () {
         logInfo: function () {}
       };
     }
-  };
+  },
+    factories;
 
-  it('Should export ATT.private.factories.createEventManager', function () {
-    expect(ATT.private.factories.createEventManager).to.be.a('function');
+  beforeEach(function () {
+    factories = ATT.private.factories;
+  });
+
+  it('Should export factories.createEventManager', function () {
+    expect(factories.createEventManager).to.be.a('function');
   });
 
   describe('Method', function () {
@@ -24,11 +29,10 @@ describe('Event Manager', function () {
       eventChannelStub,
       createEvtChanStub,
       stopListeningSpy,
-      factories,
-      emitter;
+      emitter,
+      createEventEmitterStub;
 
     beforeEach(function () {
-      factories = ATT.private.factories;
       stopListeningSpy = sinon.spy();
 
       eventChannelStub = {
@@ -38,26 +42,32 @@ describe('Event Manager', function () {
         stopListening: stopListeningSpy
       };
 
-      createEvtChanStub = sinon.stub(ATT.utils, 'createEventChannel', function () {
+      createEvtChanStub = sinon.stub(factories, 'createEventChannel', function () {
         return eventChannelStub;
       });
 
       emitter = factories.createEventEmitter();
+      createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+        return emitter;
+      });
+
       options = {
         emitter: emitter,
         rtcEvent: {},
         errorManager: {},
         resourceManager: resourceManagerStub
       };
-      eventManager = ATT.private.factories.createEventManager(options);
+
+      eventManager = factories.createEventManager(options);
 
     });
 
     afterEach(function () {
       createEvtChanStub.restore();
+      createEventEmitterStub.restore();
     });
 
-    describe('on', function () {
+    describe('On', function () {
 
       it('Should exist', function () {
         expect(eventManager.on).to.be.a('function');
@@ -69,15 +79,20 @@ describe('Event Manager', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          subscribeSpy;
+          subscribeSpy,
+          unsubscribeSpy;
 
         subscribeSpy = sinon.spy(emitter, 'subscribe');
+        unsubscribeSpy = sinon.spy(emitter, 'unsubscribe');
 
         expect(eventManager.on.bind(eventManager, 'listening', fn)).to.not.throw(Error);
-        expect(subscribeSpy.called).to.equal(true);
+        expect(unsubscribeSpy.called).to.equal(true);
+        expect(subscribeSpy.calledAfter(unsubscribeSpy)).to.equal(true);
 
+        unsubscribeSpy.restore();
         subscribeSpy.restore();
       });
+
     });
 
     describe('setup', function () {
