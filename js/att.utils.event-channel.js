@@ -135,8 +135,10 @@
       } else {
         logger.logError("[FATAL] Response code was:" + response + " repolling again...");
       }
-      // continue polling
-      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+      setTimeout(function () {
+        // continue polling
+        channelConfig.resourceManager.doOperation(methodName, httpConfig);
+      }, 0);
     }
 
     // setup success and error callbacks
@@ -155,16 +157,17 @@
 
       if (true === channelConfig.usesLongPolling) { // long-polling
         logger.logDebug("Before processing messages");
+
         if (response.getResponseStatus() === 200) {
           processMessages(response);
           logger.logDebug("Processed messages, repolling again...");
-          setTimeout(function () {
-            // continue polling
-            channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
-          }, 0);
-        } else {
-          retry(config, response);
         }
+
+        setTimeout(function () {
+          // continue polling
+          channelConfig.resourceManager.doOperation(methodName, httpConfig);
+        }, 0);
+
         return;
       }
 
@@ -220,7 +223,7 @@
         error: onError.bind(this, config),
         ontimeout: onTimeOut.bind(this, config)
       };
-      channelConfig.resourceManager.doOperation(channelConfig.publicMethodName, httpConfig);
+      channelConfig.resourceManager.doOperation(methodName, httpConfig);
     }
 
     channel = {

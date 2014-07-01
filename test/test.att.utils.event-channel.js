@@ -4,7 +4,7 @@
 /**
  * Unit tests for event channel module.
  */
-describe('Event Channel', function () {
+describe.only('Event Channel', function () {
   'use strict';
   var resourceManager = Env.resourceManager.getInstance(),
     requests,
@@ -97,11 +97,38 @@ describe('Event Channel', function () {
       eventChannel = factories.createEventChannel(channelConfig);
 
       expect(createEventChannelSpy.called).to.equal(true);
+      createEventChannelSpy.restore();
     });
 
     it('should return an EventChannel object', function () {
       eventChannel = factories.createEventChannel(channelConfig);
       expect(eventChannel).to.be.an('object');
+    });
+  });
+
+  describe('On', function () {
+
+    xit('Should exist', function () {
+      expect(eventChannel.on).to.be.a('function');
+    });
+
+    xit('Should fail if event is not recognized', function () {
+      expect(session.on.bind(session, 'unknown')).to.throw(Error);
+    });
+
+    xit('Should register callback for known events', function () {
+      var fn = sinon.spy(),
+        unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
+        subscribeSpy = sinon.spy(emitter, 'subscribe');
+
+      expect(session.on.bind(session, 'connected', fn)).to.not.throw(Error);
+      expect(session.on.bind(session, 'disconnected', fn)).to.not.throw(Error);
+
+      expect(unsubscribeSpy.called).to.equal(true);
+      expect(subscribeSpy.called).to.equal(true);
+
+      unsubscribeSpy.restore();
+      subscribeSpy.restore();
     });
   });
 
@@ -150,7 +177,7 @@ describe('Event Channel', function () {
       doOperationStub.restore();
     });
 
-    describe('Success', function () {
+    describe('Success on `doOperation`', function () {
 
       it('should continue polling if data is received (HTTP Status Code = 200)', function (done) {
 
@@ -180,31 +207,34 @@ describe('Event Channel', function () {
 
       });
 
-      it('should publish `api-event` event with data', function (done) {
+      xit('should publish `api-event` event with data', function (done) {
         var createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
             return emitter;
           }),
-          publishSpy = sinon.spy(emitter, 'publish');
+          onAPIEventSpy = sinon.spy();
 
         eventChannel = factories.createEventChannel(channelConfig);
+
+        eventChannel.on('api-event', onAPIEventSpy);
 
         eventChannel.startListening(httpConfig);
 
         setTimeout(function () {
           try {
-            expect(publishSpy.called).equals('api-event');
+            expect(onAPIEventSpy.called).equals(true);
 //            expect(publishSpy.getCall(0).args[0]).equals('api-event');
             createEventEmitterStub.restore();
             done();
           } catch (e) {
             createEventEmitterStub.restore();
-            done();
+            done(e);
           }
         }, 100);
 
       });
 
-      it('should create new WebSocket if usesLongPolling false', function () {
+
+      xit('should create new WebSocket if usesLongPolling false', function () {
         var spyOnCreateWebSocket = sinon.spy(function (ws) {
             expect(ws.onmessage).to.be.a('function');
           }),
@@ -226,26 +256,7 @@ describe('Event Channel', function () {
     });
 
 
-    xit('should continue to poll for 503 response code', function () {
-      var doOperationStub503;
-
-      doOperationStub204 = sinon.stub(channelConfig.resourceManager, 'doOperation', function (name, options) {
-        options.success({
-          getResponseStatus: function () { return 204; },
-          httpStatusCode: '204'
-        });
-      });
-
-      eventChannel = factories.createEventChannel(channelConfig);
-      eventChannel.startListening(httpConfig);
-
-      expect(doOperationStub204.called).to.equal(true);
-      expect(doOperationStub204.getCall(0).args[0]).to.equal('getEvents');
-
-      doOperationStub204.restore();
-    });
-
-    it('should stop polling after max polling time', function () {
+    xit('should stop polling after max polling time', function () {
       channelConfig.maxPollingTime = 1000;
       var eventChannel = ATT.private.factories.createEventChannel(channelConfig);
       eventChannel.startListening(httpConfig);
@@ -255,7 +266,7 @@ describe('Event Channel', function () {
       expect(eventChannel.isListening()).to.equal(false);
     });
 
-    it('should continue to poll after timeout', function () {
+    xit('should continue to poll after timeout', function () {
       channelConfig.resourceManager.getAPIObject = sinon.spy(function () {
         return {
           method: 'get',
@@ -265,6 +276,7 @@ describe('Event Channel', function () {
             },
             headers: {
               'Authorization': function (param) {
+                return param;
                 return param;
               }
             }
@@ -286,6 +298,40 @@ describe('Event Channel', function () {
       expect(channelConfig.publisher.publish.calledOnce).equals(true);
       expect(eventChannel.isListening()).to.equal(true);
     });
+
+    describe('Error on `doOperation`', function () {
+      it('should retry polling if there\'s an error (HTTP Status Code != 200', function (done) {
+
+        var doOperationStub503;
+
+        doOperationStub503 = sinon.stub(channelConfig.resourceManager, 'doOperation', function (name, options) {
+          options.error({
+            getResponseStatus: function () { return 503; },
+            httpStatusCode: '503'
+          });
+        });
+
+        console.log('Error:' + doOperationStub503.callCount);
+
+        eventChannel = factories.createEventChannel(channelConfig);
+        eventChannel.startListening(httpConfig);
+
+        setTimeout(function () {
+          try {
+            console.log('Error:' + doOperationStub503.callCount);
+            expect(doOperationStub503.callCount >= 2).to.equal(true);
+//            expect(doOperationStub503.getCall(0).args[0]).to.equal('getEvents');
+            doOperationStub503.restore();
+            done();
+          } catch (e) {
+            doOperationStub503.restore();
+            done(e);
+          }
+        }, 100);
+
+      });
+    });
+
   });
 
 });
