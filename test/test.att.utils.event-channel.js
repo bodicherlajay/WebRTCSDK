@@ -108,24 +108,41 @@ describe('Event Channel', function () {
 
   describe('On', function () {
 
-    xit('Should exist', function () {
+    var emitter,
+      createEventEmitterStub;
+
+    beforeEach(function () {
+      emitter = factories.createEventEmitter();
+      createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+        return emitter;
+      });
+      eventChannel = factories.createEventChannel(channelConfig);
+    });
+
+    afterEach(function () {
+      createEventEmitterStub.restore();
+    });
+
+    it('Should exist', function () {
       expect(eventChannel.on).to.be.a('function');
     });
 
-    xit('Should fail if event is not recognized', function () {
-      expect(session.on.bind(session, 'unknown')).to.throw(Error);
+    it('Should throw an Error if event is not recognized', function () {
+      expect(eventChannel.on.bind(eventChannel, 'unknown')).to.throw('Event not defined');
     });
 
-    xit('Should register callback for known events', function () {
-      var fn = sinon.spy(),
+    it('should throw an Error if `handler` is not a function', function () {
+      expect(eventChannel.on.bind(eventChannel, 'api-event', '234')).to.throw('Handler is not a function');
+    });
+
+    it('Should register callback for known events', function () {
+      var handler = sinon.spy(),
         unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
         subscribeSpy = sinon.spy(emitter, 'subscribe');
 
-      expect(session.on.bind(session, 'connected', fn)).to.not.throw(Error);
-      expect(session.on.bind(session, 'disconnected', fn)).to.not.throw(Error);
-
+      expect(eventChannel.on.bind(eventChannel, 'api-event', handler)).to.not.throw(Error);
       expect(unsubscribeSpy.called).to.equal(true);
-      expect(subscribeSpy.called).to.equal(true);
+      expect(subscribeSpy.calledAfter(unsubscribeSpy)).to.equal(true);
 
       unsubscribeSpy.restore();
       subscribeSpy.restore();
@@ -207,11 +224,23 @@ describe('Event Channel', function () {
 
       });
 
-      xit('should publish `api-event` event with data', function (done) {
+      it('should publish `api-event` event with data', function (done) {
+
         var createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
             return emitter;
           }),
-          onAPIEventSpy = sinon.spy();
+          onAPIEventSpy = sinon.spy(),
+          eventData = response,
+          mockedDataStr,
+          responseDataStr;
+
+        doOperationStub = sinon.stub(channelConfig.resourceManager, 'doOperation', function (name, options) {
+          options.success({
+            getResponseStatus: function () { return 200; },
+            httpStatusCode: '200',
+            responseText: JSON.stringify(eventData)
+          });
+        });
 
         eventChannel = factories.createEventChannel(channelConfig);
 
@@ -222,10 +251,17 @@ describe('Event Channel', function () {
         setTimeout(function () {
           try {
             expect(onAPIEventSpy.called).equals(true);
-//            expect(publishSpy.getCall(0).args[0]).equals('api-event');
+
+            responseDataStr = JSON.stringify(onAPIEventSpy.getCall(0).args[0]);
+            mockedDataStr = JSON.stringify(eventData.events.eventList[0].eventObject);
+
+            expect(responseDataStr).equals(mockedDataStr);
+
             createEventEmitterStub.restore();
+            doOperationStub.restore();
             done();
           } catch (e) {
+            doOperationStub.restore();
             createEventEmitterStub.restore();
             done(e);
           }
