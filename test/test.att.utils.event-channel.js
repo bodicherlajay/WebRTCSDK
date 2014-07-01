@@ -4,7 +4,7 @@
 /**
  * Unit tests for event channel module.
  */
-describe.only('Event Channel', function () {
+describe('Event Channel', function () {
   'use strict';
   var resourceManager = Env.resourceManager.getInstance(),
     requests,
