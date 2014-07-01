@@ -113,7 +113,7 @@
         for (evt in events) {
           if (events.hasOwnProperty(evt)) {
             events[evt].timestamp = new Date();
-            channelConfig.publisher.publish(sessID + '.responseEvent', events[evt].eventObject);
+            emitter.publish('api-event', events[evt].eventObject);
             logger.logDebug("Published event " + sessID + '.responseEvent', events[evt].eventObject);
           }
         }
@@ -123,6 +123,21 @@
     function stopListening() {
       logger.logInfo("Stopped listening to event channel");
       isListening = false;
+    }
+
+    function on(event, handler) {
+
+      if (event !== 'api-event') {
+        throw new Error('Event not defined');
+      }
+
+
+      if (typeof handler !== 'function') {
+        throw new Error('Handler is not a function');
+      }
+
+      emitter.unsubscribe(event, handler);
+      emitter.subscribe(event, handler, this);
     }
 
     function retry(config, response) {
@@ -231,7 +246,8 @@
         return isListening;
       },
       startListening: startListening,
-      stopListening: stopListening
+      stopListening: stopListening,
+      on : on
     };
 
     return channel;
