@@ -333,6 +333,10 @@
 
     eventManager = factories.createEventManager({resourceManager:resourceManager,emitter:emitter});
 
+    function on(event, handler) {
+      eventManager.on(event, handler);
+    }
+
     /**
      * start a new session
      * @param {Object} options The options
@@ -465,6 +469,7 @@
 
     }
 
+    this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);

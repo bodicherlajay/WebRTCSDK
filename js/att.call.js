@@ -238,6 +238,11 @@
     function connect(config) {
       var call = this;
       emitter.publish('dialing');
+
+      rtcManager.on('remote-sdp-set', function (remoteSdp) {
+        call.setRemoteSdp(remoteSdp);
+      });
+
       rtcManager.connectCall({
         peer: options.peer,
         mediaType: options.mediaType,
@@ -262,7 +267,7 @@
 
     function setRemoteSdp(remoteSdp) {
       this.remoteSdp = remoteSdp;
-      emitter.publish('established');
+      emitter.publish('connected');
     }
 
     this.id = options.id;

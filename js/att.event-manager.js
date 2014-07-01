@@ -238,8 +238,9 @@
     logger.logDebug('createEventManager');
 
     function on(event, handler) {
-      if('listening' !== event &&
-        'stop-listening' !== event) {
+      if('listening' !== event
+        && 'stop-listening' !== event
+        && 'remote-sdp-set' !== event) {
         throw new Error('Event not found');
       }
       emitter.unsubscribe(event, handler);
