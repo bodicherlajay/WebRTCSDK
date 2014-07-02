@@ -299,6 +299,11 @@ describe('Session', function () {
 
       });
 
+      it('should update the id of the session', function () {
+        session.setId('1334');
+        expect(session.getId()).to.equal('1334');
+      });
+
     });
 
     describe('getId', function () {
@@ -525,7 +530,7 @@ describe('Session', function () {
   describe('Event', function () {
     var onNeedsRefreshSpy;
 
-    describe('NeedsRefresh', function () {
+    describe('needs-refresh', function () {
 
       it('Should be triggered every 60000 ms before timeout', function (done) {
 
@@ -609,8 +614,36 @@ describe('Session', function () {
         }, 600);
       });
 
-    });
+      it('should call rtcManager.refreshSession', function (done) {
+        var rtcManager = ATT.private.rtcManager.getRTCManager(),
+          refreshSessionStub = sinon.stub(rtcManager, 'refreshSession', function () {}),
+          session4 = new ATT.rtc.Session(options),
+          callArgs;
 
+        options.timeout = 500;
+        session4.update(options);
+
+        setTimeout(function () {
+          try {
+            expect(refreshSessionStub.called).to.equal(true);
+
+            callArgs = refreshSessionStub.getCall(0).args[0];
+            expect(callArgs.sessionId !== undefined).to.equal(true);
+            expect(callArgs.token !== undefined).to.equal(true);
+            expect(refreshSessionStub.getCall(0).args[0].success).to.be.a('function');
+            expect(refreshSessionStub.getCall(0).args[0].error).to.be.a('function');
+
+            refreshSessionStub.restore();
+            done();
+          } catch (e) {
+            refreshSessionStub.restore();
+            done(e);
+          }
+        }, 600);
+
+      });
+
+    });
   });
 
 });
