@@ -14,7 +14,7 @@ describe('RTC Manager', function () {
     createEventEmitterStub,
     timeout;
 
-  beforeEach(function () {
+  before(function () {
     factories = ATT.private.factories;
     timeout = 1234;// time in seconds
     sessionInfo = {
@@ -61,7 +61,7 @@ describe('RTC Manager', function () {
     });
   });
 
-  afterEach(function () {
+  after(function () {
     createEventManagerStub.restore();
     createEventEmitterStub.restore();
   });
@@ -94,7 +94,7 @@ describe('RTC Manager', function () {
       userMediaSvc,
       peerConnSvc;
 
-    beforeEach(function () {
+    before(function () {
 
       rtcEvent = ATT.RTCEvent.getInstance();
       userMediaSvc = ATT.UserMediaService;
@@ -134,12 +134,9 @@ describe('RTC Manager', function () {
         onSpy,
         doOperationSpy,
         setupStub,
-        stopStub,
-        onSessionConnectedSpy,
-        onSessionReadySpy,
-        optionsForConn;
+        stopStub;
 
-      beforeEach(function () {
+      before(function () {
 
         onSpy = sinon.spy(eventManager, 'on');
 
@@ -161,21 +158,9 @@ describe('RTC Manager', function () {
             type: 'longpolling'
           }
         };
-
-        onSessionConnectedSpy = sinon.spy();
-        onSessionReadySpy = sinon.spy();
-
-        optionsForConn = {
-          token: '123',
-          onSessionConnected: onSessionConnectedSpy,
-          onSessionReady: onSessionReadySpy
-        };
-
-        rtcManager.connectSession(optionsForConn);
-
       });
 
-      afterEach(function () {
+      after(function () {
         doOperationSpy.restore();
         onSpy.restore();
         setupStub.restore();
@@ -183,6 +168,20 @@ describe('RTC Manager', function () {
       });
 
       describe('On', function () {
+
+        var onStub;
+
+        before(function () {
+          // change spy to stub
+          onSpy.restore();
+          onStub = sinon.stub(eventManager, 'on', function () {});
+        });
+
+        after(function () {
+          // restore stub to spy
+          onStub.restore();
+          onSpy = sinon.spy(eventManager, 'on');
+        });
 
         it('should exist', function () {
           expect(rtcManager.on).to.be.a('function');
@@ -194,11 +193,27 @@ describe('RTC Manager', function () {
 
           rtcManager.on(arg1, arg2);
           
-          expect(onSpy.calledWith(arg1, arg2)).to.equal(true);
+          expect(onStub.calledWith(arg1, arg2)).to.equal(true);
         });
       });
 
       describe('connectSession', function () {
+        var onSessionConnectedSpy,
+          onSessionReadySpy,
+          optionsForConn;
+
+        before(function () {
+          onSessionConnectedSpy = sinon.spy();
+          onSessionReadySpy = sinon.spy();
+
+          optionsForConn = {
+            token: '123',
+            onSessionConnected: onSessionConnectedSpy,
+            onSessionReady: onSessionReadySpy
+          };
+
+          rtcManager.connectSession(optionsForConn);
+        });
 
         it('should exist', function () {
           expect(rtcManager.connectSession).to.be.a('function');
@@ -266,7 +281,7 @@ describe('RTC Manager', function () {
         var optionsForDisconn,
           onSessionDisconnectedSpy;
 
-        beforeEach(function () {
+        before(function () {
           onSessionDisconnectedSpy = sinon.spy();
 
           optionsForDisconn = {
@@ -328,9 +343,10 @@ describe('RTC Manager', function () {
           initPeerConnectionStub,
           onCallConnectingSpy,
           setRemoteSdpStub,
-          remoteSdp;
+          remoteSdp,
+          eventManagerPublishSpy;
 
-        beforeEach(function () {
+        before(function () {
           onCallConnectingSpy = sinon.spy();
 
           options = {
@@ -350,22 +366,27 @@ describe('RTC Manager', function () {
             emitter.publish('remote-sdp', remoteSdp);
           });
 
-          setRemoteSdpStub = sinon.stub(ATT.PeerConnectionService, 'setTheRemoteDescription', function () {});
+          setRemoteSdpStub = sinon.stub(ATT.PeerConnectionService, 'setTheRemoteDescription', function (options) {
+            options.success();
+          });
+
+          eventManagerPublishSpy = sinon.spy(eventManager, 'publish');
 
           rtcManager.connectCall(options);
         });
 
-        afterEach(function () {
+        after(function () {
           getUserMediaStub.restore();
           initPeerConnectionStub.restore();
           setRemoteSdpStub.restore();
+          eventManagerPublishSpy.restore();
         });
 
         it('should exist', function () {
           expect(rtcManager.connectCall).to.be.a('function');
         });
 
-        it('should throw and error if invalid options', function () {
+        it('should throw an error if invalid options', function () {
           expect(rtcManager.connectCall.bind(rtcManager)).to.throw('No options defined.');
           expect(rtcManager.connectCall.bind(rtcManager, {})).to.throw('No peer defined.');
           expect(rtcManager.connectCall.bind(rtcManager, {
@@ -408,15 +429,21 @@ describe('RTC Manager', function () {
 
           describe('success event', function () {
 
-            it('should call setRemoteSdp on the peer connection on getting `remote-sdp` event from eventManager', function (done) {
+            it('should call setTheRemoteDescription on the peer connection on getting `remote-sdp` event from eventManager', function (done) {
               setTimeout(function () {
                 try {
-                  expect(setRemoteSdpStub.calledWith(remoteSdp, 'answer')).to.equal(true);
+                  expect(setRemoteSdpStub.called).to.equal(true);
+                  expect(setRemoteSdpStub.getCall(0).args[0].remoteSdp).to.equal(remoteSdp);
+                  expect(setRemoteSdpStub.getCall(0).args[0].type).to.equal('answer');
                   done();
                 } catch (e) {
                   done(e);
                 }
               }, 100);
+            });
+
+            it('should execute eventManager.publish on success callback of PeerConnection.setTheRemoteDescription', function () {
+              expect(eventManagerPublishSpy.calledWith('remote-sdp-set')).to.equal(true);
             });
           });
 

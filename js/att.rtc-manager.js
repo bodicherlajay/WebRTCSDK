@@ -464,7 +464,13 @@
 //        remoteVideo: remoteVideo,
         onUserMedia: function () {
           eventManager.on('remote-sdp', function (remoteSdp) {
-            peerConnSvc.setTheRemoteDescription(remoteSdp, 'answer');
+            peerConnSvc.setTheRemoteDescription({
+              remoteSdp: remoteSdp,
+              type: 'answer',
+              success: function () {
+                eventManager.publish('remote-sdp-set');
+              }
+            });
           });
           peerConnSvc.initPeerConnection({
             onSuccess: function () {
