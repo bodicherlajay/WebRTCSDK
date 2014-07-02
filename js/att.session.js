@@ -384,8 +384,6 @@
       }
     };
 
-
-
   }
 
   if (undefined === ATT.rtc) {

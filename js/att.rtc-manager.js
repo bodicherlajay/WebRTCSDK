@@ -338,16 +338,16 @@
       eventManager.on(event, handler);
     }
 
-
     function refreshSession (options) {
-
       resourceManager.doOperation('refreshWebRTCSession', {
         success : function () {
-            options.success({timeout: 500});
+          options.success({
+            timeout: 500
+          });
         }
       });
-
     }
+
     /**
      * start a new session
      * @param {Object} options The options

@@ -336,6 +336,7 @@ describe('Event Channel', function () {
     });
 
     describe('Error on `doOperation`', function () {
+
       it('should retry polling if there\'s an error (HTTP Status Code != 200', function (done) {
 
         var doOperationStub503;

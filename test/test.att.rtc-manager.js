@@ -50,8 +50,6 @@ describe('RTC Manager', function () {
       resourceManager: resourceManagerStub
     };
     emitter = factories.createEventEmitter();
-    emitter.test = 'yogesh';
-
     createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
       return emitter;
     });

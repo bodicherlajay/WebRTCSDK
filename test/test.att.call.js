@@ -6,6 +6,7 @@ describe('Call', function () {
   'use strict';
 
   var options,
+    optionsforRTCM,
     emitterEM,
     emitterCall,
     eventManager,
@@ -25,6 +26,14 @@ describe('Call', function () {
     options = {
       peer: '12345',
       mediaType: 'audio'
+    };
+
+    optionsforRTCM = {
+      errorManager: ATT.Error,
+      resourceManager: Env.resourceManager.getInstance(),
+      rtcEvent: ATT.RTCEvent.getInstance(),
+      userMediaSvc: ATT.UserMediaService,
+      peerConnSvc: ATT.PeerConnectionService
     };
 
     emitterEM = ATT.private.factories.createEventEmitter();
@@ -49,7 +58,7 @@ describe('Call', function () {
       return eventManager;
     });
 
-    rtcMgr = ATT.private.rtcManager.getRTCManager();
+    rtcMgr = new ATT.private.RTCManager(optionsforRTCM);
 
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return rtcMgr;
@@ -155,7 +164,7 @@ describe('Call', function () {
           });
         });
 
-        onStub = sinon.spy(rtcMgr, 'on');
+        onStub = sinon.stub(rtcMgr, 'on');
 
         setIdSpy = sinon.spy(call, 'setId');
 
