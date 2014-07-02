@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL, after*/
 
-describe.only('RTC Manager', function () {
+describe('RTC Manager', function () {
   'use strict';
 
   var factories,
@@ -308,7 +308,7 @@ describe.only('RTC Manager', function () {
         xdescribe('Success', function () {
           it('should execute the `success` callback', function () {
             var onSuccessSpy = sinon.spy(),
-              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (options) {
+              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {
                 var response = {
                   getResponseHeader : function (name) {
                     var header;
@@ -331,7 +331,9 @@ describe.only('RTC Manager', function () {
             });
 
             expect(onSuccessSpy.called).to.equal(true);
-            expect(onSuccessSpy.calledWith(500)).to.equal(true);
+            expect(onSuccessSpy.calledWith({
+              timeout: 500
+            })).to.equal(true);
           });
         });
       });
