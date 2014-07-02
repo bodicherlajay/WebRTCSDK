@@ -339,9 +339,13 @@
     }
 
 
-    function refreshSession () {
+    function refreshSession (options) {
 
-  resourceManager.doOperation('refreshWebRTCSession',{success : function () {return;}});
+      resourceManager.doOperation('refreshWebRTCSession', {
+        success : function () {
+            options.success(500);
+        }
+      });
 
     }
     /**

@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL*/
+/*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL, after*/
 
-describe('RTC Manager', function () {
+describe.only('RTC Manager', function () {
   'use strict';
 
   var factories,
@@ -52,7 +52,7 @@ describe('RTC Manager', function () {
     emitter = factories.createEventEmitter();
     emitter.test = 'yogesh';
 
-    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function() {
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
       return emitter;
     });
     eventManager = factories.createEventManager(optionsForEM);
@@ -189,7 +189,7 @@ describe('RTC Manager', function () {
             arg2 = function () {};
 
           rtcManager.on(arg1, arg2);
-          
+
           expect(onStub.calledWith(arg1, arg2)).to.equal(true);
         });
       });
@@ -267,7 +267,6 @@ describe('RTC Manager', function () {
           });
 
           it('should execute onSessionReady with data containing `sessionId` on receiving a `listening` event', function (done) {
-            var sessionId;
 
             setTimeout(function () {
               try {
@@ -301,9 +300,39 @@ describe('RTC Manager', function () {
           });
 
           expect(doOperationSpy.called).to.equal(true);
-//          expect(doOperationSpy.getCall(0).args[0]).to.equal('refreshWebRTCSession');
+          expect(doOperationSpy.getCall(0).args[0]).to.equal('refreshWebRTCSession');
 
           doOperationSpy.restore();
+        });
+
+        xdescribe('Success', function () {
+          it('should execute the `success` callback', function () {
+            var onSuccessSpy = sinon.spy(),
+              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (options) {
+                var response = {
+                  getResponseHeader : function (name) {
+                    var header;
+                    switch (name) {
+                    case 'x-expires':
+                      header = String(500); // seconds
+                      break;
+                    default:
+                      header = String(500); // seconds
+                      break;
+                    }
+                    return header;
+                  }
+                };
+                options.success(response);
+              });
+
+            rtcManager.refreshSession({
+              success: onSuccessSpy
+            });
+
+            expect(onSuccessSpy.called).to.equal(true);
+            expect(onSuccessSpy.calledWith(500)).to.equal(true);
+          });
         });
       });
 
