@@ -315,10 +315,13 @@
       emitter.publish('stop-listening');
     }
 
+    function publish () {}
+
     return {
       on: on,
       setup: setup,
-      stop: stop
+      stop: stop,
+      publish: publish
     };
   }
 
