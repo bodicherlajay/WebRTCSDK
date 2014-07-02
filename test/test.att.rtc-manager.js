@@ -159,7 +159,6 @@ describe('RTC Manager', function () {
       });
 
       after(function () {
-        doOperationSpy.restore();
         onSpy.restore();
         setupStub.restore();
         stopStub.restore();
@@ -285,6 +284,7 @@ describe('RTC Manager', function () {
       });
 
       describe('refreshSession', function () {
+
         it('should exist', function () {
           expect(rtcManager.refreshSession).to.be.a('function');
         });
@@ -306,6 +306,7 @@ describe('RTC Manager', function () {
           doOperationSpy.restore();
         });
       });
+
       describe('disconnectSession', function () {
 
         var optionsForDisconn,
@@ -396,6 +397,7 @@ describe('RTC Manager', function () {
 
           getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
             options.onUserMedia();
+            options.onMediaEstablished();
           });
 
           remoteSdp = 'abc';
@@ -481,8 +483,12 @@ describe('RTC Manager', function () {
               }, 100);
             });
 
-            it('should execute eventManager.publish on success callback of PeerConnection.setTheRemoteDescription', function () {
+            it('should execute eventManager.publish on successfully setting the remote description', function () {
               expect(eventManagerPublishSpy.calledWith('remote-sdp-set')).to.equal(true);
+            });
+
+            it('should execute eventManager.publish on successfully establishing the media', function () {
+              expect(eventManagerPublishSpy.calledWith('media-established')).to.equal(true);
             });
           });
 
