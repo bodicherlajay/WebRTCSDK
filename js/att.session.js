@@ -9,7 +9,6 @@
 
   var factories = ATT.factories,
     errMgr,
-    resourceManager,
     logger;
 
   function handleError(operation, errHandler, err) {
@@ -25,25 +24,7 @@
   }
 
 
-//
-//  function refreshWebRTCSession(args) {
-//    var dataForRefreshWebRTCSession = {
-//      params: {
-//        url: [args.sessionId],
-//        headers: {
-//          'Authorization': args.token
-//        }
-//      },
-//      success: function () {
-//        logger.logInfo('Successfully refreshed web rtc session on blackflag');
-//        args.onWebRTCSessionRefreshed();
-//      },
-//      error: args.onError
-//    };
-//
-//    // Call BF to refresh WebRTC Session.
-//    resourceManager.doOperation('refreshWebRTCSession', dataForRefreshWebRTCSession);
-//  }
+
 
 //   //Do put operation to set the new E911Id for the current session
 //  function refreshWebRTCSessionWithE911Id(args) {
@@ -102,6 +83,8 @@
     // Call BF to delete WebRTC Session.
     resourceManager.doOperation('deleteWebRTCSession', dataForDeleteWebRTCSession);
   }
+
+
 
 //  function keepAlive(args) {
 //    logger.logDebug('keepSessionAlive');
@@ -208,6 +191,7 @@
 
     // dependencies
     var emitter,
+      self = this,
       rtcManager,
       // private attributes
       id = null,
@@ -235,6 +219,25 @@
       emitter.unsubscribe(event, handler);
       emitter.subscribe(event, handler, this);
     }
+
+//    function refreshWebRTCSession() {
+//      var dataForRefreshWebRTCSession = {
+//        params: {
+//          url: [self.sessionId],
+//          headers: {
+//            'Authorization': self.token
+//          }
+//        },
+//        success: function () {
+//          logger.logInfo('Successfully refreshed web rtc session on blackflag');
+//          //this.onWebRTCSessionRefreshed();
+//        },
+//        //error: this.onError
+//      };
+
+      // Call BF to refresh WebRTC Session.
+//      resourceManager.doOperation('refreshWebRTCSession', {});
+//    }
 
     // public attributes
     this.timeout = null;
@@ -286,6 +289,12 @@
 
       this.timer = setInterval(function () {
         emitter.publish('needs-refresh');
+        rtcManager.refreshSession({
+          sessionId : id,
+          token : '',
+          success : function () {},
+          error : function () {return; }
+        });
       }, this.timeout);
 
     };
@@ -374,6 +383,9 @@
         emitter.publish('allcallsterminated');
       }
     };
+
+
+
   }
 
   if (undefined === ATT.rtc) {

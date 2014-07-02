@@ -338,6 +338,12 @@
       eventManager.on(event, handler);
     }
 
+
+    function refreshSession () {
+
+  resourceManager.doOperation('refreshWebRTCSession',{success : function () {return;}});
+
+    }
     /**
      * start a new session
      * @param {Object} options The options
@@ -482,6 +488,7 @@
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);
+    this.refreshSession = refreshSession.bind(this);
   }
 
   if (undefined === ATT.private) {

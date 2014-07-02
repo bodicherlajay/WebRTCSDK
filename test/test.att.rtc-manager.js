@@ -153,8 +153,6 @@ describe('RTC Manager', function () {
 
         rtcManager = new ATT.private.RTCManager(optionsForRTCM);
 
-        doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
-
         ATT.appConfig = {
           EventChannelConfig: {
             endpoint: 'endpoint',
@@ -176,8 +174,8 @@ describe('RTC Manager', function () {
       });
 
       afterEach(function () {
-        doOperationSpy.restore();
         onSpy.restore();
+        onStub.restore();
         setupStub.restore();
         stopStub.restore();
       });
@@ -195,6 +193,7 @@ describe('RTC Manager', function () {
           rtcManager.on(arg1, arg2);
           
           expect(onSpy.calledWith(arg1, arg2)).to.equal(true);
+          expect(onStub.calledWith(arg1, arg2)).to.equal(true);
         });
       });
 
@@ -226,8 +225,18 @@ describe('RTC Manager', function () {
         });
 
         it('should call doOperation on the resourceManager with `createWebRTCSession`', function () {
+          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+
+          rtcManager.connectSession({
+            token: '123',
+            onSessionConnected: function () {},
+            onSessionReady: function () {}
+          });
+
           expect(doOperationSpy.called).to.equal(true);
           expect(doOperationSpy.getCall(0).args[0]).to.equal('createWebRTCSession');
+
+          doOperationSpy.restore();
         });
 
         describe('Success', function () {
@@ -261,6 +270,28 @@ describe('RTC Manager', function () {
         });
       });
 
+      describe('refreshSession', function () {
+        it('should exist', function () {
+          expect(rtcManager.refreshSession).to.be.a('function');
+        });
+
+        it('should call resourceManager.doOperation with `refreshWebRTCSession`', function () {
+
+          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+
+          rtcManager.refreshSession({
+            token: 'token',
+            sessionId: '1234',
+            success: function () {},
+            error: function () {}
+          });
+
+          expect(doOperationSpy.called).to.equal(true);
+//          expect(doOperationSpy.getCall(0).args[0]).to.equal('refreshWebRTCSession');
+
+          doOperationSpy.restore();
+        });
+      });
       describe('disconnectSession', function () {
 
         var optionsForDisconn,
@@ -300,15 +331,24 @@ describe('RTC Manager', function () {
         });
 
         it('should execute EventManager.stop', function () {
+
+          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+
           rtcManager.disconnectSession(optionsForDisconn);
 
           expect(stopStub.calledBefore(doOperationSpy)).to.equal(true);
+
+          doOperationSpy.restore();
         });
 
         it('should call doOperation on the resourceManager with `deleteWebRTCSession`', function () {
+          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+
           rtcManager.disconnectSession(optionsForDisconn);
 
           expect(doOperationSpy.calledWith('deleteWebRTCSession')).to.equal(true);
+
+          doOperationSpy.restore();
         });
 
         describe('Success', function () {
