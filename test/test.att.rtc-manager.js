@@ -425,14 +425,14 @@ describe('RTC Manager', function () {
           };
 
           getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
-            options.onUserMedia();
+            options.onUserMedia({});
             options.onMediaEstablished();
           });
 
           remoteSdp = 'abc';
 
-          initPeerConnectionStub = sinon.stub(ATT.PeerConnectionService, 'initPeerConnection', function (options) {
-            options.onSuccess();
+          initPeerConnectionStub = sinon.stub(ATT.PeerConnectionService, 'initiatePeerConnection', function (options) {
+            options.onPeerConnectionInitiated();
             emitter.publish('remote-sdp', remoteSdp);
           });
 
@@ -486,11 +486,11 @@ describe('RTC Manager', function () {
             expect(onSpy.calledWith('remote-sdp')).to.equal(true);
           });
 
-          it('should invoke initPeerConnection', function () {
+          it('should invoke initiatePeerConnection', function () {
             expect(initPeerConnectionStub.called).to.equal(true);
           });
 
-          describe('success initPeerConnection', function () {
+          describe('success initiatePeerConnection', function () {
 
             it('should invoke callback `onCallConnecting`', function () {
               expect(onCallConnectingSpy.called).to.equal(true);

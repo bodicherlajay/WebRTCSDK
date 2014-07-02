@@ -235,7 +235,7 @@
       emitter.subscribe(event, handler, this);
     }
 
-    function connect(config) {
+    function connect() {
       var call = this;
 
       emitter.publish('dialing');
@@ -250,9 +250,14 @@
 
       rtcManager.connectCall({
         peer: options.peer,
+        type: options.type,
         mediaType: options.mediaType,
+        localVideo: options.localVideo,
+        remoteVideo: options.remoteVideo,
+        sessionInfo: options.sessionInfo,
         onCallConnecting: function (callInfo) {
           call.setId(callInfo.callId);
+          call.localSdp = callInfo.localSdp;
         }
       });
     }

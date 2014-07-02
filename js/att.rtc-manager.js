@@ -469,10 +469,10 @@
       }
 
       userMediaSvc.getUserMedia({
-//        mediaType: mediaType,
-//        localVideo: localVideo,
-//        remoteVideo: remoteVideo,
-        onUserMedia: function () {
+        mediaType: options.mediaType,
+        localVideo: options.localVideo,
+        remoteVideo: options.remoteVideo,
+        onUserMedia: function (userMedia) {
           eventManager.on('remote-sdp', function (remoteSdp) {
             peerConnSvc.setTheRemoteDescription({
               remoteSdp: remoteSdp,
@@ -482,9 +482,14 @@
               }
             });
           });
-          peerConnSvc.initPeerConnection({
-            onSuccess: function () {
-              options.onCallConnecting();
+          peerConnSvc.initiatePeerConnection({
+            peer: options.peer,
+            type: options.type,
+            mediaConstraints: userMedia.mediaConstraints,
+            localStream: userMedia.localStream,
+            sessionInfo: options.sessionInfo,
+            onPeerConnectionInitiated: function (callInfo) {
+              options.onCallConnecting(callInfo);
             }
           });
         },
@@ -492,7 +497,6 @@
           eventManager.publish('media-established');
         }
       });
-
     }
 
     this.on = on.bind(this);

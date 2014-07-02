@@ -22,7 +22,7 @@
       // fix description just before sending
       logger.logDebug(config.sdp);
 
-      var session = config.session,
+      var sessionInfo = config.sessionInfo,
         description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
       // call data
         data = {
@@ -34,9 +34,9 @@
 
       resourceManager.doOperation('startCall', {
         params: {
-          url: [session.getSessionId()],
+          url: [sessionInfo.sessionId],
           headers: {
-            'Authorization': 'Bearer ' + session.getAccessToken()
+            'Authorization': 'Bearer ' + sessionInfo.token
           }
         },
         data: data,
@@ -62,7 +62,7 @@
       // fix description just before sending
       logger.logTrace('sendAnswer, pre-processing SDP', config.sdp);
 
-      var session = config.session,
+      var sessionInfo = config.sessionInfo,
         description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
       // call data
         data = {
@@ -75,11 +75,11 @@
       resourceManager.doOperation('answerCall', {
         params: {
           url: [
-            session.getSessionId(),
-            session.getCurrentCall().id()
+            sessionInfo.sessionId,
+            sessionInfo.getCurrentCall().id()
           ],
           headers: {
-            'Authorization': 'Bearer ' + session.getAccessToken()
+            'Authorization': 'Bearer ' + sessionInfo.token
           }
         },
         data: data,
@@ -113,7 +113,7 @@
       // fix description just before sending
       logger.logTrace('sendAcceptMods, pre-processing sdp', config.sdp);
 
-      var session = config.session,
+      var sessionInfo = config.sessionInfo,
         description = ATT.sdpFilter.getInstance().processChromeSDPOffer(config.sdp),
       // call data
         data = {
@@ -126,11 +126,11 @@
       resourceManager.doOperation('acceptModifications', {
         params: {
           url: [
-            session.getSessionId(),
-            session.getCurrentCall().id()
+            sessionInfo.sessionId,
+            sessionInfo.getCurrentCall().id()
           ],
           headers: {
-            'Authorization': 'Bearer ' + session.getAccessToken(),
+            'Authorization': 'Bearer ' + sessionInfo.token,
             'x-modId': config.modId
           }
         },
@@ -164,7 +164,7 @@
     sendHoldCall: function (config) {
       // request payload
       logger.logTrace('sendHoldCall');
-      var session = config.session,
+      var sessionInfo = config.sessionInfo,
         data = {
           callsMediaModifications: {
             sdp: config.sdp.sdp,
@@ -176,11 +176,11 @@
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [
-            session.getSessionId(),
-            session.getCurrentCall().id()
+            sessionInfo.sessionId,
+            sessionInfo.getCurrentCall().id()
           ],
           headers: {
-            'Authorization': 'Bearer ' + session.getAccessToken(),
+            'Authorization': 'Bearer ' + sessionInfo.token,
             'x-calls-action': 'initiate-call-hold'
           }
         },
@@ -220,7 +220,7 @@
      */
     sendResumeCall: function (config) {
       // request payload
-      var session = config.session,
+      var sessionInfo = config.sessionInfo,
         data = {
           callsMediaModifications: {
             sdp: config.sdp.sdp,
@@ -232,11 +232,11 @@
       resourceManager.doOperation('modifyCall', {
         params: {
           url: [
-            session.getSessionId(),
-            session.getCurrentCall().id()
+            sessionInfo.sessionId,
+            sessionInfo.getCurrentCall().id()
           ],
           headers: {
-            'Authorization': 'Bearer ' + session.getAccessToken(),
+            'Authorization': 'Bearer ' + sessionInfo.token,
             'x-calls-action': 'initiate-call-resume'
           }
         },
@@ -278,17 +278,17 @@
     sendEndCall: function (config) {
       config = config || {};
 
-      var session = config.session;
+      var sessionInfo = config.sessionInfo;
 
       logger.logTrace('ending call');
       resourceManager.doOperation('endCall', {
         params: {
           url: [
-            session.getSessionId(),
-            session.getCurrentCall().id()
+            sessionInfo.sessionId,
+            sessionInfo.getCurrentCall().id()
           ],
           headers: {
-            'Authorization': 'Bearer ' + session.getAccessToken()
+            'Authorization': 'Bearer ' + sessionInfo.token
           }
         },
         success: function (response) {
@@ -329,17 +329,17 @@
     sendCancelCall: function (config) {
       config = config || {};
 
-      var session = config.session;
+      var sessionInfo = config.sessionInfo;
 
       logger.logTrace('canceling call');
       resourceManager.doOperation('cancelCall', {
         params: {
           url: [
-            session.getSessionId(),
-            session.getCurrentCall().id()
+            sessionInfo.sessionId,
+            sessionInfo.getCurrentCall().id()
           ],
           headers: {
-            'Authorization': 'Bearer ' + session.getAccessToken()
+            'Authorization': 'Bearer ' + sessionInfo.token
           }
         },
         success: function (response) {
@@ -379,17 +379,17 @@
     sendRejectCall: function (config) {
       config = config || {};
 
-      var session = config.session;
+      var sessionInfo = config.sessionInfo;
 
       logger.logTrace('rejecting call');
       resourceManager.doOperation('rejectCall', {
         params: {
           url: [
-            session.getSessionId(),
-            session.getCurrentCall().id()
+            sessionInfo.sessionId,
+            sessionInfo.getCurrentCall().id()
           ],
           headers: {
-            'Authorization': 'Bearer ' + session.getAccessToken()
+            'Authorization': 'Bearer ' + sessionInfo.token
           }
         },
         success: function (response) {

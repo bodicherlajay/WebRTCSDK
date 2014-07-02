@@ -641,7 +641,10 @@
 
       call = session.createCall({
         peer: options.destination,
-        mediaType: options.mediaType
+        type: ATT.CallTypes.OUTGOING,
+        mediaType: options.mediaType,
+        localVideo: options.localVideo,
+        remoteVideo: options.remoteVideo
       });
 
       call.on('dialing', function () {

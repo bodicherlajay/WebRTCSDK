@@ -154,13 +154,17 @@ describe('Call', function () {
 
       var connectCallStub,
         setIdSpy,
+        localSdp,
         onStub;
 
       before(function () {
 
+        localSdp = 'xyz';
+
         connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
           options.onCallConnecting({
-            callId: '1234'
+            callId: '1234',
+            localSdp: localSdp
           });
         });
 
@@ -169,7 +173,7 @@ describe('Call', function () {
         setIdSpy = sinon.spy(call, 'setId');
 
         call.connect({
-          onCallConnecting: function () {}
+          onCallConnecting: function (cal) {}
         });
       });
 
@@ -207,6 +211,10 @@ describe('Call', function () {
 
         it('should execute Call.setId with the newly created call id', function () {
           expect(setIdSpy.called).to.equal(true);
+        });
+
+        it('should set the newly created LocalSdp on the call', function () {
+           expect(call.localSdp).to.equal(localSdp);
         });
 
       });

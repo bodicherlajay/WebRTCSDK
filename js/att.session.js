@@ -344,6 +344,13 @@
     };
 
     this.createCall = function (options) {
+      ATT.utils.extend(options, {
+        sessionInfo: {
+          sessionId: this.getId(),
+          token: this.token,
+          e911Id: this.e911Id
+        }
+      });
       this.currentCall = new ATT.rtc.Call(options);
       return this.currentCall;
     };

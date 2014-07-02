@@ -76,16 +76,14 @@
 
     remoteDescription: {},
 
-    session: null,
+    sessionInfo: null,
 
     localStream: null,
 
     peerConnection: null,
 
-    callingParty: null,
+    peer: null,
 
-    calledParty: null,
-    
     callType: null,
 
     mediaType: null,
@@ -97,6 +95,8 @@
     isModInitiator: false,
 
     callCanceled: false,
+
+    onPeerConnectionInitiated: null,
 
     notifyCallCancelation: function () {
       this.callCanceled = true;
@@ -110,24 +110,17 @@
       return this.pcConfig.iceServers;
     },
 
-    initPeerConnection: function (config) {
+    initiatePeerConnection: function (config) {
       logger.logDebug('initPeerConnection');
 
-      var session = config.session,  // TODO: PC shouldn't use session
-        call = session.getCurrentCall(),
-        sdp;
-
-      this.session = config.session;
-      this.callingParty = config.from;
-      this.calledParty = config.to;
+      this.peer = config.peer;
       this.callType = config.type;
-      this.mediaType = config.mediaType;
       this.mediaConstraints = config.mediaConstraints;
       this.localStream = config.localStream;
+      this.onPeerConnectionInitiated = config.onPeerConnectionInitiated;
+      this.sessionInfo = config.sessionInfo;
 
-      logger.logTrace('calling party', config.from);
-      logger.logTrace('called party', config.to);
-      logger.logTrace('media constraints', config.mediaConstraints);
+      logger.logTrace('media constraints', this.mediaConstraints);
 
       logger.logInfo('creating peer connection');
       // Create peer connection
@@ -146,15 +139,15 @@
         }});
 
       } else if (this.callType === ATT.CallTypes.INCOMING) {
-        logger.logInfo('Responding to incoming call');
-
-        //Check if invite is an announcement
-        sdp = call.getRemoteSdp();
-        if (sdp && sdp.indexOf('sendonly') !== -1) {
-          call.setRemoteSdp(sdp.replace(/sendonly/g, 'sendrecv'));
-        }
-        this.setTheRemoteDescription(sdp, 'offer');
-        this.createAnswer();
+//        logger.logInfo('Responding to incoming call');
+//
+//        //Check if invite is an announcement
+//        sdp = call.getRemoteSdp();
+//        if (sdp && sdp.indexOf('sendonly') !== -1) {
+//          call.setRemoteSdp(sdp.replace(/sendonly/g, 'sendrecv'));
+//        }
+//        this.setTheRemoteDescription(sdp, 'offer');
+//        this.createAnswer();
       }
     },
 
@@ -196,7 +189,6 @@
             try {
               self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
-              if (self.session.getCurrentCall()) { self.session.getCurrentCall().setLocalSdp(sdp) }
             } catch (e) {
               Error.publish('Could not set local description. Exception: ' + e.message);
             }
@@ -210,14 +202,17 @@
               logger.logInfo('sending offer');
               try {
                 SignalingService.sendOffer({
-                  session: self.session,
-                  calledParty: self.calledParty,
+                  calledParty: self.peer,
                   sdp: self.localDescription,
+                  sessionInfo: self.sessionInfo,
                   success: function (response) {
                     if (response && response.callId && response.xState && response.xState === 'invitation-sent') {
                       logger.logInfo('success for offer sent, outgoing call');
                       // trigger callback meaning successfully sent the offer
-                      return self.onOfferSent(response.callId, self.localDescription);
+                      return self.onPeerConnectionInitiated({
+                        callId: response.callId,
+                        localSdp: self.localDescription
+                      });
                     }
                     Error.publish('Failed to send offer', 'SendOffer');
                   },
@@ -234,8 +229,8 @@
               logger.logInfo('incoming call, sending answer');
               try {
                 SignalingService.sendAnswer({
-                  session: self.session,
                   sdp : self.localDescription,
+                  sessionInfo: self.sessionInfo,
                   success: function (response) {
                     if (response && response.xState && response.xState === 'accepted') {
                       logger.logInfo('success for answer sent, incoming call');
@@ -385,7 +380,7 @@
           SignalingService.sendAcceptMods({
             sdp : this.localDescription,
             modId: this.modificationId,
-            session: this.session
+            sessionInfo: this.sessionInfo
           });
         } catch (e) {
           Error.publish('Accepting modification failed. Exception: ' + e.message);
@@ -464,7 +459,7 @@
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendHoldCall({
           sdp : sdp,
-          session: this.session
+          sessionInfo: this.sessionInfo
         });
       } catch (e) {
         Error.publish('Send hold signal fail: ' + e.message);
@@ -510,7 +505,7 @@
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendResumeCall({
           sdp : sdp,
-          session: this.session
+          sessionInfo: this.sessionInfo
         });
       } catch (e) {
         Error.publish('Send resume call Fail: ' + e.message);
@@ -554,8 +549,6 @@
   module.setSignalingService = setSignalingService;
   module.setSDPFilter = setSDPFilter;
   module.setLogger = setLogger;
-  // callback for OfferSent event
-  module.onOfferSent = null;
 
   //Name of the module
   app.PeerConnectionService = module;

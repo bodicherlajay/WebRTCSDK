@@ -62,12 +62,13 @@
         this.mediaConstraints.video = 'audio' !== options.mediaType
       }
 
-      var args = {
-        mediaConstraints: this.mediaConstraints
+      var config = {
+        mediaConstraints: this.mediaConstraints,
+        onUserMedia: options.onUserMedia
       };
 
       // get a local stream, show it in a self-view and add it to be sent
-      getUserMedia(this.mediaConstraints, this.getUserMediaSuccess.bind(this, args), function (err) {
+      getUserMedia(this.mediaConstraints, this.getUserMediaSuccess.bind(this, config), function (err) {
         options.onError(Error.create('Get user media failed: ' + err));
       });
 
@@ -79,7 +80,7 @@
     * getUserMediaSuccess
     * @param {Object} stream The media stream
     */
-    getUserMediaSuccess: function (options, stream) {
+    getUserMediaSuccess: function (config, stream) {
       logger.logDebug('getUserMediaSuccess');
 
       // call the user media service to show stream
@@ -90,11 +91,11 @@
 
       // created user media object
       var userMedia = {
-        mediaConstraints: options.mediaConstraints,
+        mediaConstraints: config.mediaConstraints,
         localStream: stream
       };
 
-      options.onUserMedia(userMedia);
+      config.onUserMedia(userMedia);
     },
 
     /**
