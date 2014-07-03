@@ -136,12 +136,6 @@
         restConfig,
         configuredRESTOperation;
 
-      if (undefined === operationName
-          || operationName.length === 0) {
-        logger.logError('no operation name provided');
-        throw new Error('Must specify an operation name.');
-      }
-
       operationConfig = restOperationsConfig[operationName];
 
       if (undefined === operationConfig) {
@@ -167,11 +161,7 @@
       }
     }
 
-     // method 1
-     var startCallOperation = resourceManager.getOperation('startCall', params);
-     startCallOperation(success, error);
-
-     // method 2
+     Example:
      resourceManager.doOperation('startCall', params, function (response) {
 
         // handle success and error
@@ -188,13 +178,21 @@
      * @param cb
      */
     function doOperation(operationName, config) {
+
+      if (undefined === operationName
+          || operationName.length === 0) {
+        logger.logError('no operation name provided');
+        throw new Error('Must specify an operation name.');
+      }
+
       logger.logTrace('do operation', operationName);
       try {
-        var operation = module.getOperation(operationName, config);
+        var operation = getOperation(operationName, config);
 
         operation(config.success, config.error, config.ontimeout);
       } catch (e) {
         logger.logError(e);
+        throw e;
       }
     }
 
@@ -231,7 +229,6 @@
     restOperationsConfig = apiConfig;
 
     return {
-      getOperation: getOperation,
       doOperation : doOperation,
       getRestOperationsConfig : getRestOperationsConfig,
       getLogger : getLogger,
