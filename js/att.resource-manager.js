@@ -9,13 +9,13 @@
   "use strict";
 
   var errorDictionary = ATT.errorDictionary,
-    utils = ATT.utils;
+    utils = ATT.utils,
+    logManager = ATT.logManager.getInstance();
 
   function createResourceManager(apiConfig) {
 
     var apiConfigs,
-      loggers = [],
-      logger;
+      logger = logManager.addLoggerForModule('ResourceManager');
 
     if (undefined === apiConfig
         || 0 === Object.keys(apiConfig).length) {
@@ -205,43 +205,19 @@
       }
     }
 
-    function newLogger(moduleName) {
-      var logMgr = ATT.logManager.getInstance(), lgr;
-      logMgr.configureLogger(moduleName, logMgr.loggerType.CONSOLE, logMgr.logLevel.INFO);
-      lgr = logMgr.getLogger(moduleName);
-      loggers[moduleName] = lgr;
-      return loggers[moduleName];
-    }
 
-    function getLogger(moduleName) {
-      var lgr = loggers[moduleName];
-      if (lgr === undefined) {
-        return newLogger(moduleName);
-      }
-      return lgr;
-    }
 
     function getRestOperationsConfig() {
       return apiConfigs;
     }
 
-    function updateLogLevel(moduleName, level) {
-      var lgr = getLogger(moduleName);
-      if (!lgr) {
-        lgr.setLevel(level);
-      }
-    }
 
-
-    logger = getLogger("resourceManagerModule");
     logger.logInfo('configuring resource manager module');
     apiConfigs = apiConfig;
 
     return {
       doOperation : doOperation,
-      getRestOperationsConfig : getRestOperationsConfig,
-      getLogger : getLogger,
-      updateLogLevel : updateLogLevel
+      getRestOperationsConfig : getRestOperationsConfig
     };
   }
 

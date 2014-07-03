@@ -175,18 +175,6 @@ describe('ResourceManager', function () {
         expect(resourceManager.getRestOperationsConfig).to.be.a('function');
       });
     });
-
-    describe('getLogger ', function () {
-      it('Should Exist', function () {
-        expect(resourceManager.getLogger).to.be.a('function');
-      });
-    });
-
-    describe('updateLogLevel ', function () {
-      it('Should Exist', function () {
-        expect(resourceManager.updateLogLevel).to.be.a('function');
-      });
-    });
-    });
+  });
 
 });
