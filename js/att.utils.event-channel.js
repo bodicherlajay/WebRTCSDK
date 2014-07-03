@@ -9,20 +9,25 @@
 (function () {
   'use strict';
 
-  var utils = {}, logger, resourceManager, factories = ATT.private.factories;
-
-  function setLogger(lgr) {
-    logger = lgr;
-  }
-
-  function setResourceManager(resMgr) {
-    resourceManager = resMgr;
-  }
+  var utils = {}, logger, factories = ATT.private.factories;
 
   //Initialize dependencies
   (function init() {
+    var resourceManager, apiConfigs;
+    ATT.configure();
+    apiConfigs = ATT.APIConfigs;
+    resourceManager = factories.createResourceManager(apiConfigs);
+
+    function setResourceManager(resMgr) {
+      resourceManager = resMgr;
+    }
+
+    function setLogger(lgr) {
+      logger = lgr;
+    }
+
     try {
-      setResourceManager(Env.resourceManager.getInstance());
+      setResourceManager(resourceManager);
       setLogger(resourceManager.getLogger("eventChannel"));
     } catch (e) {
       console.log("Unable to initialize dependencies for Event Channel");

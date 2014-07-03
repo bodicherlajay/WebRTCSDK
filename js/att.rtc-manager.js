@@ -513,15 +513,25 @@
   ATT.private.RTCManager = RTCManager;
 
   ATT.private.rtcManager = (function () {
-    var instance;
+    var instance,
+        resourceManager,
+        apiConfigs,
+        rtcEvent;
 
     return {
       getRTCManager: function () {
         if (undefined === instance) {
+
+          ATT.configure();
+          apiConfigs = ATT.APIConfigs;
+          resourceManager = ATT.private.factories.createResourceManager(apiConfigs);
+          rtcEvent = ATT.RTCEvent.getInstance();
+          rtcEvent.setLogger(resourceManager.getLogger());
+
           instance = new RTCManager({
             errorManager: ATT.Error,
-            resourceManager: Env.resourceManager.getInstance(),
-            rtcEvent: ATT.RTCEvent.getInstance(),
+            resourceManager: resourceManager,
+            rtcEvent: rtcEvent,
             userMediaSvc: ATT.UserMediaService,
             peerConnSvc: ATT.PeerConnectionService
           });

@@ -4,13 +4,11 @@
 
 'use strict';
 
-describe.only('ResourceManager', function () {
+describe('ResourceManager', function () {
 
   var apiConfigs,
-    defaults,
     resourceManager,
-    factories,
-    logManager;
+    factories;
 
   before(function () {
     // Need to invoke configure first because it sets up

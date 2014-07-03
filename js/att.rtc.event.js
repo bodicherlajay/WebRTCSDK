@@ -6,20 +6,14 @@
 (function (mainModule) {
   'use strict';
 
-  var logger = Env.resourceManager.getInstance().getLogger("RTCEventModule"),
+  var logger,
     session,
     sessionId,
     module = {},
     instance,
     createRTCEvent,
     RTCEvent,
-    eventRegistry,
-    init = function () {
-      return {
-        createRTCEvent: createRTCEvent
-      };
-    };
-
+    eventRegistry;
 
   /**
   * Dispatch Event to Registry
@@ -130,6 +124,17 @@
     return evt;
   };
 
+  function setLogger(lgr) {
+    logger = lgr;
+  }
+
+  function init() {
+    return {
+      createRTCEvent: createRTCEvent,
+      setLogger: setLogger
+    };
+  }
+
   module.getInstance = function () {
     if (!instance) {
       instance = init();
@@ -138,4 +143,5 @@
   };
 
   mainModule.RTCEvent = module;
+
 }(ATT || {}));
