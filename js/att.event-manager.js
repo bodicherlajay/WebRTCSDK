@@ -240,6 +240,7 @@
     function on(event, handler) {
       if('listening' !== event
         && 'stop-listening' !== event
+        && 'call-incoming' !== event
         && 'remote-sdp' !== event
         && 'remote-sdp-set' !== event
         && 'media-established' !== event) {
