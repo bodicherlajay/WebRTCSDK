@@ -55,18 +55,22 @@ describe('Phone', function () {
 
     describe('ATT.private.Phone Constructor', function () {
       var phone,
+        session,
         createEventEmitterSpy,
-        sessionConstructorSpy;
+        sessionConstructorSpy,
+        onSpy;
 
-      beforeEach(function () {
+      before(function () {
+        session = new ATT.rtc.Session();
         createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
-        sessionConstructorSpy = sinon.spy(ATT.rtc, 'Session');
-
+        sessionConstructorSpy = sinon.stub(ATT.rtc, 'Session', function () {
+          return session;
+        });
+        onSpy = sinon.spy(session, 'on');
         phone = new ATT.private.Phone();
-
       });
 
-      afterEach(function () {
+      after(function () {
         createEventEmitterSpy.restore();
         sessionConstructorSpy.restore();
       });
@@ -81,6 +85,10 @@ describe('Phone', function () {
 
       it('should create a session on the Phone object', function () {
         expect(sessionConstructorSpy.called).to.equal(true);
+      });
+
+      it('should register for `call-incoming` event on session object', function () {
+        expect(onSpy.calledWith('call-incoming')).to.equal(true);
       });
 
     });
@@ -582,6 +590,50 @@ describe('Phone', function () {
 
         it('should execute call.disconnect', function () {
           expect(callDisconnectStub.called).to.equal(true);
+        });
+      });
+    });
+
+    describe('Events', function () {
+
+      describe('call-incoming', function () {
+
+        var phone,
+          emitterSession,
+          createEmitterStub,
+          onCallIncomingHandlerSpy;
+
+        before(function () {
+          emitterSession = ATT.private.factories.createEventEmitter();
+
+          createEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+            return emitterSession;
+          });
+
+          onCallIncomingHandlerSpy = sinon.spy();
+
+          phone = ATT.rtc.Phone.getPhone();
+
+          phone.on('call-incoming', onCallIncomingHandlerSpy);
+        });
+
+        after(function () {
+          createEmitterStub.restore();
+        });
+
+        it('should trigger `call-incoming` on getting a `call-incoming` from session', function (done) {
+
+          emitterSession.publish('call-incoming');
+
+          setTimeout(function () {
+            try {
+              expect(onCallIncomingHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+
         });
       });
     });

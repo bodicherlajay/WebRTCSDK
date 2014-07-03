@@ -6,7 +6,7 @@ describe('Session', function () {
 
   var options;
 
-  beforeEach(function () {
+  before(function () {
     options = {
       token: 'dsfgdsdf',
       e911Id: 'sdfghfds'
@@ -19,20 +19,27 @@ describe('Session', function () {
 
   describe('Constructor', function () {
     var session,
+      rtcManager,
       createEventEmitterSpy,
+      rtcManagerOnSpy,
       getRTCManagerStub;
 
-    beforeEach(function () {
+    before(function () {
       createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
+      rtcManager = {
+        on: function () {}
+      };
+      rtcManagerOnSpy = sinon.spy(rtcManager, 'on');
       getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
-        return {};
+        return rtcManager;
       });
       session = new ATT.rtc.Session(options);
     });
 
-    afterEach(function () {
+    after(function () {
       createEventEmitterSpy.restore();
       getRTCManagerStub.restore();
+      rtcManagerOnSpy.restore();
       session = null;
     });
 
@@ -46,6 +53,10 @@ describe('Session', function () {
 
     it('should call ATT.private.rtcManager.getRTCManager', function () {
       expect(getRTCManagerStub.called).to.equal(true);
+    });
+
+    it('should register for `call-incoming` event on RTCManager', function () {
+      expect(rtcManagerOnSpy.calledWith('call-incoming')).to.equal(true);
     });
   });
 
@@ -527,10 +538,11 @@ describe('Session', function () {
     });
   });
 
-  describe('Event', function () {
-    var onNeedsRefreshSpy;
+  describe('Events', function () {
 
     describe('needs-refresh', function () {
+
+      var onNeedsRefreshSpy;
 
       it('Should be triggered every 60000 ms before timeout', function (done) {
 
@@ -643,6 +655,55 @@ describe('Session', function () {
 
       });
 
+    });
+
+    describe('call-incoming', function () {
+
+      var session,
+        callInfo,
+        emitterEM,
+        createEventEmitterStub,
+        createCallSpy;
+
+      before(function () {
+        callInfo = {
+          id: '123',
+          from: '1234',
+          remoteSdp: 'abc',
+          mediaType: 'video'
+        };
+
+        emitterEM = ATT.private.factories.createEventEmitter();
+
+        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+          return emitterEM;
+        });
+
+        session = new ATT.rtc.Session();
+
+        createCallSpy = sinon.spy(session, 'createCall');
+
+      });
+
+      after(function () {
+        createEventEmitterStub.restore();
+        createCallSpy.restore();
+      });
+
+      it('should create a new call on getting call-incoming event from event manager', function (done) {
+        emitterEM.publish('call-incoming', callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(createCallSpy.calledWith(callInfo)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should trigger `call-incoming` on getting a `created` event with call id from Call');
     });
   });
 

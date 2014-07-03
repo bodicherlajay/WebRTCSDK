@@ -581,6 +581,10 @@
       session = new ATT.rtc.Session(),
       call;
 
+    session.on('call-incoming', function () {
+      emitter.publish('call-incoming');
+    });
+
     function getSession() {
       return session;
     }
@@ -593,6 +597,7 @@
       if ('session-ready' !== event
           && 'session-disconnected' !== event
           && 'call-dialing' !== event
+          && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
           && 'call-canceled' !== event

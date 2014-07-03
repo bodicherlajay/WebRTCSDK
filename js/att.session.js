@@ -203,6 +203,14 @@
     // get the RTC Manager
     rtcManager = ATT.private.rtcManager.getRTCManager();
 
+    rtcManager.on('call-incoming', function (callInfo) {
+      self.createCall({
+        peer: callInfo.from,
+        type: ATT.CallTypes.INCOMING,
+        mediaType: callInfo.mediaType
+      });
+    });
+
     function on(event, handler) {
 
       if ('ready' !== event &&
@@ -210,6 +218,7 @@
           'connected' !== event &&
           'updating' !== event &&
           'needs-refresh' !== event &&
+          'call-incoming' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event &&
           'allcallsterminated' !== event) {
@@ -347,8 +356,7 @@
       ATT.utils.extend(options, {
         sessionInfo: {
           sessionId: this.getId(),
-          token: this.token,
-          e911Id: this.e911Id
+          token: this.token
         }
       });
       this.currentCall = new ATT.rtc.Call(options);
