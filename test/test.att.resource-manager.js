@@ -55,7 +55,34 @@ describe.only('ResourceManager', function () {
       resourceManager = factories.createResourceManager(apiConfigs);
     });
 
-    describe('getOperation', function () {
+  describe('doOperation', function () {
+    it('Should Exist', function () {
+      expect(resourceManager.doOperation).to.be.a('function');
+    });
+
+    xit('should throw an error if `operation` name is invalid', function () {
+        expect(resourceManager.doOperation.bind(resourceManager, undefined)).to.throw('Must specify an operation name.');
+        expect(resourceManager.doOperation.bind(resourceManager, '')).to.throw('Must specify an operation name.');
+        expect(resourceManager.doOperation.bind(resourceManager, 'getEvents')).to.not.throw('Must specify an operation name.');
+
+        expect(resourceManager.doOperation.bind(resourceManager, 'invalidName', {})).to.throw('Operation not found.');
+    });
+    xit('should throw an error if `options` is invalid', function () {
+      expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', undefined)).to.throw('Params passed in must match number of formatters.');
+      expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', {})).to.throw('You pass url param to for the url formatter.');
+      expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', {})).to.throw('Header formatters in APIConfigs do not match the header parameters being passed in.');
+    });
+    xit('should create a RESTful operation and execute it', function () {
+      // expect(restClientStub.called);
+      // expect(ajaxSpy.called);
+    });
+  });
+
+  // TODO: getOperation should not be part of the public API
+  // for resourceManager, then only public method is doOperation
+  // hence we whould try to test everything through that method,
+  // see tests for doOperation
+    xdescribe('getOperation', function () {
 
       beforeEach(function () {
 
@@ -221,12 +248,6 @@ describe.only('ResourceManager', function () {
         expect(operation.restConfig.headers['Content-Type']).equals('application/json');
       });
 
-    });
-
-    describe('doOperation', function () {
-      it('Should Exist', function () {
-        expect(resourceManager.doOperation).to.be.a('function');
-      });
     });
 
     describe('getRestOperationsConfig', function () {
