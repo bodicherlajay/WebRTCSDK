@@ -13,7 +13,7 @@
 
   function createResourceManager(apiConfig) {
 
-    var restOperationsConfig,
+    var apiConfigs,
       loggers = [],
       logger;
 
@@ -31,7 +31,7 @@
         headersObjectForREST;
 
       // we have an operation config.
-      restConfig = ATT.utils.extend({}, operationConfig);
+      restConfig = utils.extend({}, operationConfig);
       formatters = operationConfig.formatters || {};
       formattersLength = Object.keys(formatters).length;
 
@@ -136,11 +136,28 @@
         restConfig,
         configuredRESTOperation;
 
-      operationConfig = restOperationsConfig[operationName];
+      if (undefined === operationName
+          || operationName.length === 0) {
+        logger.logError('no operation name provided');
+        throw new Error('Must specify an operation name.');
+      }
+
+
+      operationConfig = apiConfigs[operationName];
 
       if (undefined === operationConfig) {
         throw new Error('Operation not found.');
       }
+
+      if (undefined === options) {
+        throw new Error('No options found.');
+      }
+      if (undefined === options.params) {
+        throw new Error('Parameters for REST Configuration are empty.');
+      }
+      logger.logTrace('do operation', operationName);
+
+
 
       restConfig = createRESTConfiguration(operationConfig, options);
       configuredRESTOperation = createRESTOperation(restConfig);
@@ -175,17 +192,9 @@
      * rest operation.
      * @param operationName
      * @param config
-     * @param cb
      */
     function doOperation(operationName, config) {
 
-      if (undefined === operationName
-          || operationName.length === 0) {
-        logger.logError('no operation name provided');
-        throw new Error('Must specify an operation name.');
-      }
-
-      logger.logTrace('do operation', operationName);
       try {
         var operation = getOperation(operationName, config);
 
@@ -213,7 +222,7 @@
     }
 
     function getRestOperationsConfig() {
-      return restOperationsConfig;
+      return apiConfigs;
     }
 
     function updateLogLevel(moduleName, level) {
@@ -226,7 +235,7 @@
 
     logger = getLogger("resourceManagerModule");
     logger.logInfo('configuring resource manager module');
-    restOperationsConfig = apiConfig;
+    apiConfigs = apiConfig;
 
     return {
       doOperation : doOperation,
