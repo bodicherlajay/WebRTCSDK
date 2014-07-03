@@ -8,122 +8,150 @@
 (function () {
   "use strict";
 
+  var errorDictionary = ATT.errorDictionary,
+    utils = ATT.utils;
 
-  var loggers = [],
-    logger,
-    restOperationsConfig = {};
+  function createResourceManager(apiConfig) {
 
-  function createResourceManager(config) {
+    var restOperationsConfig,
+      loggers = [],
+      logger;
+
+    if (undefined === apiConfig
+        || 0 === Object.keys(apiConfig).length) {
+      throw new Error('No API configuration passed');
+    }
+
+    function createRESTConfiguration(operationConfig, options) {
+
+      var restConfig,
+        formatters,
+        formattersLength,
+        headerType,
+        headersObjectForREST;
+
+      // we have an operation config.
+      restConfig = ATT.utils.extend({}, operationConfig);
+      formatters = operationConfig.formatters || {};
+      formattersLength = Object.keys(formatters).length;
+
+      if (formatters && formattersLength > 0) {
+        if (undefined === options.params
+            || formattersLength !== Object.keys(options.params).length) {
+          logger.logError('Params passed in much match number of formatters');
+
+          logger.logTrace('formatters: ' + JSON.stringify(formatters));
+          logger.logTrace('params: ' + JSON.stringify(options.params));
+
+          throw new Error('Params passed in must match number of formatters.');
+        }
+
+        // check that formatters match up with passed in params.
+        if (formatters.url) {
+          if (!options.params.url) {
+
+            logger.logError('Please provide a URL parameter for the URL formatter.');
+            throw new Error('You pass url param to for the url formatter.');
+          }
+        }
+
+        // check headers.  just check that lengths match for now.
+        if (formatters.headers) {
+          if (Object.keys(options.params.headers).length !== Object.keys(operationConfig.formatters.headers).length) {
+            logger.logError('Header formatters in APIConfigs do not match header parameters provided.');
+            throw new Error('Header formatters in APIConfigs do not match the header parameters being passed in.');
+          }
+        }
+
+        // Override url parameter with url from url formatter.
+        if (typeof formatters.url === 'function') {
+          restConfig.url = operationConfig.formatters.url(options.params.url);
+          logger.logTrace('updated restConfig url', restConfig.url);
+        }
+
+        // header formatting.
+        // call formatters for each header (by key)
+        // need to concat default headers with header data passing in.
+        if (typeof formatters.headers === 'object') {
+          if (Object.keys(formatters.headers).length > 0) {
+            headersObjectForREST = {};
+
+            for (headerType in options.params.headers) {
+              if (options.params.headers.hasOwnProperty(headerType)) {
+                headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](options.params.headers[headerType]);
+                logger.logDebug('header: ' + headerType + ', ' + headersObjectForREST[headerType]);
+              }
+            }
+
+            // add this to the restConfig.  These will be in addition to the default headers.
+            restConfig.headers = ATT.utils.extend({}, restConfig.headers);
+            restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
+          }
+        }
+      }
+
+      // data
+      if (options.data) {
+        restConfig.data = options.data;
+      }
+
+      return restConfig;
+    }
+
+    function createRESTOperation(restConfig) {
+
+      logger.logTrace('configuring REST operation');
+
+      function restOperation(successCB, errorCB, onTimeout) {
+
+        var restClient;
+
+        restConfig.success = successCB;
+        restConfig.error = function (errResp) {
+          if (errResp.getResponseStatus() === 0 && errResp.responseText === "") {
+            errorCB.call(this, errorDictionary.getError("SDK-10000"));
+          } else {
+            errorCB.call(this, errResp);
+          }
+        };
+        restConfig.ontimeout = onTimeout;
+
+        restClient = new ATT.RESTClient(restConfig);
+
+        // make request
+        restClient.ajax();
+      }
+
+      return restOperation;
+    }
     /**
      * Method to return a configured rest operation configured in the
      * att.config.api.js file.
      * @param operationName
-     * @param config
+     * @param options
      * @returns {Function}
      */
     function getOperation(operationName, options) {
+      var operationConfig,
+        restConfig,
+        configuredRESTOperation;
 
-
-      if (!operationName || operationName.trim().length === 0) {
+      if (undefined === operationName
+          || operationName.length === 0) {
         logger.logError('no operation name provided');
         throw new Error('Must specify an operation name.');
       }
 
-      var config = options || {
-        success: function () { logger.logWarning('Not implemented yet.'); },
-        error:   function () { logger.logWarning('Not implemented yet.'); }
-      },
-      operationConfig = restOperationsConfig[operationName],
-      restClient,
-      restConfig,
-      headerType,
-      headersObjectForREST = {},
-      formatters,
-      formattersLength,
-      configuredRESTOperation;
+      operationConfig = restOperationsConfig[operationName];
 
-//      // we have an operation config.
-//      restConfig = ATT.utils.extend({}, operationConfig);
-//      formatters = operationConfig.formatters || {};
-//      formattersLength = (formatters && Object.keys(formatters).length) || 0;
-//
-//      if (formatters && formattersLength > 0) {
-//        if (!config.params || (Object.keys(config.params).length !== formattersLength)) {
-//          logger.logError('Params passed in much match number of formatters');
-//          throw new Error('Params passed in must match number of formatters.');
-//        }
-//
-//        // check that formatters match up with passed in params.
-//        if (formatters.url) {
-//          if (!config.params.url) {
-//
-//            logger.logError('Please provide a URL parameter for the URL formatter.');
-//            throw new Error('You pass url param to for the url formatter.');
-//          }
-//        }
-//
-//        // check headers.  just check that lengths match for now.
-//        if (formatters.headers) {
-//          if (Object.keys(config.params.headers).length !== Object.keys(operationConfig.formatters.headers).length) {
-//            logger.logError('Header formatters in APIConfigs do not match header parameters provided.');
-//            throw new Error('Header formatters in APIConfigs do not match the header parameters being passed in.');
-//          }
-//        }
-//
-//        // Override url parameter with url from url formatter.
-//        if (typeof formatters.url === 'function') {
-//          restConfig.url = operationConfig.formatters.url(config.params.url);
-//          logger.logTrace('updated restConfig url', restConfig.url);
-//        }
-//
-//        // header formatting.
-//        // call formatters for each header (by key)
-//        // need to concat default headers with header data passing in.
-//        if (typeof formatters.headers === 'object') {
-//          if (Object.keys(formatters.headers).length > 0) {
-//            headersObjectForREST = {};
-//
-//            for (headerType in config.params.headers) {
-//              if (config.params.headers.hasOwnProperty(headerType)) {
-//                headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](config.params.headers[headerType]);
-//                logger.logDebug('header: ' + headerType + ', ' + headersObjectForREST[headerType]);
-//              }
-//            }
-//
-//            // add this to the restConfig.  These will be in addition to the default headers.
-//            restConfig.headers = ATT.utils.extend({}, restConfig.headers);
-//            restConfig.headers = ATT.utils.extend(restConfig.headers, headersObjectForREST);
-//          }
-//        }
-//      }
-//
-//      // data
-//      if (config.data) {
-//        restConfig.data = config.data;
-//      }
-//
-//      // create the configured rest operation and return.
-//      configuredRESTOperation = function (successCB, errorCB, onTimeout) {
-//        logger.logTrace('configuring REST operation');
-//        restConfig.success = successCB;
-//        restConfig.error = function (errResp) {
-//          if (errResp.getResponseStatus() === 0 && errResp.responseText === "") {
-//            errorCB.call(this, app.errorDictionary.getError("SDK-10000"));
-//          } else {
-//            errorCB.call(this, errResp);
-//          }
-//        };
-//        restConfig.ontimeout = onTimeout;
-//
-//        restClient = new ATT.RESTClient(restConfig);
-//
-//        // make request
-//        restClient.ajax();
-//      };
-//
-//      configuredRESTOperation.restConfig = restConfig; // testability.
-//      return configuredRESTOperation;
-      return function () {};
+      if (undefined === operationConfig) {
+        throw new Error('Operation not found.');
+      }
+
+      restConfig = createRESTConfiguration(operationConfig, options);
+      configuredRESTOperation = createRESTOperation(restConfig);
+
+      return configuredRESTOperation;
     }
 
     /**
@@ -170,19 +198,6 @@
       }
     }
 
-    // Configure REST operations object and public API object.
-
-    function configure(config) {
-      if (undefined === config
-          || 0 === Object.keys(config).length) {
-        throw new Error('No configuration Passed');
-      }
-      logger.logInfo('configuring resource manager module');
-
-      restOperationsConfig = config;
-
-    }
-
     function newLogger(moduleName) {
       var logMgr = ATT.logManager.getInstance(), lgr;
       logMgr.configureLogger(moduleName, logMgr.loggerType.CONSOLE, logMgr.logLevel.INFO);
@@ -212,15 +227,15 @@
 
 
     logger = getLogger("resourceManagerModule");
-    configure(config);
+    logger.logInfo('configuring resource manager module');
+    restOperationsConfig = apiConfig;
 
     return {
-      getOperation:       getOperation,
-      doOperation:        doOperation,
-      configure:          configure,
-      getRestOperationsConfig:          getRestOperationsConfig,
-      getLogger:          getLogger,
-      updateLogLevel:     updateLogLevel
+      getOperation: getOperation,
+      doOperation : doOperation,
+      getRestOperationsConfig : getRestOperationsConfig,
+      getLogger : getLogger,
+      updateLogLevel : updateLogLevel
     };
   }
 
