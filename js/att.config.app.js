@@ -76,11 +76,6 @@ if (!ATT) {
       //logger.logError(app.errorDictionary.getError());
       logger.logError(e);
     }
-
-    if (Env) {
-      // configure resource manager to for SDK public APIs
-      Env.resourceManager.configure();
-    }
   }
   app.configure = configure;
 
