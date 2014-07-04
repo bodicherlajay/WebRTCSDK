@@ -14,55 +14,68 @@ describe('Event Manager', function () {
   },
     factories;
 
-  beforeEach(function () {
+  before(function () {
     factories = ATT.private.factories;
+
+    ATT.appConfig = {
+      EventChannelConfig: {
+        endpoint: 'endpoint',
+        type: 'longpolling'
+      }
+    };
   });
 
   it('Should export factories.createEventManager', function () {
     expect(factories.createEventManager).to.be.a('function');
   });
 
-  describe('Method', function () {
+  describe('Methods', function () {
     var sessionId = 'sessionid',
       options,
       eventManager,
-      eventChannelStub,
+      eventChannel,
       createEvtChanStub,
       stopListeningSpy,
-      emitter,
+      emitterEC,
+      emitterEM,
       createEventEmitterStub;
 
-    beforeEach(function () {
-      stopListeningSpy = sinon.spy();
+    before(function () {
 
-      eventChannelStub = {
-        startListening: function (options) {
-          options.success();
+      var channelConfig = {
+        accessToken: 'abc',
+        endpoint: '/events',
+        sessionId: '123',
+        resourceManager: {
+          doOperation: function () {}
         },
-        stopListening: stopListeningSpy
+        publicMethodName: 'getEvents',
+        usesLongPolling: true
       };
 
+      eventChannel = ATT.private.factories.createEventChannel(channelConfig);
+
       createEvtChanStub = sinon.stub(factories, 'createEventChannel', function () {
-        return eventChannelStub;
+        return eventChannel;
       });
 
-      emitter = factories.createEventEmitter();
+      emitterEM = factories.createEventEmitter();
+
       createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
-        return emitter;
+        return emitterEM;
       });
 
       options = {
-        emitter: emitter,
         rtcEvent: {},
         errorManager: {},
         resourceManager: resourceManagerStub
       };
 
       eventManager = factories.createEventManager(options);
-
     });
 
-    afterEach(function () {
+    after(function () {
+      createEventEmitterStub.restore();
       createEvtChanStub.restore();
       createEventEmitterStub.restore();
     });
@@ -82,8 +95,8 @@ describe('Event Manager', function () {
           subscribeSpy,
           unsubscribeSpy;
 
-        subscribeSpy = sinon.spy(emitter, 'subscribe');
-        unsubscribeSpy = sinon.spy(emitter, 'unsubscribe');
+        subscribeSpy = sinon.spy(emitterEM, 'subscribe');
+        unsubscribeSpy = sinon.spy(emitterEM, 'unsubscribe');
 
         expect(eventManager.on.bind(eventManager, 'listening', fn)).to.not.throw(Error);
         expect(unsubscribeSpy.called).to.equal(true);
@@ -96,24 +109,21 @@ describe('Event Manager', function () {
     });
 
     describe('setup', function () {
-      var subscribeSpy,
+      var onSpy,
+        startListeningStub,
         onListeningSpy;
 
-      beforeEach(function () {
-        ATT.appConfig = {
-          EventChannelConfig: {
-            endpoint: 'endpoint',
-            type: 'longpolling'
-          }
-        };
+      before(function () {
+        startListeningStub = sinon.stub(eventChannel, 'startListening', function () {});
 
-        subscribeSpy = sinon.spy(emitter, 'subscribe');
+        onSpy = sinon.spy(eventChannel, 'on');
 
         onListeningSpy = sinon.spy();
       });
 
-      afterEach(function () {
-        subscribeSpy.restore();
+      after(function () {
+        startListeningStub.restore();
+        onSpy.restore();
       });
 
       it('Should exist', function () {
@@ -130,8 +140,7 @@ describe('Event Manager', function () {
           token: 'token'
         });
 
-        expect(subscribeSpy.called).to.equal(true);
-        expect(subscribeSpy.getCall(0).args[0]).to.equal(sessionId + '.responseEvent');
+        expect(onSpy.calledWith('api-event')).to.equal(true);
       });
 
       it('Should create event channel', function () {
@@ -178,9 +187,14 @@ describe('Event Manager', function () {
       });
 
       it('Should execute eventChannel.stopListening', function () {
+
+        stopListeningSpy = sinon.spy(eventChannel, 'stopListening');
+
         eventManager.stop();
 
         expect(stopListeningSpy.called).to.equal(true);
+
+        stopListeningSpy.restore();
       });
 
       it('Should publish stop-listening after stopping the event channel', function (done) {
@@ -206,6 +220,125 @@ describe('Event Manager', function () {
       it('should exist', function () {
         expect(eventManager.publish).to.be.a('function');
       });
+    });
+  });
+
+  describe('Events', function () {
+
+    var emitterEM,
+      emitterEC,
+      options,
+      createEventEmitterStub,
+      eventManager,
+      eventChannel,
+      createEvtChanStub,
+      startListeningStub,
+      publishSpy;
+
+    before(function () {
+      emitterEM = ATT.private.factories.createEventEmitter();
+      createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+        return emitterEM;
+      });
+
+      publishSpy = sinon.spy(emitterEM, 'publish');
+
+      options = {
+        rtcEvent: {},
+        errorManager: {},
+        resourceManager: resourceManagerStub
+      };
+
+      eventManager = factories.createEventManager(options);
+
+      createEventEmitterStub.restore();
+
+      emitterEC = factories.createEventEmitter();
+
+      createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+        return emitterEC;
+      });
+
+      var channelConfig = {
+        accessToken: 'abc',
+        endpoint: '/events',
+        sessionId: '123',
+        resourceManager: {
+          doOperation: function () {}
+        },
+        publicMethodName: 'getEvents',
+        usesLongPolling: true
+      };
+
+      eventChannel = ATT.private.factories.createEventChannel(channelConfig);
+
+      startListeningStub = sinon.stub(eventChannel, 'startListening', function () {});
+
+      createEvtChanStub = sinon.stub(factories, 'createEventChannel', function () {
+        return eventChannel;
+      });
+
+      eventManager.setup({
+        sessionId: '1234',
+        token: 'token'
+      });
+
+    });
+
+    after(function () {
+      createEventEmitterStub.restore();
+      createEvtChanStub.restore();
+      startListeningStub.restore();
+      publishSpy.restore();
+    });
+
+
+    describe('invitation-received', function () {
+
+      var event,
+        codecParser,
+        codecStub;
+
+      before(function () {
+        codecParser = ATT.sdpFilter.getInstance();
+
+        codecStub = sinon.stub(codecParser, 'getCodecfromSDP', function () {
+          return [];
+        });
+
+        event = {
+          type: 'calls',
+          from: 'sip:1111@icmn.api.att.net',
+          resourceURL: '/RTC/v1/sessions/ccccc/calls/1234',
+          state: 'invitation-received',
+          sdp: 'abcd'
+        };
+      });
+
+      after(function () {
+        codecStub.restore();
+      });
+
+      it('should publish `call-incoming` with call information extracted from the event', function (done) {
+
+        emitterEC.publish('api-event', event);
+
+        setTimeout(function () {
+          try {
+            console.log(publishSpy.callCount);
+            expect(publishSpy.calledWith('call-incoming')).to.equal(true);
+            expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
+            expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
+            expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
+            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal('abcd');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+
+      });
+
     });
   });
 });

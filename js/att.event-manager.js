@@ -166,67 +166,6 @@
     }
   }
 
-  /*
-  * Subscribes to all Event Channel announcements
-  * and triggers UI callbacks
-  * @param {Object} event The event object
-  */
-  function interceptEventChannelEvent(event) {
-    if (!event) {
-      logger.logError('Not able to consume null event...');
-      return;
-    }
-
-    logger.logDebug('Consume event from event channel', JSON.stringify(event));
-
-    // set current event
-    this.setCurrentEvent(event);
-
-    this.processCurrentEvent();
-  }
-
-  /**
-    This function subscribes to all events 
-    being published by the event channel.
-    It hands off the event to interceptingEventChannelCallback()
-  */
-  function setupEventInterceptor(options) {
-    try {
-      logger.logDebug("setupEventInterceptor");
-  
-      var sessionId = this.getSession().getSessionId(), emitter = this.getEventEmitter();
- 
-      // unsubscribe first, to avoid double subscription from previous actions
-      emitter.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
-      logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
-  
-      // subscribe to published events from event channel
-      emitter.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
-      logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
-
-      options.onEventInterceptorSetup();
-    } catch (err) {
-      handleError.call(this, 'SetupEventInterceptor', options.onError, err);
-    }
-  }
-
-  function shutDown(options) {
-    try {
-      shutdownEventChannel();
-      options.onShutDown();
-    } catch (err) {
-      handleError.call(this, 'ShutDown', options.onError);
-    }
-  }
-
-  function createRTCEvent(options) {
-    return rtcEvent.createEvent(options);
-  }
-
-  function publishEvent(event) {
-    ATT.event.publish(this.getSession().getSessionId() + '.responseEvent', event);
-  }
-
   function createEventManager(options) {
 
     var eventChannel,
@@ -262,17 +201,34 @@
         throw new Error('Token not defined');
       }
 
-      var sessionId = options.sessionId;
-
-      // unsubscribe first, to avoid double subscription from previous actions
-      emitter.unsubscribe(sessionId + '.responseEvent', interceptEventChannelEvent);
-      logger.logInfo('Unsubscribe event ' +  sessionId + '.responseEvent' + 'successful');
-
-      // subscribe to published events from event channel
-      emitter.subscribe(sessionId + '.responseEvent', interceptEventChannelEvent, this);
-      logger.logInfo('Subscribed to event ' +  sessionId + '.responseEvent');
-
       setupEventChannel(options);
+    }
+
+    /*
+     * Subscribes to all Event Channel announcements
+     * and triggers UI callbacks
+     * @param {Object} event The event object
+     */
+    function processEvent(event) {
+      if (!event) {
+        logger.logError('Not able to consume null event...');
+        return;
+      }
+
+      logger.logDebug('Consume event from event channel', JSON.stringify(event));
+
+      switch(event.state) {
+      case ATT.RTCCallEvents.INVITATION_RECEIVED:
+        var codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
+
+        emitter.publish('call-incoming', {
+          id: event.resourceURL.split('/')[6],
+          from: event.from.split('@')[0].split(':')[1],
+          mediaType: (codec.length === 1) ? 'audio' : 'video',
+          remoteSdp: event.sdp
+        });
+        break;
+      }
     }
 
     function setupEventChannel(options) {
@@ -296,6 +252,12 @@
       if (eventChannel) {
         logger.logInfo('Event channel up and running');
 
+        eventChannel.on('api-event', function (event) {
+          processEvent(event);
+        });
+
+        logger.logInfo('Subscribed to api-event from event channel');
+
         eventChannel.startListening({
           success: function (msg) {
             logger.logInfo(msg);
@@ -305,8 +267,6 @@
       }
       emitter.publish('listening');
     }
-
-
 
     function stop () {
       if (eventChannel) {

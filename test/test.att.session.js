@@ -4,13 +4,23 @@
 describe('Session', function () {
   'use strict';
 
-  var options;
+  var options,
+    optionsforRTCM;
 
   before(function () {
     options = {
       token: 'dsfgdsdf',
       e911Id: 'sdfghfds'
     };
+
+    optionsforRTCM = {
+      errorManager: ATT.Error,
+      resourceManager: Env.resourceManager.getInstance(),
+      rtcEvent: ATT.RTCEvent.getInstance(),
+      userMediaSvc: ATT.UserMediaService,
+      peerConnSvc: ATT.PeerConnectionService
+    };
+
   });
 
   it('Should have a public constructor under ATT.rtc', function () {
@@ -64,7 +74,8 @@ describe('Session', function () {
     var session,
       call,
       secondCall,
-      emitter,
+      emitterEM,
+      emitterSession,
       onConnectingSpy,
       onConnectedSpy,
       onUpdatingSpy,
@@ -73,26 +84,25 @@ describe('Session', function () {
       onDisconnectedSpy,
       onSessionReadyData,
       createEventEmitterStub,
-      createEventMgrStub,
-      rtcManagerStub,
-      createRTCMgrStub,
+      rtcManager,
+      getRTCMgrStub,
       connectSessionStub,
       disconnectSessionStub;
 
     beforeEach(function () {
-      onSessionReadyData = {test: 'test'};
+      onSessionReadyData = {
+        test: 'test'
+      };
 
-      emitter = ATT.private.factories.createEventEmitter();
+      emitterEM = ATT.private.factories.createEventEmitter();
 
       createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-        return emitter;
+        return emitterEM;
       });
 
-      createEventMgrStub = sinon.stub(ATT.private.factories, 'createEventManager');
+      rtcManager = new ATT.private.RTCManager(optionsforRTCM);
 
-      rtcManagerStub = ATT.private.rtcManager.getRTCManager();
-
-      connectSessionStub = sinon.stub(rtcManagerStub, 'connectSession', function (options) {
+      connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
         options.onSessionConnected({
           sessionId: 'sessionid',
           timeout: 120000
@@ -100,12 +110,20 @@ describe('Session', function () {
         options.onSessionReady(onSessionReadyData);
       });
 
-      disconnectSessionStub = sinon.stub(rtcManagerStub, 'disconnectSession', function (options) {
+      disconnectSessionStub = sinon.stub(rtcManager, 'disconnectSession', function (options) {
         options.onSessionDisconnected();
       });
 
-      createRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
-        return rtcManagerStub;
+      getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+        return rtcManager;
+      });
+
+      createEventEmitterStub.restore();
+
+      emitterSession = ATT.private.factories.createEventEmitter();
+
+      createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+        return emitterSession;
       });
 
       session = new ATT.rtc.Session(options);
@@ -139,8 +157,7 @@ describe('Session', function () {
 
     afterEach(function () {
       createEventEmitterStub.restore();
-      createEventMgrStub.restore();
-      createRTCMgrStub.restore();
+      getRTCMgrStub.restore();
       connectSessionStub.restore();
       disconnectSessionStub.restore();
     });
@@ -157,8 +174,8 @@ describe('Session', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
-          subscribeSpy = sinon.spy(emitter, 'subscribe');
+          unsubscribeSpy = sinon.spy(emitterSession, 'unsubscribe'),
+          subscribeSpy = sinon.spy(emitterSession, 'subscribe');
 
         expect(session.on.bind(session, 'connected', fn)).to.not.throw(Error);
         expect(session.on.bind(session, 'disconnected', fn)).to.not.throw(Error);
@@ -239,9 +256,7 @@ describe('Session', function () {
             }
           }, 100);
         });
-
       });
-
     });
 
     describe('Disconnect', function () {
@@ -250,6 +265,10 @@ describe('Session', function () {
       beforeEach(function () {
         onSetIdSpy = sinon.spy(session, 'setId');
         session.disconnect();
+      });
+
+      afterEach(function () {
+        onSetIdSpy.restore();
       });
 
       it('Should exist', function () {
@@ -393,9 +412,10 @@ describe('Session', function () {
     describe('createCall', function () {
       var callOpts;
 
-      beforeEach(function () {
+      before(function () {
         callOpts = {
-          peer: '12345'
+          peer: '12345',
+          mediaType: 'video'
         };
       });
 
@@ -506,15 +526,15 @@ describe('Session', function () {
       });
 
       it('Should fire oncallsterminated after the last call is deleted', function (done) {
-        var onAllCallsTerminated = sinon.spy();
+        var onAllCallsTerminatedSpy = sinon.spy();
 
-        session.on('allcallsterminated', onAllCallsTerminated);
+        session.on('allcallsterminated', onAllCallsTerminatedSpy);
 
         session.deleteCall(call.id);
 
         setTimeout(function () {
           try {
-            expect(onAllCallsTerminated.called).to.equal(true);
+            expect(onAllCallsTerminatedSpy.called).to.equal(true);
             done();
           } catch (e) {
             done(e);
@@ -540,7 +560,7 @@ describe('Session', function () {
 
   describe('Events', function () {
 
-    describe('needs-refresh', function () {
+    describe.skip('needs-refresh', function () {
 
       var onNeedsRefreshSpy;
 
@@ -659,18 +679,22 @@ describe('Session', function () {
 
     describe('call-incoming', function () {
 
-      var session,
+      var rtcManager,
+        session,
+        call,
         callInfo,
         emitterEM,
         createEventEmitterStub,
-        createCallSpy;
+        getRTCMgrStub,
+        createCallSpy,
+        callIncomingHandlerSpy;
 
       before(function () {
         callInfo = {
           id: '123',
           from: '1234',
-          remoteSdp: 'abc',
-          mediaType: 'video'
+          mediaType: 'video',
+          remoteSdp: 'abc'
         };
 
         emitterEM = ATT.private.factories.createEventEmitter();
@@ -679,23 +703,38 @@ describe('Session', function () {
           return emitterEM;
         });
 
+        rtcManager = new ATT.private.RTCManager(optionsforRTCM);
+
+        getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+          return rtcManager;
+        });
+
+        createEventEmitterStub.restore();
+
         session = new ATT.rtc.Session();
+
+        callIncomingHandlerSpy = sinon.spy();
+
+        session.on('call-incoming', callIncomingHandlerSpy);
 
         createCallSpy = sinon.spy(session, 'createCall');
 
+        emitterEM.publish('call-incoming', callInfo);
       });
 
       after(function () {
-        createEventEmitterStub.restore();
+        getRTCMgrStub.restore();
         createCallSpy.restore();
       });
 
       it('should create a new call on getting call-incoming event from event manager', function (done) {
-        emitterEM.publish('call-incoming', callInfo);
-
         setTimeout(function () {
           try {
-            expect(createCallSpy.calledWith(callInfo)).to.equal(true);
+            expect(createCallSpy.called).to.equal(true);
+            expect(createCallSpy.getCall(0).args[0].id).to.equal(callInfo.id);
+            expect(createCallSpy.getCall(0).args[0].peer).to.equal(callInfo.from);
+            expect(createCallSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
+            expect(createCallSpy.getCall(0).args[0].remoteSdp).to.equal(callInfo.remoteSdp);
             done();
           } catch (e) {
             done(e);
@@ -703,7 +742,16 @@ describe('Session', function () {
         }, 100);
       });
 
-      it('should trigger `call-incoming` on getting a `created` event with call id from Call');
+      it('should trigger `call-incoming` on creating the new call', function (done) {
+        setTimeout(function () {
+          try {
+            expect(callIncomingHandlerSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
     });
   });
 

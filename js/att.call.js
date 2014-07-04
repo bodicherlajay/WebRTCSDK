@@ -201,9 +201,8 @@
 
   /**
   * Call Prototype
-  * @param {String} from The caller
-  * @param {String} to The callee
-  * @param {String} mediaConstraints 'audio' or 'video'
+  * @param {String} peer The peer
+  * @param {String} mediaType The mediaType
   */
   function Call(options) {
     if (undefined === options) {
@@ -211,6 +210,9 @@
     }
     if (undefined === options.peer) {
       throw new Error('No peer provided');
+    }
+    if (undefined === options.mediaType) {
+      throw new Error('No mediaType provided');
     }
 
     var emitter = ATT.private.factories.createEventEmitter(),
@@ -299,11 +301,18 @@
     this.mute = muteCall.bind(this);
     this.unmute = unmuteCall.bind(this);
     this.end = endCall.bind(this);
+
+    if(undefined !== this.id) {
+      emitter.publish('created', this.id);
+      return;
+    }
+    emitter.publish('created');
   }
 
-   if (undefined === ATT.rtc) {
+  if (undefined === ATT.rtc) {
     throw new Error('Cannot export Call. ATT.rtc is undefined');
   }
+
   ATT.rtc.Call = Call;
 
 }());

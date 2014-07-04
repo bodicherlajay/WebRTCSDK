@@ -204,11 +204,17 @@
     rtcManager = ATT.private.rtcManager.getRTCManager();
 
     rtcManager.on('call-incoming', function (callInfo) {
-      self.createCall({
+      var call = self.createCall({
+        id: callInfo.id,
         peer: callInfo.from,
         type: ATT.CallTypes.INCOMING,
-        mediaType: callInfo.mediaType
+        mediaType: callInfo.mediaType,
+        remoteSdp: callInfo.remoteSdp
       });
+
+      if (undefined !== call) {
+        emitter.publish('call-incoming');
+      }
     });
 
     function on(event, handler) {
@@ -298,14 +304,13 @@
 
       this.timer = setInterval(function () {
         emitter.publish('needs-refresh');
-        rtcManager.refreshSession({
-          sessionId : id,
-          token : '',
-          success : function () {},
-          error : function () {return; }
-        });
+//        rtcManager.refreshSession({
+//          sessionId : id,
+//          token : '',
+//          success : function () {},
+//          error : function () {return; }
+//        });
       }, this.timeout);
-
     };
 
     this.connect =   function connect(options) {

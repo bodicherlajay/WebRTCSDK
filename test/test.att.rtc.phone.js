@@ -7,7 +7,7 @@ describe('Phone', function () {
 
   var getRTCManagerStub;
 
-  beforeEach(function () {
+  before(function () {
 
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return {
@@ -19,7 +19,7 @@ describe('Phone', function () {
     });
   });
 
-  afterEach(function () {
+  after(function () {
     getRTCManagerStub.restore();
   });
 
@@ -326,7 +326,8 @@ describe('Phone', function () {
           };
 
           call = new ATT.rtc.Call({
-            peer: '1234567'
+            peer: '1234567',
+            mediaType: 'video'
           });
 
           onSpy = sinon.spy(call, 'on');
@@ -536,7 +537,8 @@ describe('Phone', function () {
           };
 
           call = new ATT.rtc.Call({
-            peer: '1234567'
+            peer: '1234567',
+            mediaType: 'audio'
           });
 
           onSpy = sinon.spy(call, 'on');
@@ -599,8 +601,10 @@ describe('Phone', function () {
       describe('call-incoming', function () {
 
         var phone,
+          session,
           emitterSession,
           createEmitterStub,
+          sessionConstructorStub,
           onCallIncomingHandlerSpy;
 
         before(function () {
@@ -610,15 +614,23 @@ describe('Phone', function () {
             return emitterSession;
           });
 
+          session = new ATT.rtc.Session();
+
+          createEmitterStub.restore();
+
+          sessionConstructorStub = sinon.stub(ATT.rtc, 'Session', function () {
+            return session;
+          });
+
           onCallIncomingHandlerSpy = sinon.spy();
 
-          phone = ATT.rtc.Phone.getPhone();
+          phone = new ATT.private.Phone();
 
           phone.on('call-incoming', onCallIncomingHandlerSpy);
         });
 
         after(function () {
-          createEmitterStub.restore();
+          sessionConstructorStub.restore();
         });
 
         it('should trigger `call-incoming` on getting a `call-incoming` from session', function (done) {
