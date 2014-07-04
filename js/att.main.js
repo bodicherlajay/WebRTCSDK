@@ -33,13 +33,6 @@
     logger.logTrace('ATT is not defined.');
     return;
   }
-/*
-  if (!ATT.configure) {
-    logger.logTrace('ATT doesn\'t have a configure method defined.');
-    return;
-  }
-  ATT.configure();
-*/
 
   // Create an Error Dictionary
   if (undefined === ATT.utils.createErrorDictionary) {

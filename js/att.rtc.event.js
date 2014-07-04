@@ -6,7 +6,8 @@
 (function (mainModule) {
   'use strict';
 
-  var logger,
+  var logManager = ATT.logManager.getInstance(),
+    logger,
     session,
     sessionId,
     module = {},
@@ -124,14 +125,12 @@
     return evt;
   };
 
-  function setLogger(lgr) {
-    logger = lgr;
-  }
 
   function init() {
+    var logger = logManager.getLoggerByName('RTCEvent');
+
     return {
-      createRTCEvent: createRTCEvent,
-      setLogger: setLogger
+      createRTCEvent: createRTCEvent
     };
   }
 

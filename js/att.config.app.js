@@ -55,6 +55,8 @@ if (!ATT) {
     logger = logMgr.getLogger('appConfigModule');
 
   function configure(key, useWebSockets) { // useWebSockets is optional, default to long-polling
+    var apiConfigs;
+
     try {
       if (!key) {
         key = 'AMS'; // default to AMS endpoints
@@ -71,11 +73,13 @@ if (!ATT) {
       app.appConfig = appConfig;
 
       // configure rest APIs now
-      app.configureAPIs(appConfig);
+      apiConfigs = app.configureAPIs(appConfig);
     } catch (e) {
       //logger.logError(app.errorDictionary.getError());
       logger.logError(e);
     }
+
+    return apiConfigs;
   }
   app.configure = configure;
 

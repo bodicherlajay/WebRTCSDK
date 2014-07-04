@@ -4,10 +4,11 @@
 //Dependency: ATT.logManager
 
 
-(function (app) {
+(function () {
   'use strict';
 
-  var logger,
+  var logManager = ATT.logManager.getInstance(),
+    logger,
     factories = ATT.private.factories;
 
   function handleError(operation, errHandler, err) {
@@ -172,12 +173,12 @@
       resourceManager = options.resourceManager,
       emitter = factories.createEventEmitter();
 
-    logger = resourceManager.getLogger("EventManager");
+    logger = logManager.getLoggerByName("EventManager");
 
     logger.logDebug('createEventManager');
 
     function on(event, handler) {
-      if('listening' !== event
+      if ('listening' !== event
         && 'stop-listening' !== event
         && 'call-incoming' !== event
         && 'remote-sdp' !== event
@@ -247,7 +248,7 @@
         usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
       };
 
-      eventChannel = ATT.private.factories.createEventChannel(channelConfig);
+      eventChannel = factories.createEventChannel(channelConfig);
 
       if (eventChannel) {
         logger.logInfo('Event channel up and running');

@@ -533,9 +533,8 @@
       getRTCManager: function () {
         if (undefined === instance) {
 
-          resourceManager = ATT.private.factories.createResourceManager(apiConfigs);
+          resourceManager = factories.createResourceManager(apiConfigs);
           rtcEvent = ATT.RTCEvent.getInstance();
-          rtcEvent.setLogger(resourceManager.getLogger());
 
           instance = new RTCManager({
             errorManager: ATT.Error,

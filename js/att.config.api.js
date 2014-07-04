@@ -391,7 +391,9 @@ if (!ATT) {
   },
 
     configureAPIs = function (appConfig) {
-      app.APIConfigs = configure(appConfig);
+      var apiConfigs = configure(appConfig);
+      app.APIConfigs = apiConfigs;
+      return apiConfigs;
     };
 
   // place on ATT.
