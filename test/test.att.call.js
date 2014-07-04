@@ -105,6 +105,13 @@ describe('Call', function () {
       };
       expect(func).to.throw('No input provided');
       expect(func.bind(null, {})).to.throw('No peer provided');
+      expect(func.bind(null, {
+        peer: '1234'
+      })).to.throw('No mediaType provided');
+      expect(func.bind(null, {
+        peer: '1234',
+        mediaType: 'audio'
+      })).to.not.throw(Error);
     });
 
     it('Should create a call object with the options passed in', function () {
@@ -120,7 +127,8 @@ describe('Call', function () {
 
     it('should get an instance of RTCManager', function() {
       expect(getRTCManagerStub.called).to.equal(true);
-    })
+    });
+
   });
 
   describe('Methods', function () {

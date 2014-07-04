@@ -136,7 +136,6 @@
         throw new Error('Event not defined');
       }
 
-
       if (typeof handler !== 'function') {
         throw new Error('Handler is not a function');
       }
