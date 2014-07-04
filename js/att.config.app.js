@@ -5,7 +5,7 @@
 *
 */
 //Exposes Namespace: ATT.appConfig, ATT.configure()
-//Dependency: Env.resourceManager, ATT.logManager
+//Dependency: ATT.logManager
 
 if (!ATT) {
   var ATT = {};

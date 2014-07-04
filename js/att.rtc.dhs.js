@@ -4,19 +4,13 @@
  *  The WebRTC DHS module.
  */
 
-if (!ATT) {
-  var ATT = {};
-}
-
-if (!Env) {
-  var Env = {};
-}
-
 (function (app) {
   'use strict';
 
   var dhsNamespace = {},
-    resourceManager = Env.resourceManager.getInstance(),
+    apiConfigs = ATT.APIConfigs,
+    factories = ATT.private.factories,
+    resourceManager = factories.createResourceManager(apiConfigs),
     logManager = ATT.logManager.getInstance(),
     logger,
 

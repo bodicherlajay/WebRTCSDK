@@ -152,9 +152,7 @@
       if (undefined === options) {
         throw new Error('No options found.');
       }
-      if (undefined === options.params) {
-        throw new Error('Parameters for REST Configuration are empty.');
-      }
+
       logger.logTrace('do operation', operationName);
 
 

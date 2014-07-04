@@ -18,7 +18,8 @@
     onCallError,
     onError,
     eventRegistry = {},
-    logger = Env.resourceManager.getInstance().getLogger('eventDispatcher');
+    logManager = ATT.logManager.getInstance(),
+    logger = logManager.getLoggerByName('eventDispatcher');
 
   function setPeerConnService(depPeerConnService) {
     peerConnService = depPeerConnService;

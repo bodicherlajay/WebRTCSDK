@@ -96,7 +96,6 @@ describe('ResourceManager', function () {
         badGetEventsConfig.params = {};
 
         expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', undefined)).to.throw('No options found.');
-        expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', {})).to.throw('Parameters for REST Configuration are empty.');
         expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', badGetEventsConfig)).to.throw('Params passed in must match number of formatters.');
 
         badGetEventsConfig.params = {

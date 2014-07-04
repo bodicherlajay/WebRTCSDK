@@ -3,7 +3,7 @@
 
 /**
  * PeerConnection Service
- * Dependencies:  adapter.js, UserMediaService, SignalingService, Env.resourceManager, sdpFilter
+ * Dependencies:  adapter.js, UserMediaService, SignalingService, sdpFilter
  */
 
 (function (app) {
@@ -12,15 +12,10 @@
   var module,
     logManager = ATT.logManager.getInstance(),
     logger = logManager.getLoggerByName('PeerConnectionService'),
-    resourceManager,
     Error,
     SignalingService,
     SDPFilter,
     eventEmitter;
-
-  function setResourceManager(service) {
-    resourceManager = service;
-  }
 
   function setError(service) {
     Error = service;
@@ -52,8 +47,6 @@
       //setUserMediaService(app.UserMediaService);
       setSignalingService(app.SignalingService);
       setSDPFilter(app.sdpFilter.getInstance());
-      setResourceManager(Env.resourceManager.getInstance());
-      setLogger(resourceManager.getLogger("PeerConnectionService"));
       setError(app.Error);
       setEventEmitter(app.event);
 
@@ -551,7 +544,6 @@
   };
 
   //Expose the dependencies
-  module.setResourceManager = setResourceManager;
   module.setError = setError;
   module.setSignalingService = setSignalingService;
   module.setSDPFilter = setSDPFilter;

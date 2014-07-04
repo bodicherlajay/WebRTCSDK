@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true, Env:true, cmgmt:true, EventDispatcher:true*/
 
-//Dependency: Env.resourceManager, utils.eventDispatcher (cyclic), utils.sdpParser, cmgmt.CallManager
+//Dependency: utils.eventDispatcher (cyclic), utils.sdpParser, cmgmt.CallManager
 
 (function (mainModule) {
   'use strict';

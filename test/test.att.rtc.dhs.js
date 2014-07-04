@@ -5,7 +5,9 @@ before: true, sinon: true, expect: true, xit: true, xdescribe: true*/
 describe('DHSModule', function () {
   "use strict";
 
-  var resourceManager = Env.resourceManager.getInstance(),
+  var apiConfigs = ATT.APIConfigs,
+    factories = ATT.private.factories,
+    resourceManager = factories.createResourceManager(apiConfigs),
     requests,
     xhr;
 
