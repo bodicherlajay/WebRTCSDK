@@ -9,30 +9,9 @@
 (function () {
   'use strict';
 
-  var utils = {}, logger, factories = ATT.private.factories;
-
-  //Initialize dependencies
-  (function init() {
-    var resourceManager, apiConfigs;
-    ATT.configure();
+  var logManager = ATT.logManager.getInstance(),
+    factories = ATT.private.factories,
     apiConfigs = ATT.APIConfigs;
-    resourceManager = factories.createResourceManager(apiConfigs);
-
-    function setResourceManager(resMgr) {
-      resourceManager = resMgr;
-    }
-
-    function setLogger(lgr) {
-      logger = lgr;
-    }
-
-    try {
-      setResourceManager(resourceManager);
-      setLogger(resourceManager.getLogger("eventChannel"));
-    } catch (e) {
-      console.log("Unable to initialize dependencies for Event Channel");
-    }
-  }());
 
   /**
    * Creates an Event Channel with the given configuration:
@@ -61,7 +40,15 @@
       interval = 2000,
       maxPollingTime = 64000,
       methodName = 'getEvents',
-      emitter;
+      emitter,
+      logger,
+      resourceManager;
+
+    try {
+      logger = logManager.getLoggerByName("eventChannel");
+    } catch (e) {
+      console.log("Unable to initialize dependencies for Event Channel");
+    }
 
     logger.logInfo("About to create event channel");
 
@@ -94,7 +81,7 @@
 
     emitter = factories.createEventEmitter();
 
-    //logger.logDebug(httpConfig);
+    logger.logDebug(httpConfig);
 
     /**
      * Process Events

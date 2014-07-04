@@ -6,7 +6,7 @@
  */
 describe('Event Channel', function () {
   'use strict';
-  ATT.configure();
+
   var resourceManager = ATT.private.factories.createResourceManager(ATT.APIConfigs),
     requests,
     response,

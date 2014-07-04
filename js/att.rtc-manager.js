@@ -9,12 +9,23 @@
 
   var factories = ATT.private.factories,
     errMgr,
-    logger;
+
+    // TODO: Review if this is the right place to define ATT.APIConfigs
+    // define ATT.APIConfigs: this seems to be the logical
+    // point where this object should be first defined since
+    // only ResourceManager, EventChannel, SignalingService will use it
+    // and those three modules are `managed` by RTCManager, so
+    // RTCManager can pass in the configured ResourceManager created with
+    //   var apiConfigs = ATT.APIConfigs
+    //   resourceManager = factories.createResourceManger(apiConfigs);
+
+    apiConfigs = ATT.configure(),
+    logManager = ATT.logManager.getInstance();
 
   function handleError(operation, errHandler, err) {
-    logger.logDebug('handleError: ' + operation);
-
-    logger.logInfo('There was an error performing operation ' + operation);
+//    logger.logDebug('handleError: ' + operation);
+//
+//    logger.logInfo('There was an error performing operation ' + operation);
 
     var error = errMgr.create(err, operation);
 
@@ -64,33 +75,6 @@
     }
     logger.logInfo('The formated Number' + callable);
     return ATT.phoneNumber.stringify(callable);
-  }
-
-  function extractSessionInformation(responseObject) {
-    logger.logDebug('extractSessionInformation');
-
-    var sessionId = null,
-      timeout = null;
-
-    if (responseObject) {
-      if (responseObject.getResponseHeader('Location')) {
-        sessionId = responseObject.getResponseHeader('Location').split('/')[4];
-      }
-      if (responseObject.getResponseHeader('x-expires')) {
-        timeout = responseObject.getResponseHeader('x-expires');
-        timeout = Number(timeout);
-        timeout = isNaN(timeout) ? 0 : timeout * 1000; // convert to ms
-      }
-    }
-
-    if (!sessionId) {
-      throw 'Failed to retrieve session id';
-    }
-
-    return {
-      sessionId: sessionId,
-      timeout: timeout
-    };
   }
 
 
@@ -319,14 +303,42 @@
     var eventManager,
       resourceManager,
       emitter,
+      logger,
       userMediaSvc,
       peerConnSvc;
+
+    function extractSessionInformation(responseObject) {
+      logger.logDebug('extractSessionInformation');
+
+      var sessionId = null,
+          timeout = null;
+
+      if (responseObject) {
+        if (responseObject.getResponseHeader('Location')) {
+          sessionId = responseObject.getResponseHeader('Location').split('/')[4];
+        }
+        if (responseObject.getResponseHeader('x-expires')) {
+          timeout = responseObject.getResponseHeader('x-expires');
+          timeout = Number(timeout);
+          timeout = isNaN(timeout) ? 0 : timeout * 1000; // convert to ms
+        }
+      }
+
+      if (!sessionId) {
+        throw 'Failed to retrieve session id';
+      }
+
+      return {
+        sessionId: sessionId,
+        timeout: timeout
+      };
+    }
 
     resourceManager = options.resourceManager;
     userMediaSvc = options.userMediaSvc;
     peerConnSvc = options.peerConnSvc;
 
-    logger = resourceManager.getLogger("RTCManager");
+    logger = logManager.getLoggerByName("RTCManager");
 
     logger.logDebug('createRTCManager');
 
@@ -515,15 +527,12 @@
   ATT.private.rtcManager = (function () {
     var instance,
         resourceManager,
-        apiConfigs,
         rtcEvent;
 
     return {
       getRTCManager: function () {
         if (undefined === instance) {
 
-          ATT.configure();
-          apiConfigs = ATT.APIConfigs;
           resourceManager = ATT.private.factories.createResourceManager(apiConfigs);
           rtcEvent = ATT.RTCEvent.getInstance();
           rtcEvent.setLogger(resourceManager.getLogger());
