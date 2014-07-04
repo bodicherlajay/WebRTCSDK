@@ -332,6 +332,8 @@ describe('RTC Manager', function () {
             expect(onSuccessSpy.calledWith({
               timeout: 500
             })).to.equal(true);
+
+            doOperationStub.restore();
           });
         });
       });

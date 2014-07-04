@@ -69,8 +69,6 @@ describe('Call', function () {
       return rtcMgr;
     });
 
-    createEventEmitterStub.restore();
-
     call = new ATT.rtc.Call(options);
 
     onDialingSpy = sinon.spy();
@@ -144,8 +142,8 @@ describe('Call', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          unsubscribeSpy = sinon.spy(emitterEM, 'unsubscribe'),
-          subscribeSpy = sinon.spy(emitterEM, 'subscribe');
+          subscribeSpy = sinon.spy(emitterEM, 'subscribe'),
+          unsubscribeSpy = sinon.spy(emitterEM, 'unsubscribe');
 
         expect(call.on.bind(call, 'dialing', fn)).to.not.throw(Error);
 

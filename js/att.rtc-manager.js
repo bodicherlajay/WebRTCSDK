@@ -352,9 +352,11 @@
     function refreshSession (options) {
       resourceManager.doOperation('refreshWebRTCSession', {
         success : function () {
-          options.success({
-            timeout: 500
-          });
+          options.success(
+//            {
+//            timeout: 500
+//          }
+          );
         }
       });
     }
