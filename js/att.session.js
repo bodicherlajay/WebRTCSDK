@@ -7,9 +7,9 @@
 (function () {
   'use strict';
 
-  var factories = ATT.factories,
+  var factories = ATT.private.factories,
     errMgr,
-    logger;
+    logManager = ATT.logManager.getInstance();
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -195,10 +195,13 @@
       rtcManager,
       // private attributes
       id = null,
-      calls = {};
+      calls = {},
+      logger;
+
+    logger = logManager.getLoggerByName('Session');
 
     // instantiate event emitter
-    emitter = ATT.private.factories.createEventEmitter();
+    emitter = factories.createEventEmitter();
 
     // get the RTC Manager
     rtcManager = ATT.private.rtcManager.getRTCManager();

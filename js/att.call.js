@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global cmgmt:true, Logger:true, ATT:true, Env:true*/
+/*global Logger, ATT*/
 
 //Dependency: Runtime - ATT.UserMediaService, ATT.PeerConnectionService, ATT.RTCEvent
 //Dependency: ATT.logManager
@@ -8,12 +8,11 @@
 (function () {
   'use strict';
 
-  var factories = ATT.factories,
+  var factories = ATT.private.factories,
     errMgr,
-    resourceManager,
     userMediaSvc,
     peerConnSvc,
-    logger;
+    logManager = ATT.logManager.getInstance();
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -205,6 +204,9 @@
   * @param {String} mediaType The mediaType
   */
   function Call(options) {
+
+    var logger = logManager.getLoggerByName('Call');
+
     if (undefined === options) {
       throw new Error('No input provided');
     }
@@ -215,21 +217,21 @@
       throw new Error('No mediaType provided');
     }
 
-    var emitter = ATT.private.factories.createEventEmitter(),
+    var emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
 
     function on(event, handler) {
 
       if ('dialing' !== event &&
-        'connecting' !== event &&
-        'canceled' !== event &&
-        'rejected' !== event &&
-        'connected' !== event &&
-        'established' !== event &&
-        'ended' !== event &&
-        'error' !== event &&
-        'disconnecting' !== event &&
-        'disconnected' !== event) {
+          'connecting' !== event &&
+          'canceled' !== event &&
+          'rejected' !== event &&
+          'connected' !== event &&
+          'established' !== event &&
+          'ended' !== event &&
+          'error' !== event &&
+          'disconnecting' !== event &&
+          'disconnected' !== event) {
         throw new Error('Event not defined');
       }
 

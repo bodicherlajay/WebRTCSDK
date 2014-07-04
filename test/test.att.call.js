@@ -1,11 +1,13 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe('Call', function () {
+describe.only('Call', function () {
 
   'use strict';
 
-  var options,
+  var factories,
+    apiConfigs,
+    options,
     optionsforRTCM,
     emitterEM,
     emitterCall,
@@ -23,6 +25,10 @@ describe('Call', function () {
     remoteSdp;
 
   before(function () {
+
+    apiConfigs = ATT.APIConfigs;
+    factories = ATT.private.factories;
+
     options = {
       peer: '12345',
       mediaType: 'audio'
@@ -30,7 +36,7 @@ describe('Call', function () {
 
     optionsforRTCM = {
       errorManager: ATT.Error,
-      resourceManager: Env.resourceManager.getInstance(),
+      resourceManager: factories.createResourceManager(apiConfigs),
       rtcEvent: ATT.RTCEvent.getInstance(),
       userMediaSvc: ATT.UserMediaService,
       peerConnSvc: ATT.PeerConnectionService

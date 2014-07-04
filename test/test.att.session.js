@@ -4,10 +4,15 @@
 describe('Session', function () {
   'use strict';
 
-  var options,
+  var factories,
+    apiConfigs,
+    options,
     optionsforRTCM;
 
   before(function () {
+    factories = ATT.private.factories;
+    apiConfigs = ATT.APIConfigs;
+
     options = {
       token: 'dsfgdsdf',
       e911Id: 'sdfghfds'
@@ -15,7 +20,7 @@ describe('Session', function () {
 
     optionsforRTCM = {
       errorManager: ATT.Error,
-      resourceManager: Env.resourceManager.getInstance(),
+      resourceManager: factories.createResourceManager(apiConfigs),
       rtcEvent: ATT.RTCEvent.getInstance(),
       userMediaSvc: ATT.UserMediaService,
       peerConnSvc: ATT.PeerConnectionService
