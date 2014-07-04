@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
+/*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit*/
 
-describe.only('Call', function () {
+describe('Call', function () {
 
   'use strict';
 
@@ -10,7 +10,6 @@ describe.only('Call', function () {
     options,
     optionsforRTCM,
     emitterEM,
-    emitterCall,
     eventManager,
     rtcMgr,
     getRTCManagerStub,
@@ -54,8 +53,8 @@ describe.only('Call', function () {
       resourceManager: {
         getLogger: function () {
           return {
-            logDebug: function () {}
-          }
+            logDebug: function () { return; }
+          };
         }
       }
     });
@@ -71,12 +70,6 @@ describe.only('Call', function () {
     });
 
     createEventEmitterStub.restore();
-
-    emitterCall = ATT.private.factories.createEventEmitter();
-
-    createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-      return emitterCall;
-    });
 
     call = new ATT.rtc.Call(options);
 
@@ -131,7 +124,7 @@ describe.only('Call', function () {
       expect(createEventEmitterStub.called).to.equal(true);
     });
 
-    it('should get an instance of RTCManager', function() {
+    it('should get an instance of RTCManager', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
@@ -151,8 +144,8 @@ describe.only('Call', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          unsubscribeSpy = sinon.spy(emitterCall, 'unsubscribe'),
-          subscribeSpy = sinon.spy(emitterCall, 'subscribe');
+          unsubscribeSpy = sinon.spy(emitterEM, 'unsubscribe'),
+          subscribeSpy = sinon.spy(emitterEM, 'subscribe');
 
         expect(call.on.bind(call, 'dialing', fn)).to.not.throw(Error);
 
@@ -187,7 +180,7 @@ describe.only('Call', function () {
         setIdSpy = sinon.spy(call, 'setId');
 
         call.connect({
-          onCallConnecting: function (cal) {}
+          onCallConnecting: function () {}
         });
       });
 
@@ -228,7 +221,7 @@ describe.only('Call', function () {
         });
 
         it('should set the newly created LocalSdp on the call', function () {
-           expect(call.localSdp).to.equal(localSdp);
+          expect(call.localSdp).to.equal(localSdp);
         });
 
       });

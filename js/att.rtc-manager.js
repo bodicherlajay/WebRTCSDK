@@ -271,7 +271,7 @@
     } else {
       peerConnSvc.notifyCallCancelation();
       eventManager.publishEvent({
-        state: app.RTCCallEvents.SESSION_TERMINATED,
+        state: app.RTCCallEvents.SESSION_TERMINATED
       });
     }
   }
@@ -302,7 +302,6 @@
 
     var eventManager,
       resourceManager,
-      emitter,
       logger,
       userMediaSvc,
       peerConnSvc;

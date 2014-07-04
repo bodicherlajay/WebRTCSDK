@@ -9,7 +9,14 @@
 (function (app) {
   'use strict';
 
-  var module, logger, resourceManager, Error, SignalingService, SDPFilter, eventEmitter;
+  var module,
+    logManager = ATT.logManager.getInstance(),
+    logger = logManager.getLoggerByName('PeerConnectionService'),
+    resourceManager,
+    Error,
+    SignalingService,
+    SDPFilter,
+    eventEmitter;
 
   function setResourceManager(service) {
     resourceManager = service;

@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global Env, ATT, describe, xdescribe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL, after*/
 
-describe.only('RTC Manager', function () {
+describe('RTC Manager', function () {
   'use strict';
 
   var factories,
@@ -23,16 +23,16 @@ describe.only('RTC Manager', function () {
     };
 
     resourceManagerStub = {
-      doOperation: function (name, options) {
+      doOperation: function (operationName, options) {
         var response = {
           getResponseHeader : function (name) {
             switch (name) {
-              case 'Location':
-                return '123/123/123/123/' + sessionInfo.sessionId;
-              case 'x-expires':
-                return String(timeout); // seconds
-              default:
-                break;
+            case 'Location':
+              return '123/123/123/123/' + sessionInfo.sessionId;
+            case 'x-expires':
+              return String(timeout); // seconds
+            default:
+              break;
             }
           }
         };

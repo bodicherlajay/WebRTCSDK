@@ -6,10 +6,13 @@
 (function (app) {
   'use strict';
 
-  var logMgr = ATT.logManager.getInstance(), logger = null, resourceManager;
-  logger = logMgr.getLogger('SignalingService', logMgr.loggerType.CONSOLE, logMgr.logLevel.TRACE);
+  var logMgr = ATT.logManager.getInstance(),
+    logger = null,
+    factories = ATT.private.factories,
+    apiConfigs = ATT.APIConfigs,
+    resourceManager = factories.createResourceManager(apiConfigs);
 
-  resourceManager = Env.resourceManager.getInstance();
+  logger = logMgr.getLoggerByName('SignalingService');
 
   app.SignalingService = {
     /**

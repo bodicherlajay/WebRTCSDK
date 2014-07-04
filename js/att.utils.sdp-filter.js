@@ -9,8 +9,13 @@ if (!ATT) {
 (function (mainModule) {
   'use strict';
 
-  var module = {}, instance, init, logMgr = ATT.logManager.getInstance(), logger = null;
-  logger = logMgr.getLogger('SDPFilterModule', logMgr.loggerType.CONSOLE, logMgr.logLevel.ERROR);
+  var module = {},
+    instance,
+    init,
+    logMgr = ATT.logManager.getInstance(),
+    logger;
+
+  logger = logMgr.getLoggerByName('SDPFilterModule');
 
   /**
   * Remote an attribute from SDP

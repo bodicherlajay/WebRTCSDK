@@ -8,13 +8,14 @@
   'use strict';
 
   var module,
+    logManager = ATT.logManager.getInstance(),
     Error,
     eventEmitter,
     defaultMediaConstraints = { // default to video call
       audio: true,
       video: true
     },
-    logger = Env.resourceManager.getInstance().getLogger("UserMediaService"),
+    logger = logManager.getLoggerByName("UserMediaService"),
     factories = ATT.private.factories;
 
   function setError(service) {
