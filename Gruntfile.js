@@ -82,7 +82,8 @@ module.exports = function (grunt) {
       singleRun: false,
       usePolling: true  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
     },
-    karmaConfigConcat = karmaConfigUnit,
+    karmaConfigConcat,
+    karmaConfigMin,
     karmaConfigJenkins = {
       preprocessors: {
         'js/**/*.js': 'coverage'
@@ -115,7 +116,12 @@ module.exports = function (grunt) {
   }
 
   // Karma tests for concatenated single file
+  karmaConfigConcat = karmaConfigUnit;
   karmaConfigConcat.files = ([ 'dist/<%= pkg.name %>.js' ]).concat(unitTestFiles);
+
+  // Karma tests for minified single file
+  karmaConfigMin = karmaConfigUnit;
+  karmaConfigMin.files = ([ 'dist/<%= pkg.name %>.min.js' ]).concat(unitTestFiles);
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -179,6 +185,7 @@ module.exports = function (grunt) {
     karma: {
       unit: { options: karmaConfigUnit },
       concat: { options: karmaConfigConcat },
+      min: { options: karmaConfigMin },
       jenkins: { options: karmaConfigJenkins },
       coverage: { options: karmaConfigCoverage }
     }
@@ -193,5 +200,6 @@ module.exports = function (grunt) {
 
   grunt.registerTask('default', ['karma:jenkins', 'jslint']);
   grunt.registerTask('test:concat', ['concat', 'karma:concat']);
+  grunt.registerTask('test:min', ['concat', 'uglify', 'karma:min']);
   grunt.registerTask('release', ['concat', 'uglify', 'compress']);
 };
