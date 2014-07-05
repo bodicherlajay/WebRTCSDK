@@ -693,7 +693,7 @@
       session.deleteCurrentCall();
     }
 
-    this.configure = configure.bind(this);
+    this.configure = configure;
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.getCall = getCall.bind(this);

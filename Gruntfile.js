@@ -57,7 +57,6 @@ module.exports = function (grunt) {
     karmaConfig = {
       basePath: '.',
       frameworks: ['mocha', 'chai', 'sinon'],
-      files : allFiles,
       logLevel: 'INFO',
       port: 9876,
       browsers: ['Chrome'],
@@ -82,8 +81,8 @@ module.exports = function (grunt) {
       singleRun: false,
       usePolling: true  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
     },
-    karmaConfigConcat,
-    karmaConfigMin,
+    karmaConfigConcat = {},
+    karmaConfigMin = {},
     karmaConfigJenkins = {
       preprocessors: {
         'js/**/*.js': 'coverage'
@@ -110,18 +109,29 @@ module.exports = function (grunt) {
       karmaConfigJenkins[attrname] = karmaConfig[attrname];
       // copy all properties from the Global config to the Unit Testing config
       karmaConfigUnit[attrname] = karmaConfig[attrname];
+      karmaConfigConcat[attrname] = karmaConfig[attrname]; // tests concatenated file
+      karmaConfigMin[attrname] = karmaConfig[attrname]; // test minified file
       // copy all properties from the Global config to the Coverage config
       karmaConfigCoverage[attrname] = karmaConfig[attrname];
     }
   }
 
+  // copy Unit Test Configuration for Concatenated and Minified file
+  for (attrname in karmaConfigUnit) {
+    if (karmaConfigUnit.hasOwnProperty(attrname)) {
+      karmaConfigConcat[attrname] = karmaConfigUnit[attrname];
+      karmaConfigMin[attrname] = karmaConfigUnit[attrname];
+    }
+  }
+
   // Karma tests for concatenated single file
-  karmaConfigConcat = karmaConfigUnit;
   karmaConfigConcat.files = ([ 'dist/<%= pkg.name %>.js' ]).concat(unitTestFiles);
 
   // Karma tests for minified single file
-  karmaConfigMin = karmaConfigUnit;
   karmaConfigMin.files = ([ 'dist/<%= pkg.name %>.min.js' ]).concat(unitTestFiles);
+
+  // Karma tests for all files (no concatenation)
+  karmaConfigUnit.files = allFiles;
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -199,7 +209,8 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-compress');
 
   grunt.registerTask('default', ['karma:jenkins', 'jslint']);
+  grunt.registerTask('test', ['karma:unit']);
   grunt.registerTask('test:concat', ['concat', 'karma:concat']);
   grunt.registerTask('test:min', ['concat', 'uglify', 'karma:min']);
-  grunt.registerTask('release', ['concat', 'uglify', 'compress']);
+  grunt.registerTask('release', ['concat', 'uglify', 'compress', 'jsdoc']);
 };

@@ -15,11 +15,22 @@ For examples on how to use the SDK go to: [attdevsupport/webrtc-sample-aps](http
 
 ## Grunt Tasks
 
+Before being able to use the tasks you must:
+
 * Install Grunt CLI globally: `$ npm install -g grunt-cli`
 * Install dependencies: `$ npm install`
-* Unit Tests: Run Karma Unit Tests locally: `$ grunt karma:unit`
-* JSLint: `$ grunt jslint`
+
+### Available tasks
+
+* Lint your file with JSLint: `$ grunt jslint`
 * Generate API Documentation (JSDoc): `$ grunt jsdoc`
+* Unit Tests the whole sources in separate files: `$ grunt test`
+* Unit Tests Concatenated file: `$ grunt test:concat`
+* Unit Tests Minified file: `$ grunt test:min`
+* Unit Tests Minified file (only for Jenkins): `$ grunt karma:jenkins`
+* Create new release: `$ grunt release`
+
+See the `Gruntfile.js` for more details.
 
 ## Directory structure
 
