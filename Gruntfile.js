@@ -56,7 +56,6 @@ module.exports = function (grunt) {
       'js/att.rtc.phone.js',
       'js/att.main.js'
     ],
-    allFiles = srcFiles.concat(unitTestFiles),
     karmaConfig = {
       basePath: '.',
       frameworks: ['mocha', 'chai', 'sinon'],
@@ -84,8 +83,8 @@ module.exports = function (grunt) {
       singleRun: false,
       usePolling: true  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895
     },
-    karmaConfigConcat = {},
-    karmaConfigMin = {},
+    karmaConfigConcat = Object.create(karmaConfigUnit),
+    karmaConfigMin = Object.create(karmaConfigUnit),
     karmaConfigJenkins = {
       preprocessors: {
         'js/**/*.js': 'coverage'
@@ -105,7 +104,7 @@ module.exports = function (grunt) {
     },
     attrname;
 
-  // little utility to merge options
+  // Copy generic options to all other configurations
   for (attrname in karmaConfig) {
     if (karmaConfig.hasOwnProperty(attrname)) {
       // copy all properties from the Global config to the Jenkins config
@@ -119,22 +118,14 @@ module.exports = function (grunt) {
     }
   }
 
-  // copy Unit Test Configuration for Concatenated and Minified file
-  for (attrname in karmaConfigUnit) {
-    if (karmaConfigUnit.hasOwnProperty(attrname)) {
-      karmaConfigConcat[attrname] = karmaConfigUnit[attrname];
-      karmaConfigMin[attrname] = karmaConfigUnit[attrname];
-    }
-  }
+  // Karma tests for all files
+  karmaConfigUnit.files = srcFiles.concat(unitTestFiles);
 
   // Karma tests for concatenated single file
   karmaConfigConcat.files = ([ 'dist/<%= pkg.name %>.js' ]).concat(unitTestFiles);
 
   // Karma tests for minified single file
   karmaConfigMin.files = ([ 'dist/<%= pkg.name %>.min.js' ]).concat(unitTestFiles);
-
-  // Karma tests for all files (no concatenation)
-  karmaConfigUnit.files = allFiles;
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
