@@ -585,6 +585,10 @@
       emitter.publish('call-incoming');
     });
 
+    function configure() {
+      return;
+    }
+
     function getSession() {
       return session;
     }
@@ -689,6 +693,7 @@
       session.deleteCurrentCall();
     }
 
+    this.configure = configure.bind(this);
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.getCall = getCall.bind(this);

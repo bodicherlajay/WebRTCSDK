@@ -113,6 +113,15 @@ describe('Phone', function () {
         createEventEmitterStub.restore();
       });
 
+      describe.only('configure', function  () {
+        it('should exist', function () {
+          expect(phone.configure).to.be.a('function');
+        });
+        it('should throw an error if `options.env` is invalid');
+        it('setup the current environment for the client SDK');
+        it('should set the way to consume events from the event channel');
+      });
+
       describe('getSession', function () {
 
         it('should exist', function () {
