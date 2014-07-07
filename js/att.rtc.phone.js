@@ -701,6 +701,8 @@
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
     this.hangup = hangup.bind(this);
+    this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
+    this.formatNumber = ATT.phoneNumber.formatNumber;
   }
 
 

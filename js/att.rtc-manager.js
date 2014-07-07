@@ -33,52 +33,6 @@
       errHandler(error);
     }
   }
-
- /**
-   *  Removes extra characters from the phone number and formats it for
-   *  clear display
-   */
-  function cleanPhoneNumber(number) {
-    var callable, cleaned;
-    //removes the spaces form the number
-    callable = number.replace(/\s/g, '');
-
-    if (ATT.SpecialNumbers[number]) {
-      return number;
-    }
-
-    callable = ATT.phoneNumber.getCallable(callable);
-
-    if (callable) {
-      return callable;
-    }
-    logger.logWarning('Phone number not callable, will check special numbers list.');
-    logger.logInfo('checking number: ' + callable);
-    cleaned = ATT.phoneNumber.translate(number);
-    console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
-    if (number.charAt(0) === '*') {
-      cleaned = '*' + cleaned;
-    }
-    ATT.Error.publish('SDK-20027', null, function (error) {
-      logger.logWarning('Undefined `onError`: ' + error);
-    });
-  }
-
-  function formatNumber(number) {
-    var callable = cleanPhoneNumber(number);
-    if (!callable) {
-      logger.logWarning('Phone number not formatable .');
-      return;
-    }
-    if (number.length <= 10) {
-      return callable;
-    }
-    logger.logInfo('The formated Number' + callable);
-    return ATT.phoneNumber.stringify(callable);
-  }
-
-
-
   function getSession() {
     return session;
   }
