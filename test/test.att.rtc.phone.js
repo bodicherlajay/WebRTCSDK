@@ -113,7 +113,7 @@ describe('Phone', function () {
         createEventEmitterStub.restore();
       });
 
-      describe.only('configure', function  () {
+      describe('configure', function  () {
         it('should exist', function () {
           expect(phone.configure).to.be.a('function');
         });
