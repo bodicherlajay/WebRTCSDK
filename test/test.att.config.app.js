@@ -8,7 +8,15 @@ describe('Application configuration', function () {
   it('should export `ATT.private.config.app.environments`', function () {
     expect(ATT.private.config.app.environments).to.be.an('object');
   });
+
   it('should export `ATT.private.config.app.current`', function () {
     expect(ATT.private.config.app.current).to.be.an('object');
+  });
+
+  it('should export `ATT.private.config.app.dhsURLs`', function () {
+    expect(ATT.private.config.app.dhsURLs).to.be.an('object');
+  });
+  it('should export `ATT.private.config.app.eventChannelConfig`', function () {
+    expect(ATT.private.config.app.eventChannelConfig).to.be.an('object');
   });
 });

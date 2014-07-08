@@ -6,7 +6,9 @@
   'use strict';
 
   var environments = ATT.private.config.app.environments,
-    currentConfiguration = ATT.private.config.app.current;
+    currentConfiguration = ATT.private.config.app.current,
+    dhsURLs = ATT.private.config.app.dhsURLs,
+    eventChannelConfig = ATT.private.config.app.eventChannelConfig;
 
   function getConfiguration() {
     return currentConfiguration;
@@ -23,23 +25,41 @@
       return;
     }
 
-    if (undefined === options.key) {
+    if (undefined === options.environment) {
       currentConfiguration.environment = 'PROD';
     } else {
-      foundKey = environments[options.key];
+      foundKey = environments[options.environment];
 
       if (undefined === foundKey) {
         throw new Error('Environment not recognized');
       }
 
-      currentConfiguration.environment = options.key;
+      currentConfiguration.environment = options.environment;
     }
 
     if (undefined === options.useWebSockets) {
       currentConfiguration.useWebSockets = false;
+      currentConfiguration.eventChannelConfig = eventChannelConfig.LongPolling;
     } else {
       currentConfiguration.useWebSockets = options.useWebSockets;
+      currentConfiguration.eventChannelConfig = eventChannelConfig.WebSockets;
     }
+
+    currentConfiguration.RTCEndpoint = environments[options.environment];
+
+    if (undefined === options.DHSEndpoint) {
+      currentConfiguration.DHSEndpoint = dhsURLs.HTTPS;
+    } else {
+      currentConfiguration.DHSEndpoint = dhsURLs[options.DHSEndpoint];
+    }
+
+    if (undefined === options.keepAlive) {
+      currentConfiguration.keepAlive = 0;
+    } else {
+      currentConfiguration.keepAlive = options.keepAlive;
+    }
+
+    ATT.configureAPIs(currentConfiguration);
 
     return;
   }
@@ -50,5 +70,14 @@
 
   ATT.rtc.configure = configure;
   ATT.rtc.getConfiguration = getConfiguration;
+
+  // if no one calls ATT.rtc.configure, it should still
+  // configure the APIConfigs
+  ATT.rtc.configure({
+    environment: 'PROD',
+    useWebSocket: false,
+    RTCEndpoint: environments.PROD,
+    DHSEndpoint: 'HTTPS'
+  });
 
 }());

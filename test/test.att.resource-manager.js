@@ -11,9 +11,6 @@ describe('ResourceManager', function () {
     factories;
 
   before(function () {
-    // Need to invoke configure first because it sets up
-    // ATT.APIConfigs
-    ATT.configure();
     apiConfigs = ATT.APIConfigs;
   });
 

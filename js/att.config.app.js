@@ -49,49 +49,11 @@ if (!ATT) {
       DHSEndpoint: null,
       useWebSockets: false,
       EventChannelConfig: null
-    },
-    protocol = (window.location.protocol).replace(':', '').toUpperCase(),
+    };
 
-    logMgr = ATT.logManager.getInstance(),
-
-    logger = logMgr.getLogger('appConfigModule');
-
-  function configure(key, useWebSockets) { // useWebSockets is optional, default to long-polling
-    var apiConfigs;
-
-    try {
-      if (!key) {
-        key = 'AMS'; // default to AMS endpoints
-        logger.logTrace('Default ENVIRNOMENT set by SDK : ' + key);
-        logger.logTrace('url: ' + environments[key]);
-      } else {
-        logger.logTrace('User Configured ENVIRNOMENT: ' + key);
-        logger.logTrace('url: ' + environments[key]);
-      }
-      currentConfig.KeepAlive = KeepAliveDuration;
-      currentConfig.RTCEndpoint = environments[key] || environments.PROD;
-      currentConfig.environment = (undefined === key) ? 'PROD' : key;
-      currentConfig.DHSEndpoint = DHSConf[protocol] || DHSConf.HTTP;
-      currentConfig.useWebSockets = (undefined === useWebSockets) ? false : useWebSockets;
-      if (currentConfig.useWebSockets) {
-        currentConfig.EventChannelConfig = EventChannelConf.WebSockets;
-      } else {
-        currentConfig.EventChannelConfig = EventChannelConf.LongPolling;
-      }
-      app.appConfig = currentConfig;
-
-      // configure rest APIs now
-      apiConfigs = app.configureAPIs(currentConfig);
-    } catch (e) {
-      //logger.logError(app.errorDictionary.getError());
-      logger.logError(e);
-    }
-
-    return apiConfigs;
-  }
-  app.configure = configure;
-  
   ATT.private.config.app.environments = environments;
   ATT.private.config.app.current = currentConfig;
+  ATT.private.config.app.dhsURLs = DHSConf;
+  ATT.private.config.app.eventChannelConfig = EventChannelConf;
 
 }(ATT || {}));

@@ -39,6 +39,7 @@ module.exports = function (grunt) {
       'js/att.utils.sdk-error-store.js',
       'js/att.utils.error-dictionary.js',
       'js/att.error.js',
+      'js/att.rtc.js',
       'js/att.resource-manager.js',
       'js/att.utils.event-channel.js',
       'js/att.rtc.event.js',
@@ -52,7 +53,6 @@ module.exports = function (grunt) {
       'js/att.session.js',
       'js/eventDispatcher.js',
       'js/att.rtc.dhs.js',
-      'js/att.rtc.js',
       'js/att.rtc.phone.js',
       'js/att.main.js'
     ],

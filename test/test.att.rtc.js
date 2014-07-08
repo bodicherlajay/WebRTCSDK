@@ -2,11 +2,15 @@
 /*global ATT, describe, it, afterEach, beforeEach, before, sinon, expect, xit, assert, after*/
 
 
-describe.only('ATT.rtc', function () {
+describe('ATT.rtc', function () {
   'use strict';
 
   it('should export ATT.rtc', function () {
     expect(ATT.rtc).to.be.an('object');
+  });
+
+  it('verify existence of ATT.APIConfigs', function () {
+    expect(ATT.APIConfigs).to.be.an('object');
   });
 
   describe('getConfiguration', function () {
@@ -14,9 +18,14 @@ describe.only('ATT.rtc', function () {
       expect(ATT.rtc.getConfiguration).to.be.a('function');
     });
     it('should return an object', function () {
-      expect(ATT.rtc.getConfiguration()).to.be.a('object');
+      var currentConfig = ATT.rtc.getConfiguration();
+      expect(currentConfig).to.be.a('object');
+      expect(currentConfig.environment).to.equal('PROD');
+      expect(currentConfig.RTCEndpoint).to.equal('https://api.att.com/RTC/v1');
+      expect(currentConfig.DHSEndpoint).to.equal('https://localhost:9001');
     });
   });
+
   describe('configure', function () {
 
     var rtc;
@@ -30,21 +39,21 @@ describe.only('ATT.rtc', function () {
     });
 
 
-    it('should throw an error if `options.key` is not recognized', function () {
+    it('should throw an error if `options.environment` is not recognized', function () {
 
       expect(ATT.rtc.configure.bind(rtc, undefined)).to.not.throw('Environment not recognized');
       expect(ATT.rtc.configure.bind(rtc, {})).to.not.throw('Environment not recognized');
 
-      expect(ATT.rtc.configure.bind(rtc, {key: 'invalid'})).to.throw('Environment not recognized');
+      expect(ATT.rtc.configure.bind(rtc, {environment: 'invalid'})).to.throw('Environment not recognized');
 
-      expect(ATT.rtc.configure.bind(rtc, {key: 'AMS'})).to.not.throw('Environment not recognized');
-      expect(ATT.rtc.configure.bind(rtc, {key: 'F6UAT'})).to.not.throw('Environment not recognized');
-      expect(ATT.rtc.configure.bind(rtc, {key: 'F3UAT'})).to.not.throw('Environment not recognized');
-      expect(ATT.rtc.configure.bind(rtc, {key: 'PROD'})).to.not.throw('Environment not recognized');
+      expect(ATT.rtc.configure.bind(rtc, {environment: 'AMS'})).to.not.throw('Environment not recognized');
+      expect(ATT.rtc.configure.bind(rtc, {environment: 'F6UAT'})).to.not.throw('Environment not recognized');
+      expect(ATT.rtc.configure.bind(rtc, {environment: 'F3UAT'})).to.not.throw('Environment not recognized');
+      expect(ATT.rtc.configure.bind(rtc, {environment: 'PROD'})).to.not.throw('Environment not recognized');
     });
 
     it('should set the current environment', function () {
-      var options = { key : 'AMS'},
+      var options = { environment : 'AMS'},
         currentConfig;
 
       rtc.configure(options);
@@ -64,17 +73,63 @@ describe.only('ATT.rtc', function () {
     });
 
     it('should set way to consume events from the event channel', function () {
-      var options = { useWebSockets: true },
-        currentConfig;
+      var currentConfig;
 
-      rtc.configure({key : 'AMS'});
+      rtc.configure({environment : 'AMS',
+                     keepAlive: 500 });
       currentConfig = rtc.getConfiguration();
       expect(currentConfig.useWebSockets).to.equal(false);
+      expect(currentConfig.keepAlive).to.equal(500);
 
-      rtc.configure(options);
+      rtc.configure({useWebSockets : true});
       currentConfig = rtc.getConfiguration();
 
       expect(currentConfig.useWebSockets).to.equal(true);
+      expect(currentConfig.keepAlive).to.equal(0);
+    });
+    it('should call ATT.configureAPIs', function () {
+      var configureAPIsSpy = sinon.spy(ATT, 'configureAPIs'),
+        args;
+
+      rtc.configure({environment: 'AMS'});
+      args = configureAPIsSpy.getCall(0).args[0];
+
+      expect(configureAPIsSpy.called).to.equal(true);
+      expect(args.environment).to.equal('AMS');
+      expect(args.useWebSockets).to.equal(false);
+      expect(args.RTCEndpoint).to.equal('http://wdev.code-api-att.com:8080/RTC/v1');
+      expect(args.DHSEndpoint).to.equal('https://localhost:9001');
+
+      rtc.configure({environment: 'PROD'});
+      args = configureAPIsSpy.getCall(0).args[0];
+
+      expect(args.environment).to.equal('PROD');
+      expect(args.useWebSockets).to.equal(false);
+      expect(args.RTCEndpoint).to.equal('https://api.att.com/RTC/v1');
+      expect(args.DHSEndpoint).to.equal('https://localhost:9001');
+
+      rtc.configure({environment: 'F6UAT',
+                     DHSEndpoint: 'HTTP'});
+      args = configureAPIsSpy.getCall(0).args[0];
+
+      expect(args.environment).to.equal('F6UAT');
+      expect(args.useWebSockets).to.equal(false);
+      expect(args.eventChannelConfig.type).to.equal('longpolling');
+      expect(args.RTCEndpoint).to.equal('https://api-stage.mars.bf.sl.attcompute.com/RTC/v1');
+      expect(args.DHSEndpoint).to.equal('http://localhost:9000');
+
+      rtc.configure({environment: 'F3UAT',
+        DHSEndpoint: 'HTTPS',
+        useWebSockets: true });
+      args = configureAPIsSpy.getCall(0).args[0];
+
+      expect(args.environment).to.equal('F3UAT');
+      expect(args.useWebSockets).to.equal(true);
+      expect(args.eventChannelConfig.type).to.equal('websocket');
+      expect(args.RTCEndpoint).to.equal('https://api-uat.mars.bf.sl.attcompute.com/RTC/v1');
+      expect(args.DHSEndpoint).to.equal('https://localhost:9001');
+
+      configureAPIsSpy.restore();
     });
   });
 
