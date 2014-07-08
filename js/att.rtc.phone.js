@@ -579,7 +579,7 @@
 
     var emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
-      call;
+      call = null;
 
     session.on('call-incoming', function () {
       emitter.publish('call-incoming');
@@ -597,6 +597,7 @@
       if ('session-ready' !== event
           && 'session-disconnected' !== event
           && 'call-dialing' !== event
+          && 'call-answering' !== event
           && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
@@ -637,9 +638,19 @@
     }
 
     function dial(options) {
+
       if (undefined === options) {
         throw new Error('Options not defined');
       }
+
+      if (undefined === options.localMedia) {
+        throw new Error('localMedia not defined');
+      }
+
+      if (undefined === options.remoteMedia) {
+        throw new Error('remoteMedia not defined');
+      }
+
       if (undefined === options.destination) {
         throw new Error('Destination not defined');
       }
@@ -648,8 +659,8 @@
         peer: options.destination,
         type: ATT.CallTypes.OUTGOING,
         mediaType: options.mediaType,
-        localVideo: options.localVideo,
-        remoteVideo: options.remoteVideo
+        localMedia: options.localMedia,
+        remoteMedia: options.remoteMedia
       });
 
       call.on('dialing', function () {
@@ -677,7 +688,38 @@
         emitter.publish('call-error');
       });
 
-      call.connect();
+      call.connect(options);
+    }
+
+    function answer(options) {
+
+      if (undefined === options) {
+        throw new Error('Options not defined');
+      }
+
+      if (undefined === options.localMedia) {
+        throw new Error('localMedia not defined');
+      }
+
+      if (undefined === options.remoteMedia) {
+        throw new Error('remoteMedia not defined');
+      }
+
+      call = session.currentCall;
+
+      if (call === undefined || call === null) {
+        throw new Error('Call object not defined');
+      }
+
+      call.on('answering', function () {
+        emitter.publish('call-answering');
+      });
+
+      call.connect(options);
+    }
+
+    function getMediaType() {
+      return call ? call.mediaType : null;
     }
 
     function hangup() {
@@ -686,7 +728,7 @@
       });
       call.disconnect();
 
-      session.deleteCurrentCall();
+//      session.deleteCurrentCall();
     }
 
     this.on = on.bind(this);
@@ -695,6 +737,8 @@
     this.login = login.bind(this);
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
+    this.answer = answer.bind(this);
+    this.getMediaType = getMediaType.bind(this);
     this.hangup = hangup.bind(this);
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;

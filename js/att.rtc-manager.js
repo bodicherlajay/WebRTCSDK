@@ -437,8 +437,8 @@
 
       userMediaSvc.getUserMedia({
         mediaType: options.mediaType,
-        localVideo: options.localVideo,
-        remoteVideo: options.remoteVideo,
+        localMedia: options.localMedia,
+        remoteMedia: options.remoteMedia,
         onUserMedia: function (userMedia) {
           eventManager.on('remote-sdp', function (remoteSdp) {
             peerConnSvc.setTheRemoteDescription({
@@ -466,10 +466,15 @@
       });
     }
 
+    function disconnectCall () {
+      return;
+    }
+
     this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);
+    this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);
   }
 

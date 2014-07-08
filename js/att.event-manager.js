@@ -24,26 +24,41 @@
   }
 
   function mapEventNameToCallback(callEvent) {
-    switch(callEvent) {
-    case ATT.CallStatus.SESSION_READY:  return  'onSessionReady';
-    case ATT.CallStatus.SESSION_DELETED:return  'onLogout';
-    case ATT.CallStatus.SESSION_ERROR:  return  'onError';
-    case ATT.CallStatus.CONNECTING:     return  'onConnecting';
-    case ATT.CallStatus.CALLING:        return  'onCalling';
-    case ATT.CallStatus.RINGING:        return  'onIncomingCall';
-    case ATT.CallStatus.ESTABLISHED:    return  'onCallEstablished';
-    case ATT.CallStatus.INPROGRESS:     return  'onCallInProgress';
-    case ATT.CallStatus.HOLD:           return  'onCallHold';
-    case ATT.CallStatus.RESUMED:        return  'onCallResume';
-    case ATT.CallStatus.TRANSITION:     return  'onSessionReady';
-    case ATT.CallStatus.WAITING:        return  'onCallWaiting';
-    case ATT.CallStatus.ENDED:          return  'onCallEnded';
-    case ATT.CallStatus.ERROR:          return  'onCallError';
-    default:                            return  null;
+    switch (callEvent) {
+    case ATT.CallStatus.SESSION_READY:
+      return 'onSessionReady';
+    case ATT.CallStatus.SESSION_DELETED:
+      return 'onLogout';
+    case ATT.CallStatus.SESSION_ERROR:
+      return 'onError';
+    case ATT.CallStatus.CONNECTING:
+      return 'onConnecting';
+    case ATT.CallStatus.CALLING:
+      return 'onCalling';
+    case ATT.CallStatus.RINGING:
+      return 'onIncomingCall';
+    case ATT.CallStatus.ESTABLISHED:
+      return 'onCallEstablished';
+    case ATT.CallStatus.INPROGRESS:
+      return 'onCallInProgress';
+    case ATT.CallStatus.HOLD:
+      return 'onCallHold';
+    case ATT.CallStatus.RESUMED:
+      return 'onCallResume';
+    case ATT.CallStatus.TRANSITION:
+      return 'onSessionReady';
+    case ATT.CallStatus.WAITING:
+      return 'onCallWaiting';
+    case ATT.CallStatus.ENDED:
+      return 'onCallEnded';
+    case ATT.CallStatus.ERROR:
+      return 'onCallError';
+    default:
+      return null;
     }
   }
 
-  function processCurrentEvent () {
+  function processCurrentEvent() {
     var currentEvent = this.getCurrentEvent(),
       state = currentEvent.state,
       action_data = {};

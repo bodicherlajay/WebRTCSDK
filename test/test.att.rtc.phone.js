@@ -135,16 +135,20 @@ describe('Phone', function () {
         it('should return the latest instance of a call', function () {
           phone.dial({
             destination: '12345',
-            mediaType: 'video'
+            mediaType: 'video',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           });
 
           phone.dial({
-            destination: '1-800-junhua',
-            mediaType: 'video'
+            destination: '12345',
+            mediaType: 'video',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           });
 
           var callObj = phone.getCall();
-          expect(callObj.peer).to.equal('1-800-junhua');
+          expect(callObj.peer).to.equal('12345');
         });
 
       });
@@ -322,7 +326,9 @@ describe('Phone', function () {
 
           options = {
             destination: '12345',
-            mediaType: 'audio'
+            mediaType: 'video',
+            localMedia: '#foo',
+            remoteMedia: 'bar'
           };
 
           call = new ATT.rtc.Call({
@@ -342,7 +348,7 @@ describe('Phone', function () {
             emitter.publish('ended');
             emitter.publish('error');
           });
-
+ 
           session = phone.getSession();
 
           createCallStub = sinon.stub(session, 'createCall', function () {
@@ -382,9 +388,22 @@ describe('Phone', function () {
 
         it('should throw an error if options are invalid', function () {
           expect(phone.dial).to.throw('Options not defined');
-          expect(phone.dial.bind(phone, {})).to.throw('Destination not defined');
           expect(phone.dial.bind(phone, {
-            destination: '12345'
+            localMedia: '#foo',
+            remoteMedia: '#bar'
+          })).to.throw('Destination not defined');
+          expect(phone.dial.bind(phone, {
+            localMedia: '#foo',
+            destination: '1234'
+          })).to.throw('remoteMedia not defined');
+          expect(phone.dial.bind(phone, {
+            destination: '1234',
+            remoteMedia: '#foo'
+          })).to.throw('localMedia not defined');
+          expect(phone.dial.bind(phone, {
+            destination: '12345',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           })).to.not.throw(Error);
         });
 
@@ -425,7 +444,7 @@ describe('Phone', function () {
         });
 
         it('should execute Call.connect', function () {
-          expect(callConnectStub.called).to.equal(true);
+          expect(callConnectStub.calledWith(options)).to.equal(true);
         });
 
         it('should trigger `call-dialing` when call publishes `dialing` event', function (done) {
@@ -518,6 +537,89 @@ describe('Phone', function () {
 
       });
 
+      describe('answer', function () {
+        var session,
+          options,
+          call,
+          onSpy,
+          callConnectStub,
+          callAnsweringHandlerSpy;
+
+        beforeEach(function () {
+
+          options = {
+            localMedia: '#foo',
+            remoteMedia: '#bar'
+          };
+
+          call = new ATT.rtc.Call({
+            peer: '1234567',
+            mediaType: 'video'
+          });
+
+          onSpy = sinon.spy(call, 'on');
+          callAnsweringHandlerSpy = sinon.spy();
+
+          session = phone.getSession();
+
+          callConnectStub = sinon.stub(call, 'connect', function () {
+            emitter.publish('answering');
+          });
+ 
+          session = phone.getSession();
+
+          session.currentCall = call;
+
+          phone.on('call-answering', callAnsweringHandlerSpy);
+          phone.answer(options);
+        });
+
+        afterEach(function () {
+          onSpy.restore();
+          callConnectStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.answer).to.be.a('function');
+        });
+
+        it('should throw an error if there is no current call', function () {
+          session.currentCall = null;
+          expect(phone.answer.bind(phone, options)).to.throw('Call object not defined');
+        });
+
+        it('should throw an error if called without valid options', function () {
+          expect(phone.answer.bind(phone)).to.throw('Options not defined');
+          expect(phone.answer.bind(phone, {
+            localMedia: '#bar'
+          })).to.throw('remoteMedia not defined');
+          expect(phone.answer.bind(phone, {
+            remoteMedia: '#foo'
+          })).to.throw('localMedia not defined');
+        });
+
+        it('should register for `answering` event on the call object', function () {
+          expect(onSpy.calledWith('answering')).to.equal(true);
+        });
+
+        it('should trigger `call-answering` when call publishes `answering` event', function (done) {
+
+          setTimeout(function () {
+            try {
+              expect(callAnsweringHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
+        });
+
+        it('should call `call.connect` with optional params localMedia & remoteMedia', function () {
+          phone.answer(options);
+          expect(callConnectStub.calledWith(options)).to.equal(true);
+        });
+      });
+
       describe('hangup', function () {
 
         var session,
@@ -533,7 +635,9 @@ describe('Phone', function () {
 
           options = {
             destination: '12345',
-            mediaType: 'audio'
+            mediaType: 'audio',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           };
 
           call = new ATT.rtc.Call({
@@ -568,12 +672,16 @@ describe('Phone', function () {
           expect(phone.hangup).to.be.a('function');
         });
 
-        it('should call session.deleteCurrentCall', function () {
+        xit('should call session.deleteCurrentCall', function () {
           expect(deleteCurrentCallStub.called).to.equal(true);
         });
 
         it('should register for the `disconnecting` event on the call object', function () {
           expect(onSpy.calledWith('disconnecting')).to.equal(true);
+        });
+
+        it('should execute call.disconnect', function () {
+          expect(callDisconnectStub.called).to.equal(true);
         });
 
         it('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
@@ -589,9 +697,28 @@ describe('Phone', function () {
             }
           }, 300);
         });
+      });
 
-        it('should execute call.disconnect', function () {
-          expect(callDisconnectStub.called).to.equal(true);
+      describe('getMediaType', function () {
+        it('should Exist', function () {
+          expect(phone.getMediaType).to.be.a('function');
+        });
+
+        it('should return the mediaType of the current call', function () {
+          var options,
+            mediaType;
+
+          options = {
+            destination: '123434',
+            mediaType: 'audio',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
+          };
+
+          phone.dial(options);
+
+          mediaType = phone.getMediaType();
+          expect(mediaType).to.equal('audio');
         });
       });
     });

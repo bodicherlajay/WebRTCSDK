@@ -17,6 +17,7 @@ describe('Call', function () {
     createEventManagerStub,
     call,
     onDialingSpy,
+    onAnsweringSpy,
     onConnectingSpy,
     onConnectedSpy,
     onDisconnectingSpy,
@@ -30,7 +31,8 @@ describe('Call', function () {
 
     options = {
       peer: '12345',
-      mediaType: 'audio'
+      mediaType: 'audio',
+      type: ATT.CallTypes.OUTGOING
     };
 
     optionsforRTCM = {
@@ -72,12 +74,14 @@ describe('Call', function () {
     call = new ATT.rtc.Call(options);
 
     onDialingSpy = sinon.spy();
+    onAnsweringSpy = sinon.spy();
     onConnectingSpy = sinon.spy();
     onConnectedSpy = sinon.spy();
     onDisconnectingSpy = sinon.spy();
     onDisconnectedSpy = sinon.spy();
 
     call.on('dialing', onDialingSpy);
+    call.on('answering', onAnsweringSpy);
     call.on('connecting', onConnectingSpy);
     call.on('connected', onConnectedSpy);
     call.on('disconnecting', onDisconnectingSpy);
@@ -116,6 +120,7 @@ describe('Call', function () {
       expect(call.id).to.equal(options.id);
       expect(call.peer).to.equal(options.peer);
       expect(call.mediaType).to.equal(options.mediaType);
+      expect(call.type).to.equal(options.type);
     });
 
     it('should create an instance of event emitter', function () {
@@ -160,11 +165,16 @@ describe('Call', function () {
       var connectCallStub,
         setIdSpy,
         localSdp,
-        onStub;
+        onStub,
+        connectOptions;
 
       before(function () {
 
         localSdp = 'xyz';
+        connectOptions = {
+          localMedia: '#foo',
+          remoteMedia: '#bar'
+        };
 
         connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
           options.onCallConnecting({
@@ -176,10 +186,6 @@ describe('Call', function () {
         onStub = sinon.stub(rtcMgr, 'on');
 
         setIdSpy = sinon.spy(call, 'setId');
-
-        call.connect({
-          onCallConnecting: function () {}
-        });
       });
 
       after(function () {
@@ -192,7 +198,10 @@ describe('Call', function () {
         expect(call.connect).to.be.a('function');
       });
 
-      it('Should trigger `dialing` event immediately', function (done) {
+      it('Should trigger `dialing` event immediately if callType is Outgoing', function (done) {
+
+        call.connect(options);
+
         setTimeout(function () {
           try {
             expect(onDialingSpy.called).to.equal(true);
@@ -201,6 +210,26 @@ describe('Call', function () {
             done(e);
           }
         }, 100);
+      });
+
+      it('should trigger `answering` event immediately if callType is Incoming', function (done) {
+        call.type = ATT.CallTypes.INCOMING;
+        call.connect(connectOptions);
+
+        setTimeout(function () {
+          try {
+            expect(onAnsweringSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should set localMedia & remoteMedia if passed in', function () {
+        call.connect(connectOptions);
+        expect(call.localMedia).to.equal('#foo');
+        expect(call.remoteMedia).to.equal('#bar');
       });
 
       it('should register for event `remote-sdp-set` from RTCManager', function () {
@@ -221,7 +250,6 @@ describe('Call', function () {
         it('should set the newly created LocalSdp on the call', function () {
           expect(call.localSdp).to.equal(localSdp);
         });
-
       });
 
       it('Should execute the onError callback if there is an error');
@@ -276,7 +304,17 @@ describe('Call', function () {
       });
     });
 
-    describe('Disconnect', function () {
+    describe.only('Disconnect', function () {
+      var disconnectCallStub;
+
+      before(function () {
+        disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall', function () {
+        });
+      });
+
+      after(function () {
+        disconnectCallStub.restore();
+      });
 
       it('Should exist', function () {
         expect(call.disconnect).to.be.a('function');
@@ -293,6 +331,11 @@ describe('Call', function () {
             done(e);
           }
         }, 100);
+      });
+
+      it('should call rtcManager.disconnectCall', function () {
+        call.disconnect();
+        expect(disconnectCallStub.called).to.equal(true);
       });
     });
 

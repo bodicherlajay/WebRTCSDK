@@ -9,10 +9,11 @@
   'use strict';
 
   var factories = ATT.private.factories,
-    errMgr,
-    userMediaSvc,
-    peerConnSvc,
-    logManager = ATT.logManager.getInstance();
+    errMgr = null,
+    userMediaSvc = null,
+    peerConnSvc = null,
+    logManager = ATT.logManager.getInstance(),
+    logger = logManager.getLoggerByName('Call');
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -24,45 +25,6 @@
     if (typeof errHandler === 'function') {
       errHandler(error);
     }
-  }
-
-  /**
-   *  Removes extra characters from the phone number and formats it for
-   *  clear display
-   */
-  function cleanPhoneNumber(number) {
-    var callable, cleaned;
-    //removes the spaces form the number
-    callable = number.replace(/\s/g, '');
-    callable = ATT.phoneNumber.getCallable(callable);
-
-    if (callable) {
-      return callable;
-    }
-    logger.logWarning('Phone number not callable, will check special numbers list.');
-    logger.logInfo('checking number: ' + callable);
-
-    cleaned = ATT.phoneNumber.translate(number);
-    console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
-    if (number.charAt(0) === '*') {
-      cleaned = '*' + cleaned;
-    }
-    if (ATT.SpecialNumbers[cleaned]) {
-      return cleaned;
-    }
-    ATT.Error.publish('SDK-20027', null, function (error) {
-      logger.logWarning('Undefined `onError`: ' + error);
-    });
-  }
-
-  function formatNumber(number) {
-    var callable = cleanPhoneNumber(number);
-    if (!callable) {
-      logger.logWarning('Phone number not formatable .');
-      return;
-    }
-    logger.logInfo('The formated Number' + callable);
-    return ATT.phoneNumber.stringify(callable);
   }
 
   function handleCallMediaModifications(event, data) {
@@ -96,38 +58,6 @@
     }
   }
 
-  function answerCall(options) {
-
-    var from = this.from(),
-      mediaType = this.getMediaType(),
-      mediaConstraints = {
-        audio: true,
-        video: mediaType === 'video'
-      };
-    ATT.utils.extend(options, {
-      type: ATT.CallTypes.INCOMING,
-      from: from,
-      mediaConstraints: mediaConstraints
-    });
-
-    userMediaSvc.getUserMedia(ATT.utils.extend(options, {
-      onUserMedia: function (userMedia) {
-        ATT.utils.extend(options, userMedia);
-        peerConnSvc.initPeerConnection(options);
-      },
-      onError: handleError.bind(this, 'AnswerCall', options.onError)
-    }));
-
-    // TODO: patch work
-    // setup callback for PeerConnectionService.onAnswerSent, will be used to
-    // indicate the RINGING state on an outgoing call
-    ATT.PeerConnectionService.onAnswerSent = function () {
-      logger.logInfo('onAnswerSent...');
-
-      options.onCallAnswered();
-    };
-  }
-
   function holdCall() {
     peerConnSvc.holdCall();
   }
@@ -147,9 +77,9 @@
   }
 
   /**
-  * Call end
-  * @param {Object} options The phone.js facade options
-  */
+   * Call end
+   * @param {Object} options The phone.js facade options
+   */
   function endCall(options) {
     logger.logInfo('Hanging up...');
     ATT.SignalingService.sendEndCall(ATT.utils.extend(options, {
@@ -205,8 +135,6 @@
   */
   function Call(options) {
 
-    var logger = logManager.getLoggerByName('Call');
-
     if (undefined === options) {
       throw new Error('No input provided');
     }
@@ -223,6 +151,7 @@
     function on(event, handler) {
 
       if ('dialing' !== event &&
+          'answering' !== event &&
           'connecting' !== event &&
           'canceled' !== event &&
           'rejected' !== event &&
@@ -239,10 +168,27 @@
       emitter.subscribe(event, handler, this);
     }
 
-    function connect() {
+    /*
+     * Connect the Call
+     * Connects the call based on callType(Incoming|Outgoing)
+     * @param {Object} The call config
+    */
+    function connect(config) {
       var call = this;
 
-      emitter.publish('dialing');
+      if ('Outgoing' === call.type) {
+        emitter.publish('dialing');
+      } else if ('Incoming' === call.type) {
+        emitter.publish('answering');
+      }
+
+      if (undefined !== config.localMedia) {
+        call.localMedia = config.localMedia;
+      }
+
+      if (undefined !== config.remoteMedia) {
+        call.remoteMedia = config.remoteMedia;
+      }
 
       rtcManager.on('remote-sdp-set', function (remoteSdp) {
         call.setRemoteSdp(remoteSdp);
@@ -253,12 +199,12 @@
       });
 
       rtcManager.connectCall({
-        peer: options.peer,
-        type: options.type,
-        mediaType: options.mediaType,
-        localVideo: options.localVideo,
-        remoteVideo: options.remoteVideo,
-        sessionInfo: options.sessionInfo,
+        peer: call.peer,
+        type: call.type,
+        mediaType: call.mediaType,
+        localMedia: config.localMedia || call.localMedia,
+        remoteMedia: config.localMedia || call.localMedia,
+        sessionInfo: call.sessionInfo,
         onCallConnecting: function (callInfo) {
           call.setId(callInfo.callId);
           call.localSdp = callInfo.localSdp;
@@ -267,6 +213,10 @@
     }
 
     function disconnect() {
+
+      rtcManager.disconnectCall({
+
+      });
       emitter.publish('disconnecting');
     }
 
@@ -287,8 +237,12 @@
     this.id = options.id;
     this.peer = options.peer;
     this.mediaType = options.mediaType;
+    this.type = options.type;
+    this.sessionInfo = options.sessionInfo;
     this.localSdp = null;
     this.remoteSdp = null;
+    this.localMedia = options.localMedia;
+    this.remoteMedia = options.remoteMedia;
 
     this.on = on.bind(this);
     this.connect = connect.bind(this);
