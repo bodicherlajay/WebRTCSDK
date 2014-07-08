@@ -707,6 +707,29 @@ describe('Phone', function () {
           expect(callDisconnectStub.called).to.equal(true);
         });
       });
+
+      describe('getMediaType', function () {
+        it('should Exist', function () {
+          expect(phone.getMediaType).to.be.a('function');
+        });
+
+        it('should return the mediaType of the current call', function () {
+          var options,
+            mediaType;
+
+          options = {
+            destination: '123434',
+            mediaType: 'audio',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
+          };
+
+          phone.dial(options);
+
+          mediaType = phone.getMediaType();
+          expect(mediaType).to.equal('audio');
+        });
+      });
     });
 
     describe('Events', function () {

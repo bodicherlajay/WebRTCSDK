@@ -722,6 +722,10 @@
       call.connect(options);
     }
 
+    function getMediaType() {
+      return call ? call.mediaType : null;
+    }
+
     function hangup() {
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
@@ -739,6 +743,7 @@
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
     this.answer = answer.bind(this);
+    this.getMediaType = getMediaType.bind(this);
     this.hangup = hangup.bind(this);
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
