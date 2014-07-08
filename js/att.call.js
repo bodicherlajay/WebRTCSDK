@@ -9,10 +9,11 @@
   'use strict';
 
   var factories = ATT.private.factories,
-    errMgr,
-    userMediaSvc,
-    peerConnSvc,
-    logManager = ATT.logManager.getInstance();
+    errMgr = null,
+    userMediaSvc = null,
+    peerConnSvc = null,
+    logManager = ATT.logManager.getInstance(),
+    logger = logManager.getLoggerByName('Call');
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -24,44 +25,6 @@
     if (typeof errHandler === 'function') {
       errHandler(error);
     }
-  }
-
-  /**
-   *  Removes extra characters from the phone number and formats it for
-   *  clear display
-   */
-  function cleanPhoneNumber(number) {
-    var callable, cleaned;
-    //removes the spaces form the number
-    callable = number.replace(/\s/g, '');
-    callable = ATT.phoneNumber.getCallable(callable);
-
-    if (callable) {
-      return callable;
-    }
-    logger.logWarning('Phone number not callable, will check special numbers list.');
-    logger.logInfo('checking number: ' + callable);
-
-    cleaned = ATT.phoneNumber.translate(number);
-    if (number.charAt(0) === '*') {
-      cleaned = '*' + cleaned;
-    }
-    if (ATT.SpecialNumbers[cleaned]) {
-      return cleaned;
-    }
-    ATT.Error.publish('SDK-20027', null, function (error) {
-      logger.logWarning('Undefined `onError`: ' + error);
-    });
-  }
-
-  function formatNumber(number) {
-    var callable = cleanPhoneNumber(number);
-    if (!callable) {
-      logger.logWarning('Phone number not formatable .');
-      return;
-    }
-    logger.logInfo('The formated Number' + callable);
-    return ATT.phoneNumber.stringify(callable);
   }
 
   function handleCallMediaModifications(event, data) {
@@ -189,7 +152,7 @@
       success: function () {
         session.deleteCall(session.getCurrentCall().id());
       },
-      error: function () {
+      error: function (options) {
         ATT.Error.publish('SDK-20035', null, options.onError);
         logger.logWarning('Reject request failed.');
       },
@@ -203,8 +166,6 @@
   * @param {String} mediaType The mediaType
   */
   function Call(options) {
-
-    var logger = logManager.getLoggerByName('Call');
 
     if (undefined === options) {
       throw new Error('No input provided');
@@ -244,7 +205,7 @@
 
       if (options) {
         if ('Outgoing' === options.type) {
-        emitter.publish('dialing');
+          emitter.publish('dialing');
         } else if ('Incoming' === options.type) {
           emitter.publish('answering');
         }
@@ -313,7 +274,7 @@
     this.unmute = unmuteCall.bind(this);
     this.end = endCall.bind(this);
 
-    if(undefined !== this.id) {
+    if (undefined !== this.id) {
       emitter.publish('created', this.id);
       return;
     }
