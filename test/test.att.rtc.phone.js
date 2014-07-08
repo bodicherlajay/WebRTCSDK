@@ -144,16 +144,20 @@ describe('Phone', function () {
         it('should return the latest instance of a call', function () {
           phone.dial({
             destination: '12345',
-            mediaType: 'video'
+            mediaType: 'video',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           });
 
           phone.dial({
-            destination: '1-800-junhua',
-            mediaType: 'video'
+            destination: '12345',
+            mediaType: 'video',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           });
 
           var callObj = phone.getCall();
-          expect(callObj.peer).to.equal('1-800-junhua');
+          expect(callObj.peer).to.equal('12345');
         });
 
       });
@@ -332,7 +336,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'video',
-            type: ATT.CallTypes.OUTGOING
+            localMedia: '#foo',
+            remoteMedia: 'bar'
           };
 
           call = new ATT.rtc.Call({
@@ -392,9 +397,22 @@ describe('Phone', function () {
 
         it('should throw an error if options are invalid', function () {
           expect(phone.dial).to.throw('Options not defined');
-          expect(phone.dial.bind(phone, {})).to.throw('Destination not defined');
           expect(phone.dial.bind(phone, {
-            destination: '12345'
+            localMedia: '#foo',
+            remoteMedia: '#bar'
+          })).to.throw('Destination not defined');
+          expect(phone.dial.bind(phone, {
+            localMedia: '#foo',
+            destination: '1234'
+          })).to.throw('remoteMedia not defined');
+          expect(phone.dial.bind(phone, {
+            destination: '1234',
+            remoteMedia: '#foo'
+          })).to.throw('localMedia not defined');
+          expect(phone.dial.bind(phone, {
+            destination: '12345',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           })).to.not.throw(Error);
         });
 
@@ -540,8 +558,8 @@ describe('Phone', function () {
         beforeEach(function () {
 
           options = {
-            destination: '12345',
-            mediaType: 'audio'
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           };
 
           call = new ATT.rtc.Call({
@@ -577,7 +595,17 @@ describe('Phone', function () {
 
         it('should throw an error if there is no current call', function () {
           session.currentCall = null;
-          expect(phone.answer.bind(phone, {})).to.throw('Call object not defined');
+          expect(phone.answer.bind(phone, options)).to.throw('Call object not defined');
+        });
+
+        it('should throw an error if called without valid options', function () {
+          expect(phone.answer.bind(phone)).to.throw('Options not defined');
+          expect(phone.answer.bind(phone, {
+            localMedia: '#bar'
+          })).to.throw('remoteMedia not defined');
+          expect(phone.answer.bind(phone, {
+            remoteMedia: '#foo'
+          })).to.throw('localMedia not defined');
         });
 
         it('should register for `answering` event on the call object', function () {
@@ -596,11 +624,7 @@ describe('Phone', function () {
           }, 300);
         });
 
-        it('should call `call.connect` with optional params localVideo & remoteVideo', function () {
-          var options = {
-            localVideo: '#foo',
-            remoteVideo: '#bar'
-          };
+        it('should call `call.connect` with optional params localMedia & remoteMedia', function () {
           phone.answer(options);
           expect(callConnectStub.calledWith(options)).to.equal(true);
         });
@@ -621,7 +645,9 @@ describe('Phone', function () {
 
           options = {
             destination: '12345',
-            mediaType: 'audio'
+            mediaType: 'audio',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
           };
 
           call = new ATT.rtc.Call({
