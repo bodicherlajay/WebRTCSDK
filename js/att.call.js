@@ -109,9 +109,9 @@
   }
 
   /**
-  * Call end
-  * @param {Object} options The phone.js facade options
-  */
+   * Call end
+   * @param {Object} options The phone.js facade options
+   */
   function endCall(options) {
     logger.logInfo('Hanging up...');
     ATT.SignalingService.sendEndCall(ATT.utils.extend(options, {
@@ -152,7 +152,7 @@
       success: function () {
         session.deleteCall(session.getCurrentCall().id());
       },
-      error: function (options) {
+      error: function () {
         ATT.Error.publish('SDK-20035', null, options.onError);
         logger.logWarning('Reject request failed.');
       },
@@ -203,12 +203,18 @@
     function connect(options) {
       var call = this;
 
-      if (options) {
-        if ('Outgoing' === options.type) {
-          emitter.publish('dialing');
-        } else if ('Incoming' === options.type) {
-          emitter.publish('answering');
-        }
+      if ('Outgoing' === options.type) {
+        emitter.publish('dialing');
+      } else if ('Incoming' === options.type) {
+        emitter.publish('answering');
+      }
+
+      if (undefined !== options.localMedia) {
+        call.localMedia = options.localMedia;
+      }
+
+      if (undefined !== options.remoteMedia) {
+        call.remoteMedia = options.remoteMedia;
       }
 
       rtcManager.on('remote-sdp-set', function (remoteSdp) {
@@ -257,8 +263,8 @@
     this.type = options.type;
     this.localSdp = null;
     this.remoteSdp = null;
-    this.localVideo = options.localVideo;
-    this.remoteVideo = options.remoteVideo;
+    this.localMedia = options.localMedia;
+    this.remoteMedia = options.remoteMedia;
 
     this.on = on.bind(this);
     this.connect = connect.bind(this);
@@ -274,7 +280,7 @@
     this.unmute = unmuteCall.bind(this);
     this.end = endCall.bind(this);
 
-    if (undefined !== this.id) {
+    if(undefined !== this.id) {
       emitter.publish('created', this.id);
       return;
     }
