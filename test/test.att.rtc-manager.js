@@ -526,6 +526,12 @@ describe('RTC Manager', function () {
         });
 
       });
+
+      describe('disconnectCall', function () {
+        it('should exist', function () {
+          expect(rtcManager.disconnectCall).to.be.a('function');
+        });
+      });
     });
   });
 

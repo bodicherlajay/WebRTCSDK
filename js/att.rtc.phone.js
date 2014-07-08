@@ -732,7 +732,7 @@
       });
       call.disconnect();
 
-      session.deleteCurrentCall();
+//      session.deleteCurrentCall();
     }
 
     this.configure = configure;

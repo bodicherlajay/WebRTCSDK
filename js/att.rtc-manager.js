@@ -466,10 +466,15 @@
       });
     }
 
+    function disconnectCall () {
+      return;
+    }
+
     this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);
+    this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);
   }
 

@@ -681,12 +681,16 @@ describe('Phone', function () {
           expect(phone.hangup).to.be.a('function');
         });
 
-        it('should call session.deleteCurrentCall', function () {
+        xit('should call session.deleteCurrentCall', function () {
           expect(deleteCurrentCallStub.called).to.equal(true);
         });
 
         it('should register for the `disconnecting` event on the call object', function () {
           expect(onSpy.calledWith('disconnecting')).to.equal(true);
+        });
+
+        it('should execute call.disconnect', function () {
+          expect(callDisconnectStub.called).to.equal(true);
         });
 
         it('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
@@ -701,10 +705,6 @@ describe('Phone', function () {
               done(e);
             }
           }, 300);
-        });
-
-        it('should execute call.disconnect', function () {
-          expect(callDisconnectStub.called).to.equal(true);
         });
       });
 

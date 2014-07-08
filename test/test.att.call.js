@@ -304,7 +304,17 @@ describe('Call', function () {
       });
     });
 
-    describe('Disconnect', function () {
+    describe.only('Disconnect', function () {
+      var disconnectCallStub;
+
+      before(function () {
+        disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall', function () {
+        });
+      });
+
+      after(function () {
+        disconnectCallStub.restore();
+      });
 
       it('Should exist', function () {
         expect(call.disconnect).to.be.a('function');
@@ -321,6 +331,11 @@ describe('Call', function () {
             done(e);
           }
         }, 100);
+      });
+
+      it('should call rtcManager.disconnectCall', function () {
+        call.disconnect();
+        expect(disconnectCallStub.called).to.equal(true);
       });
     });
 
