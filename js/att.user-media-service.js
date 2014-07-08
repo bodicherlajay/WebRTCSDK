@@ -37,8 +37,8 @@
   }
 
   module = {
-    localVideo: null,
-    remoteVideo: null,
+    localMedia: null,
+    remoteMedia: null,
     localStream: null,
     remoteStream: null,
 
@@ -54,8 +54,8 @@
     getUserMedia: function (options) {
       logger.logTrace('starting call');
 
-      this.localVideo = options.localVideo;
-      this.remoteVideo = options.remoteVideo;
+      this.localMedia = options.localMedia;
+      this.remoteMedia = options.remoteMedia;
       this.mediaConstraints = defaultMediaConstraints;
 
       if(undefined !== options.mediaType) {
@@ -144,11 +144,11 @@
     stopStream: function () {
       logger.logTrace('stopping streams...');
       try {
-        if (this.localVideo) {
-          this.localVideo.src = '';
+        if (this.localMedia) {
+          this.localMedia.src = '';
         }
-        if (this.remoteVideo) {
-          this.remoteVideo.src = '';
+        if (this.remoteMedia) {
+          this.remoteMedia.src = '';
         }
         if (this.localStream) {
           this.localStream.stop();

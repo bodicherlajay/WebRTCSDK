@@ -32,9 +32,7 @@ describe('Call', function () {
     options = {
       peer: '12345',
       mediaType: 'audio',
-      type: ATT.CallTypes.OUTGOING,
-      localMedia: '#foo',
-      remoteMedia: '#bar'
+      type: ATT.CallTypes.OUTGOING
     };
 
     optionsforRTCM = {
@@ -123,8 +121,6 @@ describe('Call', function () {
       expect(call.peer).to.equal(options.peer);
       expect(call.mediaType).to.equal(options.mediaType);
       expect(call.type).to.equal(options.type);
-      expect(call.localMedia).to.equal(options.localMedia);
-      expect(call.remoteMedia).to.equal(options.remoteMedia);
     });
 
     it('should create an instance of event emitter', function () {
@@ -169,11 +165,16 @@ describe('Call', function () {
       var connectCallStub,
         setIdSpy,
         localSdp,
-        onStub;
+        onStub,
+        connectOptions;
 
       before(function () {
 
         localSdp = 'xyz';
+        connectOptions = {
+          localMedia: '#foo',
+          remoteMedia: '#bar'
+        };
 
         connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
           options.onCallConnecting({
@@ -212,11 +213,8 @@ describe('Call', function () {
       });
 
       it('should trigger `answering` event immediately if callType is Incoming', function (done) {
-        call.connect({
-          peer: '54321',
-          mediaType: 'video',
-          type: ATT.CallTypes.INCOMING
-        });
+        call.type = ATT.CallTypes.INCOMING;
+        call.connect(connectOptions);
 
         setTimeout(function () {
           try {
@@ -226,6 +224,12 @@ describe('Call', function () {
             done(e);
           }
         }, 100);
+      });
+
+      it('should set localMedia & remoteMedia if passed in', function () {
+        call.connect(connectOptions);
+        expect(call.localMedia).to.equal('#foo');
+        expect(call.remoteMedia).to.equal('#bar');
       });
 
       it('should register for event `remote-sdp-set` from RTCManager', function () {
@@ -246,7 +250,6 @@ describe('Call', function () {
         it('should set the newly created LocalSdp on the call', function () {
           expect(call.localSdp).to.equal(localSdp);
         });
-
       });
 
       it('Should execute the onError callback if there is an error');

@@ -437,8 +437,8 @@
 
       userMediaSvc.getUserMedia({
         mediaType: options.mediaType,
-        localVideo: options.localVideo,
-        remoteVideo: options.remoteVideo,
+        localMedia: options.localMedia,
+        remoteMedia: options.remoteMedia,
         onUserMedia: function (userMedia) {
           eventManager.on('remote-sdp', function (remoteSdp) {
             peerConnSvc.setTheRemoteDescription({

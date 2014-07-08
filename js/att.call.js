@@ -58,38 +58,6 @@
     }
   }
 
-  function answerCall(options) {
-
-    var from = this.from(),
-      mediaType = this.getMediaType(),
-      mediaConstraints = {
-        audio: true,
-        video: mediaType === 'video'
-      };
-    ATT.utils.extend(options, {
-      type: ATT.CallTypes.INCOMING,
-      from: from,
-      mediaConstraints: mediaConstraints
-    });
-
-    userMediaSvc.getUserMedia(ATT.utils.extend(options, {
-      onUserMedia: function (userMedia) {
-        ATT.utils.extend(options, userMedia);
-        peerConnSvc.initPeerConnection(options);
-      },
-      onError: handleError.bind(this, 'AnswerCall', options.onError)
-    }));
-
-    // TODO: patch work
-    // setup callback for PeerConnectionService.onAnswerSent, will be used to
-    // indicate the RINGING state on an outgoing call
-    ATT.PeerConnectionService.onAnswerSent = function () {
-      logger.logInfo('onAnswerSent...');
-
-      options.onCallAnswered();
-    };
-  }
-
   function holdCall() {
     peerConnSvc.holdCall();
   }
@@ -200,21 +168,26 @@
       emitter.subscribe(event, handler, this);
     }
 
-    function connect(options) {
+    /*
+     * Connect the Call
+     * Connects the call based on callType(Incoming|Outgoing)
+     * @param {Object} The call config
+    */
+    function connect(config) {
       var call = this;
 
-      if ('Outgoing' === options.type) {
+      if ('Outgoing' === call.type) {
         emitter.publish('dialing');
-      } else if ('Incoming' === options.type) {
+      } else if ('Incoming' === call.type) {
         emitter.publish('answering');
       }
 
-      if (undefined !== options.localMedia) {
-        call.localMedia = options.localMedia;
+      if (undefined !== config.localMedia) {
+        call.localMedia = config.localMedia;
       }
 
-      if (undefined !== options.remoteMedia) {
-        call.remoteMedia = options.remoteMedia;
+      if (undefined !== config.remoteMedia) {
+        call.remoteMedia = config.remoteMedia;
       }
 
       rtcManager.on('remote-sdp-set', function (remoteSdp) {
@@ -226,12 +199,12 @@
       });
 
       rtcManager.connectCall({
-        peer: options.peer,
-        type: options.type,
-        mediaType: options.mediaType,
-        localVideo: options.localVideo,
-        remoteVideo: options.remoteVideo,
-        sessionInfo: options.sessionInfo,
+        peer: call.peer,
+        type: call.type,
+        mediaType: call.mediaType,
+        localMedia: config.localMedia || call.localMedia,
+        remoteMedia: config.localMedia || call.localMedia,
+        sessionInfo: call.sessionInfo,
         onCallConnecting: function (callInfo) {
           call.setId(callInfo.callId);
           call.localSdp = callInfo.localSdp;
@@ -261,6 +234,7 @@
     this.peer = options.peer;
     this.mediaType = options.mediaType;
     this.type = options.type;
+    this.sessionInfo = options.sessionInfo;
     this.localSdp = null;
     this.remoteSdp = null;
     this.localMedia = options.localMedia;

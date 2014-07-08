@@ -552,7 +552,6 @@ describe('Phone', function () {
           call,
           onSpy,
           callConnectStub,
-          createCallStub,
           callAnsweringHandlerSpy;
 
         beforeEach(function () {
