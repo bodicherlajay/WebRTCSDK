@@ -242,12 +242,18 @@
     function connect(options) {
       var call = this;
 
-      if (options) {
-        if ('Outgoing' === options.type) {
+      if ('Outgoing' === options.type) {
         emitter.publish('dialing');
-        } else if ('Incoming' === options.type) {
-          emitter.publish('answering');
-        }
+      } else if ('Incoming' === options.type) {
+        emitter.publish('answering');
+      }
+
+      if (undefined !== options.localMedia) {
+        call.localMedia = options.localMedia;
+      }
+
+      if (undefined !== options.remoteMedia) {
+        call.remoteMedia = options.remoteMedia;
       }
 
       rtcManager.on('remote-sdp-set', function (remoteSdp) {
@@ -296,8 +302,8 @@
     this.type = options.type;
     this.localSdp = null;
     this.remoteSdp = null;
-    this.localVideo = options.localVideo;
-    this.remoteVideo = options.remoteVideo;
+    this.localMedia = options.localMedia;
+    this.remoteMedia = options.remoteMedia;
 
     this.on = on.bind(this);
     this.connect = connect.bind(this);

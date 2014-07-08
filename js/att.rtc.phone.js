@@ -646,6 +646,15 @@
       if (undefined === options) {
         throw new Error('Options not defined');
       }
+
+      if (undefined === options.localMedia) {
+        throw new Error('localMedia not defined');
+      }
+
+      if (undefined === options.remoteMedia) {
+        throw new Error('remoteMedia not defined');
+      }
+
       if (undefined === options.destination) {
         throw new Error('Destination not defined');
       }
@@ -654,8 +663,8 @@
         peer: options.destination,
         type: ATT.CallTypes.OUTGOING,
         mediaType: options.mediaType,
-        localVideo: options.localVideo,
-        remoteVideo: options.remoteVideo
+        localMedia: options.localMedia,
+        remoteMedia: options.remoteMedia
       });
 
       call.on('dialing', function () {
@@ -687,6 +696,19 @@
     }
 
     function answer(options) {
+
+      if (undefined === options) {
+        throw new Error('Options not defined');
+      }
+
+      if (undefined === options.localMedia) {
+        throw new Error('localMedia not defined');
+      }
+
+      if (undefined === options.remoteMedia) {
+        throw new Error('remoteMedia not defined');
+      }
+
       call = session.currentCall;
 
       if (call === undefined || call === null) {

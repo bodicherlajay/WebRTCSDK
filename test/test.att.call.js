@@ -32,7 +32,9 @@ describe('Call', function () {
     options = {
       peer: '12345',
       mediaType: 'audio',
-      type: ATT.CallTypes.OUTGOING
+      type: ATT.CallTypes.OUTGOING,
+      localMedia: '#foo',
+      remoteMedia: '#bar'
     };
 
     optionsforRTCM = {
@@ -121,6 +123,8 @@ describe('Call', function () {
       expect(call.peer).to.equal(options.peer);
       expect(call.mediaType).to.equal(options.mediaType);
       expect(call.type).to.equal(options.type);
+      expect(call.localMedia).to.equal(options.localMedia);
+      expect(call.remoteMedia).to.equal(options.remoteMedia);
     });
 
     it('should create an instance of event emitter', function () {
