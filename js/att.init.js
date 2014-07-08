@@ -10,6 +10,10 @@
   window.ATT = {
     private: {
       factories: {
+      },
+      config: {
+        app: {
+        }
       }
     },
     //shared utilities

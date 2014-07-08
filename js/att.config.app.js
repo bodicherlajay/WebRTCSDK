@@ -23,7 +23,7 @@ if (!ATT) {
       HTTPS: 'https://localhost:9001'
     },
   // API Platform Endpoints
-    EnvConf = {
+    environments = {
       AMS: 'http://wdev.code-api-att.com:8080/RTC/v1',
       F6UAT: 'https://api-stage.mars.bf.sl.attcompute.com/RTC/v1',
       F3UAT: 'https://api-uat.mars.bf.sl.attcompute.com/RTC/v1',
@@ -42,9 +42,10 @@ if (!ATT) {
         endpoint: '/events'
       }
     },
-    appConfig = {
+    currentConfig = {
       KeepAlive: 0,
       RTCEndpoint: null,
+      environment: 'PROD',
       DHSEndpoint: null,
       EventChannelConfig: null
     },
@@ -61,19 +62,20 @@ if (!ATT) {
       if (!key) {
         key = 'AMS'; // default to AMS endpoints
         logger.logTrace('Default ENVIRNOMENT set by SDK : ' + key);
-        logger.logTrace('url: ' + EnvConf[key]);
+        logger.logTrace('url: ' + environments[key]);
       } else {
         logger.logTrace('User Configured ENVIRNOMENT: ' + key);
-        logger.logTrace('url: ' + EnvConf[key]);
+        logger.logTrace('url: ' + environments[key]);
       }
-      appConfig.KeepAlive = KeepAliveDuration;
-      appConfig.RTCEndpoint = EnvConf[key] || EnvConf.PROD;
-      appConfig.DHSEndpoint = DHSConf[protocol] || DHSConf.HTTP;
-      appConfig.EventChannelConfig = EventChannelConf[(useWebSockets ? 'WebSockets' : 'LongPolling')];
-      app.appConfig = appConfig;
+      currentConfig.KeepAlive = KeepAliveDuration;
+      currentConfig.RTCEndpoint = environments[key] || environments.PROD;
+      currentConfig.environment = key;
+      currentConfig.DHSEndpoint = DHSConf[protocol] || DHSConf.HTTP;
+      currentConfig.EventChannelConfig = EventChannelConf[(useWebSockets ? 'WebSockets' : 'LongPolling')];
+      app.appConfig = currentConfig;
 
       // configure rest APIs now
-      apiConfigs = app.configureAPIs(appConfig);
+      apiConfigs = app.configureAPIs(currentConfig);
     } catch (e) {
       //logger.logError(app.errorDictionary.getError());
       logger.logError(e);
@@ -82,5 +84,8 @@ if (!ATT) {
     return apiConfigs;
   }
   app.configure = configure;
+  
+  ATT.private.config.app.environments = environments;
+  ATT.private.config.app.current = currentConfig;
 
 }(ATT || {}));
