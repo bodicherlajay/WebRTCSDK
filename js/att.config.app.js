@@ -47,6 +47,7 @@ if (!ATT) {
       RTCEndpoint: null,
       environment: 'PROD',
       DHSEndpoint: null,
+      useWebSockets: false,
       EventChannelConfig: null
     },
     protocol = (window.location.protocol).replace(':', '').toUpperCase(),
@@ -69,9 +70,14 @@ if (!ATT) {
       }
       currentConfig.KeepAlive = KeepAliveDuration;
       currentConfig.RTCEndpoint = environments[key] || environments.PROD;
-      currentConfig.environment = key;
+      currentConfig.environment = (undefined === key) ? 'PROD' : key;
       currentConfig.DHSEndpoint = DHSConf[protocol] || DHSConf.HTTP;
-      currentConfig.EventChannelConfig = EventChannelConf[(useWebSockets ? 'WebSockets' : 'LongPolling')];
+      currentConfig.useWebSockets = (undefined === useWebSockets) ? false : useWebSockets;
+      if (currentConfig.useWebSockets) {
+        currentConfig.EventChannelConfig = EventChannelConf.WebSockets;
+      } else {
+        currentConfig.EventChannelConfig = EventChannelConf.LongPolling;
+      }
       app.appConfig = currentConfig;
 
       // configure rest APIs now

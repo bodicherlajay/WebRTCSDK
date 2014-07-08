@@ -43,7 +43,7 @@ describe.only('ATT.rtc', function () {
       expect(ATT.rtc.configure.bind(rtc, {key: 'PROD'})).to.not.throw('Environment not recognized');
     });
 
-    it('should set the way to consume events from the event channel', function () {
+    it('should set the current environment', function () {
       var options = { key : 'AMS'},
         currentConfig;
 
@@ -51,6 +51,30 @@ describe.only('ATT.rtc', function () {
       currentConfig = rtc.getConfiguration();
 
       expect(currentConfig.environment).to.equal('AMS');
+    });
+
+    it('should return default values if empty parameters are passed', function () {
+      var currentConfig;
+
+      rtc.configure({});
+      currentConfig = ATT.rtc.getConfiguration();
+
+      expect(currentConfig.environment).to.equal('PROD');
+      expect(currentConfig.useWebSockets).to.equal(false);
+    });
+
+    it('should set way to consume events from the event channel', function () {
+      var options = { useWebSockets: true },
+        currentConfig;
+
+      rtc.configure({key : 'AMS'});
+      currentConfig = rtc.getConfiguration();
+      expect(currentConfig.useWebSockets).to.equal(false);
+
+      rtc.configure(options);
+      currentConfig = rtc.getConfiguration();
+
+      expect(currentConfig.useWebSockets).to.equal(true);
     });
   });
 

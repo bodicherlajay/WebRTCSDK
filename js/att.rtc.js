@@ -18,13 +18,27 @@
 
     if (undefined === options
         || Object.keys(options).length === 0) {
+      currentConfiguration.environment = 'PROD';
+      currentConfiguration.useWebSockets = false;
       return;
     }
 
-    foundKey = environments[options.key];
+    if (undefined === options.key) {
+      currentConfiguration.environment = 'PROD';
+    } else {
+      foundKey = environments[options.key];
 
-    if (undefined === foundKey) {
-      throw new Error('Environment not recognized');
+      if (undefined === foundKey) {
+        throw new Error('Environment not recognized');
+      }
+
+      currentConfiguration.environment = options.key;
+    }
+
+    if (undefined === options.useWebSockets) {
+      currentConfiguration.useWebSockets = false;
+    } else {
+      currentConfiguration.useWebSockets = options.useWebSockets;
     }
 
     return;

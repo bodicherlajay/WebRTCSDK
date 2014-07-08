@@ -1,6 +1,6 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
- before: true, sinon: true, expect: true, xit: true, URL: true, assert*/
+ before: true, sinon: true, expect: true, xit: true, URL: true, assert, after*/
 
 describe('Phone', function () {
   'use strict';
@@ -111,15 +111,6 @@ describe('Phone', function () {
 
       afterEach(function () {
         createEventEmitterStub.restore();
-      });
-
-      describe('configure', function  () {
-        it('should exist', function () {
-          expect(phone.configure).to.be.a('function');
-        });
-        it('should throw an error if `options.env` is invalid');
-        it('setup the current environment for the client SDK');
-        it('should set the way to consume events from the event channel');
       });
 
       describe('getSession', function () {
