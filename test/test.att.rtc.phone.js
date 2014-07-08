@@ -527,6 +527,60 @@ describe('Phone', function () {
 
       });
 
+      describe('answer', function () {
+        var session,
+          options,
+          call,
+          onSpy,
+          callConnectSpy;
+
+        beforeEach(function () {
+
+          options = {
+            destination: '12345',
+            mediaType: 'audio'
+          };
+
+          call = new ATT.rtc.Call({
+            peer: '1234567',
+            mediaType: 'video'
+          });
+
+          onSpy = sinon.spy(call, 'on');
+
+          callConnectSpy = sinon.spy(call, 'connect');
+
+          session = phone.getSession();
+
+          session.currentCall = call;
+
+          phone.answer();
+        });
+
+        afterEach(function () {
+          onSpy.restore();
+          callConnectSpy.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.answer).to.be.a('function');
+        });
+
+        it('should throw an error if there is no current call', function () {
+          session.currentCall = null;
+          expect(phone.answer.bind(phone, {})).to.throw('Call object not defined');
+        });
+
+        it('Should call `call.connect` with optional params localVideo & remoteVideo', function () {
+          var options = {
+            localVideo: '#foo',
+            remoteVideo: '#bar'
+          };
+          phone.answer(options);
+          expect(callConnectSpy.calledWith(options)).to.equal(true);
+        });
+      });
+
       describe('hangup', function () {
 
         var session,

@@ -239,7 +239,8 @@
       emitter.subscribe(event, handler, this);
     }
 
-    function connect() {
+    function connect(config) {
+
       var call = this;
 
       emitter.publish('dialing');
@@ -289,6 +290,8 @@
     this.mediaType = options.mediaType;
     this.localSdp = null;
     this.remoteSdp = null;
+    this.localVideo = options.localVideo;
+    this.remoteVideo = options.remoteVideo;
 
     this.on = on.bind(this);
     this.connect = connect.bind(this);

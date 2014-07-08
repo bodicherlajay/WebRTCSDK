@@ -579,7 +579,7 @@
 
     var emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
-      call;
+      call = null;
 
     session.on('call-incoming', function () {
       emitter.publish('call-incoming');
@@ -684,6 +684,15 @@
       call.connect();
     }
 
+    function answer(options) {
+      call = session.currentCall;
+
+      if (call === undefined || call === null) {
+        throw new Error('Call object not defined');
+      }
+      call.connect(options);
+    }
+
     function hangup() {
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
@@ -700,6 +709,7 @@
     this.login = login.bind(this);
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
+    this.answer = answer.bind(this);
     this.hangup = hangup.bind(this);
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
