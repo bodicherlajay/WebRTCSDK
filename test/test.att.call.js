@@ -17,6 +17,7 @@ describe('Call', function () {
     createEventManagerStub,
     call,
     onDialingSpy,
+    onAnsweringSpy,
     onConnectingSpy,
     onConnectedSpy,
     onDisconnectingSpy,
@@ -30,7 +31,8 @@ describe('Call', function () {
 
     options = {
       peer: '12345',
-      mediaType: 'audio'
+      mediaType: 'audio',
+      type: ATT.CallTypes.OUTGOING
     };
 
     optionsforRTCM = {
@@ -72,12 +74,14 @@ describe('Call', function () {
     call = new ATT.rtc.Call(options);
 
     onDialingSpy = sinon.spy();
+    onAnsweringSpy = sinon.spy();
     onConnectingSpy = sinon.spy();
     onConnectedSpy = sinon.spy();
     onDisconnectingSpy = sinon.spy();
     onDisconnectedSpy = sinon.spy();
 
     call.on('dialing', onDialingSpy);
+    call.on('answering', onAnsweringSpy);
     call.on('connecting', onConnectingSpy);
     call.on('connected', onConnectedSpy);
     call.on('disconnecting', onDisconnectingSpy);
@@ -111,11 +115,12 @@ describe('Call', function () {
       })).to.not.throw(Error);
     });
 
-    it('Should create a call object with the options passed in', function () {
+    it.only('Should create a call object with the options passed in', function () {
       expect(call).to.be.an('object');
       expect(call.id).to.equal(options.id);
       expect(call.peer).to.equal(options.peer);
       expect(call.mediaType).to.equal(options.mediaType);
+      expect(call.type).to.equal(options.type);
     });
 
     it('should create an instance of event emitter', function () {
@@ -176,10 +181,6 @@ describe('Call', function () {
         onStub = sinon.stub(rtcMgr, 'on');
 
         setIdSpy = sinon.spy(call, 'setId');
-
-        call.connect({
-          onCallConnecting: function () {}
-        });
       });
 
       after(function () {
@@ -192,10 +193,30 @@ describe('Call', function () {
         expect(call.connect).to.be.a('function');
       });
 
-      it('Should trigger `dialing` event immediately', function (done) {
+      it('Should trigger `dialing` event immediately if callType is Outgoing', function (done) {
+
+        call.connect(options);
+
         setTimeout(function () {
           try {
             expect(onDialingSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should trigger `answering` event immediately if callType is Incoming', function (done) {
+        call.connect({
+          peer: '54321',
+          mediaType: 'video',
+          type: ATT.CallTypes.INCOMING
+        });
+
+        setTimeout(function () {
+          try {
+            expect(onAnsweringSpy.called).to.equal(true);
             done();
           } catch (e) {
             done(e);

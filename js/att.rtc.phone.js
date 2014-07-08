@@ -601,6 +601,7 @@
       if ('session-ready' !== event
           && 'session-disconnected' !== event
           && 'call-dialing' !== event
+          && 'call-answering' !== event
           && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
@@ -641,6 +642,7 @@
     }
 
     function dial(options) {
+
       if (undefined === options) {
         throw new Error('Options not defined');
       }
@@ -681,7 +683,7 @@
         emitter.publish('call-error');
       });
 
-      call.connect();
+      call.connect(options);
     }
 
     function answer(options) {
@@ -690,6 +692,11 @@
       if (call === undefined || call === null) {
         throw new Error('Call object not defined');
       }
+
+      call.on('answering', function () {
+        emitter.publish('call-answering');
+      });
+
       call.connect(options);
     }
 

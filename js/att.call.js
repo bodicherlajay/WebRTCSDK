@@ -43,7 +43,6 @@
     logger.logInfo('checking number: ' + callable);
 
     cleaned = ATT.phoneNumber.translate(number);
-    console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
     if (number.charAt(0) === '*') {
       cleaned = '*' + cleaned;
     }
@@ -223,6 +222,7 @@
     function on(event, handler) {
 
       if ('dialing' !== event &&
+          'answering' !== event &&
           'connecting' !== event &&
           'canceled' !== event &&
           'rejected' !== event &&
@@ -239,11 +239,16 @@
       emitter.subscribe(event, handler, this);
     }
 
-    function connect(config) {
-
+    function connect(options) {
       var call = this;
 
-      emitter.publish('dialing');
+      if (options) {
+        if ('Outgoing' === options.type) {
+        emitter.publish('dialing');
+        } else if ('Incoming' === options.type) {
+          emitter.publish('answering');
+        }
+      }
 
       rtcManager.on('remote-sdp-set', function (remoteSdp) {
         call.setRemoteSdp(remoteSdp);
@@ -288,6 +293,7 @@
     this.id = options.id;
     this.peer = options.peer;
     this.mediaType = options.mediaType;
+    this.type = options.type;
     this.localSdp = null;
     this.remoteSdp = null;
     this.localVideo = options.localVideo;

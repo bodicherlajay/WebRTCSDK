@@ -331,7 +331,8 @@ describe('Phone', function () {
 
           options = {
             destination: '12345',
-            mediaType: 'audio'
+            mediaType: 'video',
+            type: ATT.CallTypes.OUTGOING
           };
 
           call = new ATT.rtc.Call({
@@ -351,7 +352,7 @@ describe('Phone', function () {
             emitter.publish('ended');
             emitter.publish('error');
           });
-
+ 
           session = phone.getSession();
 
           createCallStub = sinon.stub(session, 'createCall', function () {
@@ -434,7 +435,7 @@ describe('Phone', function () {
         });
 
         it('should execute Call.connect', function () {
-          expect(callConnectStub.called).to.equal(true);
+          expect(callConnectStub.calledWith(options)).to.equal(true);
         });
 
         it('should trigger `call-dialing` when call publishes `dialing` event', function (done) {
@@ -532,7 +533,9 @@ describe('Phone', function () {
           options,
           call,
           onSpy,
-          callConnectSpy;
+          callConnectStub,
+          createCallStub,
+          callAnsweringHandlerSpy;
 
         beforeEach(function () {
 
@@ -547,19 +550,25 @@ describe('Phone', function () {
           });
 
           onSpy = sinon.spy(call, 'on');
+          callAnsweringHandlerSpy = sinon.spy();
 
-          callConnectSpy = sinon.spy(call, 'connect');
+          session = phone.getSession();
 
+          callConnectStub = sinon.stub(call, 'connect', function () {
+            emitter.publish('answering');
+          });
+ 
           session = phone.getSession();
 
           session.currentCall = call;
 
-          phone.answer();
+          phone.on('call-answering', callAnsweringHandlerSpy);
+          phone.answer(options);
         });
 
         afterEach(function () {
           onSpy.restore();
-          callConnectSpy.restore();
+          callConnectStub.restore();
         });
 
         it('should exist', function () {
@@ -571,13 +580,29 @@ describe('Phone', function () {
           expect(phone.answer.bind(phone, {})).to.throw('Call object not defined');
         });
 
-        it('Should call `call.connect` with optional params localVideo & remoteVideo', function () {
+        it('should register for `answering` event on the call object', function () {
+          expect(onSpy.calledWith('answering')).to.equal(true);
+        });
+
+        it('should trigger `call-answering` when call publishes `answering` event', function (done) {
+
+          setTimeout(function () {
+            try {
+              expect(callAnsweringHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
+        });
+
+        it('should call `call.connect` with optional params localVideo & remoteVideo', function () {
           var options = {
             localVideo: '#foo',
             remoteVideo: '#bar'
           };
           phone.answer(options);
-          expect(callConnectSpy.calledWith(options)).to.equal(true);
+          expect(callConnectStub.calledWith(options)).to.equal(true);
         });
       });
 
