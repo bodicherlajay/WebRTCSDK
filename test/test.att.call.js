@@ -115,7 +115,7 @@ describe('Call', function () {
       })).to.not.throw(Error);
     });
 
-    it.only('Should create a call object with the options passed in', function () {
+    it('Should create a call object with the options passed in', function () {
       expect(call).to.be.an('object');
       expect(call.id).to.equal(options.id);
       expect(call.peer).to.equal(options.peer);
