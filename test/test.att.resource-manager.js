@@ -4,7 +4,7 @@
 
 'use strict';
 
-describe('ResourceManager', function () {
+describe.only('ResourceManager', function () {
 
   var apiConfig,
     resourceManager,
@@ -29,6 +29,8 @@ describe('ResourceManager', function () {
     it('Should throw an error if parameters are invalid', function () {
       expect(factories.createResourceManager.bind(factories, undefined)).to.throw('No API configuration passed');
       expect(factories.createResourceManager.bind(factories, {})).to.throw('No API configuration passed');
+      expect(factories.createResourceManager.bind(factories, {test: 'test'}))
+        .to.throw('No `getConfiguration` method found.');
     });
 
     it('should setup restOperationsConfig with `config`', function () {

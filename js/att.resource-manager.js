@@ -22,6 +22,10 @@
       throw new Error('No API configuration passed');
     }
 
+    if (undefined === apiConfig.getConfiguration) {
+      throw new Error('No `getConfiguration` method found.');
+    }
+
     function createRESTConfiguration(operationConfig, options) {
 
       var restConfig,

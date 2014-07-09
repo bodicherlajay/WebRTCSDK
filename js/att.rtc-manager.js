@@ -19,7 +19,7 @@
     //   var apiConfigs = ATT.APIConfigs
     //   resourceManager = factories.createResourceManger(apiConfigs);
 
-    apiConfigs = ATT.private.config.api.getConfiguration(),
+    apiConfigs = ATT.private.config.api,
     logManager = ATT.logManager.getInstance();
 
   function handleError(operation, errHandler, err) {
