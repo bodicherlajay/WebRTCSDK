@@ -213,9 +213,9 @@
     }
 
     function disconnect() {
-
       rtcManager.disconnectCall({
-
+        sessionInfo: this.sessionInfo,
+        callId: this.id
       });
       emitter.publish('disconnecting');
     }

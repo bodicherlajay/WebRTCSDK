@@ -484,7 +484,7 @@ describe('Session', function () {
 
     });
 
-    describe('TerminateCalls', function () {
+    xdescribe('TerminateCalls', function () {
 
       beforeEach(function () {
         session.addCall(call);
@@ -725,6 +725,83 @@ describe('Session', function () {
         createCallSpy = sinon.spy(session, 'createCall');
 
         emitterEM.publish('call-incoming', callInfo);
+      });
+
+      after(function () {
+        getRTCMgrStub.restore();
+        createCallSpy.restore();
+      });
+
+      it('should create a new call on getting call-incoming event from event manager', function (done) {
+        setTimeout(function () {
+          try {
+            expect(createCallSpy.called).to.equal(true);
+            expect(createCallSpy.getCall(0).args[0].id).to.equal(callInfo.id);
+            expect(createCallSpy.getCall(0).args[0].peer).to.equal(callInfo.from);
+            expect(createCallSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
+            expect(createCallSpy.getCall(0).args[0].remoteSdp).to.equal(callInfo.remoteSdp);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should trigger `call-incoming` on creating the new call', function (done) {
+        setTimeout(function () {
+          try {
+            expect(callIncomingHandlerSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+    });
+
+    xdescribe('call-ended', function () {
+
+      var rtcManager,
+        session,
+        call,
+        callInfo,
+        emitterEM,
+        createEventEmitterStub,
+        getRTCMgrStub,
+        createCallSpy,
+        callEndedSpy;
+
+      before(function () {
+        callInfo = {
+          id: '123',
+          from: '1234',
+          mediaType: 'video',
+          remoteSdp: 'abc'
+        };
+
+        emitterEM = ATT.private.factories.createEventEmitter();
+
+        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+          return emitterEM;
+        });
+
+        rtcManager = new ATT.private.RTCManager(optionsforRTCM);
+
+        getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+          return rtcManager;
+        });
+
+        createEventEmitterStub.restore();
+
+        session = new ATT.rtc.Session();
+
+        callEndedSpy = sinon.spy();
+
+        session.on('call-ended', callEndedSpy);
+
+        createCallSpy = sinon.spy(session, 'createCall');
+
+        emitterEM.publish('call-ended', callInfo);
       });
 
       after(function () {
