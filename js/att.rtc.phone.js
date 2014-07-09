@@ -730,9 +730,10 @@
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
       });
-      call.disconnect();
+      session.on('call-disconnected', function () {
 
-//      session.deleteCurrentCall();
+      });
+      call.disconnect();
     }
 
     this.configure = configure;

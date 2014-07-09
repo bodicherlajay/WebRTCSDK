@@ -228,6 +228,7 @@
           'updating' !== event &&
           'needs-refresh' !== event &&
           'call-incoming' !== event &&
+          'call-disconnected' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event &&
           'allcallsterminated' !== event) {

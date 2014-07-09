@@ -466,8 +466,40 @@
       });
     }
 
-    function disconnectCall () {
-      return;
+    function disconnectCall (options) {
+      var sessionInfo;
+
+      if (undefined === options) {
+        throw new Error('No options defined.');
+      }
+
+      if (undefined === options.callId) {
+        throw new Error('CallId not defined');
+      }
+
+      if (undefined === options.sessionInfo) {
+        throw new Error('sessionInfo not defined');
+      }
+
+      sessionInfo = options.sessionInfo;
+
+      resourceManager.doOperation('endCall', {
+        params: {
+          url: [
+            sessionInfo.sessionId,
+            options.callId
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + sessionInfo.token
+          }
+        },
+        success: function () {
+          logger.logInfo('EndCall Request success');
+        },
+        error: function (error) {
+          logger.logError(error);
+        }
+      });
     }
 
     this.on = on.bind(this);

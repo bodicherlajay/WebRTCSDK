@@ -637,8 +637,8 @@ describe('Phone', function () {
           onSpy,
           callDisconnectStub,
           createCallStub,
-          deleteCurrentCallStub,
-          callDisconnectingHandlerSpy;
+          callDisconnectingHandlerSpy,
+          sessionOnSpy;
 
         beforeEach(function () {
 
@@ -657,16 +657,15 @@ describe('Phone', function () {
           onSpy = sinon.spy(call, 'on');
 
           session = phone.getSession();
+          sessionOnSpy = sinon.spy(session, 'on');
 
           createCallStub = sinon.stub(session, 'createCall', function () {
             return call;
           });
 
-          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall', function () {
-            return call;
-          });
+          callDisconnectStub = sinon.stub(call, 'disconnect', function () {
 
-          callDisconnectStub = sinon.spy(call, 'disconnect');
+          });
 
           phone.dial(options);
           phone.hangup();
@@ -675,25 +674,26 @@ describe('Phone', function () {
         afterEach(function () {
           callDisconnectStub.restore();
           createCallStub.restore();
+          sessionOnSpy.restore();
         });
 
         it('should exist', function () {
           expect(phone.hangup).to.be.a('function');
         });
 
-        xit('should call session.deleteCurrentCall', function () {
-          expect(deleteCurrentCallStub.called).to.equal(true);
-        });
-
         it('should register for the `disconnecting` event on the call object', function () {
           expect(onSpy.calledWith('disconnecting')).to.equal(true);
+        });
+
+        it('should register for the `disconnected` event on the session', function () {
+          expect(sessionOnSpy.calledWith('call-disconnected')).to.equal(true);
         });
 
         it('should execute call.disconnect', function () {
           expect(callDisconnectStub.called).to.equal(true);
         });
 
-        it('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
+        xit('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
           callDisconnectingHandlerSpy = sinon.spy();
           phone.on('call-disconnecting', callDisconnectingHandlerSpy);
 

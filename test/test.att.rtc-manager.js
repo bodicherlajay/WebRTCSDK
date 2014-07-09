@@ -531,6 +531,33 @@ describe('RTC Manager', function () {
         it('should exist', function () {
           expect(rtcManager.disconnectCall).to.be.a('function');
         });
+
+        it('should throw an error if invalid options', function () {
+          expect(rtcManager.disconnectCall.bind(rtcManager)).to.throw('No options defined.');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            sessionInfo: {}
+          })).to.throw('CallId not defined');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            callId: '1234'
+          })).to.throw('sessionInfo not defined');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            sessionInfo: {},
+            callId: '1234'
+          })).to.not.throw(Error);
+        });
+
+        it('should call doOperation on the resourceManager with `endCall`', function () {
+          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+
+          rtcManager.disconnectCall({
+            sessionInfo: {},
+            callId: '1234'
+          });
+
+          expect(doOperationSpy.calledWith('endCall')).to.equal(true);
+
+          doOperationSpy.restore();
+        });
       });
     });
   });
