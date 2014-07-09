@@ -5,7 +5,7 @@ module.exports = function (grunt) {
 
   var unitTestFiles = [
       // 'test/test.att.utils.sdk-error-store.js',
-      // 'test/test.att.config.api.js',
+      'test/test.att.config.api.js',
       'test/test.att.config.app.js',
       'test/test.att.resource-manager.js',
       'test/test.att.enum.js',
