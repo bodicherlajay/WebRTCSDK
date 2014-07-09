@@ -4,7 +4,7 @@
 
 'use strict';
 
-describe('ResourceManager', function () {
+describe.only('ResourceManager', function () {
 
   var apiConfig,
     resourceManager,
@@ -75,7 +75,9 @@ describe('ResourceManager', function () {
             'Accept' : 'application/json',
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
-          }
+          },
+          success: function () { return; },
+          error: function () { return; }
         };
       });
       it('Should Exist', function () {
@@ -85,7 +87,7 @@ describe('ResourceManager', function () {
       it('should throw an error if `operationName` is invalid', function () {
         expect(resourceManager.doOperation.bind(resourceManager, undefined)).to.throw('Must specify an operation name.');
         expect(resourceManager.doOperation.bind(resourceManager, '')).to.throw('Must specify an operation name.');
-        expect(resourceManager.doOperation.bind(resourceManager, 'anyInvalidName')).to.throw('Operation not found.');
+        expect(resourceManager.doOperation.bind(resourceManager, 'anyInvalidName', getEventsConfig)).to.throw('Operation not found.');
       });
 
       it('should throw an error if `options` is invalid', function () {
@@ -95,6 +97,20 @@ describe('ResourceManager', function () {
         badGetEventsConfig.params = {};
 
         expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', undefined)).to.throw('No options found.');
+        expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', {})).to.throw('No options found.');
+        expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', {
+          test: 'bogus'
+        })).to.throw('No `success` callback passed.');
+        expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', {
+          success: function () { return; }
+        })).to.throw('No `error` callback passed.');
+        expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', {
+          success: {}
+        })).to.throw('`success` callback has to be a function.');
+        expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', {
+          success: function () { return; },
+          error: 'error'
+        })).to.throw('`error` callback has to be a function.');
         expect(resourceManager.doOperation.bind(resourceManager, 'getEvents', badGetEventsConfig)).to.throw('Params passed in must match number of formatters.');
 
         badGetEventsConfig.params = {

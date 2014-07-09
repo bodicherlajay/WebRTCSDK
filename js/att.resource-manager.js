@@ -141,12 +141,6 @@
         configuredRESTOperation,
         currentConfiguration;
 
-      if (undefined === operationName
-          || operationName.length === 0) {
-        logger.logError('no operation name provided');
-        throw new Error('Must specify an operation name.');
-      }
-
       currentConfiguration = apiConfigs.getConfiguration();
       operationConfig = currentConfiguration[operationName];
 
@@ -197,6 +191,33 @@
      * @param config
      */
     function doOperation(operationName, config) {
+
+      if (undefined === operationName
+        || operationName.length === 0) {
+        logger.logError('no operation name provided');
+        throw new Error('Must specify an operation name.');
+      }
+
+      if (undefined === config
+        || Object.keys(config).length === 0) {
+        throw new Error('No options found.');
+      }
+
+      if (undefined === config.success) {
+        throw new Error('No `success` callback passed.');
+      }
+
+      if (typeof config.success !== 'function') {
+        throw new Error('`success` callback has to be a function.');
+      }
+
+      if (undefined === config.error) {
+        throw new Error('No `error` callback passed.');
+      }
+
+      if (typeof config.error !== 'function') {
+        throw new Error('`error` callback has to be a function.');
+      }
 
       try {
         var operation = getOperation(operationName, config);

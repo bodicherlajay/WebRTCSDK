@@ -308,6 +308,20 @@
     }
 
     function refreshSession (options) {
+
+      if (undefined === options
+        || Object.keys(options).length === 0) {
+        throw new Error('Invalid options');
+      }
+
+      if (undefined == options.sessionId) {
+        throw new Error('No session ID passed');
+      }
+
+      if (undefined === options.token) {
+        throw new Error('No token passed');
+      }
+
       resourceManager.doOperation('refreshWebRTCSession', {
         success : function () {
           options.success({ timeout: 500 });

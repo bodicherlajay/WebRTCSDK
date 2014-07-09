@@ -277,10 +277,21 @@ describe('RTC Manager', function () {
         });
       });
 
-      describe.only('refreshSession', function () {
+      describe('refreshSession', function () {
 
         it('should exist', function () {
           expect(rtcManager.refreshSession).to.be.a('function');
+        });
+
+        it('should throw an error if `options` are invalid', function () {
+          expect(rtcManager.refreshSession.bind(rtcManager, undefined)).to.throw('Invalid options');
+          expect(rtcManager.refreshSession.bind(rtcManager, {})).to.throw('Invalid options');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            test: 'bogus'
+          })).to.throw('No session ID passed');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123'
+          })).to.throw('No token passed');
         });
 
         it('should call resourceManager.doOperation with `refreshWebRTCSession`', function () {
@@ -322,6 +333,8 @@ describe('RTC Manager', function () {
               });
 
             rtcManager.refreshSession({
+              token: '123',
+              sessionId: '1234',
               success: onSuccessSpy
             });
 
