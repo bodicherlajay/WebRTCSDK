@@ -9,8 +9,8 @@
   var logMgr = ATT.logManager.getInstance(),
     logger = null,
     factories = ATT.private.factories,
-    apiConfigs = ATT.private.config.api.getConfiguration(),
-    resourceManager = factories.createResourceManager(apiConfigs);
+    apiConfig = ATT.private.config.api,
+    resourceManager = factories.createResourceManager(apiConfig);
 
   logger = logMgr.getLoggerByName('SignalingService');
 

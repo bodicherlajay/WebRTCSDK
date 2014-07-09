@@ -134,7 +134,8 @@
     function getOperation(operationName, options) {
       var operationConfig,
         restConfig,
-        configuredRESTOperation;
+        configuredRESTOperation,
+        currentConfiguration;
 
       if (undefined === operationName
           || operationName.length === 0) {
@@ -142,8 +143,8 @@
         throw new Error('Must specify an operation name.');
       }
 
-
-      operationConfig = apiConfigs[operationName];
+      currentConfiguration = apiConfigs.getConfiguration();
+      operationConfig = currentConfiguration[operationName];
 
       if (undefined === operationConfig) {
         throw new Error('Operation not found.');
@@ -206,7 +207,7 @@
 
 
     function getRestOperationsConfig() {
-      return apiConfigs;
+      return apiConfigs.getConfiguration();
     }
 
 

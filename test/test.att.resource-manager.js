@@ -6,12 +6,12 @@
 
 describe('ResourceManager', function () {
 
-  var apiConfigs,
+  var apiConfig,
     resourceManager,
     factories;
 
   before(function () {
-    apiConfigs = ATT.private.config.api.getConfiguration();
+    apiConfig = ATT.private.config.api;
   });
 
   beforeEach(function () {
@@ -33,13 +33,13 @@ describe('ResourceManager', function () {
 
     it('should setup restOperationsConfig with `config`', function () {
 
-      resourceManager = factories.createResourceManager(apiConfigs);
-      expect(resourceManager.getRestOperationsConfig()).to.equal(apiConfigs);
+      resourceManager = factories.createResourceManager(apiConfig);
+      expect(JSON.stringify(resourceManager.getRestOperationsConfig())).to.equal(JSON.stringify(apiConfig.getConfiguration()));
 
     });
 
     it('return an object', function () {
-      resourceManager = factories.createResourceManager(apiConfigs);
+      resourceManager = factories.createResourceManager(apiConfig);
       expect(resourceManager).to.be.an('object');
     });
 
@@ -47,7 +47,7 @@ describe('ResourceManager', function () {
 
   describe('Methods', function () {
     beforeEach(function () {
-      resourceManager = factories.createResourceManager(apiConfigs);
+      resourceManager = factories.createResourceManager(apiConfig);
     });
 
     describe('doOperation', function () {
