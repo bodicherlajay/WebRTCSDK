@@ -22,6 +22,7 @@
   module.CallStates = {
     INITIAL: 'Call Setting up',
     ONGOING: 'Call Ongoing',
+    MUTED:   'Call Muted',
     MOVED: 'Call Moved',
     HELD: 'Call Held',
     RESUMED: 'Call Resumed',

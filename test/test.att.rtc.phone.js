@@ -620,6 +620,123 @@ describe('Phone', function () {
         });
       });
 
+      describe('mute & unmute', function () {
+
+        var session,
+          options,
+          call,
+          createCallStub,
+          onSpy,
+          callMuteStub,
+          callUnmuteStub,
+          callMutedHandlerSpy,
+          callUnmutedHandlerSpy;
+
+        beforeEach(function () {
+
+          options = {
+            destination: '12345',
+            mediaType: 'video',
+            localMedia: '#foo',
+            remoteMedia: 'bar'
+          };
+
+          call = new ATT.rtc.Call({
+            peer: '1234567',
+            mediaType: 'video'
+          });
+
+          onSpy = sinon.spy(call, 'on');
+
+          callMuteStub = sinon.stub(call, 'mute', function () {
+            emitter.publish('muted');
+          });
+
+          callUnmuteStub = sinon.stub(call, 'unmute', function () {
+            emitter.publish('unmuted');
+          });
+ 
+          session = phone.getSession();
+
+          createCallStub = sinon.stub(session, 'createCall', function () {
+            return call;
+          });
+
+          callMutedHandlerSpy = sinon.spy();
+          callUnmutedHandlerSpy = sinon.spy();
+
+          phone.on('call-muted', callMutedHandlerSpy);
+          phone.on('call-unmuted', callUnmutedHandlerSpy);
+
+          phone.dial(options);
+        });
+
+        afterEach(function () {
+          onSpy.restore();
+          callMuteStub.restore();
+          callUnmuteStub.restore();
+          createCallStub.restore();
+        });
+
+        describe('mute', function () {
+          beforeEach(function () {
+            phone.mute();
+          });
+
+          it('should exist', function () {
+            expect(phone.mute).to.be.a('function');
+          });
+
+          it('should register for the `muted` event on the call object', function () {
+            expect(onSpy.calledWith('muted')).to.equal(true);
+          });
+
+          it('should call `call.mute`', function () {
+            expect(callMuteStub.called).to.equal(true);
+          });
+
+          it('should trigger `call-muted` when call publishes `muted` event', function (done) {
+            setTimeout(function () {
+              try {
+                expect(callMutedHandlerSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
+        });
+
+        describe('unmute', function () {
+          beforeEach(function () {
+            phone.unmute();
+          });
+
+          it('should exist', function () {
+            expect(phone.unmute).to.be.a('function');
+          });
+
+          it('should register for the `unmuted` event on the call object', function () {
+            expect(onSpy.calledWith('unmuted')).to.equal(true);
+          });
+
+          it('should call `call.unmute`', function () {
+            expect(callUnmuteStub.called).to.equal(true);
+          });
+
+          it('should trigger `call-unmuted` when call publishes `unmuted` event', function (done) {
+            setTimeout(function () {
+              try {
+                expect(callUnmutedHandlerSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
+        });
+      });
+
       describe('hangup', function () {
 
         var session,

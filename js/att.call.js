@@ -65,17 +65,6 @@
   function resumeCall() {
     peerConnSvc.resumeCall();
   }
-
-  function muteCall() {
-    logger.logInfo('putting call on mute');
-    userMediaSvc.muteStream();
-  }
-
-  function unmuteCall() {
-    logger.logInfo('unmuting call');
-    userMediaSvc.unmuteStream();
-  }
-
   /**
    * Call end
    * @param {Object} options The phone.js facade options
@@ -156,6 +145,8 @@
           'canceled' !== event &&
           'rejected' !== event &&
           'connected' !== event &&
+          'muted' !== event &&
+          'unmuted' !== event &&
           'established' !== event &&
           'ended' !== event &&
           'error' !== event &&
@@ -234,6 +225,28 @@
       emitter.publish('connected');
     }
 
+    function mute() {
+      var call = this;
+
+      rtcManager.muteCall({
+        onSuccess: function () {
+          call.state = ATT.CallStates.MUTED;
+          emitter.publish('muted');
+        }
+      });
+    }
+
+    function unmute() { 
+      var call = this;
+
+      rtcManager.unmuteCall({
+        onSuccess: function () {
+          call.state = ATT.CallStates.ONGOING;
+          emitter.publish('unmuted');
+        }
+      });
+    }
+
     this.id = options.id;
     this.peer = options.peer;
     this.mediaType = options.mediaType;
@@ -243,6 +256,7 @@
     this.remoteSdp = null;
     this.localMedia = options.localMedia;
     this.remoteMedia = options.remoteMedia;
+    this.state = null;
 
     this.on = on.bind(this);
     this.connect = connect.bind(this);
@@ -254,8 +268,8 @@
     this.handleCallOpen = handleCallOpen.bind(this);
     this.hold = holdCall.bind(this);
     this.resume = resumeCall.bind(this);
-    this.mute = muteCall.bind(this);
-    this.unmute = unmuteCall.bind(this);
+    this.mute = mute.bind(this);
+    this.unmute = unmute.bind(this);
     this.end = endCall.bind(this);
 
     if(undefined !== this.id) {
