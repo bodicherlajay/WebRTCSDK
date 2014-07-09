@@ -72,8 +72,8 @@
         options.onError(Error.create('Get user media failed: ' + err));
       });
 
-      // set up listener for remote video start
-      this.onRemoteVideoStart(options.onMediaEstablished);
+      // set up listener for remote media start
+      this.onRemoteMediaStart(options.onMediaEstablished);
     },
 
     /**
@@ -99,12 +99,12 @@
     },
 
     /**
-    * Listen for start of remote video
-    * @param {HTMLElement} remoteVideo The remote video element
-    * @returns {HTMLElement} remoteVideo
+    * Listen for start of remote media
+    * @param {HTMLElement} remoteMedia The remote media element
+    * @returns {HTMLElement} remoteMedia
     */
-    onRemoteVideoStart: function (callback) {
-      this.remoteVideo.addEventListener('playing', function () {
+    onRemoteMediaStart: function (callback) {
+      this.remoteMedia.addEventListener('playing', function () {
         callback();
       });
     },
@@ -122,10 +122,10 @@
       try {
         if (args.localOrRemote === 'remote') {
           this.remoteStream = args.stream;
-          videoStreamEl = this.remoteVideo;
+          videoStreamEl = this.remoteMedia;
         } else {
           this.localStream = args.stream;
-          videoStreamEl = this.localVideo;
+          videoStreamEl = this.localMedia;
           videoStreamEl.setAttribute('muted', '');
         }
 
