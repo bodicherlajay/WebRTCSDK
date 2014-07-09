@@ -582,7 +582,7 @@ describe('Session', function () {
 
       var onNeedsRefreshSpy;
 
-      xit('Should be triggered every 60000 ms before timeout', function (done) {
+      it('Should be triggered every 60000 ms before timeout', function (done) {
 
         var session2 = new ATT.rtc.Session(options);
         onNeedsRefreshSpy = sinon.spy();
@@ -667,13 +667,14 @@ describe('Session', function () {
       it('should call rtcManager.refreshSession', function (done) {
         var rtcManager = ATT.private.rtcManager.getRTCManager(),
           refreshSessionStub = sinon.stub(rtcManager, 'refreshSession', function () {}),
-          session4 = new ATT.rtc.Session({
-            token: 'bogus',
-            e911Id: 'e911Bogus'
-          }),
+          session4 = new ATT.rtc.Session(),
           callArgs;
 
-        session4.update({timeout: 500});
+        session4.update({
+          token: 'bogus',
+          e911Id: 'e911Bogus',
+          timeout: 500
+        });
 
         setTimeout(function () {
           try {

@@ -277,7 +277,7 @@ describe('RTC Manager', function () {
         });
       });
 
-      describe('refreshSession', function () {
+      describe.only('refreshSession', function () {
 
         it('should exist', function () {
           expect(rtcManager.refreshSession).to.be.a('function');
@@ -300,7 +300,7 @@ describe('RTC Manager', function () {
           doOperationSpy.restore();
         });
 
-        xdescribe('Success', function () {
+        describe('Success', function () {
           it('should execute the `success` callback', function () {
             var onSuccessSpy = sinon.spy(),
               doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {

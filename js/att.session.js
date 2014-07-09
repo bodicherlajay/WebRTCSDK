@@ -315,7 +315,7 @@
         emitter.publish('needs-refresh');
         rtcManager.refreshSession({
           sessionId : id,
-          token : '',
+          token : token,
           success : function () {},
           error : function () {return; }
         });
