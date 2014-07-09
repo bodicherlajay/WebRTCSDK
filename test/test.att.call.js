@@ -26,7 +26,7 @@ describe('Call', function () {
 
   before(function () {
 
-    apiConfigs = ATT.APIConfigs;
+    apiConfigs = ATT.private.config.api.getConfiguration();
     factories = ATT.private.factories;
 
     options = {

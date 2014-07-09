@@ -9,10 +9,6 @@ describe('ATT.rtc', function () {
     expect(ATT.rtc).to.be.an('object');
   });
 
-  it('verify existence of ATT.APIConfigs', function () {
-    expect(ATT.APIConfigs).to.be.an('object');
-  });
-
   describe('getConfiguration', function () {
     it('should exist', function () {
       expect(ATT.rtc.getConfiguration).to.be.a('function');

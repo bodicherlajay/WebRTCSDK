@@ -5,7 +5,7 @@ beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
 describe('SignalingService', function () {
   "use strict";
 
-  var apiConfigs = ATT.APIConfigs,
+  var apiConfigs = ATT.private.config.api.getConfiguration(),
     factories = ATT.private.factories,
     resourceManager = factories.createResourceManager(apiConfigs),
     apiObj,

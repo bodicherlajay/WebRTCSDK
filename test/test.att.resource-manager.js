@@ -11,7 +11,7 @@ describe('ResourceManager', function () {
     factories;
 
   before(function () {
-    apiConfigs = ATT.APIConfigs;
+    apiConfigs = ATT.private.config.api.getConfiguration();
   });
 
   beforeEach(function () {

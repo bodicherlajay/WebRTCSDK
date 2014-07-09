@@ -11,7 +11,7 @@ describe('Session', function () {
 
   before(function () {
     factories = ATT.private.factories;
-    apiConfigs = ATT.APIConfigs;
+    apiConfigs = ATT.private.config.api.getConfiguration();
 
     options = {
       token: 'dsfgdsdf',
