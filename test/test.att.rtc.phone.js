@@ -620,7 +620,7 @@ describe('Phone', function () {
         });
       });
 
-      describe.only('hangup', function () {
+      describe('hangup', function () {
 
         var session,
           options,
