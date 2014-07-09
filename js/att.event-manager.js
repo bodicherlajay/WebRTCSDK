@@ -184,21 +184,94 @@
 
   function createEventManager(options) {
 
-    var eventChannel,
-      resourceManager = options.resourceManager,
-      emitter = factories.createEventEmitter();
+    var channelConfig,
+      eventChannel,
+      resourceManager,
+      emitter;
 
-    logger = logManager.getLoggerByName("EventManager");
+    /*
+     * Subscribes to all Event Channel announcements
+     * and triggers UI callbacks
+     * @param {Object} event The event object
+     */
+    function processEvent(event) {
+      var codec;
 
-    logger.logDebug('createEventManager');
+      if (!event) {
+        logger.logError('Not able to consume null event...');
+        return;
+      }
+
+      logger.logDebug('Consume event from event channel', JSON.stringify(event));
+
+      switch (event.state) {
+      case ATT.RTCCallEvents.INVITATION_RECEIVED:
+        codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
+        emitter.publish('call-incoming', {
+          id: event.resourceURL.split('/')[6],
+          from: event.from.split('@')[0].split(':')[1],
+          mediaType: (codec.length === 1) ? 'audio' : 'video',
+          remoteSdp: event.sdp
+        });
+        break;
+      }
+    }
+
+    function setupEventChannel(options) {
+      logger.logDebug('setupEventChannel');
+
+      // Set event channel configuration
+      // All parameters are required
+      // Also, see appConfigModule
+      var channelOptions = {
+        accessToken: options.token,
+        endpoint: channelConfig.endpoint,
+        sessionId: options.sessionId,
+        publisher: emitter,
+        resourceManager: resourceManager,
+        publicMethodName: 'getEvents',
+        usesLongPolling: ('longpolling' === channelConfig.type)
+      };
+
+      eventChannel = factories.createEventChannel(channelOptions);
+
+      if (eventChannel) {
+        logger.logInfo('Event channel up and running');
+
+        eventChannel.on('api-event', function (event) {
+          processEvent(event);
+        });
+
+        logger.logInfo('Subscribed to api-event from event channel');
+
+        eventChannel.startListening({
+          success: function (msg) {
+            logger.logInfo(msg);
+          },
+          error: options.onError
+        });
+      }
+      emitter.publish('listening');
+    }
+
+    function stop() {
+      if (eventChannel) {
+        eventChannel.stopListening();
+        logger.logInfo('Event channel shutdown successfully');
+      }
+      emitter.publish('stop-listening');
+    }
+
+    function publish() {}
+
 
     function on(event, handler) {
       if ('listening' !== event
-        && 'stop-listening' !== event
-        && 'call-incoming' !== event
-        && 'remote-sdp' !== event
-        && 'remote-sdp-set' !== event
-        && 'media-established' !== event) {
+          && 'stop-listening' !== event
+          && 'call-incoming' !== event
+          && 'remote-sdp' !== event
+          && 'remote-sdp-set' !== event
+          && 'media-established' !== event) {
         throw new Error('Event not found');
       }
 
@@ -220,79 +293,22 @@
       setupEventChannel(options);
     }
 
-    /*
-     * Subscribes to all Event Channel announcements
-     * and triggers UI callbacks
-     * @param {Object} event The event object
-     */
-    function processEvent(event) {
-      if (!event) {
-        logger.logError('Not able to consume null event...');
-        return;
-      }
+    logger = logManager.getLoggerByName("EventManager");
+    logger.logDebug('createEventManager');
 
-      logger.logDebug('Consume event from event channel', JSON.stringify(event));
-
-      switch(event.state) {
-      case ATT.RTCCallEvents.INVITATION_RECEIVED:
-        var codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
-
-        emitter.publish('call-incoming', {
-          id: event.resourceURL.split('/')[6],
-          from: event.from.split('@')[0].split(':')[1],
-          mediaType: (codec.length === 1) ? 'audio' : 'video',
-          remoteSdp: event.sdp
-        });
-        break;
-      }
+    if (undefined === options
+        || 0 === Object.keys(options).length) {
+      throw new Error('Invalid options');
     }
-
-    function setupEventChannel(options) {
-      logger.logDebug('setupEventChannel');
-
-      // Set event channel configuration
-      // All parameters are required
-      // Also, see appConfigModule
-      var channelConfig = {
-        accessToken: options.token,
-        endpoint: ATT.appConfig.EventChannelConfig.endpoint,
-        sessionId: options.sessionId,
-        publisher: emitter,
-        resourceManager: resourceManager,
-        publicMethodName: 'getEvents',
-        usesLongPolling: (ATT.appConfig.EventChannelConfig.type === 'longpolling')
-      };
-
-      eventChannel = factories.createEventChannel(channelConfig);
-
-      if (eventChannel) {
-        logger.logInfo('Event channel up and running');
-
-        eventChannel.on('api-event', function (event) {
-          processEvent(event);
-        });
-
-        logger.logInfo('Subscribed to api-event from event channel');
-
-        eventChannel.startListening({
-          success: function (msg) {
-            logger.logInfo(msg);
-          },
-          error: options.onError
-        });
-      }
-      emitter.publish('listening');
+    if (undefined === options.resourceManager) {
+      throw new Error('Must pass `options.resourceManager`');
     }
-
-    function stop () {
-      if (eventChannel) {
-        eventChannel.stopListening();
-        logger.logInfo('Event channel shutdown successfully');
-      }
-      emitter.publish('stop-listening');
+    if (undefined === options.channelConfig) {
+      throw new Error('Must pass `options.channelConfig`');
     }
-
-    function publish () {}
+    channelConfig = options.channelConfig;
+    resourceManager = options.resourceManager;
+    emitter = factories.createEventEmitter();
 
     return {
       on: on,

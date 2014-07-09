@@ -220,7 +220,10 @@
       //setup httpConfig for REST call
       httpConfig = {
         params: {
-          url: {sessionId: channelConfig.sessionId, endpoint: channelConfig.endpoint},
+          url: {
+            sessionId: channelConfig.sessionId,
+            endpoint: channelConfig.endpoint
+          },
           headers: {
             'Authorization' : 'Bearer ' + channelConfig.accessToken
           }

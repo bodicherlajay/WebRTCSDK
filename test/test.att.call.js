@@ -58,6 +58,10 @@ describe('Call', function () {
             logDebug: function () { return; }
           };
         }
+      },
+      channelConfig: {
+        endpoint: '/events',
+        type: 'longpolling'
       }
     });
 

@@ -17,16 +17,27 @@ describe('Event Manager', function () {
   before(function () {
     factories = ATT.private.factories;
 
-    ATT.appConfig = {
-      EventChannelConfig: {
-        endpoint: 'endpoint',
-        type: 'longpolling'
-      }
-    };
   });
 
   it('Should export factories.createEventManager', function () {
     expect(factories.createEventManager).to.be.a('function');
+  });
+
+  describe('Factory method', function () {
+    it('should throw an error if `options` are invalid', function () {
+      expect(factories.createEventManager.bind(factories, undefined)).to.throw('Invalid options');
+      expect(factories.createEventManager.bind(factories, {})).to.throw('Invalid options');
+      expect(factories.createEventManager.bind(factories, {
+        dummy: 'test'
+      })).to.throw('Must pass `options.resourceManager`');
+      expect(factories.createEventManager.bind(factories, {
+        resourceManager: {}
+      })).to.throw('Must pass `options.channelConfig`');
+      expect(factories.createEventManager.bind(factories, {
+        resourceManager: {},
+        channelConfig: {}
+      })).to.not.throw(Error);
+    });
   });
 
   describe('Methods', function () {
@@ -66,9 +77,11 @@ describe('Event Manager', function () {
       });
 
       options = {
-        rtcEvent: {},
-        errorManager: {},
-        resourceManager: resourceManagerStub
+        resourceManager: resourceManagerStub,
+        channelConfig: {
+          type: 'test',
+          endpoint: 'url'
+        }
       };
 
       eventManager = factories.createEventManager(options);
@@ -244,9 +257,11 @@ describe('Event Manager', function () {
       publishSpy = sinon.spy(emitterEM, 'publish');
 
       options = {
-        rtcEvent: {},
-        errorManager: {},
-        resourceManager: resourceManagerStub
+        resourceManager: resourceManagerStub,
+        channelConfig: {
+          endpoint: '/events',
+          type: 'longpolling'
+        }
       };
 
       eventManager = factories.createEventManager(options);

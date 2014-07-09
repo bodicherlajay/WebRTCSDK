@@ -20,6 +20,7 @@
     //   resourceManager = factories.createResourceManger(apiConfigs);
 
     apiConfigs = ATT.private.config.api,
+    appConfig = ATT.private.config.app,
     logManager = ATT.logManager.getInstance();
 
   function handleError(operation, errHandler, err) {
@@ -254,7 +255,8 @@
   */
   function RTCManager(options) {
 
-    var eventManager,
+    var appConfiguration,
+      eventManager,
       resourceManager,
       logger,
       userMediaSvc,
@@ -295,8 +297,10 @@
 
     logger.logDebug('createRTCManager');
 
+    appConfiguration = appConfig.getConfiguration();
     eventManager = factories.createEventManager({
-      resourceManager:resourceManager
+      resourceManager:resourceManager,
+      channelConfig: appConfiguration.eventChannelConfig
     });
 
     function on(event, handler) {

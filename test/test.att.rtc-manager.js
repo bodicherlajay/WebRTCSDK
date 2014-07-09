@@ -46,8 +46,11 @@ describe('RTC Manager', function () {
       }
     };
     optionsForEM = {
-      errorManager: {},
-      resourceManager: resourceManagerStub
+      resourceManager: resourceManagerStub,
+      channelConfig: {
+        endpoint: '/events',
+        type: 'longpolling'
+      }
     };
     emitter = factories.createEventEmitter();
     createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
@@ -148,12 +151,6 @@ describe('RTC Manager', function () {
 
         rtcManager = new ATT.private.RTCManager(optionsForRTCM);
 
-        ATT.appConfig = {
-          EventChannelConfig: {
-            endpoint: 'endpoint',
-            type: 'longpolling'
-          }
-        };
       });
 
       after(function () {

@@ -222,7 +222,6 @@ if (!ATT) {
         * Get WebRTC events from RTCEndpoint
         * @memberof ATT.APIConfigs
         */
-        //ATT.appConfig.EventChannelConfig.method
         getEvents: {
           method: 'get',
           formatters: {
