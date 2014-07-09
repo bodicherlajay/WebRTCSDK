@@ -303,6 +303,19 @@ describe('Session', function () {
 
     });
 
+    describe('getToken', function () {
+      it('should exist', function () {
+        expect(session.getToken).to.be.a('function');
+      });
+      it('return the current token', function () {
+        expect(session.getToken()).to.equal(null);
+        session.update({
+          token: 'bogus'
+        });
+        expect(session.getToken()).to.equal('bogus');
+      });
+    });
+
     describe('setId', function () {
 
       it('Should publish the `connected` event', function (done) {
@@ -565,11 +578,11 @@ describe('Session', function () {
 
   describe('Events', function () {
 
-    describe.skip('needs-refresh', function () {
+    describe('needs-refresh', function () {
 
       var onNeedsRefreshSpy;
 
-      it('Should be triggered every 60000 ms before timeout', function (done) {
+      xit('Should be triggered every 60000 ms before timeout', function (done) {
 
         var session2 = new ATT.rtc.Session(options);
         onNeedsRefreshSpy = sinon.spy();
@@ -600,7 +613,7 @@ describe('Session', function () {
 
       });
 
-      it('Should be triggered exactly after `timeout` milliseconds if `timeout` is less that 60 000 ms', function (done) {
+      xit('Should be triggered exactly after `timeout` milliseconds if `timeout` is less that 60 000 ms', function (done) {
 
         var session3 = new ATT.rtc.Session(options);
         onNeedsRefreshSpy = sinon.spy();
@@ -620,7 +633,7 @@ describe('Session', function () {
         }, 600);
       });
 
-      it('clear the old value for the timeout and only use the new value to publish', function (done) {
+      xit('clear the old value for the timeout and only use the new value to publish', function (done) {
         var session3 = new ATT.rtc.Session(options);
         onNeedsRefreshSpy = sinon.spy();
 
@@ -654,11 +667,13 @@ describe('Session', function () {
       it('should call rtcManager.refreshSession', function (done) {
         var rtcManager = ATT.private.rtcManager.getRTCManager(),
           refreshSessionStub = sinon.stub(rtcManager, 'refreshSession', function () {}),
-          session4 = new ATT.rtc.Session(options),
+          session4 = new ATT.rtc.Session({
+            token: 'bogus',
+            e911Id: 'e911Bogus'
+          }),
           callArgs;
 
-        options.timeout = 500;
-        session4.update(options);
+        session4.update({timeout: 500});
 
         setTimeout(function () {
           try {
@@ -666,7 +681,7 @@ describe('Session', function () {
 
             callArgs = refreshSessionStub.getCall(0).args[0];
             expect(callArgs.sessionId !== undefined).to.equal(true);
-            expect(callArgs.token !== undefined).to.equal(true);
+            expect(callArgs.token).to.equal('bogus');
             expect(refreshSessionStub.getCall(0).args[0].success).to.be.a('function');
             expect(refreshSessionStub.getCall(0).args[0].error).to.be.a('function');
 

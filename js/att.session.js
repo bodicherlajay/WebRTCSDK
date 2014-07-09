@@ -195,6 +195,7 @@
       rtcManager,
       // private attributes
       id = null,
+      token = null,
       calls = {},
       logger;
 
@@ -260,13 +261,16 @@
 
     // public attributes
     this.timeout = null;
-    this.token = null;
     this.e911Id = null;
     this.currentCall = null;
     this.timer = null;
 
     // public methods
     this.on = on.bind(this);
+
+    this.getToken = function () {
+      return token;
+    };
 
     this.getId = function () {
       return id;
@@ -288,7 +292,8 @@
         throw new Error('No options provided');
       }
 
-      if ('number' !== typeof options.timeout) {
+      if (undefined !== options.timeout
+          && 'number' !== typeof options.timeout) {
         throw new Error('Timeout is not a number.');
       }
 
@@ -297,7 +302,7 @@
       } else {
         this.timeout = options.timeout - 60000;
       }
-      this.token = options.token || this.token;
+      token = options.token || token;
       this.e911Id = options.e911Id || this.e911Id;
 
       emitter.publish('updating', options);
@@ -308,12 +313,12 @@
 
       this.timer = setInterval(function () {
         emitter.publish('needs-refresh');
-//        rtcManager.refreshSession({
-//          sessionId : id,
-//          token : '',
-//          success : function () {},
-//          error : function () {return; }
-//        });
+        rtcManager.refreshSession({
+          sessionId : id,
+          token : '',
+          success : function () {},
+          error : function () {return; }
+        });
       }, this.timeout);
     };
 
@@ -324,7 +329,7 @@
       if (!options.token) {
         throw 'No access token provided';
       }
-      this.token = options.token;
+      token = options.token;
       this.e911Id = options.e911Id;
 
       emitter.publish('connecting');
@@ -365,7 +370,7 @@
       ATT.utils.extend(options, {
         sessionInfo: {
           sessionId: this.getId(),
-          token: this.token
+          token: token
         }
       });
       this.currentCall = new ATT.rtc.Call(options);
