@@ -59,7 +59,7 @@
       currentConfiguration.keepAlive = options.keepAlive;
     }
 
-    ATT.configureAPIs(currentConfiguration);
+    ATT.private.config.api.configure(currentConfiguration);
 
     return;
   }
@@ -75,9 +75,7 @@
   // configure the APIConfigs
   ATT.rtc.configure({
     environment: 'PROD',
-    useWebSocket: false,
-    RTCEndpoint: environments.PROD,
-    DHSEndpoint: 'HTTPS'
+    useWebSocket: false
   });
 
 }());

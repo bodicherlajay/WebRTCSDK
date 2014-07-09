@@ -304,7 +304,7 @@ describe('Call', function () {
       });
     });
 
-    describe.only('Disconnect', function () {
+    describe('Disconnect', function () {
       var disconnectCallStub;
 
       before(function () {

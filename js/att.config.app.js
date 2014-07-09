@@ -51,9 +51,14 @@ if (!ATT) {
       EventChannelConfig: null
     };
 
+  function getConfiguration() {
+    return currentConfig;
+  }
+
   ATT.private.config.app.environments = environments;
   ATT.private.config.app.current = currentConfig;
   ATT.private.config.app.dhsURLs = DHSConf;
   ATT.private.config.app.eventChannelConfig = EventChannelConf;
+  ATT.private.config.app.getConfiguration = getConfiguration;
 
 }(ATT || {}));

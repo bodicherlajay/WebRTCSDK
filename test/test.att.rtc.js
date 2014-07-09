@@ -87,8 +87,8 @@ describe('ATT.rtc', function () {
       expect(currentConfig.useWebSockets).to.equal(true);
       expect(currentConfig.keepAlive).to.equal(0);
     });
-    it('should call ATT.configureAPIs', function () {
-      var configureAPIsSpy = sinon.spy(ATT, 'configureAPIs'),
+    it('should call ATT.private.config.api.configure', function () {
+      var configureAPIsSpy = sinon.spy(ATT.private.config.api, 'configure'),
         args;
 
       rtc.configure({environment: 'AMS'});

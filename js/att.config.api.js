@@ -388,15 +388,19 @@ if (!ATT) {
         }
       };
     return APIConfigs;
-  },
+  };
 
-    configureAPIs = function (appConfig) {
-      var apiConfigs = configure(appConfig);
-      app.APIConfigs = apiConfigs;
-      return apiConfigs;
-    };
+  function getConfiguration() {
+    var currentConfig = ATT.private.config.app.getConfiguration();
+    return configure(currentConfig);
+  }
 
   // place on ATT.
-  app.configureAPIs = configureAPIs;
+  if (undefined === ATT.private.config.api) {
+    throw new Error('Error exporting ATT.private.config.api.getConfiguration');
+  }
+
+  ATT.private.config.api.getConfiguration = getConfiguration;
+  ATT.private.config.api.configure = configure;
 
 }(ATT || {}));

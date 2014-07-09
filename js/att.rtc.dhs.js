@@ -8,7 +8,7 @@
   'use strict';
 
   var dhsNamespace = {},
-    apiConfigs = ATT.APIConfigs,
+    apiConfigs = ATT.private.config.api.getConfiguration(),
     factories = ATT.private.factories,
     resourceManager = factories.createResourceManager(apiConfigs),
     logManager = ATT.logManager.getInstance(),
