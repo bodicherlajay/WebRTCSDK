@@ -78,14 +78,6 @@
       Resolution: "Please check the logs and contact support if needed"
     },
     {
-      JSObject: "",
-      JSMethod: "",
-      ErrorCode: "",
-      ErrorMessage: "",
-      Cause: "",
-      Resolution: ""
-    },
-    {
       JSObject: "ATT.rtc",
       JSMethod: "login",
       ErrorCode: "2000",
