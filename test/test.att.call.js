@@ -6,7 +6,7 @@ describe('Call', function () {
   'use strict';
 
   var factories,
-    apiConfigs,
+    apiConfig,
     options,
     optionsforRTCM,
     emitterEM,
@@ -26,7 +26,7 @@ describe('Call', function () {
 
   before(function () {
 
-    apiConfigs = ATT.private.config.api.getConfiguration();
+    apiConfig = ATT.private.config.api;
     factories = ATT.private.factories;
 
     options = {
@@ -37,7 +37,7 @@ describe('Call', function () {
 
     optionsforRTCM = {
       errorManager: ATT.Error,
-      resourceManager: factories.createResourceManager(apiConfigs),
+      resourceManager: factories.createResourceManager(apiConfig),
       rtcEvent: ATT.RTCEvent.getInstance(),
       userMediaSvc: ATT.UserMediaService,
       peerConnSvc: ATT.PeerConnectionService
