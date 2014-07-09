@@ -37,14 +37,28 @@
     eventEmitter = service;
   }
 
-  // function setApp(application) {
-    // app = application;
-  // }
+  function createCalledPartyUri(destination) {
+    if (destination.match(new RegExp('[^0-9]') == null)) { // Number (ICMN/VTN/PSTN)
+      if (destination.length == 10) {  // 10 digit number
+        return 'tel:+1' + destination;
+      }
+      if (destination.indexOf('1') === 0) {  // 1 + 10 digit number
+        return 'tel:+' + destination;
+      }
+      if (destination.indexOf ('+') === 0) { // '+' + Number
+        return 'tel:' + destination;
+      }
+      return 'sip:' + destination + '@icmn.api.att.net'; // if nothing works this will
+    }
+    if (destination.indexOf ('@') > 0) { // NoTN (assuming domain supplied to SDK dial)
+      return 'sip:' + destination;
+    }
+    return null;
+  }
 
   //Initialize dependency services
   function init() {
     try {
-      //setUserMediaService(app.UserMediaService);
       setSignalingService(app.SignalingService);
       setSDPFilter(app.sdpFilter.getInstance());
       setError(app.Error);
@@ -202,7 +216,7 @@
               logger.logInfo('sending offer');
               try {
                 SignalingService.sendOffer({
-                  calledParty: self.peer,
+                  calledParty: createCalledPartyUri(self.peer),
                   sdp: self.localDescription,
                   sessionInfo: self.sessionInfo,
                   success: function (response) {
