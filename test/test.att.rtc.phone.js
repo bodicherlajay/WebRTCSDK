@@ -620,7 +620,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('hangup', function () {
+      describe.only('hangup', function () {
 
         var session,
           options,
@@ -629,6 +629,7 @@ describe('Phone', function () {
           callDisconnectStub,
           createCallStub,
           callDisconnectingHandlerSpy,
+          callDisconnectedSpy,
           sessionOnSpy;
 
         beforeEach(function () {
@@ -655,9 +656,9 @@ describe('Phone', function () {
           });
 
           callDisconnectStub = sinon.stub(call, 'disconnect', function () {
+            emitter.publish('disconnecting');
 
           });
-
           phone.dial(options);
           phone.hangup();
         });
@@ -684,13 +685,26 @@ describe('Phone', function () {
           expect(callDisconnectStub.called).to.equal(true);
         });
 
-        xit('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
+        it('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
           callDisconnectingHandlerSpy = sinon.spy();
           phone.on('call-disconnecting', callDisconnectingHandlerSpy);
-
           setTimeout(function () {
             try {
               expect(callDisconnectingHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
+        });
+
+        it('should trigger `call-disconnected` when session publishes `disconnected` event', function (done) {
+          emitter.publish('call-disconnected');
+          callDisconnectedSpy = sinon.spy();
+          phone.on('call-disconnected', callDisconnectedSpy);
+          setTimeout(function () {
+            try {
+              expect(callDisconnectedSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
