@@ -73,6 +73,10 @@ describe('Session', function () {
     it('should register for `call-incoming` event on RTCManager', function () {
       expect(rtcManagerOnSpy.calledWith('call-incoming')).to.equal(true);
     });
+
+    it('should register for `call-disconnected` event on RTCManager', function () {
+      expect(rtcManagerOnSpy.calledWith('call-disconnected')).to.equal(true);
+    });
   });
 
   describe('Methods', function () {
@@ -560,6 +564,11 @@ describe('Session', function () {
         session.terminateCalls();
         expect(session.deleteCurrentCall.bind(session)).to.throw('Call not found');
       });
+
+      it('Should delete the current Call', function () {
+        session.currentCall = call;
+        expect(session.deleteCurrentCall.bind(session)).to.not.throw('Call not found');
+      });
     });
   });
 
@@ -759,7 +768,7 @@ describe('Session', function () {
       });
     });
 
-    xdescribe('call-ended', function () {
+    describe('call-disconnected', function () {
 
       var rtcManager,
         session,
@@ -771,12 +780,13 @@ describe('Session', function () {
         createCallSpy,
         callEndedSpy;
 
-      before(function () {
+      beforeEach(function () {
         callInfo = {
           id: '123',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteSdp: 'abc',
+          peer: 'abc'
         };
 
         emitterEM = ATT.private.factories.createEventEmitter();
@@ -795,28 +805,27 @@ describe('Session', function () {
 
         session = new ATT.rtc.Session();
 
+        session.currentCall = new ATT.rtc.Call(callInfo);
+
+
         callEndedSpy = sinon.spy();
 
-        session.on('call-ended', callEndedSpy);
+        session.on('call-disconnected', callEndedSpy);
 
         createCallSpy = sinon.spy(session, 'createCall');
 
-        emitterEM.publish('call-ended', callInfo);
+        emitterEM.publish('call-disconnected', callInfo);
       });
 
-      after(function () {
+      afterEach(function () {
         getRTCMgrStub.restore();
         createCallSpy.restore();
       });
 
-      it('should create a new call on getting call-incoming event from event manager', function (done) {
+      it('should trigger `call-disconnected` on call Disconnected ', function (done) {
         setTimeout(function () {
           try {
-            expect(createCallSpy.called).to.equal(true);
-            expect(createCallSpy.getCall(0).args[0].id).to.equal(callInfo.id);
-            expect(createCallSpy.getCall(0).args[0].peer).to.equal(callInfo.from);
-            expect(createCallSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
-            expect(createCallSpy.getCall(0).args[0].remoteSdp).to.equal(callInfo.remoteSdp);
+            expect(callEndedSpy.called).to.equal(true);
             done();
           } catch (e) {
             done(e);
@@ -824,10 +833,10 @@ describe('Session', function () {
         }, 100);
       });
 
-      it('should trigger `call-incoming` on creating the new call', function (done) {
+      it('should delete the current Call object on Call-disconnected event', function (done) {
         setTimeout(function () {
           try {
-            expect(callIncomingHandlerSpy.called).to.equal(true);
+            expect(session.currentCall).to.equal(null);
             done();
           } catch (e) {
             done(e);
