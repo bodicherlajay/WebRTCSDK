@@ -601,6 +601,7 @@
           && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
+          && 'call-disconnected' !== event
           && 'call-canceled' !== event
           && 'call-rejected' !== event
           && 'call-connected' !== event
@@ -745,7 +746,7 @@
         emitter.publish('call-disconnecting');
       });
       session.on('call-disconnected', function () {
-
+        emitter.publish('call-disconnected');
       });
       call.disconnect();
     }
