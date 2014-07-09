@@ -292,6 +292,26 @@ describe('RTC Manager', function () {
           expect(rtcManager.refreshSession.bind(rtcManager, {
             sessionId: '123'
           })).to.throw('No token passed');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123',
+            token: '123123'
+          })).to.throw('No `success` callback passed');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123',
+            token: '123123',
+            success: function () { return; }
+          })).to.throw('No `error` callback passed');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123',
+            token: '123123',
+            success: {}
+          })).to.throw('`success` callback has to be a function');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123',
+            token: '123123',
+            success: function () { return; },
+            error: {}
+          })).to.throw('`error` callback has to be a function');
         });
 
         it('should call resourceManager.doOperation with `refreshWebRTCSession`', function () {
@@ -313,17 +333,18 @@ describe('RTC Manager', function () {
 
         describe('Success', function () {
           it('should execute the `success` callback', function () {
-            var onSuccessSpy = sinon.spy(),
+            var timeout = 200,
+              onSuccessSpy = sinon.spy(),
               doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {
                 var response = {
                   getResponseHeader : function (name) {
                     var header;
                     switch (name) {
                     case 'x-expires':
-                      header = String(500); // seconds
+                      header = timeout.toString(); // seconds
                       break;
                     default:
-                      header = String(500); // seconds
+                      header = timeout.toString(); // seconds
                       break;
                     }
                     return header;
@@ -335,14 +356,14 @@ describe('RTC Manager', function () {
             rtcManager.refreshSession({
               token: '123',
               sessionId: '1234',
-              success: onSuccessSpy
+              success: onSuccessSpy,
+              error: function () { return; }
             });
 
             expect(onSuccessSpy.called).to.equal(true);
             expect(onSuccessSpy.calledWith({
-              timeout: 500
+              timeout: (timeout * 1000).toString()
             })).to.equal(true);
-
             doOperationStub.restore();
           });
         });

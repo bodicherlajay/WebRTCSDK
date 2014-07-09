@@ -322,9 +322,36 @@
         throw new Error('No token passed');
       }
 
+      if (undefined === options.success) {
+        throw new Error('No `success` callback passed');
+      }
+
+      if (typeof options.success !== 'function') {
+        throw new Error('`success` callback has to be a function');
+      }
+
+      if (undefined === options.error) {
+        throw new Error('No `error` callback passed');
+      }
+
+      if (typeof options.error !== 'function') {
+        throw new Error('`error` callback has to be a function');
+      }
+
       resourceManager.doOperation('refreshWebRTCSession', {
-        success : function () {
-          options.success({ timeout: 500 });
+        success : function (response) {
+          var timeout;
+
+          timeout = parseInt(response.getResponseHeader('x-expires'), 10);
+
+          options.success({ timeout: (timeout * 1000).toString() });
+        },
+        error: function() {
+          return;
+        },
+        params: {
+          url: [],
+          headers: {'Authorization': ''}
         }
       });
     }
