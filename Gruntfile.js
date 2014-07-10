@@ -4,11 +4,11 @@ module.exports = function (grunt) {
   'use strict';
 
   var unitTestFiles = [
-      // 'test/test.att.utils.sdk-error-store.js',
+      'test/test.att.utils.sdk-error-store.js',
       'test/test.att.config.api.js',
       'test/test.att.config.app.js',
       'test/test.att.resource-manager.js',
-//      'test/test.att.enum.js',
+      'test/test.att.enum.js',
       'test/test.att.utils.error-dictionary.js',
       'test/test.att.event-manager.js',
       'test/test.att.rtc-manager.js',

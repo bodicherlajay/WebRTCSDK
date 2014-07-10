@@ -11,7 +11,7 @@ describe('Session', function () {
     resourceManager,
     doOperationStub;
 
-  before(function () {
+  beforeEach(function () {
     factories = ATT.private.factories;
     apiConfig = ATT.private.config.api;
 
@@ -37,7 +37,7 @@ describe('Session', function () {
     };
 
   });
-  after(function () {
+  afterEach(function () {
     doOperationStub.restore();
   });
 
@@ -52,7 +52,7 @@ describe('Session', function () {
       rtcManagerOnSpy,
       getRTCManagerStub;
 
-    before(function () {
+    beforeEach(function () {
       createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
       rtcManager = {
         on: function () {}
@@ -64,7 +64,7 @@ describe('Session', function () {
       session = new ATT.rtc.Session();
     });
 
-    after(function () {
+    afterEach(function () {
       createEventEmitterSpy.restore();
       getRTCManagerStub.restore();
       rtcManagerOnSpy.restore();
@@ -457,7 +457,7 @@ describe('Session', function () {
     describe('createCall', function () {
       var callOpts;
 
-      before(function () {
+      beforeEach(function () {
         callOpts = {
           peer: '12345',
           mediaType: 'video'
@@ -756,7 +756,7 @@ describe('Session', function () {
         createCallSpy,
         callIncomingHandlerSpy;
 
-      before(function () {
+      beforeEach(function () {
         callInfo = {
           id: '123',
           from: '1234',
@@ -789,7 +789,7 @@ describe('Session', function () {
         emitterEM.publish('call-incoming', callInfo);
       });
 
-      after(function () {
+      afterEach(function () {
         getRTCMgrStub.restore();
         createCallSpy.restore();
       });

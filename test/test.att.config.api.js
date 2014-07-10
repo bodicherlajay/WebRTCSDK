@@ -42,13 +42,6 @@ describe('APIConfig', function () {
       currentConfiguration = ATT.private.config.api.getConfiguration();
     });
 
-    it('should have a valid method getE911Id method and return DHSEndpoint', function () {
-      expect(currentConfiguration.getE911Id).to.be.an('object');
-      expect(currentConfiguration.getE911Id.method).to.equal('get');
-      expect(currentConfiguration.getE911Id.formatters.url('e911Id')).to.equal(appConfig.DHSEndpoint + '/e911/e911Id');
-    });
-
-
     it('should have a valid method createWebRTCSession method and return headers', function () {
       expect(currentConfiguration.createWebRTCSession).to.be.an('object');
       expect(currentConfiguration.createWebRTCSession.method).to.equal('post');

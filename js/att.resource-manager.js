@@ -8,7 +8,7 @@
 (function () {
   "use strict";
 
-  var errorDictionary = ATT.errorDictionary,
+  var errorDictionary,
     utils = ATT.utils,
     logManager = ATT.logManager.getInstance();
 
@@ -108,7 +108,8 @@
 
       function restOperation(successCB, errorCB, onTimeout) {
 
-        var restClient;
+        var restClient,
+          errorDictionary = ATT.errorDictionary;
 
         restConfig.success = successCB;
         restConfig.error = function (errResp) {
