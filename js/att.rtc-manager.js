@@ -314,8 +314,8 @@
           return;
         },
         params: {
-          url: [],
-          headers: {'Authorization': ''}
+          url: [options.sessionId],
+          headers: {'Authorization': options.token}
         }
       });
     }

@@ -24,12 +24,18 @@ describe('Call', function () {
     onUnmutedSpy,
     onDisconnectingSpy,
     onDisconnectedSpy,
-    remoteSdp;
+    remoteSdp,
+    resourceManager,
+    doOperationStub;
 
   before(function () {
 
     apiConfig = ATT.private.config.api;
     factories = ATT.private.factories;
+    resourceManager = factories.createResourceManager(apiConfig);
+    doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) { // never hit the network
+      options.success();
+    });
 
     options = {
       peer: '12345',
@@ -39,7 +45,7 @@ describe('Call', function () {
 
     optionsforRTCM = {
       errorManager: ATT.Error,
-      resourceManager: factories.createResourceManager(apiConfig),
+      resourceManager: resourceManager,
       rtcEvent: ATT.RTCEvent.getInstance(),
       userMediaSvc: ATT.UserMediaService,
       peerConnSvc: ATT.PeerConnectionService
@@ -54,13 +60,7 @@ describe('Call', function () {
     });
 
     eventManager = ATT.private.factories.createEventManager({
-      resourceManager: {
-        getLogger: function () {
-          return {
-            logDebug: function () { return; }
-          };
-        }
-      },
+      resourceManager: resourceManager,
       channelConfig: {
         endpoint: '/events',
         type: 'longpolling'
@@ -99,6 +99,7 @@ describe('Call', function () {
   });
 
   after(function () {
+    doOperationStub.restore();
     createEventEmitterStub.restore();
     createEventManagerStub.restore();
     getRTCManagerStub.restore();

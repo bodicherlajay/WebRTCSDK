@@ -327,6 +327,8 @@ describe('RTC Manager', function () {
 
           expect(doOperationSpy.called).to.equal(true);
           expect(doOperationSpy.getCall(0).args[0]).to.equal('refreshWebRTCSession');
+          expect(doOperationSpy.getCall(0).args[1].params.url[0]).to.equal('1234');
+          expect(doOperationSpy.getCall(0).args[1].params.headers.Authorization).to.equal('token');
 
           doOperationSpy.restore();
         });
