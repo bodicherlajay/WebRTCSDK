@@ -165,8 +165,9 @@
 
     /**
     * Mute Stream
+    * @param {Object} options The callbacks from rtcmanager
     */
-    muteStream: function () {
+    muteStream: function (options) {
       logger.logTrace('muting stream...');
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
@@ -175,13 +176,15 @@
         for (i = 0; i < l; i = i + 1) {
           audioTracks[i].enabled = false;
         }
+        return options.onLocalStreamMuted();
       }
     },
 
    /**
     * Unmute Stream
+    * @param {Object} options The callbacks from rtcmanager
     */
-    unmuteStream: function () {
+    unmuteStream: function (options) {
       logger.logTrace('unmuting stream...');
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
@@ -190,6 +193,7 @@
         for (i = 0; i < l; i = i + 1) {
           audioTracks[i].enabled = true;
         }
+        return options.onLocalStreamUnmuted();
       }
     },
 

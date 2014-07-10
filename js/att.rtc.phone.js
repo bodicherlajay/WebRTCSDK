@@ -601,9 +601,12 @@
           && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
+          && 'call-disconnected' !== event
           && 'call-canceled' !== event
           && 'call-rejected' !== event
           && 'call-connected' !== event
+          && 'call-muted' !== event
+          && 'call-unmuted' !== event
           && 'call-established' !== event
           && 'call-ended' !== event
           && 'call-error' !== event) {
@@ -718,6 +721,22 @@
       call.connect(options);
     }
 
+    function mute () { 
+      call.on('muted', function () {
+        emitter.publish('call-muted');
+      });
+
+      call.mute();
+    }
+
+    function unmute () {
+      call.on('unmuted', function () {
+        emitter.publish('call-unmuted');
+      });
+
+      call.unmute();
+    }
+
     function getMediaType() {
       return call ? call.mediaType : null;
     }
@@ -727,18 +746,19 @@
         emitter.publish('call-disconnecting');
       });
       session.on('call-disconnected', function () {
-
+        emitter.publish('call-disconnected');
       });
       call.disconnect();
     }
 
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
-    this.getCall = getCall.bind(this);
     this.login = login.bind(this);
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
     this.answer = answer.bind(this);
+    this.mute = mute.bind(this);
+    this.unmute = unmute.bind(this);
     this.getMediaType = getMediaType.bind(this);
     this.hangup = hangup.bind(this);
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;

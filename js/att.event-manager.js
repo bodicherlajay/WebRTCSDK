@@ -269,6 +269,7 @@
       if ('listening' !== event
           && 'stop-listening' !== event
           && 'call-incoming' !== event
+          && 'call-disconnected' !== event
           && 'remote-sdp' !== event
           && 'remote-sdp-set' !== event
           && 'media-established' !== event) {
