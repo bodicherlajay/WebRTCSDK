@@ -182,6 +182,7 @@
         mediaType: call.mediaType,
         localMedia: config.localMedia || call.localMedia,
         remoteMedia: config.localMedia || call.localMedia,
+        remoteSdp: this.remoteSdp,
         sessionInfo: call.sessionInfo,
         remoteSdp: call.remoteSdp,
         onCallConnecting: function (callInfo) {

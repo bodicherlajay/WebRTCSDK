@@ -195,7 +195,8 @@
      * @param {Object} event The event object
      */
     function processEvent(event) {
-      var codec;
+      var codec,
+        remoteSdp = event.sdp;
 
       if (!event) {
         logger.logError('Not able to consume null event...');
@@ -206,12 +207,17 @@
 
       switch (event.state) {
       case ATT.RTCCallEvents.INVITATION_RECEIVED:
-        codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
+        //Check if invite is an announcement
+        if (remoteSdp && remoteSdp.indexOf('sendonly') !== -1) {
+          remoteSdp = remoteSdp.replace(/sendonly/g, 'sendrecv');
+        }
+        codec = ATT.sdpFilter.getInstance().getCodecfromSDP(remoteSdp);
+
         emitter.publish('call-incoming', {
           id: event.resourceURL.split('/')[6],
           from: event.from.split('@')[0].split(':')[1],
           mediaType: (codec.length === 1) ? 'audio' : 'video',
-          remoteSdp: event.sdp
+          remoteSdp: remoteSdp
         });
         break;
       }

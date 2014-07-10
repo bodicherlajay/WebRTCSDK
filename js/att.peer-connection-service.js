@@ -86,9 +86,9 @@
       ]
     },
 
-    localDescription: {},
+    localDescription: null,
 
-    remoteDescription: {},
+    remoteDescription: null,
 
     sessionInfo: null,
 
@@ -155,13 +155,11 @@
       } else if (this.callType === ATT.CallTypes.INCOMING) {
         logger.logInfo('Responding to incoming call');
 
-        //Check if invite is an announcement
-        var sdp = config.remoteSdp;
-        if (sdp && sdp.indexOf('sendonly') !== -1) {
-          sdp = sdp.replace(/sendonly/g, 'sendrecv');
-          //call.remoteSdp = sdp;
+        if (undefined === config.remoteSdp) {
+          throw new Error('Cannot set the remote description. The remote SDP is undefined');
         }
-        this.setTheRemoteDescription(sdp, 'offer');
+
+        this.setTheRemoteDescription(config.remoteSdp, 'offer');
         this.createAnswer();
       }
     },
@@ -332,7 +330,6 @@
         'sdp' : description,
         'type' : type
       };
-      this.session.getCurrentCall().setRemoteSdp(this.remoteDescription);
 
       try {
         this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
