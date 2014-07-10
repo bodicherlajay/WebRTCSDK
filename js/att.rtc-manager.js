@@ -272,13 +272,50 @@
     }
 
     function refreshSession (options) {
+
+      if (undefined === options
+        || Object.keys(options).length === 0) {
+        throw new Error('Invalid options');
+      }
+
+      if (undefined == options.sessionId) {
+        throw new Error('No session ID passed');
+      }
+
+      if (undefined === options.token) {
+        throw new Error('No token passed');
+      }
+
+      if (undefined === options.success) {
+        throw new Error('No `success` callback passed');
+      }
+
+      if (typeof options.success !== 'function') {
+        throw new Error('`success` callback has to be a function');
+      }
+
+      if (undefined === options.error) {
+        throw new Error('No `error` callback passed');
+      }
+
+      if (typeof options.error !== 'function') {
+        throw new Error('`error` callback has to be a function');
+      }
+
       resourceManager.doOperation('refreshWebRTCSession', {
-        success : function () {
-          options.success(
-//            {
-//            timeout: 500
-//          }
-          );
+        success : function (response) {
+          var timeout;
+
+          timeout = parseInt(response.getResponseHeader('x-expires'), 10);
+
+          options.success({ timeout: (timeout * 1000).toString() });
+        },
+        error: function() {
+          return;
+        },
+        params: {
+          url: [options.sessionId],
+          headers: {'Authorization': options.token}
         }
       });
     }
@@ -423,6 +460,7 @@
             mediaConstraints: userMedia.mediaConstraints,
             localStream: userMedia.localStream,
             sessionInfo: options.sessionInfo,
+            remoteSdp: options.remoteSdp,
             onPeerConnectionInitiated: function (callInfo) {
               options.onCallConnecting(callInfo);
             }

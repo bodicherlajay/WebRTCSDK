@@ -283,6 +283,37 @@ describe('RTC Manager', function () {
           expect(rtcManager.refreshSession).to.be.a('function');
         });
 
+        it('should throw an error if `options` are invalid', function () {
+          expect(rtcManager.refreshSession.bind(rtcManager, undefined)).to.throw('Invalid options');
+          expect(rtcManager.refreshSession.bind(rtcManager, {})).to.throw('Invalid options');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            test: 'bogus'
+          })).to.throw('No session ID passed');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123'
+          })).to.throw('No token passed');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123',
+            token: '123123'
+          })).to.throw('No `success` callback passed');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123',
+            token: '123123',
+            success: function () { return; }
+          })).to.throw('No `error` callback passed');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123',
+            token: '123123',
+            success: {}
+          })).to.throw('`success` callback has to be a function');
+          expect(rtcManager.refreshSession.bind(rtcManager, {
+            sessionId: '123',
+            token: '123123',
+            success: function () { return; },
+            error: {}
+          })).to.throw('`error` callback has to be a function');
+        });
+
         it('should call resourceManager.doOperation with `refreshWebRTCSession`', function () {
 
           doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
@@ -296,23 +327,26 @@ describe('RTC Manager', function () {
 
           expect(doOperationSpy.called).to.equal(true);
           expect(doOperationSpy.getCall(0).args[0]).to.equal('refreshWebRTCSession');
+          expect(doOperationSpy.getCall(0).args[1].params.url[0]).to.equal('1234');
+          expect(doOperationSpy.getCall(0).args[1].params.headers.Authorization).to.equal('token');
 
           doOperationSpy.restore();
         });
 
-        xdescribe('Success', function () {
+        describe('Success', function () {
           it('should execute the `success` callback', function () {
-            var onSuccessSpy = sinon.spy(),
+            var timeout = 200,
+              onSuccessSpy = sinon.spy(),
               doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {
                 var response = {
                   getResponseHeader : function (name) {
                     var header;
                     switch (name) {
                     case 'x-expires':
-                      header = String(500); // seconds
+                      header = timeout.toString(); // seconds
                       break;
                     default:
-                      header = String(500); // seconds
+                      header = timeout.toString(); // seconds
                       break;
                     }
                     return header;
@@ -322,14 +356,16 @@ describe('RTC Manager', function () {
               });
 
             rtcManager.refreshSession({
-              success: onSuccessSpy
+              token: '123',
+              sessionId: '1234',
+              success: onSuccessSpy,
+              error: function () { return; }
             });
 
             expect(onSuccessSpy.called).to.equal(true);
             expect(onSuccessSpy.calledWith({
-              timeout: 500
+              timeout: (timeout * 1000).toString()
             })).to.equal(true);
-
             doOperationStub.restore();
           });
         });
