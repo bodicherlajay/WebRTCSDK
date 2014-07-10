@@ -30,7 +30,7 @@
       // call data
         data = {
           call: {
-            calledParty: 'sip:' + config.calledParty + '@icmn.api.att.net',
+            calledParty: config.calledParty,
             sdp: description.sdp
           }
         };

@@ -174,42 +174,6 @@
   }
 
   /**
-  * mute call
-  *
-  */
-  function muteCall() {
-    if (!session) {
-      throw 'No session found . Please login first';
-    }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-
-    session.getCurrentCall().mute();
-  }
-
-  /**
-  * unmute call
-  *
-  */
-  function unmuteCall() {
-    if (!session) {
-      throw 'No session found . Please login first';
-    }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-
-    session.getCurrentCall().unmute();
-  }
-
-  /**
   * cancel call
   *
   */
@@ -543,12 +507,30 @@
       });
     }
 
+    function muteCall(options) {
+      userMediaSvc.muteStream({
+        onLocalStreamMuted: function () {
+          options.onSuccess();
+        }
+      });
+    }
+
+    function unmuteCall(options) {
+      userMediaSvc.unmuteStream({
+        onLocalStreamUnmuted: function () {
+          options.onSuccess();
+        }
+      });
+    }
+
     this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);
     this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);
+    this.muteCall = muteCall.bind(this);
+    this.unmuteCall = unmuteCall.bind(this);
   }
 
   if (undefined === ATT.private) {

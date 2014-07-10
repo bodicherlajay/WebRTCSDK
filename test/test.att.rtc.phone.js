@@ -126,33 +126,6 @@ describe('Phone', function () {
 
       });
 
-      describe('getCall', function () {
-
-        it('should exist', function () {
-          expect(phone.getCall).to.be.a('function');
-        });
-
-        it('should return the latest instance of a call', function () {
-          phone.dial({
-            destination: '12345',
-            mediaType: 'video',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
-          });
-
-          phone.dial({
-            destination: '12345',
-            mediaType: 'video',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
-          });
-
-          var callObj = phone.getCall();
-          expect(callObj.peer).to.equal('12345');
-        });
-
-      });
-
       describe('on', function () {
 
         it('should exist', function () {
@@ -620,6 +593,123 @@ describe('Phone', function () {
         });
       });
 
+      describe('mute & unmute', function () {
+
+        var session,
+          options,
+          call,
+          createCallStub,
+          onSpy,
+          callMuteStub,
+          callUnmuteStub,
+          callMutedHandlerSpy,
+          callUnmutedHandlerSpy;
+
+        beforeEach(function () {
+
+          options = {
+            destination: '12345',
+            mediaType: 'video',
+            localMedia: '#foo',
+            remoteMedia: 'bar'
+          };
+
+          call = new ATT.rtc.Call({
+            peer: '1234567',
+            mediaType: 'video'
+          });
+
+          onSpy = sinon.spy(call, 'on');
+
+          callMuteStub = sinon.stub(call, 'mute', function () {
+            emitter.publish('muted');
+          });
+
+          callUnmuteStub = sinon.stub(call, 'unmute', function () {
+            emitter.publish('unmuted');
+          });
+ 
+          session = phone.getSession();
+
+          createCallStub = sinon.stub(session, 'createCall', function () {
+            return call;
+          });
+
+          callMutedHandlerSpy = sinon.spy();
+          callUnmutedHandlerSpy = sinon.spy();
+
+          phone.on('call-muted', callMutedHandlerSpy);
+          phone.on('call-unmuted', callUnmutedHandlerSpy);
+
+          phone.dial(options);
+        });
+
+        afterEach(function () {
+          onSpy.restore();
+          callMuteStub.restore();
+          callUnmuteStub.restore();
+          createCallStub.restore();
+        });
+
+        describe('mute', function () {
+          beforeEach(function () {
+            phone.mute();
+          });
+
+          it('should exist', function () {
+            expect(phone.mute).to.be.a('function');
+          });
+
+          it('should register for the `muted` event on the call object', function () {
+            expect(onSpy.calledWith('muted')).to.equal(true);
+          });
+
+          it('should call `call.mute`', function () {
+            expect(callMuteStub.called).to.equal(true);
+          });
+
+          it('should trigger `call-muted` when call publishes `muted` event', function (done) {
+            setTimeout(function () {
+              try {
+                expect(callMutedHandlerSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
+        });
+
+        describe('unmute', function () {
+          beforeEach(function () {
+            phone.unmute();
+          });
+
+          it('should exist', function () {
+            expect(phone.unmute).to.be.a('function');
+          });
+
+          it('should register for the `unmuted` event on the call object', function () {
+            expect(onSpy.calledWith('unmuted')).to.equal(true);
+          });
+
+          it('should call `call.unmute`', function () {
+            expect(callUnmuteStub.called).to.equal(true);
+          });
+
+          it('should trigger `call-unmuted` when call publishes `unmuted` event', function (done) {
+            setTimeout(function () {
+              try {
+                expect(callUnmutedHandlerSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
+        });
+      });
+
       describe('hangup', function () {
 
         var session,
@@ -629,6 +719,7 @@ describe('Phone', function () {
           callDisconnectStub,
           createCallStub,
           callDisconnectingHandlerSpy,
+          callDisconnectedSpy,
           sessionOnSpy;
 
         beforeEach(function () {
@@ -655,9 +746,9 @@ describe('Phone', function () {
           });
 
           callDisconnectStub = sinon.stub(call, 'disconnect', function () {
+            emitter.publish('disconnecting');
 
           });
-
           phone.dial(options);
           phone.hangup();
         });
@@ -684,13 +775,26 @@ describe('Phone', function () {
           expect(callDisconnectStub.called).to.equal(true);
         });
 
-        xit('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
+        it('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
           callDisconnectingHandlerSpy = sinon.spy();
           phone.on('call-disconnecting', callDisconnectingHandlerSpy);
-
           setTimeout(function () {
             try {
               expect(callDisconnectingHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
+        });
+
+        it('should trigger `call-disconnected` when session publishes `disconnected` event', function (done) {
+          emitter.publish('call-disconnected');
+          callDisconnectedSpy = sinon.spy();
+          phone.on('call-disconnected', callDisconnectedSpy);
+          setTimeout(function () {
+            try {
+              expect(callDisconnectedSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);

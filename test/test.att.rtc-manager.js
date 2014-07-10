@@ -590,6 +590,60 @@ describe('RTC Manager', function () {
           doOperationSpy.restore();
         });
       });
+
+      describe('muteCall', function () {
+        var muteStreamStub,
+          onSuccessSpy = sinon.spy();
+
+        it('should exist', function () {
+          expect(rtcManager.muteCall).to.be.a('function');
+        });
+
+        it('should call userMediaSvc.muteStream', function () {
+          muteStreamStub = sinon.stub(ATT.UserMediaService, 'muteStream', function (options) {
+            return options.onLocalStreamMuted();
+          });
+
+          rtcManager.muteCall({
+            onSuccess: onSuccessSpy
+          });
+          
+          expect(muteStreamStub.called).to.equal(true);
+          expect(muteStreamStub.getCall(0).args[0]).to.be.an('object');
+          muteStreamStub.restore();
+        });
+
+        it('should call the success callback passed in from rtcManager', function () {
+          expect(onSuccessSpy.called).to.equal(true);
+        });
+      });
+
+      describe('unmuteCall', function () {
+        var unmuteStreamStub,
+          onSuccessSpy = sinon.spy();
+
+        it('should exist', function () {
+          expect(rtcManager.unmuteCall).to.be.a('function');
+        });
+
+        it('should call userMediaSvc.unmuteStream', function () {
+          unmuteStreamStub = sinon.stub(ATT.UserMediaService, 'unmuteStream', function (options) {
+            return options.onLocalStreamUnmuted();
+          });
+
+          rtcManager.unmuteCall({
+            onSuccess: onSuccessSpy
+          });
+          
+          expect(unmuteStreamStub.called).to.equal(true);
+          expect(unmuteStreamStub.getCall(0).args[0]).to.be.an('object');
+          unmuteStreamStub.restore();
+        });
+
+        it('should call the success callback passed in from rtcManager', function () {
+          expect(onSuccessSpy.called).to.equal(true);
+        });
+      });
     });
   });
 

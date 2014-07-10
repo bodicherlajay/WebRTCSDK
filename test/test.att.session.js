@@ -86,6 +86,10 @@ describe.only('Session', function () {
     it('should register for `call-incoming` event on RTCManager', function () {
       expect(rtcManagerOnSpy.calledWith('call-incoming')).to.equal(true);
     });
+
+    it('should register for `call-disconnected` event on RTCManager', function () {
+      expect(rtcManagerOnSpy.calledWith('call-disconnected')).to.equal(true);
+    });
   });
 
   describe('Methods', function () {
@@ -586,6 +590,11 @@ describe.only('Session', function () {
         session.terminateCalls();
         expect(session.deleteCurrentCall.bind(session)).to.throw('Call not found');
       });
+
+      it('Should delete the current Call', function () {
+        session.currentCall = call;
+        expect(session.deleteCurrentCall.bind(session)).to.not.throw('Call not found');
+      });
     });
   });
 
@@ -801,7 +810,82 @@ describe.only('Session', function () {
       });
     });
 
-    describe('call-ended', function () {});
+    describe('call-disconnected', function () {
+
+      var rtcManager,
+        session,
+        call,
+        callInfo,
+        emitterEM,
+        createEventEmitterStub,
+        getRTCMgrStub,
+        createCallSpy,
+        callEndedSpy;
+
+      beforeEach(function () {
+        callInfo = {
+          id: '123',
+          from: '1234',
+          mediaType: 'video',
+          remoteSdp: 'abc',
+          peer: 'abc'
+        };
+
+        emitterEM = ATT.private.factories.createEventEmitter();
+
+        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+          return emitterEM;
+        });
+
+        rtcManager = new ATT.private.RTCManager(optionsforRTCM);
+
+        getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+          return rtcManager;
+        });
+
+        createEventEmitterStub.restore();
+
+        session = new ATT.rtc.Session();
+
+        session.currentCall = new ATT.rtc.Call(callInfo);
+
+
+        callEndedSpy = sinon.spy();
+
+        session.on('call-disconnected', callEndedSpy);
+
+        createCallSpy = sinon.spy(session, 'createCall');
+
+        emitterEM.publish('call-disconnected', callInfo);
+      });
+
+      afterEach(function () {
+        getRTCMgrStub.restore();
+        createCallSpy.restore();
+      });
+
+      it('should trigger `call-disconnected` on call Disconnected ', function (done) {
+        setTimeout(function () {
+          try {
+            expect(callEndedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should delete the current Call object on Call-disconnected event', function (done) {
+        setTimeout(function () {
+          try {
+            expect(session.currentCall).to.equal(null);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+    });
   });
 
 });

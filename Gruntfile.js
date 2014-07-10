@@ -36,6 +36,7 @@ module.exports = function (grunt) {
       'js/att.enum.js',
       'js/att.config.api.js',
       'js/att.config.app.js',
+      'js/att.utils.sdk-errors.js',
       'js/att.utils.sdk-error-store.js',
       'js/att.utils.error-dictionary.js',
       'js/att.error.js',

@@ -30,7 +30,9 @@
     // public methods
     session,
 
-    register,
+    registerUser,
+
+    deleteUser,
 
     vtnList,
 
@@ -42,11 +44,7 @@
 
     logout,
 
-    getE911Id,
-
     createE911Id,
-
-    updateE911Id;
 
   // implementions
   init = function () {
@@ -60,15 +58,14 @@
     app.RESTClient = RESTClient;
 
     dhsNamespace.session = session;
-    dhsNamespace.register = register;
+    dhsNamespace.registerUser = registerUser;
+    dhsNamespace.deleteUser = deleteUser;
     dhsNamespace.vtnList = vtnList;
     dhsNamespace.authorize = authorize;
     dhsNamespace.token = token;
     dhsNamespace.login = login;
     dhsNamespace.logout = logout;
-    dhsNamespace.getE911Id = getE911Id;
     dhsNamespace.createE911Id = createE911Id;
-    dhsNamespace.updateE911Id = updateE911Id;
   };
 
   handleSuccess = function (successHandler, responseObject) {
@@ -162,16 +159,31 @@
     }
   };
 
-  register = function (config) {
+  registerUser = function (config) {
     try {
       // Call DHS to register a new user on DHS
       resourceManager.doOperation('registerUser', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'register', config.error)
+        error:    handleError.bind(this, 'registerUser', config.error)
       });
     } catch (err) {
-      handleError.call(this, 'register', config.error, err);
+      handleError.call(this, 'registerUser', config.error, err);
+    }
+  };
+
+  deleteUser = function (config) {
+    try {
+      // Call DHS to delete a user on DHS
+      resourceManager.doOperation('deleteUser', {
+        params: {
+          url: config.data.userId
+        },
+        success:  handleSuccess.bind(this, config.success),
+        error:    handleError.bind(this, 'deleteUser', config.error)
+      });
+    } catch (err) {
+      handleError.call(this, 'deleteUser', config.error, err);
     }
   };
 
@@ -267,34 +279,6 @@
   };
 
   /**
-   * Get the E911 ID from DHS.
-   * @param {Object} config Unique id.
-   */
-  getE911Id = function (config) {
-    try {
-      if (!config) {
-        throw 'Cannot get e911 id. Configuration is required.';
-      }
-      if (!config.data) {
-        throw 'Cannot get e911 id. Configuration data is required.';
-      }
-      if (!config.data.id) {
-        throw 'Cannot get e911 id. Unique identifier is required.';
-      }
-
-      resourceManager.doOperation('getE911Id', {
-        params: {
-          url: config.data.id
-        },
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'getE911Id', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'getE911Id', config.error, err);
-    }
-  };
-
-  /**
    * Create an E911 ID.
    * @param {Object} config
    * @member {Object} address The user's physical address object.
@@ -319,34 +303,6 @@
       });
     } catch (err) {
       handleError.call(this, 'createE911Id', config.error, err);
-    }
-  };
-
-  /**
-   * Update an E911 ID.
-   * @param {Object} config
-   * @member {Object} address The user's physical address object.
-   */
-  updateE911Id = function (config) {
-    try {
-      if (!config) {
-        throw 'Cannot update e911 id. Configuration is required.';
-      }
-      if (!config.data) {
-        throw 'Cannot update e911 id. Configuration data is required.';
-      }
-      if (!validateAddress(config.data.address)) {
-        throw 'Cannot update e911 id. Address did not validate.';
-      }
-
-      // Call DHS to create an e911 id linked address for the user
-      resourceManager.doOperation('updateE911Id', {
-        data:     config.data,
-        success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'updateE911Id', config.error)
-      });
-    } catch (err) {
-      handleError.call(this, 'updateE911Id', config.error, err);
     }
   };
 

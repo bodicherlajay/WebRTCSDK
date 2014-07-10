@@ -20,6 +20,8 @@ describe('Call', function () {
     onAnsweringSpy,
     onConnectingSpy,
     onConnectedSpy,
+    onMutedSpy,
+    onUnmutedSpy,
     onDisconnectingSpy,
     onDisconnectedSpy,
     remoteSdp;
@@ -81,6 +83,8 @@ describe('Call', function () {
     onAnsweringSpy = sinon.spy();
     onConnectingSpy = sinon.spy();
     onConnectedSpy = sinon.spy();
+    onMutedSpy = sinon.spy();
+    onUnmutedSpy = sinon.spy()
     onDisconnectingSpy = sinon.spy();
     onDisconnectedSpy = sinon.spy();
 
@@ -88,6 +92,8 @@ describe('Call', function () {
     call.on('answering', onAnsweringSpy);
     call.on('connecting', onConnectingSpy);
     call.on('connected', onConnectedSpy);
+    call.on('muted', onMutedSpy);
+    call.on('unmuted', onUnmutedSpy);
     call.on('disconnecting', onDisconnectingSpy);
     call.on('disconnected', onDisconnectedSpy);
   });
@@ -257,6 +263,85 @@ describe('Call', function () {
       });
 
       it('Should execute the onError callback if there is an error');
+    });
+
+    describe('Mute/Unmute', function () {
+
+      var localSdp,
+        muteCallStub,
+        unmuteCallStub;
+
+      beforeEach(function () {
+
+        muteCallStub = sinon.stub(rtcMgr, 'muteCall', function (options) {
+          options.onSuccess();
+        });
+
+        unmuteCallStub = sinon.stub(rtcMgr, 'unmuteCall', function (options) {
+          options.onSuccess();
+        });
+      });
+
+      afterEach(function () {
+        unmuteCallStub.restore();
+        muteCallStub.restore();
+      });
+
+      describe('mute', function () {
+        it('should exist', function () {
+          expect(call.mute).to.be.a('function');
+        });
+
+        it('should execute RTCManager.muteCall', function () {
+          call.mute();
+          expect(muteCallStub.getCall(0).args[0]).to.be.an('object');
+        });
+
+        describe('success on RTCManager.muteCall', function () {
+          it('should set the call state to ATT.CallTypes.MUTED', function () {
+            expect(call.state).to.equal(ATT.CallStates.MUTED);
+          });
+
+          it('Should also publish the `muted` event', function (done) {
+            setTimeout(function () {
+              try {
+                expect(onMutedSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+        });
+      });
+
+      describe('unmute', function () {
+        it('should exist', function () {
+          expect(call.unmute).to.be.a('function');
+        });
+
+        it('should execute RTCManager.unmuteCall', function () {
+          call.unmute();
+           expect(unmuteCallStub.getCall(0).args[0]).to.be.an('object');
+        });
+
+        describe('success on RTCManager.unmuteCall', function () {
+          it('should set the call state to ATT.CallTypes.ONGOING', function () {
+            expect(call.state).to.equal(ATT.CallStates.ONGOING);
+          });
+
+          it('Should also publish the `unmuted` event', function (done) {
+            setTimeout(function () {
+              try {
+                expect(onUnmutedSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+        });
+      });
     });
 
     describe('Connect Events', function () {

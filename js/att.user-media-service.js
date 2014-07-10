@@ -72,8 +72,8 @@
         options.onError(Error.create('Get user media failed: ' + err));
       });
 
-      // set up listener for remote video start
-      this.onRemoteVideoStart(options.onMediaEstablished);
+      // set up listener for remote media start
+      this.onRemoteMediaStart(options.onMediaEstablished);
     },
 
     /**
@@ -99,12 +99,12 @@
     },
 
     /**
-    * Listen for start of remote video
-    * @param {HTMLElement} remoteVideo The remote video element
-    * @returns {HTMLElement} remoteVideo
+    * Listen for start of remote media
+    * @param {HTMLElement} remoteMedia The remote media element
+    * @returns {HTMLElement} remoteMedia
     */
-    onRemoteVideoStart: function (callback) {
-      this.remoteVideo.addEventListener('playing', function () {
+    onRemoteMediaStart: function (callback) {
+      this.remoteMedia.addEventListener('playing', function () {
         callback();
       });
     },
@@ -122,10 +122,10 @@
       try {
         if (args.localOrRemote === 'remote') {
           this.remoteStream = args.stream;
-          videoStreamEl = this.remoteVideo;
+          videoStreamEl = this.remoteMedia;
         } else {
           this.localStream = args.stream;
-          videoStreamEl = this.localVideo;
+          videoStreamEl = this.localMedia;
           videoStreamEl.setAttribute('muted', '');
         }
 
@@ -165,8 +165,9 @@
 
     /**
     * Mute Stream
+    * @param {Object} options The callbacks from rtcmanager
     */
-    muteStream: function () {
+    muteStream: function (options) {
       logger.logTrace('muting stream...');
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
@@ -175,13 +176,15 @@
         for (i = 0; i < l; i = i + 1) {
           audioTracks[i].enabled = false;
         }
+        return options.onLocalStreamMuted();
       }
     },
 
    /**
     * Unmute Stream
+    * @param {Object} options The callbacks from rtcmanager
     */
-    unmuteStream: function () {
+    unmuteStream: function (options) {
       logger.logTrace('unmuting stream...');
       if (this.localStream) {
         var audioTracks = this.localStream.getAudioTracks(),
@@ -190,6 +193,7 @@
         for (i = 0; i < l; i = i + 1) {
           audioTracks[i].enabled = true;
         }
+        return options.onLocalStreamUnmuted();
       }
     },
 

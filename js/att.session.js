@@ -215,10 +215,14 @@
         mediaType: callInfo.mediaType,
         remoteSdp: callInfo.remoteSdp
       });
-
       if (undefined !== call) {
         emitter.publish('call-incoming');
       }
+    });
+
+    rtcManager.on('call-disconnected', function (callInfo) {
+      emitter.publish('call-disconnected');
+      self.deleteCurrentCall();
     });
 
     function on(event, handler) {
@@ -398,6 +402,7 @@
       if (!this.currentCall) {
         throw new Error('Call not found');
       }
+      this.currentCall = null;
     };
 
     this.deleteCall =   function deleteCall(callId) {
