@@ -27,95 +27,80 @@
     }
   }
 
-  function handleCallMediaModifications(event, data) {
-    peerConnSvc.setRemoteAndCreateAnswer(data.sdp, data.modId);
-    if (event.state === ATT.CallStatus.HOLD) {
-      userMediaSvc.muteStream();
-    } else if (event.state === ATT.CallStatus.RESUMED) {
-      userMediaSvc.unmuteStream();
-    }
-  }
+  // function handleCallMediaModifications(event, data) {
+  //   peerConnSvc.setRemoteAndCreateAnswer(data.sdp, data.modId);
+  //   if (event.state === ATT.CallStatus.HOLD) {
+  //     userMediaSvc.muteStream();
+  //   } else if (event.state === ATT.CallStatus.RESUMED) {
+  //     userMediaSvc.unmuteStream();
+  //   }
+  // }
 
-  function handleCallMediaTerminations(event, data) {
-    if (data.modId) {
-      peerConnSvc.setModificationId(data.modId);
-    }
-    if (data.sdp) {
-      peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
-    }
-    if (event.state === ATT.CallStatus.HOLD) {
-      userMediaSvc.holdVideoStream();
-      userMediaSvc.muteStream();
-    } else if (event.state === ATT.CallStatus.RESUMED) {
-      userMediaSvc.resumeVideoStream();
-      userMediaSvc.unmuteStream();
-    }
-  }
+  // function handleCallMediaTerminations(event, data) {
+  //   if (data.modId) {
+  //     peerConnSvc.setModificationId(data.modId);
+  //   }
+  //   if (data.sdp) {
+  //     peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
+  //   }
+  //   if (event.state === ATT.CallStatus.HOLD) {
+  //     userMediaSvc.holdVideoStream();
+  //     userMediaSvc.muteStream();
+  //   } else if (event.state === ATT.CallStatus.RESUMED) {
+  //     userMediaSvc.resumeVideoStream();
+  //     userMediaSvc.unmuteStream();
+  //   }
+  // }
 
-  function handleCallOpen(data) {
-    if (data.sdp) {
-      peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
-    }
-  }
+  // function handleCallOpen(data) {
+  //   if (data.sdp) {
+  //     peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
+  //   }
+  // }
 
-  function holdCall() {
-    peerConnSvc.holdCall();
-  }
+  // function holdCall() {
+  //   peerConnSvc.holdCall();
+  // }
 
-  function resumeCall() {
-    peerConnSvc.resumeCall();
-  }
-  /**
-   * Call end
-   * @param {Object} options The phone.js facade options
-   */
-  function endCall(options) {
-    logger.logInfo('Hanging up...');
-    ATT.SignalingService.sendEndCall(ATT.utils.extend(options, {
-      success: function () {
-        options.onCallEnded();
-      },
-      error: function () {
-        ATT.Error.publish('SDK-20026', null, options.onError);
-      }
-    }));
-  }
+  // function resumeCall() {
+  //   peerConnSvc.resumeCall();
+  // }
 
   /**
    * Call cancel
    * @param {Object} options The options
    */
-  function cancelCall(session) {
-    logger.logInfo('Canceling up...');
-    ATT.SignalingService.sendCancelCall({
-      success: function () {
-        session.deleteCall(session.getCurrentCall().id());
-      },
-      error: function () {
-        ATT.Error.publish('SDK-20034', null, session.onError);
-        logger.logWarning('Cancel request failed.');
-      },
-      session: session
-    });
-  }
+  // function cancelCall(session) {
+  //   logger.logInfo('Canceling up...');
+  //   ATT.SignalingService.sendCancelCall({
+  //     success: function () {
+  //       session.deleteCall(session.getCurrentCall().id());
+  //     },
+  //     error: function () {
+  //       ATT.Error.publish('SDK-20034', null, session.onError);
+  //       logger.logWarning('Cancel request failed.');
+  //     },
+  //     session: session
+  //   });
+  // }
 
-  /**
-   * Call reject
-   * @param {Object} options The options
-   */
-  function rejectCall(session) {
-    logger.logInfo('Rejecting call...');
-    ATT.SignalingService.sendRejectCall({
-      success: function () {
-        session.deleteCall(session.getCurrentCall().id());
-      },
-      error: function () {
-        ATT.Error.publish('SDK-20035', null, options.onError);
-        logger.logWarning('Reject request failed.');
-      },
-      session: session
-    });
-  }
+  // *
+  //  * Call reject
+  //  * @param {Object} options The options
+   
+  // function rejectCall(session) {
+  //   logger.logInfo('Rejecting call...');
+  //   ATT.SignalingService.sendRejectCall({
+  //     success: function () {
+  //       session.deleteCall(session.getCurrentCall().id());
+  //     },
+  //     error: function () {
+  //       ATT.Error.publish('SDK-20035', null, options.onError);
+  //       logger.logWarning('Reject request failed.');
+  //     },
+  //     session: session
+  //   });
+  // }
 
   /**
   * Call Prototype
@@ -248,6 +233,7 @@
       });
     }
 
+    // Call attributes
     this.id = options.id;
     this.peer = options.peer;
     this.mediaType = options.mediaType;
@@ -259,19 +245,16 @@
     this.remoteMedia = options.remoteMedia;
     this.state = null;
 
+    // Call methods
     this.on = on.bind(this);
     this.connect = connect.bind(this);
     this.disconnect = disconnect.bind(this);
     this.setId = setId.bind(this);
     this.setRemoteSdp = setRemoteSdp.bind(this);
-    this.handleCallMediaModifications = handleCallMediaModifications.bind(this);
-    this.handleCallMediaTerminations = handleCallMediaTerminations.bind(this);
-    this.handleCallOpen = handleCallOpen.bind(this);
     this.mute = mute.bind(this);
     this.unmute = unmute.bind(this);
-    this.end = endCall.bind(this);
 
-    if(undefined !== this.id) {
+    if (undefined !== this.id) {
       emitter.publish('created', this.id);
       return;
     }
