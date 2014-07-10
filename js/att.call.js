@@ -135,6 +135,8 @@
           'established' !== event &&
           'ended' !== event &&
           'error' !== event &&
+          'hold' !== event &&
+          'resume' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event) {
         throw new Error('Event not defined');
@@ -233,6 +235,27 @@
       });
     }
 
+    function hold() {
+      var call = this;
+
+      rtcManager.holdCall();
+
+      rtcManager.on('hold', function () {
+        call.state = ATT.CallStates.HOLD;
+        emitter.publish('hold');
+      });
+    }
+
+    function resume() {
+      var call = this;
+      rtcManager.resumeCall();
+
+      rtcManager.on('resume', function () {
+        call.state = ATT.CallStates.RESUME;
+        emitter.publish('resume');
+      });
+    }
+
     // Call attributes
     this.id = options.id;
     this.peer = options.peer;
@@ -253,6 +276,8 @@
     this.setRemoteSdp = setRemoteSdp.bind(this);
     this.mute = mute.bind(this);
     this.unmute = unmute.bind(this);
+    this.hold = hold.bind(this);
+    this.resume = resume.bind(this);
 
     if (undefined !== this.id) {
       emitter.publish('created', this.id);

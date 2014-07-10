@@ -636,7 +636,7 @@ describe('RTC Manager', function () {
           rtcManager.unmuteCall({
             onSuccess: onSuccessSpy
           });
-          
+
           expect(unmuteStreamStub.called).to.equal(true);
           expect(unmuteStreamStub.getCall(0).args[0]).to.be.an('object');
           unmuteStreamStub.restore();
@@ -644,6 +644,46 @@ describe('RTC Manager', function () {
 
         it('should call the success callback passed in from rtcManager', function () {
           expect(onSuccessSpy.called).to.equal(true);
+        });
+      });
+
+      describe('holdCall', function () {
+        var holdStreamStub,
+          onSuccessSpy = sinon.spy();
+
+        it('should exist', function () {
+          expect(rtcManager.holdCall).to.be.a('function');
+        });
+
+        it('should call peer-connection.holdCall', function () {
+          holdStreamStub = sinon.stub(ATT.PeerConnectionService, 'holdCall', function () {
+          });
+          rtcManager.holdCall();
+
+          expect(holdStreamStub.called).to.equal(true);
+          holdStreamStub.restore();
+        });
+
+        xit('should call the success callback passed in from rtcManager', function () {
+          expect(onSuccessSpy.called).to.equal(true);
+        });
+      });
+
+      describe('resumeCall', function () {
+        var resumeStreamStub;
+
+        it('should exist', function () {
+          expect(rtcManager.resumeCall).to.be.a('function');
+        });
+
+        it('should call peer-connection.holdCall', function () {
+          resumeStreamStub = sinon.stub(ATT.PeerConnectionService, 'resumeCall', function () {
+          });
+
+          rtcManager.resumeCall();
+
+          expect(resumeStreamStub.called).to.equal(true);
+          resumeStreamStub.restore();
         });
       });
     });

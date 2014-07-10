@@ -321,7 +321,7 @@ describe('Phone', function () {
             emitter.publish('ended');
             emitter.publish('error');
           });
- 
+
           session = phone.getSession();
 
           createCallStub = sinon.stub(session, 'createCall', function () {
@@ -801,6 +801,120 @@ describe('Phone', function () {
             }
           }, 300);
         });
+      });
+
+      describe('hold/resume ', function () {
+
+        var session,
+          options,
+          call,
+          onSpy,
+          callholdStub,
+          callresumeStub,
+          createCallStub,
+          callHoldSpy,
+          callresumeSpy,
+          sessionOnSpy;
+
+        beforeEach(function () {
+
+          options = {
+            destination: '12345',
+            mediaType: 'audio',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
+          };
+
+          call = new ATT.rtc.Call({
+            peer: '1234567',
+            mediaType: 'audio'
+          });
+
+          onSpy = sinon.spy(call, 'on');
+
+          session = phone.getSession();
+          sessionOnSpy = sinon.spy(session, 'on');
+
+          createCallStub = sinon.stub(session, 'createCall', function () {
+            return call;
+          });
+
+          callholdStub = sinon.stub(call, 'hold', function () {
+            emitter.publish('hold');
+          });
+
+          callresumeStub = sinon.stub(call, 'resume', function () {
+            emitter.publish('resume');
+          });
+
+          phone.dial(options);
+          phone.hold();
+          phone.resume();
+        });
+
+        afterEach(function () {
+          callholdStub.restore();
+          callresumeStub.restore();
+          createCallStub.restore();
+          sessionOnSpy.restore();
+        });
+
+        describe('hold', function () {
+
+          it('should exist', function () {
+            expect(phone.hold).to.be.a('function');
+          });
+
+          it('should register for the `hold` event on the call object', function () {
+            expect(onSpy.calledWith('hold')).to.equal(true);
+          });
+
+          it('should execute call.disconnect', function () {
+            expect(callresumeStub.called).to.equal(true);
+          });
+
+          it('should trigger `call-hold` when call publishes `call-hold` event', function (done) {
+            callHoldSpy = sinon.spy();
+            phone.on('call-hold', callHoldSpy);
+            setTimeout(function () {
+              try {
+                expect(callHoldSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+        });
+
+        describe('resume', function () {
+
+          it('should exist', function () {
+            expect(phone.resume).to.be.a('function');
+          });
+
+          it('should register for the `resume` event on the call object', function () {
+            expect(onSpy.calledWith('resume')).to.equal(true);
+          });
+
+          it('should execute call.resume', function () {
+            expect(callholdStub.called).to.equal(true);
+          });
+
+          it('should trigger `call-resume` when call publishes `call-resume` event', function (done) {
+            callresumeSpy = sinon.spy();
+            phone.on('call-resume', callresumeSpy);
+            setTimeout(function () {
+              try {
+                expect(callresumeSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+        });
+
       });
 
       describe('getMediaType', function () {

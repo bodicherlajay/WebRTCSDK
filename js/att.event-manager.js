@@ -270,6 +270,8 @@
           && 'stop-listening' !== event
           && 'call-incoming' !== event
           && 'call-disconnected' !== event
+          && 'hold' !== event
+          && 'resume' !== event
           && 'remote-sdp' !== event
           && 'remote-sdp-set' !== event
           && 'media-established' !== event) {

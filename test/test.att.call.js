@@ -343,6 +343,85 @@ describe('Call', function () {
           });
         });
       });
+
+      describe('hold', function () {
+        it('should exist', function () {
+          expect(call.hold).to.be.a('function');
+        });
+
+        xit('should execute RTCManager.hold', function () {
+          call.unmute();
+          expect(unmuteCallStub.getCall(0).args[0]).to.be.an('object');
+        });
+      });
+
+      describe('resume', function () {
+        it('should exist', function () {
+          expect(call.resume).to.be.a('function');
+        });
+
+        xit('should execute RTCManager.resume', function () {
+          call.unmute();
+          expect(unmuteCallStub.getCall(0).args[0]).to.be.an('object');
+        });
+      });
+    });
+
+    describe('hold/Resume', function () {
+
+      var localSdp,
+        holdCallStub,
+        resumeCallStub,
+        rtcOnSpy;
+
+      beforeEach(function () {
+
+        holdCallStub = sinon.stub(rtcMgr, 'holdCall', function () {
+        });
+
+        resumeCallStub = sinon.stub(rtcMgr, 'resumeCall', function () {
+        });
+
+        rtcOnSpy = sinon.spy(rtcMgr, 'on');
+      });
+
+      afterEach(function () {
+        holdCallStub.restore();
+        resumeCallStub.restore();
+        rtcOnSpy.restore();
+      });
+
+      describe('hold', function () {
+        it('should exist', function () {
+          expect(call.hold).to.be.a('function');
+        });
+
+        it('should execute RTCManager.holdCall', function () {
+          call.hold();
+          expect(holdCallStub.called).to.equal(true);
+        });
+
+        it('should register hold event on RTCManager', function () {
+          call.hold();
+          expect(rtcOnSpy.calledWith('hold')).to.equal(true);
+        });
+      });
+
+      describe('resume', function () {
+        it('should exist', function () {
+          expect(call.resume).to.be.a('function');
+        });
+
+        it('should execute RTCManager.resumeCall', function () {
+          call.resume();
+          expect(resumeCallStub.called).to.equal(true);
+        });
+
+        it('should register resume event on RTCManager', function () {
+          call.resume();
+          expect(rtcOnSpy.calledWith('resume')).to.equal(true);
+        });
+      });
     });
 
     describe('Connect Events', function () {

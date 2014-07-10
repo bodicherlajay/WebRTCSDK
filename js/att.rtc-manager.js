@@ -524,6 +524,17 @@
       });
     }
 
+    function holdCall(options) {
+
+      peerConnSvc.holdCall();
+
+    }
+
+    function resumeCall(options) {
+
+      peerConnSvc.resumeCall();
+    }
+
     this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
@@ -532,6 +543,9 @@
     this.refreshSession = refreshSession.bind(this);
     this.muteCall = muteCall.bind(this);
     this.unmuteCall = unmuteCall.bind(this);
+    this.holdCall = holdCall.bind(this);
+    this.resumeCall = resumeCall.bind(this);
+
   }
 
   if (undefined === ATT.private) {
