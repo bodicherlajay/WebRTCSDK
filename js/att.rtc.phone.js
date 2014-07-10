@@ -753,7 +753,6 @@
 
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
-    this.getCall = getCall.bind(this);
     this.login = login.bind(this);
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);

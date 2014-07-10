@@ -126,33 +126,6 @@ describe('Phone', function () {
 
       });
 
-      describe('getCall', function () {
-
-        it('should exist', function () {
-          expect(phone.getCall).to.be.a('function');
-        });
-
-        it('should return the latest instance of a call', function () {
-          phone.dial({
-            destination: '12345',
-            mediaType: 'video',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
-          });
-
-          phone.dial({
-            destination: '12345',
-            mediaType: 'video',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
-          });
-
-          var callObj = phone.getCall();
-          expect(callObj.peer).to.equal('12345');
-        });
-
-      });
-
       describe('on', function () {
 
         it('should exist', function () {
