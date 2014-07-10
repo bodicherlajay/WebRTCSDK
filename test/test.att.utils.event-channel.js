@@ -7,8 +7,9 @@
 describe('Event Channel', function () {
   'use strict';
 
-  var apiConfig = ATT.private.config.api,
-    resourceManager = ATT.private.factories.createResourceManager(apiConfig),
+  var resourceManager = {
+      doOperation: function () {}
+    },
     requests,
     response,
     channelConfig,
@@ -69,6 +70,16 @@ describe('Event Channel', function () {
   });
 
   describe('Factory method', function () {
+    var doOperationStub;
+
+    beforeEach(function () {
+      doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) {
+        options.success();
+      });
+    });
+    afterEach(function () {
+      doOperationStub.restore();
+    });
     it('createEventChannel should throw error if channelConfig is undefined', function () {
       channelConfig = undefined;
       expect(ATT.private.factories.createEventChannel.bind(ATT.utils, channelConfig)).to.throw('No options');
@@ -111,9 +122,11 @@ describe('Event Channel', function () {
   describe('On', function () {
 
     var emitter,
-      createEventEmitterStub;
+      createEventEmitterStub,
+      doOperationStub;
 
     beforeEach(function () {
+      doOperationStub = sinon.stub(resourceManager, 'doOperation', function () {});
       emitter = factories.createEventEmitter();
       createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
         return emitter;
@@ -123,6 +136,7 @@ describe('Event Channel', function () {
 
     afterEach(function () {
       createEventEmitterStub.restore();
+      doOperationStub.restore();
     });
 
     it('Should exist', function () {
@@ -161,8 +175,15 @@ describe('Event Channel', function () {
     });
 
     it('should exist', function () {
+      doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) {
+        return;
+      });
+
       eventChannel = factories.createEventChannel(channelConfig);
+
       expect(eventChannel.startListening).to.be.a('function');
+
+      doOperationStub.restore();
     });
     it('should change `isListening` flag to true', function () {
 
@@ -176,6 +197,7 @@ describe('Event Channel', function () {
       expect(eventChannel.isListening()).to.equal(true);
 
       doOperationStub.restore();
+      eventChannel.stopListening();
     });
 
     it('should call resourceManager.doOperation with `getEvents`', function () {
@@ -193,6 +215,7 @@ describe('Event Channel', function () {
       expect(doOperationStub.calledOnce).to.equal(true);
       expect(doOperationStub.getCall(0).args[0]).to.equal('getEvents');
 
+      eventChannel.stopListening();
       doOperationStub.restore();
     });
 
@@ -217,9 +240,11 @@ describe('Event Channel', function () {
             expect(doOperationStub.callCount >= 2).to.equal(true);
             expect(doOperationStub.getCall(0).args[0]).to.equal('getEvents');
             doOperationStub.restore();
+            eventChannel.stopListening();
             done();
           } catch (e) {
             doOperationStub.restore();
+            eventChannel.stopListening();
             done(e);
           }
         }, 100);
@@ -261,10 +286,12 @@ describe('Event Channel', function () {
 
             createEventEmitterStub.restore();
             doOperationStub.restore();
+            eventChannel.stopListening();
             done();
           } catch (e) {
             doOperationStub.restore();
             createEventEmitterStub.restore();
+            eventChannel.stopListening();
             done(e);
           }
         }, 100);
@@ -272,24 +299,7 @@ describe('Event Channel', function () {
       });
 
 
-      xit('should create new WebSocket if usesLongPolling false', function () {
-        var spyOnCreateWebSocket = sinon.spy(function (ws) {
-            expect(ws.onmessage).to.be.a('function');
-          }),
-          stub = sinon.stub(window, 'WebSocket', function () {});
 
-
-        channelConfig.usesLongPolling = false;
-        channelConfig.success = undefined;
-        response.location = 'ws://location';
-        channelConfig.onCreateWebSocket = spyOnCreateWebSocket;
-
-        eventChannel = ATT.private.factories.createEventChannel(channelConfig);
-        eventChannel.startListening(httpConfig);
-        requests[0].respond(200, response, JSON.stringify(response));
-        expect(spyOnCreateWebSocket.called).to.equal(true);
-        stub.restore();
-      });
 
     });
 
@@ -300,8 +310,11 @@ describe('Event Channel', function () {
       eventChannel.startListening(httpConfig);
       expect(eventChannel.isListening()).to.equal(true);
       requests[0].respond(503, {"Content-Type": "application/json"}, JSON.stringify({}));
+
       expect(channelConfig.publisher.publish.calledOnce).equals(false);
       expect(eventChannel.isListening()).to.equal(false);
+
+      eventChannel.stopListening();
     });
 
     xit('should continue to poll after timeout', function () {
@@ -331,10 +344,15 @@ describe('Event Channel', function () {
 
       eventChannel = ATT.private.factories.createEventChannel(channelConfig);
       eventChannel.startListening(httpConfig);
+
       expect(eventChannel.isListening()).to.equal(true);
+
       requests[0].respond(200, {"Content-Type": "application/json"}, JSON.stringify(response));
+
       expect(channelConfig.publisher.publish.calledOnce).equals(true);
       expect(eventChannel.isListening()).to.equal(true);
+
+      eventChannel.stopListening();
     });
 
     describe('Error on `doOperation`', function () {
@@ -359,11 +377,13 @@ describe('Event Channel', function () {
           try {
             console.log('Error:' + doOperationStub503.callCount);
             expect(doOperationStub503.callCount >= 2).to.equal(true);
-//            expect(doOperationStub503.getCall(0).args[0]).to.equal('getEvents');
+            expect(doOperationStub503.getCall(0).args[0]).to.equal('getEvents');
             doOperationStub503.restore();
+            eventChannel.stopListening();
             done();
           } catch (e) {
             doOperationStub503.restore();
+            eventChannel.stopListening();
             done(e);
           }
         }, 100);
