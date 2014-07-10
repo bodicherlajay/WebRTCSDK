@@ -423,6 +423,7 @@
             mediaConstraints: userMedia.mediaConstraints,
             localStream: userMedia.localStream,
             sessionInfo: options.sessionInfo,
+            remoteSdp: options.remoteSdp,
             onPeerConnectionInitiated: function (callInfo) {
               options.onCallConnecting(callInfo);
             }

@@ -196,6 +196,7 @@
         localMedia: config.localMedia || call.localMedia,
         remoteMedia: config.localMedia || call.localMedia,
         sessionInfo: call.sessionInfo,
+        remoteSdp: call.remoteSdp,
         onCallConnecting: function (callInfo) {
           call.setId(callInfo.callId);
           call.localSdp = callInfo.localSdp;
@@ -253,7 +254,7 @@
     this.type = options.type;
     this.sessionInfo = options.sessionInfo;
     this.localSdp = null;
-    this.remoteSdp = null;
+    this.remoteSdp = options.remoteSdp || null;
     this.localMedia = options.localMedia;
     this.remoteMedia = options.remoteMedia;
     this.state = null;
