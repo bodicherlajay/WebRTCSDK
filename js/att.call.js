@@ -266,8 +266,6 @@
     this.handleCallMediaModifications = handleCallMediaModifications.bind(this);
     this.handleCallMediaTerminations = handleCallMediaTerminations.bind(this);
     this.handleCallOpen = handleCallOpen.bind(this);
-    this.hold = holdCall.bind(this);
-    this.resume = resumeCall.bind(this);
     this.mute = mute.bind(this);
     this.unmute = unmute.bind(this);
     this.end = endCall.bind(this);
