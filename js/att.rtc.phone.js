@@ -659,7 +659,7 @@
       }
 
       call = session.createCall({
-        peer: options.destination,
+        peer: ATT.phoneNumber.cleanPhoneNumber(options.destination),
         type: ATT.CallTypes.OUTGOING,
         mediaType: options.mediaType,
         localMedia: options.localMedia,
