@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, Env, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit*/
 
-describe.only('Session', function () {
+describe('Session', function () {
   'use strict';
 
   var factories,
@@ -61,7 +61,7 @@ describe.only('Session', function () {
       getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcManager;
       });
-      session = new ATT.rtc.Session(options);
+      session = new ATT.rtc.Session();
     });
 
     after(function () {
@@ -285,6 +285,7 @@ describe.only('Session', function () {
       var onSetIdSpy;
 
       beforeEach(function () {
+        session.setId('123');
         onSetIdSpy = sinon.spy(session, 'setId');
         session.disconnect();
       });
@@ -321,15 +322,23 @@ describe.only('Session', function () {
     });
 
     describe('getToken', function () {
+      var sessionForGetToken;
+
+      beforeEach(function () {
+        sessionForGetToken = new ATT.rtc.Session();
+        sessionForGetToken.setId('123');
+      });
+
       it('should exist', function () {
-        expect(session.getToken).to.be.a('function');
+        expect(sessionForGetToken.getToken).to.be.a('function');
       });
       it('return the current token', function () {
-        expect(session.getToken()).to.equal(null);
-        session.update({
-          token: 'bogus'
+        expect(sessionForGetToken.getToken()).to.equal(null);
+        sessionForGetToken.update({
+          token: 'bogus',
+          timeout: 1000000 // so big that it will never hit the network for refreshSession
         });
-        expect(session.getToken()).to.equal('bogus');
+        expect(sessionForGetToken.getToken()).to.equal('bogus');
       });
     });
 
@@ -385,6 +394,7 @@ describe.only('Session', function () {
 
     describe('Update', function () {
       beforeEach(function () {
+        session.setId('123');
         options = { timeout : 123};
       });
 
@@ -612,7 +622,7 @@ describe.only('Session', function () {
         getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
           return rtcManager;
         });
-        refreshSessionStub = sinon.stub(rtcManager, 'refreshSession', function () {});
+        refreshSessionStub = sinon.spy(rtcManager, 'refreshSession');
       });
 
       afterEach(function () {
@@ -677,6 +687,7 @@ describe.only('Session', function () {
         var session3 = new ATT.rtc.Session(options);
         onNeedsRefreshSpy = sinon.spy();
 
+        session3.setId('123');
         session3.on('needs-refresh', onNeedsRefreshSpy);
 
         options.timeout = 200;
@@ -706,7 +717,7 @@ describe.only('Session', function () {
 
       it('should call rtcManager.refreshSession', function (done) {
         var session4 = new ATT.rtc.Session();
-
+        session4.setId('123');
         session4.update({
           token: 'bogus',
           e911Id: 'e911Bogus',
