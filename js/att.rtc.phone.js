@@ -621,10 +621,12 @@
 
     function login(options) {
       if (undefined === options) {
-        throw new Error('Options not defined');
+        //todo remove throw and publish it using error callback handler
+        throw new Error(ATT.errorDictionary.getSDKError('2002').ErrorMessage);
       }
       if (undefined === options.token) {
-        throw new Error('Token not defined');
+        //todo remove throw and publish it using error callback handler
+        throw new Error(ATT.errorDictionary.getSDKError('2001').ErrorMessage);
       }
 
       session.on('ready', function (data) {

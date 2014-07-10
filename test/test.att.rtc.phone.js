@@ -194,8 +194,10 @@ describe('Phone', function () {
         });
 
         it('should throw error if no token in options', function () {
-          expect(phone.login.bind(phone)).to.throw('Options not defined');
-          expect(phone.login.bind(phone, {})).to.throw('Token not defined');
+          //todo check for error object details
+          expect(phone.login.bind(phone)).to.throw('Mandatory fields can not be empty');
+          //todo check for error object details
+          expect(phone.login.bind(phone, {})).to.throw('Missing input parameter');
           expect(phone.login.bind(phone, {
             token: '123'
           })).to.not.throw('Token not defined');
