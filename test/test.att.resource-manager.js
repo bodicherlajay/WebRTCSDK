@@ -4,7 +4,7 @@
 
 'use strict';
 
-describe.only('ResourceManager', function () {
+describe('ResourceManager', function () {
 
   var apiConfig,
     resourceManager,
