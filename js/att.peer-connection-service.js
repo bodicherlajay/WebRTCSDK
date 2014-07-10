@@ -156,10 +156,10 @@
         logger.logInfo('Responding to incoming call');
 
         //Check if invite is an announcement
-        var sdp = call.remoteSdp;
+        var sdp = config.remoteSdp;
         if (sdp && sdp.indexOf('sendonly') !== -1) {
           sdp = sdp.replace(/sendonly/g, 'sendrecv');
-          call.remoteSdp = sdp;
+          //call.remoteSdp = sdp;
         }
         this.setTheRemoteDescription(sdp, 'offer');
         this.createAnswer();
