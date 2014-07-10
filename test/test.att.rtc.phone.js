@@ -813,7 +813,7 @@ describe('Phone', function () {
             mediaType;
 
           options = {
-            destination: '123434',
+            destination: '42512345678',
             mediaType: 'audio',
             localMedia: '#foo',
             remoteMedia: '#bar'
@@ -876,7 +876,6 @@ describe('Phone', function () {
               done(e);
             }
           }, 100);
-
         });
       });
     });
