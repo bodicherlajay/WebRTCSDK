@@ -38,7 +38,7 @@
   }
 
   function createCalledPartyUri(destination) {
-    if (destination.match(new RegExp('[^0-9]') == null)) { // Number (ICMN/VTN/PSTN)
+    if (destination.match(new RegExp('[^0-9]')) == null) { // Number (ICMN/VTN/PSTN)
       if (destination.length == 10) {  // 10 digit number
         return 'tel:+1' + destination;
       }
@@ -153,15 +153,16 @@
         }});
 
       } else if (this.callType === ATT.CallTypes.INCOMING) {
-//        logger.logInfo('Responding to incoming call');
-//
-//        //Check if invite is an announcement
-//        sdp = call.getRemoteSdp();
-//        if (sdp && sdp.indexOf('sendonly') !== -1) {
-//          call.setRemoteSdp(sdp.replace(/sendonly/g, 'sendrecv'));
-//        }
-//        this.setTheRemoteDescription(sdp, 'offer');
-//        this.createAnswer();
+        logger.logInfo('Responding to incoming call');
+
+        //Check if invite is an announcement
+        var sdp = call.remoteSdp;
+        if (sdp && sdp.indexOf('sendonly') !== -1) {
+          sdp = sdp.replace(/sendonly/g, 'sendrecv');
+          call.remoteSdp = sdp;
+        }
+        this.setTheRemoteDescription(sdp, 'offer');
+        this.createAnswer();
       }
     },
 
