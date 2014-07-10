@@ -3,73 +3,77 @@
 before: true, sinon: true, expect: true, xit: true, xdescribe: true*/
 
 describe('ATT.phoneNumber', function () {
-  "use strict";
+  'use strict';
 
   it('should exist', function () {
     expect(ATT.phoneNumber).to.be.an('object');
   });
 
-  it('should contain ', function () {
+  it('should contain a stringify method', function () {
     expect(ATT.phoneNumber.stringify).to.be.a('function');
   });
 
-  it('stringify1', function () {
-    var number = '12345678900';
-    expect(ATT.phoneNumber.stringify(number)).to.equal('+1 (234) 567-8900');
+  describe('stringify', function () {
+    it('stringify1', function () {
+      var number = '12345678900';
+      expect(ATT.phoneNumber.stringify(number)).to.equal('+1 (234) 567-8900');
+    });
+
+    it('stringify2', function () {
+      var number = '2345678900';
+      expect(ATT.phoneNumber.stringify(number)).to.equal('(234) 567-8900');
+    });
+
+    it('stringify3', function () {
+      var number = '222222';
+      expect(ATT.phoneNumber.stringify(number)).to.equal('222-222');
+    });
   });
 
-  it('stringify2', function () {
-    var number = '2345678900';
-    expect(ATT.phoneNumber.stringify(number)).to.equal('(234) 567-8900');
+  describe('getCallable', function () {
+    it('getCallable1', function () {
+      var number = '222222',
+        countryCode = 'us';
+      expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal(false);
+    });
+
+    it('getCallable2', function () {
+      var number = '1234567890',
+        countryCode = 'us';
+      expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal('11234567890');
+    });
+
+    it('getCallable3', function () {
+      var number = '11234567890',
+        countryCode = 'us';
+      expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal('11234567890');
+    });
+
+    it('getCallable3', function () {
+      var number = '11234567890',
+        countryCode = 'ca';
+      expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal(false);
+    });
+
+    it('getCallable2', function () {
+      var number = '1234567890',
+        countryCode = 'us';
+      expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal('11234567890');
+    });
   });
 
-  it('stringify3', function () {
-    var number = '222222';
-    expect(ATT.phoneNumber.stringify(number)).to.equal('222-222');
-  });
-
-  it('getCallable1', function () {
-    var number = '222222',
-      countryCode = 'us';
-    expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal(false);
-  });
-
-  it('getCallable2', function () {
-    var number = '1234567890',
-      countryCode = 'us';
-    expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal('11234567890');
-  });
-
-  it('getCallable3', function () {
-    var number = '11234567890',
-      countryCode = 'us';
-    expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal('11234567890');
-  });
-
-  it('getCallable3', function () {
-    var number = '11234567890',
-      countryCode = 'ca';
-    expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal(false);
-  });
-
-  it('getCallable2', function () {
-    var number = '1234567890',
-      countryCode = 'us';
-    expect(ATT.phoneNumber.getCallable(number, countryCode)).to.equal('11234567890');
-  });
-
-
-
-
-  describe('cleanPhoneNumber public method test  ', function () {
+  describe('cleanPhoneNumber public method test', function () {
     var phone = ATT.rtc.Phone.getPhone();
-    it('should Exist ', function () {
+    
+    it('should exist', function () {
       expect(ATT.phoneNumber.formatNumber).to.be.a('function');
     });
-    it('should Exist ', function () {
+
+    it('should exist', function () {
       expect(phone.formatNumber).to.be.a('function');
     });
-    it('should convert alpha numeric to number ', function () {
+
+    it('should convert alpha numeric to number', function () {
       var number = '425-080-FEDX';
       expect(phone.cleanPhoneNumber(number)).to.equal('14250803339');
     });
@@ -79,7 +83,7 @@ describe('ATT.phoneNumber', function () {
       expect(phone.cleanPhoneNumber(number)).to.equal('911');
     });
 
-    it('should be able to  *69', function () {
+    it('should be able to *69', function () {
       var number = '*69';
       expect(phone.cleanPhoneNumber(number)).to.equal('*69');
     });
@@ -110,14 +114,16 @@ describe('ATT.phoneNumber', function () {
     });
   });
 
-  describe('formatNumber public method test  ', function () {
+  describe('formatNumber public method test', function () {
     var phone = ATT.rtc.Phone.getPhone();
-    it('should Exist ', function () {
+    it('should exist ', function () {
       expect(ATT.phoneNumber.cleanPhoneNumber).to.be.a('function');
     });
-    it('should Exist ', function () {
+
+    it('should exist', function () {
       expect(phone.cleanPhoneNumber).to.be.a('function');
     });
+
     it('should convert ten digit number to a formated number ', function () {
       var number = '425-080-FEDX';
       expect(phone.formatNumber(number)).to.equal('+1 (425) 080-3339');
@@ -158,10 +164,9 @@ describe('ATT.phoneNumber', function () {
       expect(phone.formatNumber(number)).to.equal('+1 (180) 033-3391');
     });
 
-    it('should be able to formate a alpha number with 1 appended ', function () {
+    it('should be able to format a alpha number with 1 appended', function () {
       var number = '1800CallFedex';
       expect(phone.formatNumber(number)).to.equal('+1 (800) 225-5333');
     });
-
   });
 });
