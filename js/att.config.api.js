@@ -64,6 +64,19 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
+         * Delete a user from DHSEndpoint
+         * @memberof ATT.APIConfigs
+         */
+        deleteUser: {
+          method: 'delete',
+          formatters: {
+            url: function (userId) {
+              return DEFAULTS.DHSEndpoint + '/users/' + userId;
+            }
+          },
+          headers: DEFAULTS.headers
+        },
+        /**
         * Get a list of VTNs from DHSEndpoint
         * @memberof ATT.APIConfigs
         */
@@ -109,33 +122,11 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
-         * Get e911Id from DHSEndpoint
-         * @memberof ATT.APIConfigs
-         */
-        getE911Id: {
-          method: 'get',
-          formatters : {
-            url: function (e911Id) {
-              return DEFAULTS.DHSEndpoint + '/e911/' + e911Id;
-            }
-          },
-          headers: DEFAULTS.headers
-        },
-        /**
          * Create a e911Id using DHSEndpoint
          * @memberof ATT.APIConfigs
          */
         createE911Id: {
           method: 'post',
-          url: DEFAULTS.DHSEndpoint + '/e911',
-          headers: DEFAULTS.headers
-        },
-        /**
-         * Update a e911Id using DHSEndpoint
-         * @memberof ATT.APIConfigs
-         */
-        updateE911Id: {
-          method: 'put',
           url: DEFAULTS.DHSEndpoint + '/e911',
           headers: DEFAULTS.headers
         },
