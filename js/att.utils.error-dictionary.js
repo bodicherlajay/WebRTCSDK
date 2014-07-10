@@ -68,6 +68,7 @@
 
   function createErrorDictionary(spec, utils) {
     var allErrors = ATT.utils.SDKErrorStore.getAllErrors(), // collection of all errors in this dictionary
+      sdkErrors = ATT.utils.ErrorStore.SDKErrors.getAllSDKErrors(),
       // `modules` is an immutable of abbreviations for the modules of this `app`
       modules = Object.freeze(spec.modules),
       newError = null,
@@ -85,6 +86,9 @@
         allErrors[newError.getId()] = newError;
         allErrorsOpStats[newError.opStatusMsgId()] = newError;
         return newError;
+      },
+      getSDKError: function (errorId) {
+        return sdkErrors[errorId];
       },
       getError: function (errorId) {
         return allErrors[errorId];

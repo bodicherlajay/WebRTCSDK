@@ -74,6 +74,17 @@ describe('ErrorDictionaryModule', function () {
         var err = errorDictionary.createError(errorSpec);
         expect(err.formatError()).to.equal('RTC-00000-API-Create Session-400-SVC0002-invalidinput-Request payload does not conform as documented');
       });
+
+      it('should return SDK error object', function () {
+        var err = errorDictionary.getSDKError('15002');
+        expect(err.JSObject).to.equal('ATT.rtc.Phone');
+        expect(err.JSMethod).to.equal('*');
+        expect(err.ErrorCode).to.equal('15002');
+        expect(err.ErrorMessage).to.equal('Event Channel got shutdown unexpectedly');
+        expect(err.Cause).to.equal('Event Channel stopped. Please logout and login again.');
+        expect(err.Resolution).to.equal('Please login again');
+      });
+
     });
   });
 
