@@ -1001,48 +1001,42 @@ describe('Phone', function () {
         });
       });
 
-      xdescribe('call-connected', function () {
+      describe('call-connected', function () {
 
         var phone,
           call,
-          emitterCall,
-          createEmitterStub,
-          callConnectedHandlerSpy;
+          connectStub;
 
-        before(function () {
-          emitterCall = ATT.private.factories.createEventEmitter();
-
-          createEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-            return emitterCall;
-          });
-
-          callConnectedHandlerSpy = sinon.spy();
-
-          call = new ATT.rtc.Call({
-            peer: '1234567',
+        beforeEach(function () {
+          phone = new ATT.private.Phone();
+          call = phone.getSession().createCall({
+            peer: '123',
             mediaType: 'video'
           });
-
-          phone = new ATT.private.Phone();
-
-          phone.getSession().currentCall = call;
-
-          call.on('connected')
+          // so that it will just register the event handlers
+          connectStub = sinon.stub(call, 'connect', function () {
+            return;
+          });
+        });
+        afterEach(function () {
+          connectStub.restore();
         });
 
-        after(function () {
-          createEmitterStub.restore();
-        });
+        it('should publish `call-connected` when call publishes `connected` event', function (done) {
+          var callConnectedspy = sinon.spy();
 
-        it('should trigger `call-connected` when call publishes `connected` event', function (done) {
+          phone.on('call-connected', callConnectedspy);
 
-          emitterCall.publish('connected');
+          phone.answer({
+            localMedia: {},
+            remoteMedia: {}
+          });
 
-          phone.on('call-connected', callConnectedHandlerSpy);
+          call.setState('connected');
 
           setTimeout(function () {
             try {
-              expect(callConnectedHandlerSpy.called).to.equal(true);
+              expect(callConnectedspy.calledOnce).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1051,7 +1045,7 @@ describe('Phone', function () {
 
         });
 
-      })
+      });
     });
   });
 });
