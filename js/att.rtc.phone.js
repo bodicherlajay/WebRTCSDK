@@ -607,7 +607,6 @@
           && 'call-resume' !== event
           && 'updateE911Id' !== event
           && 'call-established' !== event
-          && 'call-ended' !== event
           && 'call-error' !== event) {
         throw new Error('Event not defined');
       }
@@ -685,8 +684,9 @@
       call.on('established', function () {
         emitter.publish('call-established');
       });
-      call.on('ended', function () {
-        emitter.publish('call-ended');
+      call.on('disconnected', function (data) {
+        emitter.publish('call-disconnected', data);
+        session.deleteCurrentCall();
       });
       call.on('error', function () {
         emitter.publish('call-error');
@@ -730,11 +730,12 @@
       call.on('established', function () {
         emitter.publish('call-established');
       });
-      call.on('ended', function () {
-        emitter.publish('call-ended');
-      });
       call.on('error', function () {
         emitter.publish('call-error');
+      });
+      call.on('disconnected', function (data) {
+        emitter.publish('call-disconnected', data);
+        session.deleteCurrentCall();
       });
 
       call.connect(options);
@@ -763,9 +764,6 @@
     function hangup() {
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
-      });
-      session.on('call-disconnected', function () {
-        emitter.publish('call-disconnected');
       });
       call.disconnect();
     }

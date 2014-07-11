@@ -209,11 +209,18 @@
     }
 
     function disconnect() {
+      var call = this;
+
+      emitter.publish('disconnecting');
+
+      rtcManager.on('call-disconnected', function (data) {
+        call.setId(null, data);
+      });
+
       rtcManager.disconnectCall({
         sessionInfo: this.sessionInfo,
         callId: this.id
       });
-      emitter.publish('disconnecting');
     }
 
     function getState() {
@@ -226,10 +233,16 @@
       emitter.publish(state);
     }
 
-    function setId(callId) {
+    /**
+    *
+    * Set the CallId
+    * @param {String} callId The callId
+    * @param <opt> {Object} data Event data
+    */
+    function setId(callId, data) {
       this.id  = callId;
       if (this.id === null) {
-        emitter.publish('disconnected');
+        emitter.publish('disconnected', data);
       } else {
         emitter.publish('connecting');
       }
