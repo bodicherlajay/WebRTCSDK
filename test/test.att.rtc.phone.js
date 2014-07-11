@@ -292,7 +292,6 @@ describe('Phone', function () {
           callConnectingHandlerSpy,
           callCanceledHandlerSpy,
           callRejectedHandlerSpy,
-          callConnectedHandlerSpy,
           callEstablishedHandlerSpy,
           callEndedHandlerSpy,
           callErrorHandlerSpy;
@@ -334,7 +333,6 @@ describe('Phone', function () {
           callConnectingHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
           callRejectedHandlerSpy = sinon.spy();
-          callConnectedHandlerSpy = sinon.spy();
           callEstablishedHandlerSpy = sinon.spy();
           callEndedHandlerSpy = sinon.spy();
           callErrorHandlerSpy = sinon.spy();
@@ -343,7 +341,6 @@ describe('Phone', function () {
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
-          phone.on('call-connected', callConnectedHandlerSpy);
           phone.on('call-established', callEstablishedHandlerSpy);
           phone.on('call-ended', callEndedHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
@@ -396,10 +393,6 @@ describe('Phone', function () {
 
         it('should register for the `canceled` event on the call object', function () {
           expect(onSpy.calledWith('canceled')).to.equal(true);
-        });
-
-        it('should register for the `rejected` event on the call object', function () {
-          expect(onSpy.calledWith('rejected')).to.equal(true);
         });
 
         it('should register for the `connected` event on the call object', function () {
@@ -459,17 +452,6 @@ describe('Phone', function () {
           setTimeout(function () {
             try {
               expect(callRejectedHandlerSpy.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 200);
-        });
-
-        it('should trigger `call-connected` when call publishes `connected` event', function (done) {
-          setTimeout(function () {
-            try {
-              expect(callConnectedHandlerSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -575,6 +557,30 @@ describe('Phone', function () {
 
         it('should register for `answering` event on the call object', function () {
           expect(onSpy.calledWith('answering')).to.equal(true);
+        });
+
+        it('should register for the `connecting` event on the call object', function () {
+          expect(onSpy.calledWith('connecting')).to.equal(true);
+        });
+
+        it('should register for the `rejected` event on the call object', function () {
+          expect(onSpy.calledWith('rejected')).to.equal(true);
+        });
+
+        it('should register for the `connected` event on the call object', function () {
+          expect(onSpy.calledWith('connected')).to.equal(true);
+        });
+
+        it('should register for the `established` event on the call object', function () {
+          expect(onSpy.calledWith('established')).to.equal(true);
+        });
+
+        it('should register for the `ended` event on the call object', function () {
+          expect(onSpy.calledWith('ended')).to.equal(true);
+        });
+
+        it('should register for the `error` event on the call object', function () {
+          expect(onSpy.calledWith('error')).to.equal(true);
         });
 
         it('should trigger `call-answering` when call publishes `answering` event', function (done) {
@@ -994,6 +1000,58 @@ describe('Phone', function () {
           }, 100);
         });
       });
+
+      xdescribe('call-connected', function () {
+
+        var phone,
+          call,
+          emitterCall,
+          createEmitterStub,
+          callConnectedHandlerSpy;
+
+        before(function () {
+          emitterCall = ATT.private.factories.createEventEmitter();
+
+          createEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+            return emitterCall;
+          });
+
+          callConnectedHandlerSpy = sinon.spy();
+
+          call = new ATT.rtc.Call({
+            peer: '1234567',
+            mediaType: 'video'
+          });
+
+          phone = new ATT.private.Phone();
+
+          phone.getSession().currentCall = call;
+
+          call.on('connected')
+        });
+
+        after(function () {
+          createEmitterStub.restore();
+        });
+
+        it('should trigger `call-connected` when call publishes `connected` event', function (done) {
+
+          emitterCall.publish('connected');
+
+          phone.on('call-connected', callConnectedHandlerSpy);
+
+          setTimeout(function () {
+            try {
+              expect(callConnectedHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 200);
+
+        });
+
+      })
     });
   });
 });

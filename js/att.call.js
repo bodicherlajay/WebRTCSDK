@@ -119,7 +119,9 @@
       throw new Error('No mediaType provided');
     }
 
-    var emitter = factories.createEventEmitter(),
+    // private properties
+    var state = 'created',
+      emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
 
     function on(event, handler) {
@@ -168,8 +170,17 @@
         call.remoteMedia = config.remoteMedia;
       }
 
-      rtcManager.on('remote-sdp-set', function (remoteSdp) {
+      rtcManager.on('media-modifications', function (modifications) {
+        call.setRemoteSdp(modifications.remoteSdp);
+        rtcManager.setMediaModifications(modifications);
+      });
+
+      rtcManager.on('call-connected', function (remoteSdp) {
         call.setRemoteSdp(remoteSdp);
+        rtcManager.setRemoteDescription({
+          remoteSdp: remoteSdp,
+          type: 'answer'
+        });
       });
 
       rtcManager.on('media-established', function () {
@@ -178,15 +189,20 @@
 
       rtcManager.connectCall({
         peer: call.peer,
+        callId: call.id,
         type: call.type,
         mediaType: call.mediaType,
         localMedia: config.localMedia || call.localMedia,
-        remoteMedia: config.localMedia || call.localMedia,
-        remoteSdp: this.remoteSdp,
-        sessionInfo: call.sessionInfo,
+        remoteMedia: config.remoteMedia || call.remoteMedia,
         remoteSdp: call.remoteSdp,
+        sessionInfo: call.sessionInfo,
         onCallConnecting: function (callInfo) {
-          call.setId(callInfo.callId);
+          if(call.type === ATT.CallTypes.OUTGOING) {
+            call.setId(callInfo.callId);
+          }
+          if(call.type === ATT.CallTypes.INCOMING) {
+            call.setState(callInfo.xState);
+          }
           call.localSdp = callInfo.localSdp;
         }
       });
@@ -198,6 +214,16 @@
         callId: this.id
       });
       emitter.publish('disconnecting');
+    }
+
+    function getState() {
+      return state;
+    }
+
+    function setState(newState) {
+      state = newState;
+
+      emitter.publish(state);
     }
 
     function setId(callId) {
@@ -273,6 +299,8 @@
     this.on = on.bind(this);
     this.connect = connect.bind(this);
     this.disconnect = disconnect.bind(this);
+    this.getState = getState;
+    this.setState = setState;
     this.setId = setId.bind(this);
     this.setRemoteSdp = setRemoteSdp.bind(this);
     this.mute = mute.bind(this);

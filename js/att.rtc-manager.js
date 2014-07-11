@@ -226,6 +226,14 @@
       userMediaSvc,
       peerConnSvc;
 
+    function setMediaModifications(modifications) {
+      peerConnSvc.setRemoteAndCreateAnswer(modifications.remoteSdp, modifications.modificationId);
+    }
+
+    function setRemoteDescription(options) {
+      peerConnSvc.setTheRemoteDescription(options.sdp, options.type);
+    }
+
     function extractSessionInformation(responseObject) {
       logger.logDebug('extractSessionInformation');
 
@@ -430,8 +438,8 @@
       if (undefined === options) {
         throw new Error('No options defined.');
       }
-      if (undefined === options.peer) {
-        throw new Error('No peer defined.');
+      if (undefined === options.peer && undefined === options.callId) {
+        throw new Error('No `peer` or `callId` defined');
       }
       if (undefined === options.mediaType) {
         throw new Error('No MediaType defined.');
@@ -456,14 +464,26 @@
           });
           peerConnSvc.initiatePeerConnection({
             peer: options.peer,
+            callId: options.callId,
             type: options.type,
             mediaConstraints: userMedia.mediaConstraints,
             localStream: userMedia.localStream,
             remoteSdp: options.remoteSdp,
             sessionInfo: options.sessionInfo,
-            remoteSdp: options.remoteSdp,
             onPeerConnectionInitiated: function (callInfo) {
+              if (callInfo.xState
+                && (callInfo.xState === 'invitation-sent'
+                  || callInfo.xState === 'accepted')) { // map connecting to IIP event types
+                callInfo.xState = 'connecting';
+              }
+
               options.onCallConnecting(callInfo);
+            },
+            onRemoteStream: function (stream) {
+              userMediaSvc.showStream({
+                localOrRemote: 'remote',
+                stream: stream
+              });
             }
           });
         },
@@ -544,9 +564,10 @@
     this.refreshSession = refreshSession.bind(this);
     this.muteCall = muteCall.bind(this);
     this.unmuteCall = unmuteCall.bind(this);
-    this.holdCall = holdCall.bind(this);
+    this.setMediaModifications = setMediaModifications;
+    this.setRemoteDescription = setRemoteDescription;
+	this.holdCall = holdCall.bind(this);
     this.resumeCall = resumeCall.bind(this);
-
   }
 
   if (undefined === ATT.private) {

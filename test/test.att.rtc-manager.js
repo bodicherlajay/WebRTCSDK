@@ -467,7 +467,11 @@ describe('RTC Manager', function () {
           remoteSdp = 'abc';
 
           initPeerConnectionStub = sinon.stub(ATT.PeerConnectionService, 'initiatePeerConnection', function (options) {
-            options.onPeerConnectionInitiated();
+            options.onPeerConnectionInitiated({
+              xState: 'abc',
+              callId: '123',
+              localSdp: 'aaa'
+            });
             emitter.publish('remote-sdp', remoteSdp);
           });
 
@@ -493,19 +497,25 @@ describe('RTC Manager', function () {
 
         it('should throw an error if invalid options', function () {
           expect(rtcManager.connectCall.bind(rtcManager)).to.throw('No options defined.');
-          expect(rtcManager.connectCall.bind(rtcManager, {})).to.throw('No peer defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {})).to.throw('No `peer` or `callId` defined');
           expect(rtcManager.connectCall.bind(rtcManager, {
             peer: '123'
           })).to.throw('No MediaType defined.');
           expect(rtcManager.connectCall.bind(rtcManager, {
+            peer: '1234',
             mediaType: 'audio'
-          })).to.throw('No peer defined.');
+          })).to.throw('Callback `onCallConnecting` not defined.');
           expect(rtcManager.connectCall.bind(rtcManager, {
-            mediaType: 'audio',
-            peer: '1234'
+            callId: '1234',
+            mediaType: 'audio'
           })).to.throw('Callback `onCallConnecting` not defined.');
           expect(rtcManager.connectCall.bind(rtcManager, {
             peer: '123',
+            mediaType: 'video',
+            onCallConnecting: function () {}
+          })).to.not.throw(Error);
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            callId: '123',
             mediaType: 'video',
             onCallConnecting: function () {}
           })).to.not.throw(Error);
@@ -647,6 +657,49 @@ describe('RTC Manager', function () {
         });
       });
 
+      describe('setMediaModifications', function () {
+
+        it('should exist', function () {
+          expect(rtcManager.setMediaModifications).to.be.a('function');
+        });
+
+        it('should execute peerConnSvc.setRemoteAndCreateAnswer', function () {
+          var modifications = {
+              remoteSdp: 'abc',
+              modificationId: '123'
+            },
+            setRemoteAndCreateAnswerStub = sinon.stub(peerConnSvc, 'setRemoteAndCreateAnswer', function () {});
+
+          rtcManager.setMediaModifications(modifications);
+
+          expect(setRemoteAndCreateAnswerStub.calledWith(modifications.remoteSdp, modifications.modificationId)).to.equal(true);
+
+          setRemoteAndCreateAnswerStub.restore();
+        });
+
+      });
+
+      describe('setRemoteDescription', function () {
+        it('should exist', function () {
+          expect(rtcManager.setRemoteDescription).to.be.a('function');
+        });
+
+        it('should execute peerConnection.setTheRemoteDescription', function () {
+          var setTheRemoteDescriptionSpy = sinon.spy(peerConnSvc, 'setTheRemoteDescription'),
+            remoteSdp = '3123',
+            type = 'answer';
+
+          rtcManager.setRemoteDescription({
+            sdp:remoteSdp,
+            type: type
+          });
+
+          expect(setTheRemoteDescriptionSpy.calledWith(remoteSdp, type)).to.equal(true);
+
+          setTheRemoteDescriptionSpy.restore();
+        });
+      });
+
       describe('holdCall', function () {
         var holdStreamStub,
           onSuccessSpy = sinon.spy();
@@ -686,6 +739,7 @@ describe('RTC Manager', function () {
           resumeStreamStub.restore();
         });
       });
+
     });
   });
 

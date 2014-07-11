@@ -9,7 +9,6 @@
   var module,
     logManager = ATT.logManager.getInstance(),
     Error,
-    eventEmitter,
     defaultMediaConstraints = { // default to video call
       audio: true,
       video: true
@@ -21,19 +20,12 @@
     Error = service;
   }
 
-  function setEventEmitter(service) {
-    eventEmitter = service;
-  }
-
   //When this modules gets loaded, we should have the following services available to consume
   function init() {
     logger.logInfo("Initializing User Media Service...");
     logger.logDebug("Setting the call manager");
 
     setError(app.Error);
-    setEventEmitter(factories.createEventEmitter());
-
-    eventEmitter.subscribe(ATT.SdkEvents.REMOTE_STREAM_ADDED, module.showStream, module);
   }
 
   module = {

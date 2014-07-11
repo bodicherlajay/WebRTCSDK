@@ -220,6 +220,17 @@
           remoteSdp: remoteSdp
         });
         break;
+      case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
+        emitter.publish('media-modifications', {
+          remoteSdp: event.sdp,
+          modificationId: event.modId
+        });
+        break;
+      case ATT.RTCCallEvents.SESSION_OPEN:
+        emitter.publish('call-connected', {
+          remoteSdp: event.sdp
+        });
+        break;
       }
     }
 
@@ -279,7 +290,8 @@
           && 'hold' !== event
           && 'resume' !== event
           && 'remote-sdp' !== event
-          && 'remote-sdp-set' !== event
+          && 'call-connected' !== event
+          && 'media-modifications' !== event
           && 'media-established' !== event) {
         throw new Error('Event not found');
       }

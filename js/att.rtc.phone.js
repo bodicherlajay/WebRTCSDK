@@ -589,10 +589,6 @@
       return session;
     }
 
-    function getCall() {
-      return call;
-    }
-
     function on(event, handler) {
       if ('session-ready' !== event
           && 'session-disconnected' !== event
@@ -714,12 +710,30 @@
 
       call = session.currentCall;
 
-      if (call === undefined || call === null) {
+      if (call === null) {
         throw new Error('Call object not defined');
       }
 
       call.on('answering', function () {
         emitter.publish('call-answering');
+      });
+      call.on('connecting', function () {
+        emitter.publish('call-connecting');
+      });
+      call.on('rejected', function () {
+        emitter.publish('call-rejected');
+      });
+      call.on('connected', function () {
+        emitter.publish('call-connected');
+      });
+      call.on('established', function () {
+        emitter.publish('call-established');
+      });
+      call.on('ended', function () {
+        emitter.publish('call-ended');
+      });
+      call.on('error', function () {
+        emitter.publish('call-error');
       });
 
       call.connect(options);

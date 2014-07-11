@@ -14,8 +14,7 @@
     logger = logManager.getLoggerByName('PeerConnectionService'),
     Error,
     SignalingService,
-    SDPFilter,
-    eventEmitter;
+    SDPFilter;
 
   function setError(service) {
     Error = service;
@@ -31,10 +30,6 @@
 
   function setLogger(service) {
     logger = service;
-  }
-
-  function setEventEmitter(service) {
-    eventEmitter = service;
   }
 
   function createCalledPartyUri(destination) {
@@ -62,8 +57,6 @@
       setSignalingService(app.SignalingService);
       setSDPFilter(app.sdpFilter.getInstance());
       setError(app.Error);
-      setEventEmitter(app.event);
-
     } catch (e) {
       console.log("Unable to initialize dependencies for PeerConnectionService module");
     }
@@ -98,6 +91,8 @@
 
     peer: null,
 
+    callId: null,
+
     callType: null,
 
     mediaType: null,
@@ -111,6 +106,8 @@
     callCanceled: false,
 
     onPeerConnectionInitiated: null,
+
+    onRemoteStream: null,
 
     notifyCallCancelation: function () {
       this.callCanceled = true;
@@ -128,10 +125,12 @@
       logger.logDebug('initPeerConnection');
 
       this.peer = config.peer;
+      this.callId = config.callId;
       this.callType = config.type;
       this.mediaConstraints = config.mediaConstraints;
       this.localStream = config.localStream;
       this.onPeerConnectionInitiated = config.onPeerConnectionInitiated;
+      this.onRemoteStream = config.onRemoteStream;
       this.sessionInfo = config.sessionInfo;
 
       logger.logTrace('media constraints', this.mediaConstraints);
@@ -223,6 +222,7 @@
                       logger.logInfo('success for offer sent, outgoing call');
                       // trigger callback meaning successfully sent the offer
                       return self.onPeerConnectionInitiated({
+                        state: response.xState,
                         callId: response.callId,
                         localSdp: self.localDescription
                       });
@@ -242,13 +242,17 @@
               logger.logInfo('incoming call, sending answer');
               try {
                 SignalingService.sendAnswer({
-                  sdp : self.localDescription,
+                  callId: self.callId,
+                  sdp: self.localDescription,
                   sessionInfo: self.sessionInfo,
                   success: function (response) {
                     if (response && response.xState && response.xState === 'accepted') {
                       logger.logInfo('success for answer sent, incoming call');
                       // trigger callback meaning successfully sent the answer
-                      return self.onAnswerSent();
+                      return self.onPeerConnectionInitiated({
+                        state: response.xState,
+                        localSdp: self.localDescription
+                      });
                     }
                     Error.publish('Failed to send answer', 'SendAnswer');
                   },
@@ -275,7 +279,7 @@
       }
 
       // add remote stream
-      pc.onaddstream = self.onRemoteStreamAdded;
+      pc.onaddstream = self.onRemoteStreamAdded.bind(this);
     },
 
     /**
@@ -284,14 +288,12 @@
     *
     */
     onRemoteStreamAdded: function (evt) {
+      var self = this;
       logger.logDebug('onRemoteStreamAdded');
 
       logger.logTrace('Adding Remote Stream...', evt.remoteStream);
 
-      eventEmitter.publish(ATT.SdkEvents.REMOTE_STREAM_ADDED, {
-        localOrRemote: 'remote',
-        stream: evt.stream
-      });
+      self.onRemoteStream(evt.stream);
     },
 
     /**
@@ -390,7 +392,8 @@
         logger.logInfo('Accepting modification', this.modificationId);
         try {
           SignalingService.sendAcceptMods({
-            sdp : this.localDescription,
+            callId: this.callId,
+            sdp: this.localDescription,
             modId: this.modificationId,
             sessionInfo: this.sessionInfo
           });
