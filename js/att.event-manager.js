@@ -221,10 +221,34 @@
         });
         break;
       case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
-        emitter.publish('media-modifications', {
-          remoteSdp: event.sdp,
-          modificationId: event.modId
-        });
+//        action_data = {
+//          action: 'accept-mods',
+//          sdp: event.sdp,
+//          modId: event.modId
+//        };
+
+        if (event.sdp.indexOf('recvonly') !== -1) {
+          emitter.publish('hold', {
+            action: 'accept-mods',
+            sdp: event.sdp,
+            modId: event.modId,
+            state: ATT.CallStatus.HOLD
+          });
+        } else if (event.sdp.indexOf('sendrecv') !== -1) {
+          //&& this.getSession().getCurrentCall().getRemoteSdp().sdp.indexOf('recvonly') !== -1) {
+          // Received resume request...
+          emitter.publish('resume', {
+            action: 'accept-mods',
+            sdp: event.sdp,
+            modId: event.modId,
+            state: ATT.CallStatus.RESUMED
+          });
+        } else {
+          emitter.publish('media-modifications', {
+            remoteSdp: event.sdp,
+            modificationId: event.modId
+          });
+        }
         break;
       case ATT.RTCCallEvents.SESSION_OPEN:
         emitter.publish('call-connected', {
