@@ -345,6 +345,100 @@ describe('Call', function () {
       });
     });
 
+    describe('hold/Resume', function () {
+
+      var localSdp,
+        holdCallStub,
+        resumeCallStub,
+        rtcOnSpy,
+        callholdHandlerSpy,
+        callresumeHandlerSpy;
+
+
+      before(function () {
+
+        callresumeHandlerSpy = sinon.spy();
+        call.on('resume', callresumeHandlerSpy);
+
+        callholdHandlerSpy = sinon.spy();
+        call.on('hold', callholdHandlerSpy);
+
+        rtcOnSpy = sinon.spy(rtcMgr, 'on');
+
+        holdCallStub = sinon.stub(rtcMgr, 'holdCall', function () {
+          emitterEM.publish('hold');
+        });
+
+        resumeCallStub = sinon.stub(rtcMgr, 'resumeCall', function () {
+          emitterEM.publish('resume');
+        });
+
+        call.hold();
+        call.resume();
+      });
+
+      after(function () {
+        rtcOnSpy.restore();
+        holdCallStub.restore();
+        resumeCallStub.restore();
+      });
+
+
+      describe('hold', function () {
+        it('should exist', function () {
+          expect(call.hold).to.be.a('function');
+        });
+
+        it('should execute RTCManager.holdCall', function () {
+          expect(holdCallStub.called).to.equal(true);
+        });
+
+        it('should register hold event on RTCManager', function () {
+          expect(rtcOnSpy.calledWith('hold')).to.equal(true);
+        });
+
+        it('should trigger `call-hold` when event-manager publishes `hold` event', function (done) {
+
+          setTimeout(function () {
+            try {
+              expect(callholdHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 200);
+        });
+      });
+
+      describe('resume', function () {
+
+        it('should exist', function () {
+          expect(call.resume).to.be.a('function');
+        });
+
+        it('should execute RTCManager.resumeCall', function () {
+          expect(resumeCallStub.called).to.equal(true);
+        });
+
+        it('should register resume event on RTCManager', function () {
+          expect(rtcOnSpy.calledWith('resume')).to.equal(true);
+
+        });
+
+        it('should trigger `call-resume` when event-manager publishes `resume` event', function (done) {
+
+          setTimeout(function () {
+            try {
+              expect(callresumeHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 200);
+        });
+      });
+    });
+
     describe('Connect Events', function () {
 
       var setRemoteSdpSpy,
@@ -380,7 +474,7 @@ describe('Call', function () {
         }, 100);
       });
 
-      it('should publish `established` event on getting a `media-established` event from RTC Manager', function (done) {
+      xit('should publish `established` event on getting a `media-established` event from RTC Manager', function (done) {
         emitterEM.publish('media-established');
 
         setTimeout(function () {

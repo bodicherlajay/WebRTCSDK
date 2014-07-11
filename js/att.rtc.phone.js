@@ -606,7 +606,9 @@
           && 'call-rejected' !== event
           && 'call-connected' !== event
           && 'call-muted' !== event
-          && 'call-unmuted' !== event
+          && 'call-unmuted' !== event   && 'call-hold' !== event
+        && 'call-resume' !== event
+
           && 'call-established' !== event
           && 'call-ended' !== event
           && 'call-error' !== event) {
@@ -619,10 +621,12 @@
 
     function login(options) {
       if (undefined === options) {
-        throw new Error('Options not defined');
+        //todo remove throw and publish it using error callback handler
+        throw new Error(ATT.errorDictionary.getSDKError('2002').ErrorMessage);
       }
       if (undefined === options.token) {
-        throw new Error('Token not defined');
+        //todo remove throw and publish it using error callback handler
+        throw new Error(ATT.errorDictionary.getSDKError('2001').ErrorMessage);
       }
 
       session.on('ready', function (data) {
@@ -721,7 +725,7 @@
       call.connect(options);
     }
 
-    function mute () { 
+    function mute() {
       call.on('muted', function () {
         emitter.publish('call-muted');
       });
@@ -729,7 +733,7 @@
       call.mute();
     }
 
-    function unmute () {
+    function unmute() {
       call.on('unmuted', function () {
         emitter.publish('call-unmuted');
       });
@@ -751,6 +755,20 @@
       call.disconnect();
     }
 
+    function hold() {
+      call.on('hold', function () {
+        emitter.publish('call-hold');
+      });
+      call.hold();
+    }
+
+    function resume() {
+      call.on('resume', function () {
+        emitter.publish('call-resume');
+      });
+      call.resume();
+    }
+
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
@@ -761,6 +779,8 @@
     this.unmute = unmute.bind(this);
     this.getMediaType = getMediaType.bind(this);
     this.hangup = hangup.bind(this);
+    this.hold = hold.bind(this);
+    this.resume = resume.bind(this);
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
   }
