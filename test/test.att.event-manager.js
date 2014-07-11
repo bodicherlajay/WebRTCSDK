@@ -16,7 +16,6 @@ describe('Event Manager', function () {
 
   before(function () {
     factories = ATT.private.factories;
-
   });
 
   it('Should export factories.createEventManager', function () {
@@ -308,101 +307,124 @@ describe('Event Manager', function () {
     });
 
 
-    describe('invitation-received', function () {
+      describe('invitation-received', function () {
 
-      var event,
-        codecParser,
-        codecStub;
+        var event,
+          codecParser,
+          codecStub;
 
-      before(function () {
-        codecParser = ATT.sdpFilter.getInstance();
+        before(function () {
+          codecParser = ATT.sdpFilter.getInstance();
 
-        codecStub = sinon.stub(codecParser, 'getCodecfromSDP', function () {
-          return [];
+          codecStub = sinon.stub(codecParser, 'getCodecfromSDP', function () {
+            return [];
+          });
+
+          event = {
+            type: 'calls',
+            from: 'sip:1111@icmn.api.att.net',
+            resourceURL: '/RTC/v1/sessions/ccccc/calls/1234',
+            state: 'invitation-received',
+            sdp: 'abcd'
+          };
         });
 
-        event = {
-          type: 'calls',
-          from: 'sip:1111@icmn.api.att.net',
-          resourceURL: '/RTC/v1/sessions/ccccc/calls/1234',
-          state: 'invitation-received',
-          sdp: 'abcd'
-        };
+        after(function () {
+          codecStub.restore();
+        });
+
+        it('should publish `call-incoming` with call information extracted from the event', function (done) {
+
+          emitterEC.publish('api-event', event);
+
+          setTimeout(function () {
+            try {
+              expect(publishSpy.calledWith('call-incoming')).to.equal(true);
+              expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
+              expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
+              expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
+              expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal('abcd');
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
       });
 
-      after(function () {
-        codecStub.restore();
+      describe('mod-received', function  () {
+        var event;
+
+        it('should publish event `media-modifications` with `remoteSdp` and `modificationId`', function (done) {
+
+          event = {
+            'type':'calls',
+            'from':'sip:1234@icmn.api.att.net',
+            'resourceURL':'/RTC/v1/sessions/00000/calls/1111',
+            'modId':'12345',
+            'state':'mod-received',
+            'sdp':'abc'
+          };
+          
+          emitterEC.publish('api-event', event);
+
+          setTimeout(function () {
+            expect(publishSpy.calledWith('media-modifications', {
+              remoteSdp: 'abc',
+              modificationId: '12345'
+            })).to.equal(true);
+            done();
+          }, 100);
+        });
       });
 
-      it('should publish `call-incoming` with call information extracted from the event', function (done) {
+      describe('session-open', function () {
+        var event;
 
-        emitterEC.publish('api-event', event);
+        it('should publish `call-connected` event with remoteSdp', function (done) {
 
-        setTimeout(function () {
+          event = {
+            'type':'calls',
+            'from':'sip:1234@icmn.api.att.net',
+            'resourceURL':'/RTC/v1/sessions/0000/calls/1111',
+            'state':'session-open',
+            sdp: 'abc'
+          };
+          
+          emitterEC.publish('api-event', event);
+
+          setTimeout(function () {
+            expect(publishSpy.calledWith('call-connected', {
+              remoteSdp: 'abc'
+            })).to.equal(true);
+            done();
+          }, 100);
+        });
+      });
+
+      describe('sesssion-terminated', function () {
+        var event;
+
+        it('should publish `call-disconnected` with call information extracted from the event', function (done) {
+          event = {
+            type: 'calls',
+            from: 'sip:1111@icmn.api.att.net',
+            resourceURL: '/RTC/v1/sessions/ccccc/calls/1234',
+            state: 'session-terminated'
+          };
+
+          emitterEC.publish('api-event', event);
+
+          setTimeout(function () {
           try {
-            expect(publishSpy.calledWith('call-incoming')).to.equal(true);
+            expect(publishSpy.calledWith('call-disconnected')).to.equal(true);
             expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
             expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
-            expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
-            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal('abcd');
             done();
           } catch (e) {
             done(e);
           }
         }, 100);
-
-      });
-
-    });
-
-    describe('mod-received', function  () {
-      var event;
-
-      it('should publish event `media-modifications` with `remoteSdp` and `modificationId`', function (done) {
-
-        event = {
-          'type':'calls',
-          'from':'sip:1234@icmn.api.att.net',
-          'resourceURL':'/RTC/v1/sessions/00000/calls/1111',
-          'modId':'12345',
-          'state':'mod-received',
-          'sdp':'abc'
-        };
-        
-        emitterEC.publish('api-event', event);
-
-        setTimeout(function () {
-          expect(publishSpy.calledWith('media-modifications', {
-            remoteSdp: 'abc',
-            modificationId: '12345'
-          })).to.equal(true);
-          done();
-        }, 100);
-      });
-    });
-
-    describe('session-open', function () {
-      var event;
-
-      it('should publish `call-connected` event with remoteSdp', function (done) {
-
-        event = {
-          'type':'calls',
-          'from':'sip:1234@icmn.api.att.net',
-          'resourceURL':'/RTC/v1/sessions/0000/calls/1111',
-          'state':'session-open',
-          sdp: 'abc'
-        };
-        
-        emitterEC.publish('api-event', event);
-
-        setTimeout(function () {
-          expect(publishSpy.calledWith('call-connected', {
-            remoteSdp: 'abc'
-          })).to.equal(true);
-          done();
-        }, 100);
-
       });
     });
   });
