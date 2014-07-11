@@ -596,6 +596,12 @@ describe('Session', function () {
 
     });
 
+    describe('updateE911Id', function () {
+      it('Should exist', function () {
+        expect(session.updateE911Id).to.be.a('function');
+      });
+    });
+
     describe('DeleteCurrentCall', function () {
 
       it('Should exist', function () {

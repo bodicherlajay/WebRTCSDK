@@ -947,6 +947,70 @@ describe('Phone', function () {
           expect(mediaType).to.equal('audio');
         });
       });
+
+      describe('updateE911Id', function () {
+
+        var session,
+          options,
+          call,
+          onSpy,
+          callDisconnectStub,
+          updateE911IdStub,
+          updateE911IdHandlerSpy,
+          callDisconnectedSpy,
+          sessionOnSpy;
+
+        beforeEach(function () {
+
+          options = {
+            e911Id: '12345'
+          };
+
+          session = phone.getSession();
+          sessionOnSpy = sinon.spy(session, 'on');
+
+          updateE911IdStub = sinon.stub(session, 'updateE911Id', function () {
+            emitter.publish('updateE911Id');
+          });
+
+          phone.updateE911Id(options);
+        });
+
+        afterEach(function () {
+          updateE911IdStub.restore();
+          sessionOnSpy.restore();
+        });
+        it('should Exist', function () {
+          expect(phone.updateE911Id).to.be.a('function');
+        });
+
+        it('should throw Error when parameters passed are not correct ', function () {
+          expect(phone.updateE911Id).to.throw('options not defined');
+          expect(phone.updateE911Id.bind(phone, {e911Idi: '1234'})).to.throw('e911Id not defined');
+          expect(phone.updateE911Id.bind(phone, {e911Id: '1234'})).to.not.throw('e911Id not defined');
+        });
+
+        it('should register for the `updateE911Id` event on the session', function () {
+          expect(sessionOnSpy.calledWith('updateE911Id')).to.equal(true);
+        });
+
+        it('should execute session.updateE911Id', function () {
+          expect(updateE911IdStub.called).to.equal(true);
+        });
+
+        it('should trigger `updateE911Id` when call publishes `updateE911Id` event', function (done) {
+          updateE911IdHandlerSpy = sinon.spy();
+          phone.on('updateE911Id', updateE911IdHandlerSpy);
+          setTimeout(function () {
+            try {
+              expect(updateE911IdHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
+        });
+      });
     });
 
     describe('Events', function () {

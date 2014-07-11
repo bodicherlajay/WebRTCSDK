@@ -236,6 +236,7 @@
           'call-disconnected' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event &&
+          'updateE911Id' !== event &&
           'allcallsterminated' !== event) {
         throw new Error('Event not defined');
       }
@@ -417,6 +418,8 @@
         emitter.publish('allcallsterminated');
       }
     };
+
+    this.updateE911Id = function () {};
 
   }
 
