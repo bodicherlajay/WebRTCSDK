@@ -251,7 +251,7 @@
       rtcManager.resumeCall();
 
       rtcManager.on('resume', function () {
-        call.state = ATT.CallStates.RESUME;
+        call.state = ATT.CallStates.ONGOING;
         emitter.publish('resume');
       });
     }
