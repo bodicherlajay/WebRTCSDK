@@ -1084,15 +1084,18 @@ describe('Phone', function () {
 
         beforeEach(function () {
           phone = new ATT.private.Phone();
+
           call = phone.getSession().createCall({
             peer: '123',
             mediaType: 'video'
           });
+
           // so that it will just register the event handlers
           connectStub = sinon.stub(call, 'connect', function () {
             return;
           });
         });
+
         afterEach(function () {
           connectStub.restore();
         });

@@ -96,9 +96,11 @@
     * @returns {HTMLElement} remoteMedia
     */
     onRemoteMediaStart: function (callback) {
-      this.remoteMedia.addEventListener('playing', function () {
-        callback();
-      });
+      // remove all event handlers by cloning
+      var clone = this.remoteMedia.cloneNode(true);// Deep clone
+      this.remoteMedia.parentNode.replaceChild(clone, this.remoteMedia);
+      
+      this.remoteMedia.addEventListener('playing', callback);
     },
 
     /**
