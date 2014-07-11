@@ -320,7 +320,7 @@ describe('Phone', function () {
             emitter.publish('rejected');
             emitter.publish('connected');
             emitter.publish('established');
-            emitter.publish('ended');
+            emitter.publish('disconnected');
             emitter.publish('error');
           });
 
@@ -345,7 +345,7 @@ describe('Phone', function () {
           phone.on('call-rejected', callRejectedHandlerSpy);
           phone.on('call-connected', callConnectedHandlerSpy);
           phone.on('call-established', callEstablishedHandlerSpy);
-          phone.on('call-ended', callEndedHandlerSpy);
+          phone.on('call-disconnected', callEndedHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
 
           phone.dial(options);
@@ -410,8 +410,8 @@ describe('Phone', function () {
           expect(onSpy.calledWith('established')).to.equal(true);
         });
 
-        it('should register for the `ended` event on the call object', function () {
-          expect(onSpy.calledWith('ended')).to.equal(true);
+        it('should register for the `disconnected` event on the call object', function () {
+          expect(onSpy.calledWith('disconnected')).to.equal(true);
         });
 
         it('should register for the `error` event on the call object', function () {
@@ -488,7 +488,7 @@ describe('Phone', function () {
           }, 200);
         });
 
-        it('should trigger `call-ended` when call publishes `ended` event', function (done) {
+        it('should trigger `call-disconnected` when call publishes `ended` event', function (done) {
           setTimeout(function () {
             try {
               expect(callEndedHandlerSpy.called).to.equal(true);

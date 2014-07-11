@@ -688,8 +688,8 @@
       call.on('established', function () {
         emitter.publish('call-established');
       });
-      call.on('ended', function () {
-        emitter.publish('call-ended');
+      call.on('disconnected', function () {
+        emitter.publish('call-disconnected');
       });
       call.on('error', function () {
         emitter.publish('call-error');
