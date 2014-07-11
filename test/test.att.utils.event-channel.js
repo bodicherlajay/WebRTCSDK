@@ -387,7 +387,6 @@ describe('Event Channel', function () {
             done(e);
           }
         }, 100);
-
       });
     });
 
