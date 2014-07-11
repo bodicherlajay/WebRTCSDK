@@ -409,10 +409,10 @@ describe('Call', function () {
       before(function () {
 
         callresumeHandlerSpy = sinon.spy();
-        call.on('resume', callresumeHandlerSpy);
+        outgoingCall.on('resume', callresumeHandlerSpy);
 
         callholdHandlerSpy = sinon.spy();
-        call.on('hold', callholdHandlerSpy);
+        outgoingCall.on('hold', callholdHandlerSpy);
 
         rtcOnSpy = sinon.spy(rtcMgr, 'on');
 
@@ -424,8 +424,8 @@ describe('Call', function () {
           emitterEM.publish('resume');
         });
 
-        call.hold();
-        call.resume();
+        outgoingCall.hold();
+        outgoingCall.resume();
       });
 
       after(function () {
@@ -437,7 +437,7 @@ describe('Call', function () {
 
       describe('hold', function () {
         it('should exist', function () {
-          expect(call.hold).to.be.a('function');
+          expect(outgoingCall.hold).to.be.a('function');
         });
 
         it('should execute RTCManager.holdCall', function () {
@@ -464,7 +464,7 @@ describe('Call', function () {
       describe('resume', function () {
 
         it('should exist', function () {
-          expect(call.resume).to.be.a('function');
+          expect(outgoingCall.resume).to.be.a('function');
         });
 
         it('should execute RTCManager.resumeCall', function () {

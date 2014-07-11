@@ -414,6 +414,7 @@ describe('Event Manager', function () {
             'modId': '12345',
             'state': 'mod-received',
             'sdp': 'abc sendrecv'
+
           };
 
           emitterEC.publish('api-event', event);
