@@ -205,15 +205,21 @@
       logger.logDebug('Consume event from event channel', JSON.stringify(event));
 
       switch (event.state) {
-      case ATT.RTCCallEvents.INVITATION_RECEIVED:
-        codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
-        emitter.publish('call-incoming', {
-          id: event.resourceURL.split('/')[6],
-          from: event.from.split('@')[0].split(':')[1],
-          mediaType: (codec.length === 1) ? 'audio' : 'video',
-          remoteSdp: event.sdp
-        });
-        break;
+        case ATT.RTCCallEvents.INVITATION_RECEIVED:
+          codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
+          emitter.publish('call-incoming', {
+            id: event.resourceURL.split('/')[6],
+            from: event.from.split('@')[0].split(':')[1],
+            mediaType: (codec.length === 1) ? 'audio' : 'video',
+            remoteSdp: event.sdp
+          });
+          break;
+        case ATT.RTCCallEvents.SESSION_TERMINATED:
+          emitter.publish('call-disconnected', {
+            id: event.resourceURL.split('/')[6],
+            from: event.from.split('@')[0].split(':')[1]
+          });
+          break;
       }
     }
 

@@ -355,5 +355,47 @@ describe('Event Manager', function () {
       });
 
     });
+
+    describe('sesssion-terminated', function () {
+
+      var event,
+        codecParser,
+        codecStub;
+
+      before(function () {
+        codecParser = ATT.sdpFilter.getInstance();
+
+        codecStub = sinon.stub(codecParser, 'getCodecfromSDP', function () {
+          return [];
+        });
+
+        event = {
+          type: 'calls',
+          from: 'sip:1111@icmn.api.att.net',
+          resourceURL: '/RTC/v1/sessions/ccccc/calls/1234',
+          state: 'session-terminated'
+        };
+      });
+
+      after(function () {
+        codecStub.restore();
+      });
+
+      it('should publish `call-disconnected` with call information extracted from the event', function (done) {
+
+        emitterEC.publish('api-event', event);
+
+        setTimeout(function () {
+          try {
+            expect(publishSpy.calledWith('call-disconnected')).to.equal(true);
+            expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
+            expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+    });
   });
 });

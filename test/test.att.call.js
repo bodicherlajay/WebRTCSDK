@@ -488,16 +488,22 @@ describe('Call', function () {
       });
     });
 
-    describe('Disconnect', function () {
-      var disconnectCallStub;
+    describe('disconnect', function () {
+      var disconnectCallStub,
+        rtcOnSpy;
 
       before(function () {
         disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall', function () {
+          emitterEM.publish('call-disconnected');
         });
+        rtcOnSpy = sinon.spy(rtcMgr, 'on');
+
+        call.disconnect();
       });
 
       after(function () {
         disconnectCallStub.restore();
+        rtcOnSpy.restore();
       });
 
       it('Should exist', function () {
@@ -505,11 +511,24 @@ describe('Call', function () {
       });
 
       it('Should trigger `disconnecting` event immediately', function (done) {
-        call.disconnect();
-
         setTimeout(function () {
           try {
             expect(onDisconnectingSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should register for `call-disconnected` event on rtcMgr', function () {
+        expect(rtcOnSpy.calledWith('call-disconnected')).to.equal(true)
+      });
+
+      it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
+        setTimeout(function () {
+          try {
+            expect(call.id).to.equal(null);
             done();
           } catch (e) {
             done(e);

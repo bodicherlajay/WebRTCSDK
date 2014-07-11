@@ -606,11 +606,10 @@
           && 'call-rejected' !== event
           && 'call-connected' !== event
           && 'call-muted' !== event
-          && 'call-unmuted' !== event   && 'call-hold' !== event
-        && 'call-resume' !== event
-
+          && 'call-unmuted' !== event
+          && 'call-hold' !== event
+          && 'call-resume' !== event
           && 'call-established' !== event
-          && 'call-ended' !== event
           && 'call-error' !== event) {
         throw new Error('Event not defined');
       }
@@ -688,8 +687,9 @@
       call.on('established', function () {
         emitter.publish('call-established');
       });
-      call.on('disconnected', function () {
-        emitter.publish('call-disconnected');
+      call.on('disconnected', function (data) {
+        emitter.publish('call-disconnected', data);
+        session.deleteCurrentCall();
       });
       call.on('error', function () {
         emitter.publish('call-error');
@@ -722,6 +722,11 @@
         emitter.publish('call-answering');
       });
 
+      call.on('disconnected', function (data) {
+        emitter.publish('call-disconnected', data);
+        session.deleteCurrentCall();
+      });
+
       call.connect(options);
     }
 
@@ -748,9 +753,6 @@
     function hangup() {
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
-      });
-      session.on('call-disconnected', function () {
-        emitter.publish('call-disconnected');
       });
       call.disconnect();
     }
