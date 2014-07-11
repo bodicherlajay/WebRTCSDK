@@ -388,14 +388,14 @@ describe('Event Manager', function () {
             'from':'sip:1234@icmn.api.att.net',
             'resourceURL':'/RTC/v1/sessions/0000/calls/1111',
             'state':'session-open',
-            sdp: 'abc'
+            sdp: 'abcsadf'
           };
           
           emitterEC.publish('api-event', event);
 
           setTimeout(function () {
             expect(publishSpy.calledWith('call-connected', {
-              remoteSdp: 'abc'
+              remoteSdp: event.sdp
             })).to.equal(true);
             done();
           }, 100);

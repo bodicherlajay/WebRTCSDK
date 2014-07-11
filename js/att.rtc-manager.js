@@ -458,7 +458,7 @@
               remoteSdp: remoteSdp,
               type: 'answer',
               success: function () {
-                eventManager.publish('remote-sdp-set');
+                eventManager.publish('media-modifications');
               }
             });
           });

@@ -126,7 +126,7 @@ describe('Call', function () {
     expect(ATT.rtc.Call).to.be.a('function');
   });
 
-  describe('Constructor', function () {
+  describe.only('Constructor', function () {
 
     it('Should throw an error if invalid options', function () {
       var func = function (options) {
