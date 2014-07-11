@@ -362,7 +362,7 @@
 
       rtcManager.disconnectSession({
         sessionId: session.getId(),
-        token: session.token,
+        token: session.getToken(),
         e911Id: session.e911Id,
         onSessionDisconnected: function () {
           session.setId(null);
