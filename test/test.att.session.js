@@ -86,10 +86,6 @@ describe('Session', function () {
     it('should register for `call-incoming` event on RTCManager', function () {
       expect(rtcManagerOnSpy.calledWith('call-incoming')).to.equal(true);
     });
-
-    it('should register for `call-disconnected` event on RTCManager', function () {
-      expect(rtcManagerOnSpy.calledWith('call-disconnected')).to.equal(true);
-    });
   });
 
   describe('Methods', function () {

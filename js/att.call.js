@@ -187,6 +187,11 @@
         emitter.publish('established');
       });
 
+      rtcManager.on('call-disconnected', function (data) {
+        call.setId(null, data);
+      });
+
+
       rtcManager.connectCall({
         peer: call.peer,
         callId: call.id,
@@ -212,10 +217,6 @@
       var call = this;
 
       emitter.publish('disconnecting');
-
-      rtcManager.on('call-disconnected', function (data) {
-        call.setId(null, data);
-      });
 
       rtcManager.disconnectCall({
         sessionInfo: this.sessionInfo,

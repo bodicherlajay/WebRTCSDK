@@ -402,7 +402,7 @@ describe('Event Manager', function () {
         });
       });
 
-      describe('sesssion-terminated', function () {
+      describe('session-terminated', function () {
         var event;
 
         it('should publish `call-disconnected` with call information extracted from the event', function (done) {
