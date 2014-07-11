@@ -117,16 +117,16 @@
       return handler(error);
     }
 
-    var session = ATT.RTCManager.getSession(),
-      sessionId = session.getSessionId();
+    // var session = ATT.RTCManager.getSession(),
+    //   sessionId = session.getSessionId();
 
-    logger.logTrace('Publishing the error as an event');
+    // logger.logTrace('Publishing the error as an event');
 
-    // publish the UI callback event for call fail state
-    ATT.event.publish(sessionId + '.responseEvent', {
-      state: ATT.CallStatus.ERROR,
-      error: error
-    });
+    // // publish the UI callback event for call fail state
+    // ATT.event.publish(sessionId + '.responseEvent', {
+    //   state: ATT.CallStatus.ERROR,
+    //   error: error
+    // });
 
     logger.logWarning('Unable to publish error to UI');
   };
