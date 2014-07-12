@@ -220,11 +220,6 @@
       }
     });
 
-    rtcManager.on('call-disconnected', function (callInfo) {
-      emitter.publish('call-disconnected');
-      self.deleteCurrentCall();
-    });
-
     function on(event, handler) {
 
       if ('ready' !== event &&

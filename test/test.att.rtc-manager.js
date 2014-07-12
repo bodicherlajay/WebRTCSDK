@@ -557,8 +557,8 @@ describe('RTC Manager', function () {
               }, 100);
             });
 
-            it('should execute eventManager.publish on successfully setting the remote description', function () {
-              expect(eventManagerPublishSpy.calledWith('remote-sdp-set')).to.equal(true);
+            it('should execute eventManager.publish with `media-modifications`', function () {
+              expect(eventManagerPublishSpy.calledWith('media-modifications')).to.equal(true);
             });
 
             it('should execute eventManager.publish on successfully establishing the media', function () {
