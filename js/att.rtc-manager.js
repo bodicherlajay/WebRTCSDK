@@ -34,144 +34,11 @@
       errHandler(error);
     }
   }
+  
   function getSession() {
     return session;
   }
 
-  function refreshSessionWithE911ID(args) {
-    if (!session) {
-      throw 'No session found to delete. Please login first';
-    }
-    logger.logInfo("Refreshing the session with the new e911Id ");
-    session.updateE911Id({
-      e911Id: args.e911Id,
-      onSuccess: args.onSuccess,
-      onError: args.onError
-    });
-  }
-
-  function dialCall(options) {
-    if (!session) {
-      throw 'No session found to start a call. Please login first';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-
-    // configure event manager for call event callbacks
-    eventManager.onCallEventCallback = function (callback, event) {
-      if (event.state === app.CallStatus.ENDED || event.state === app.CallStatus.ERROR) {
-        peerConnSvc.endCall();
-        userMediaSvc.stopStream();
-        var currentCall  = session.getCurrentCall();
-        if (currentCall) {
-          session.deleteCall(session.getCurrentCall().id());
-          session.deleteCurrentCall();
-        }
-      }
-
-      options.onCallbackCalled(callback, event);
-    };
-
-    // Here, we publish `onConnecting`
-    // event for the UI
-    eventManager.publishEvent({
-      state: app.RTCCallEvents.CALL_CONNECTING,
-      to: options.to
-    });
-
-    session.startCall(app.utils.extend(options, {
-      type: app.CallTypes.OUTGOING,
-      onCallStarted: function (callObj) {
-        eventManager.publishEvent({
-          state: app.RTCCallEvents.CALL_RINGING,
-          to: callObj.to()
-        });
-      },
-      onCallError: handleError.bind(this, 'StartCall', options.onCallError),
-      errorManager: errMgr,
-      resourceManager: resourceManager,
-      userMediaSvc: userMediaSvc,
-      peerConnSvc: peerConnSvc
-    }));
-  }
-
-
-  function answerCall(options) {
-    if (!session) {
-      throw 'No session found to answer a call. Please login first';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-    // configure event manager for call event callbacks
-    eventManager.onCallEventCallback = function (callback, event) {
-      options.onCallbackCalled(callback, event);
-    };
-
-    session.getCurrentCall().answer(app.utils.extend(options, {
-      type: app.CallTypes.INCOMING,
-      session: session,
-      onCallAnswered: function () {
-        logger.logInfo('Successfully answered the incoming call');
-      },
-      onCallError: handleError.bind(this, 'StartCall', options.onCallError),
-      errorManager: errMgr,
-      resourceManager: resourceManager,
-      userMediaSvc: userMediaSvc,
-      peerConnSvc: peerConnSvc
-    }));
-  }
-
-  function hangupCall() {
-    if (!session) {
-      throw 'No session found to answer a call. Please login first';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-    session.getCurrentCall().end({
-      session: session,
-      onCallEnded: function() {
-        logger.logInfo('Call ended successfully');
-      },
-      onError: handleError.bind(this, 'EndCall')
-    });
-  }
-
-
-
-  function holdCall() {
-    if (!session) {
-      throw 'No session found to answer a call. Please login first';
-    }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-
-    session.getCurrentCall().hold();
-  }
-
-  /**
-  * Resume call
-  *
-  */
-  function resumeCall() {
-    if (!session) {
-      throw 'No session found to answer a call. Please login first';
-    }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-
-    session.getCurrentCall().resume();
-  }
 
   /**
   * cancel call
@@ -546,13 +413,10 @@
     }
 
     function holdCall(options) {
-
       peerConnSvc.holdCall();
-
     }
 
     function resumeCall(options) {
-
       peerConnSvc.resumeCall();
     }
 
@@ -566,7 +430,7 @@
     this.unmuteCall = unmuteCall.bind(this);
     this.setMediaModifications = setMediaModifications;
     this.setRemoteDescription = setRemoteDescription;
-	this.holdCall = holdCall.bind(this);
+    this.holdCall = holdCall.bind(this);
     this.resumeCall = resumeCall.bind(this);
   }
 

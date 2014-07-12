@@ -27,15 +27,6 @@
     }
   }
 
-  // function handleCallMediaModifications(event, data) {
-  //   peerConnSvc.setRemoteAndCreateAnswer(data.sdp, data.modId);
-  //   if (event.state === ATT.CallStatus.HOLD) {
-  //     userMediaSvc.muteStream();
-  //   } else if (event.state === ATT.CallStatus.RESUMED) {
-  //     userMediaSvc.unmuteStream();
-  //   }
-  // }
-
   // function handleCallMediaTerminations(event, data) {
   //   if (data.modId) {
   //     peerConnSvc.setModificationId(data.modId);
@@ -50,20 +41,6 @@
   //     userMediaSvc.resumeVideoStream();
   //     userMediaSvc.unmuteStream();
   //   }
-  // }
-
-  // function handleCallOpen(data) {
-  //   if (data.sdp) {
-  //     peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
-  //   }
-  // }
-
-  // function holdCall() {
-  //   peerConnSvc.holdCall();
-  // }
-
-  // function resumeCall() {
-  //   peerConnSvc.resumeCall();
   // }
 
   /**
@@ -178,7 +155,7 @@
       rtcManager.on('call-connected', function (remoteSdp) {
         call.setRemoteSdp(remoteSdp);
         rtcManager.setRemoteDescription({
-            remoteSdp: remoteSdp.remoteSdp,
+          remoteSdp: remoteSdp.remoteSdp,
           type: 'answer'
         });
       });
@@ -190,7 +167,6 @@
       rtcManager.on('call-disconnected', function (data) {
         call.setId(null, data);
       });
-
 
       rtcManager.connectCall({
         peer: call.peer,

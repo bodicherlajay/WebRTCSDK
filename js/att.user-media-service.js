@@ -127,9 +127,7 @@
         if (videoStreamEl) {
           videoStreamEl.src = window.URL.createObjectURL(args.stream);
           videoStreamEl.play();
-          console.log(videoStreamEl);
-          console.log("Added remote stream");
-      }
+        }
       } catch (e) {
         Error.publish('Could not start stream: ' + e.message);
       }
