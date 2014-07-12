@@ -180,7 +180,7 @@
         params: {
           url: [
             sessionInfo.sessionId,
-            sessionInfo.getCurrentCall().id()
+            config.callId
           ],
           headers: {
             'Authorization': 'Bearer ' + sessionInfo.token,
@@ -236,7 +236,7 @@
         params: {
           url: [
             sessionInfo.sessionId,
-            sessionInfo.getCurrentCall().id()
+            config.callId
           ],
           headers: {
             'Authorization': 'Bearer ' + sessionInfo.token,

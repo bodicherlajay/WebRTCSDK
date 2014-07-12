@@ -684,6 +684,12 @@
       call.on('established', function () {
         emitter.publish('call-established');
       });
+      call.on('hold', function () {
+        emitter.publish('call-hold');
+      });
+      call.on('resume', function () {
+        emitter.publish('call-resume');
+      });
       call.on('disconnected', function (data) {
         emitter.publish('call-disconnected', data);
         session.deleteCurrentCall();
@@ -721,6 +727,9 @@
       call.on('connecting', function () {
         emitter.publish('call-connecting');
       });
+      call.on('canceled', function () {
+        emitter.publish('call-canceled');
+      });
       call.on('rejected', function () {
         emitter.publish('call-rejected');
       });
@@ -729,6 +738,12 @@
       });
       call.on('established', function () {
         emitter.publish('call-established');
+      });
+      call.on('hold', function () {
+        emitter.publish('call-hold');
+      });
+      call.on('resume', function () {
+        emitter.publish('call-resume');
       });
       call.on('error', function () {
         emitter.publish('call-error');
@@ -753,7 +768,7 @@
       call.on('unmuted', function () {
         emitter.publish('call-unmuted');
       });
-
+      
       call.unmute();
     }
 
@@ -769,16 +784,10 @@
     }
 
     function hold() {
-      call.on('hold', function () {
-        emitter.publish('call-hold');
-      });
       call.hold();
     }
 
     function resume() {
-      call.on('resume', function () {
-        emitter.publish('call-resume');
-      });
       call.resume();
     }
 

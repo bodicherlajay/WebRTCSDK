@@ -441,7 +441,7 @@
     * Hold Call
     *
     */
-    holdCall: function () {
+    holdCall: function (options) {
       logger.logDebug('holdCall');
 
       var sdp = this.peerConnection.localDescription;
@@ -465,7 +465,6 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        this.session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -475,7 +474,11 @@
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendHoldCall({
           sdp : sdp,
-          sessionInfo: this.sessionInfo
+          sessionInfo: this.sessionInfo,
+          callId: options.callId,
+          success: function () {
+            options.onHoldSuccess(sdp);
+          }
         });
       } catch (e) {
         Error.publish('Send hold signal fail: ' + e.message);
@@ -488,7 +491,7 @@
     *
     * Resume Call
     */
-    resumeCall: function () {
+    resumeCall: function (options) {
       logger.logDebug('resumeCall');
 
       var sdp = this.localDescription;
@@ -511,7 +514,6 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        this.session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -521,7 +523,11 @@
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendResumeCall({
           sdp : sdp,
-          sessionInfo: this.sessionInfo
+          sessionInfo: this.sessionInfo,
+          callId: options.callId,
+          success: function () {
+            options.onResumeSuccess(sdp);
+          }
         });
       } catch (e) {
         Error.publish('Send resume call Fail: ' + e.message);

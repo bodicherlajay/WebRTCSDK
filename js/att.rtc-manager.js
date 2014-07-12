@@ -34,7 +34,7 @@
       errHandler(error);
     }
   }
-  
+
   function getSession() {
     return session;
   }
@@ -413,11 +413,21 @@
     }
 
     function holdCall(options) {
-      peerConnSvc.holdCall();
+      peerConnSvc.holdCall({
+        onHoldSuccess: function (localSdp) {
+          options.onSuccess(localSdp);
+        },
+        callId: options.callId
+      });
     }
 
     function resumeCall(options) {
-      peerConnSvc.resumeCall();
+      peerConnSvc.resumeCall({
+        onResumeSuccess: function (localSdp) {
+          options.onSuccess(localSdp);
+        },
+        callId: options.callId
+      });
     }
 
     this.on = on.bind(this);

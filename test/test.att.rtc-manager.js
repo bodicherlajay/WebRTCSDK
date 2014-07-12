@@ -709,31 +709,38 @@ describe('RTC Manager', function () {
         });
 
         it('should call peer-connection.holdCall', function () {
-          holdStreamStub = sinon.stub(ATT.PeerConnectionService, 'holdCall', function () {
+          holdStreamStub = sinon.stub(ATT.PeerConnectionService, 'holdCall', function (options) {
+            options.onHoldSuccess('localSdp');
           });
-          rtcManager.holdCall();
+          rtcManager.holdCall({
+            onSuccess: onSuccessSpy
+          });
 
           expect(holdStreamStub.called).to.equal(true);
           holdStreamStub.restore();
         });
 
-        xit('should call the success callback passed in from rtcManager', function () {
-          expect(onSuccessSpy.called).to.equal(true);
+        it('should call the success callback passed in from rtcManager', function () {
+          expect(onSuccessSpy.calledWith('localSdp')).to.equal(true);
         });
       });
 
       describe('resumeCall', function () {
-        var resumeStreamStub;
+        var resumeStreamStub,
+          onSuccessSpy = sinon.spy();
 
         it('should exist', function () {
           expect(rtcManager.resumeCall).to.be.a('function');
         });
 
         it('should call peer-connection.holdCall', function () {
-          resumeStreamStub = sinon.stub(ATT.PeerConnectionService, 'resumeCall', function () {
+          resumeStreamStub = sinon.stub(ATT.PeerConnectionService, 'resumeCall', function (options) {
+            options.onResumeSuccess('localSdp');
           });
 
-          rtcManager.resumeCall();
+          rtcManager.resumeCall({
+            onSuccess: onSuccessSpy
+          });
 
           expect(resumeStreamStub.called).to.equal(true);
           resumeStreamStub.restore();
@@ -742,5 +749,4 @@ describe('RTC Manager', function () {
 
     });
   });
-
 });

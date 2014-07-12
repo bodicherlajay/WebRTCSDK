@@ -24,8 +24,8 @@
     ONGOING: 'Call Ongoing',
     MUTED:   'Call Muted',
     MOVED: 'Call Moved',
-    HELD: 'Call Held',
-    RESUMED: 'Call Resumed',
+    HELD: 'hold',
+    RESUMED: 'resume',
     TRANSFERED: 'Call Transferred',
     ENDED: 'Call Ended'
   };
