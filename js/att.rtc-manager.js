@@ -453,15 +453,7 @@
         localMedia: options.localMedia,
         remoteMedia: options.remoteMedia,
         onUserMedia: function (userMedia) {
-          eventManager.on('remote-sdp', function (remoteSdp) {
-            peerConnSvc.setTheRemoteDescription({
-              remoteSdp: remoteSdp,
-              type: 'answer',
-              success: function () {
-                eventManager.publish('media-modifications');
-              }
-            });
-          });
+
           peerConnSvc.initiatePeerConnection({
             peer: options.peer,
             callId: options.callId,

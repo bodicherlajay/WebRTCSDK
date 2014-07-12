@@ -285,9 +285,6 @@
       emitter.publish('stop-listening');
     }
 
-    function publish() {}
-
-
     function on(event, handler) {
       if ('listening' !== event
           && 'stop-listening' !== event
@@ -340,8 +337,7 @@
     return {
       on: on,
       setup: setup,
-      stop: stop,
-      publish: publish
+      stop: stop
     };
   }
 
