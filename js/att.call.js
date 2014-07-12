@@ -178,7 +178,7 @@
       rtcManager.on('call-connected', function (remoteSdp) {
         call.setRemoteSdp(remoteSdp);
         rtcManager.setRemoteDescription({
-          remoteSdp: remoteSdp,
+            remoteSdp: remoteSdp.remoteSdp,
           type: 'answer'
         });
       });

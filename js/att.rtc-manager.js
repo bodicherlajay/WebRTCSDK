@@ -231,7 +231,7 @@
     }
 
     function setRemoteDescription(options) {
-      peerConnSvc.setTheRemoteDescription(options.sdp, options.type);
+      peerConnSvc.setTheRemoteDescription(options.remoteSdp, options.type);
     }
 
     function extractSessionInformation(responseObject) {

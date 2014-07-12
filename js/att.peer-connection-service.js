@@ -279,7 +279,8 @@
       }
 
       // add remote stream
-      pc.onaddstream = self.onRemoteStreamAdded.bind(this);
+      //self.onRemoteStreamAdded.bind(this);
+      pc.onaddstream = self.onRemoteStreamAdded;
     },
 
     /**
@@ -293,7 +294,7 @@
 
       logger.logTrace('Adding Remote Stream...', evt.remoteStream);
 
-      self.onRemoteStream(evt.stream);
+      ATT.PeerConnectionService.onRemoteStream(evt.stream);
     },
 
     /**
