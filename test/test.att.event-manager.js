@@ -355,7 +355,7 @@ describe('Event Manager', function () {
     describe('mod-received', function () {
       var event;
 
-      describe('media-modification', function () {
+      describe('media-modifications', function () {
         it('should publish event `media-modifications` with `remoteSdp` and `modificationId`', function (done) {
           event = {
             'type': 'calls',
@@ -377,60 +377,33 @@ describe('Event Manager', function () {
           }, 100);
         });
       });
+    });
 
-      describe('hold', function () {
-        it('should publish event `hold` with `state` and `from` value', function (done) {
+    describe('mod-terminated', function () {
+      var event;
 
+      describe('media-mod-terminations', function () {
+        it('should publish event `media-mod-terminations` with `remoteSdp` and `modificationId`', function (done) {
           event = {
             'type': 'calls',
             'from': 'sip:1234@icmn.api.att.net',
             'resourceURL': '/RTC/v1/sessions/00000/calls/1111',
             'modId': '12345',
-            'state': 'mod-received',
-            'sdp': 'abc recvonly'
+            'state': 'mod-terminated',
+            'sdp': 'abcdefg'
           };
 
           emitterEC.publish('api-event', event);
 
           setTimeout(function () {
-            expect(publishSpy.calledWith('hold', {
-              action: 'accept-mods',
-                sdp: 'abc recvonly',
-              modId: '12345',
-              state: 4
+            expect(publishSpy.calledWith('media-mod-terminations', {
+              remoteSdp: 'abcdefg',
+              modificationId: '12345'
             })).to.equal(true);
             done();
           }, 100);
         });
       });
-
-      describe('resume', function () {
-        it('should publish event `resume` with `state` and `from` value', function (done) {
-
-          event = {
-            'type': 'calls',
-            'from': 'sip:1234@icmn.api.att.net',
-            'resourceURL': '/RTC/v1/sessions/00000/calls/1111',
-            'modId': '12345',
-            'state': 'mod-received',
-            'sdp': 'abc sendrecv'
-
-          };
-
-          emitterEC.publish('api-event', event);
-
-          setTimeout(function () {
-            expect(publishSpy.calledWith('resume', {
-              action: 'accept-mods',
-              sdp: 'abc sendrecv',
-              modId: '12345',
-              state: 8
-            })).to.equal(true);
-            done();
-          }, 100);
-        });
-      });
-
     });
 
     describe('session-open', function () {

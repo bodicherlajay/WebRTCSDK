@@ -694,9 +694,35 @@ describe('RTC Manager', function () {
             type: type
           });
 
-          expect(setTheRemoteDescriptionSpy.calledWith(remoteSdp, type)).to.equal(true);
+          expect(setTheRemoteDescriptionSpy.getCall(0).args[1]).to.equal('answer');
 
           setTheRemoteDescriptionSpy.restore();
+        });
+      });
+
+      describe('disableMediaStream', function () {
+        it('should exist', function () {
+           expect(rtcManager.disableMediaStream).to.be.a('function');
+        });
+
+        it('should call userMediaSvc.disableMediaStream', function () {
+          var disableMediaStreamStub = sinon.stub(ATT.UserMediaService, 'disableMediaStream');
+          rtcManager.disableMediaStream();
+          expect(disableMediaStreamStub.called).to.equal(true);
+          disableMediaStreamStub.restore();
+        });
+      });
+
+      describe('enableMediaStream', function () {
+        it('should exist', function () {
+           expect(rtcManager.enableMediaStream).to.be.a('function');
+        });
+
+        it('should call peerConnectionSvc.enableMediaStream', function () {
+          var enableMediaStreamStub = sinon.stub(ATT.UserMediaService, 'enableMediaStream');
+          rtcManager.enableMediaStream();
+          expect(enableMediaStreamStub.called).to.equal(true);
+          enableMediaStreamStub.restore();
         });
       });
 

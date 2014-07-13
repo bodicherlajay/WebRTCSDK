@@ -224,6 +224,12 @@
           modificationId: event.modId
         });
         break;
+      case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
+        emitter.publish('media-mod-terminations', {
+          remoteSdp: event.sdp,
+          modificationId: event.modId
+        });
+        break;
       case ATT.RTCCallEvents.SESSION_OPEN:
         emitter.publish('call-connected', {
           remoteSdp: event.sdp
@@ -294,6 +300,7 @@
           && 'remote-sdp' !== event
           && 'call-connected' !== event
           && 'media-modifications' !== event
+          && 'media-mod-terminations' !== event
           && 'media-established' !== event) {
         throw new Error('Event not found');
       }

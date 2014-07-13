@@ -430,6 +430,14 @@
       });
     }
 
+    function disableMediaStream() {
+      userMediaSvc.disableMediaStream();
+    }
+
+    function enableMediaStream() {
+      userMediaSvc.enableMediaStream();
+    }
+
     this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
@@ -438,8 +446,10 @@
     this.refreshSession = refreshSession.bind(this);
     this.muteCall = muteCall.bind(this);
     this.unmuteCall = unmuteCall.bind(this);
-    this.setMediaModifications = setMediaModifications;
-    this.setRemoteDescription = setRemoteDescription;
+    this.setMediaModifications = setMediaModifications.bind(this);
+    this.setRemoteDescription = setRemoteDescription.bind(this);
+    this.disableMediaStream = disableMediaStream.bind(this);
+    this.enableMediaStream = enableMediaStream.bind(this);
     this.holdCall = holdCall.bind(this);
     this.resumeCall = resumeCall.bind(this);
   }

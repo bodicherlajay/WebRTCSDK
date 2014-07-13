@@ -151,15 +151,37 @@
         if (modifications.remoteSdp
             && modifications.remoteSdp.indexOf('recvonly') !== -1) {
           call.setState(ATT.CallStates.HELD);
+          rtcManager.disableMediaStream(); 
         }
         if (modifications.remoteSdp
+            && call.remoteSdp
             && call.remoteSdp.indexOf
             && call.remoteSdp.indexOf('recvonly') !== -1
             && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
           call.setState(ATT.CallStates.RESUMED);
+          rtcManager.enableMediaStream();
         }
         call.setRemoteSdp(modifications.remoteSdp);
         rtcManager.setMediaModifications(modifications);
+      });
+
+      rtcManager.on('media-mod-terminations', function (modifications) {
+        if (modifications.remoteSdp) {
+          rtcManager.setRemoteDescription({
+            remoteSdp: modifications.remoteSdp.sdp,
+            type: 'answer'
+          });
+          if (modifications.remoteSdp.indexOf('sendonly') !== -1 
+              && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+            call.setState(ATT.CallStates.HELD);
+            rtcManager.disableMediaStream();
+          }
+          if (modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+            call.setState(ATT.CallStates.RESUMED);
+            rtcManager.enableMediaStream();
+          }
+          call.setRemoteSdp(modifications.remoteSdp);
+        }
       });
 
       rtcManager.on('call-connected', function (remoteSdp) {

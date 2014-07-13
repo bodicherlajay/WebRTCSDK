@@ -193,9 +193,9 @@
     },
 
     /**
-    * Disable the remote video stream
+    * Disable the remote media stream
     */
-    holdVideoStream: function () {
+    disableMediaStream: function () {
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,
@@ -207,9 +207,9 @@
     },
 
     /**
-    * Enable the remote video stream
+    * Enable the remote media stream
     */
-    resumeVideoStream: function () {
+    enableMediaStream: function () {
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,

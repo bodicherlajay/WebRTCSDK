@@ -194,7 +194,7 @@ describe('Call', function () {
         setIdSpy,
         setStateSpy,
         localSdp,
-        onStub;
+        onSpy;
 
       beforeEach(function () {
 
@@ -208,7 +208,7 @@ describe('Call', function () {
           emitterEM.publish('call-disconnected');
         });
 
-        onStub = sinon.stub(rtcMgr, 'on');
+        onSpy = sinon.spy(rtcMgr, 'on');
 
         setIdSpy = sinon.spy(outgoingCall, 'setId');
       });
@@ -216,7 +216,7 @@ describe('Call', function () {
       afterEach(function () {
         connectCallStub.restore();
         setIdSpy.restore();
-        onStub.restore();
+        onSpy.restore();
       });
 
       it('Should exist', function () {
@@ -258,13 +258,18 @@ describe('Call', function () {
 
       it('should register for event `media-modifications` from RTCManager', function () {
         incomingCall.connect(connectOptions);
-        expect(onStub.calledWith('media-modifications')).to.equal(true);
+        expect(onSpy.calledWith('media-modifications')).to.equal(true);
+      });
+
+      it('should register for event `media-mod-terminations` from RTCManager', function () {
+        incomingCall.connect(connectOptions);
+        expect(onSpy.calledWith('media-mod-terminations')).to.equal(true);
       });
 
       it('should register for event `call-connected` from RTCManager', function () {
         outgoingCall.connect(connectOptions);
-        expect(onStub.calledWith('call-connected')).to.equal(true);
-        expect(onStub.getCall(0).args[1]).to.be.a('function');
+        expect(onSpy.calledWith('call-connected')).to.equal(true);
+        expect(onSpy.getCall(0).args[1]).to.be.a('function');
       });
 
       describe('call-disconnected', function () {
@@ -275,7 +280,7 @@ describe('Call', function () {
         });
 
         it('should register for `call-disconnected` event on rtcMgr', function () {
-          expect(onStub.calledWith('call-disconnected')).to.equal(true);
+          expect(onSpy.calledWith('call-disconnected')).to.equal(true);
         });
 
         it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
@@ -480,13 +485,18 @@ describe('Call', function () {
       describe('media-modifications', function () {
 
         var modifications,
-          setMediaModificationsSpy;
+          setMediaModificationsSpy,
+          disableMediaStreamStub,
+          enableMediaStreamStub;
 
         before(function () {
           modifications = {
             remoteSdp: 'abcrecvonlyabcsendrecv',
             modificationId: '123'
           };
+
+          disableMediaStreamStub = sinon.stub(rtcMgr, 'disableMediaStream'),
+          enableMediaStreamStub = sinon.stub(rtcMgr, 'enableMediaStream');
 
           outgoingCall.remoteSdp = 'abcrecvonlyabcsendrecv';
 
@@ -497,6 +507,8 @@ describe('Call', function () {
 
         after(function () {
           setMediaModificationsSpy.restore();
+          disableMediaStreamStub.restore();
+          enableMediaStreamStub.restore();
         });
 
         it('should execute setRemoteSdp on getting a `media-modifications` event from eventManager', function (done) {
@@ -512,15 +524,108 @@ describe('Call', function () {
 
         it('should execute `RTCManager.setModifications`', function () {
           expect(setMediaModificationsSpy.called).to.equal(true);
-          expect(setMediaModificationsSpy.calledWith(modifications)).to.equal(true);
         });
 
-        it('should execute setState(ATT.CallStates.HELD) if the sdp contains `recvonly`', function () {
-          expect(setStateSpy.calledWith(ATT.CallStates.HELD)).to.equal(true);
+        it('should execute setState(ATT.CallStates.HELD) if the sdp contains `recvonly`', function (done) {
+          setTimeout(function () {
+            try {
+              expect(setStateSpy.calledWith(ATT.CallStates.HELD)).to.equal(true);
+              expect(disableMediaStreamStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
         });
 
-        it('should execute setState(ATT.CallStates.RESUMED) if the new remoteSdp contains `sendrecv` && the current remoteSdp contains `recvonly`', function () {
-          expect(setStateSpy.calledWith(ATT.CallStates.RESUMED)).to.equal(true);
+        it('should execute setState(ATT.CallStates.RESUMED) if the new remoteSdp contains `sendrecv` && the current remoteSdp contains `recvonly`', function (done) {
+          setTimeout(function () {
+            try {
+              expect(setStateSpy.calledWith(ATT.CallStates.HELD)).to.equal(true);
+              expect(enableMediaStreamStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+      });
+
+      describe('media-mod-terminations', function () {
+
+        var modifications,
+          setRemoteDescriptionSpy,
+          disableMediaStreamStub,
+          enableMediaStreamStub;
+
+        before(function () {
+          modifications = {
+            remoteSdp: 'abcsendonly',
+            modificationId: '123'
+          };
+
+          setRemoteDescriptionSpy = sinon.spy(rtcMgr, 'setRemoteDescription');
+
+          disableMediaStreamStub = sinon.stub(rtcMgr, 'disableMediaStream'),
+          enableMediaStreamStub = sinon.stub(rtcMgr, 'enableMediaStream');
+
+          emitterEM.publish('media-mod-terminations', modifications);
+        });
+
+        after(function () {
+          setRemoteDescriptionSpy.restore();
+          disableMediaStreamStub.restore();
+          enableMediaStreamStub.restore();
+        });
+
+        it('should call `RTCManager.setTheRemoteDescription` if there is a remoteSdp', function (done) {
+          setTimeout(function () {
+            try {
+              expect(setRemoteDescriptionSpy.getCall(0).args[0]).to.be.an('object');
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+
+        it('should execute setState(ATT.CallStates.HELD) if the sdp contains `sendonly` && but does not contain `sendrecv`', function (done) {
+          setTimeout(function () {
+            try {
+              expect(setStateSpy.calledWith(ATT.CallStates.HELD)).to.equal(true);
+              expect(disableMediaStreamStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+
+        it('should execute setState(ATT.CallStates.RESUMED) if the new remoteSdp contains `sendrecv`', function (done) {
+          emitterEM.publish('media-mod-terminations', {
+            remoteSdp: 'abcsendrecv',
+            modificationId: '12345'
+          });
+          setTimeout(function () {
+            try {
+              expect(setStateSpy.calledWith(ATT.CallStates.RESUMED)).to.equal(true);
+              expect(enableMediaStreamStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+
+        it('should execute setRemoteSdp on getting a `media-mod-terminations` event from eventManager', function (done) {
+          setTimeout(function () {
+            try {
+              expect(setRemoteSdpSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
         });
       });
 
