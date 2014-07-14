@@ -1100,11 +1100,8 @@ describe('Phone', function () {
         var session,
           options,
           call,
-          onSpy,
-          callDisconnectStub,
           updateE911IdStub,
           updateE911IdHandlerSpy,
-          callDisconnectedSpy,
           sessionOnSpy;
 
         beforeEach(function () {
@@ -1117,7 +1114,7 @@ describe('Phone', function () {
           sessionOnSpy = sinon.spy(session, 'on');
 
           updateE911IdStub = sinon.stub(session, 'updateE911Id', function () {
-            emitter.publish('updateE911Id');
+            emitter.publish('updatedE911Id');
           });
 
           phone.updateE911Id(options);
@@ -1131,23 +1128,17 @@ describe('Phone', function () {
           expect(phone.updateE911Id).to.be.a('function');
         });
 
-        it('should throw Error when parameters passed are not correct ', function () {
-          expect(phone.updateE911Id).to.throw('options not defined');
-          expect(phone.updateE911Id.bind(phone, {e911Idi: '1234'})).to.throw('e911Id not defined');
-          expect(phone.updateE911Id.bind(phone, {e911Id: '1234'})).to.not.throw('e911Id not defined');
-        });
-
         it('should register for the `updateE911Id` event on the session', function () {
-          expect(sessionOnSpy.calledWith('updateE911Id')).to.equal(true);
+          expect(sessionOnSpy.calledWith('updatedE911Id')).to.equal(true);
         });
 
         it('should execute session.updateE911Id', function () {
           expect(updateE911IdStub.called).to.equal(true);
         });
 
-        it('should trigger `updateE911Id` when call publishes `updateE911Id` event', function (done) {
+        it('should trigger `updatedE911Id` when call publishes `updatedE911Id` event', function (done) {
           updateE911IdHandlerSpy = sinon.spy();
-          phone.on('updateE911Id', updateE911IdHandlerSpy);
+          phone.on('updatedE911Id', updateE911IdHandlerSpy);
           setTimeout(function () {
             try {
               expect(updateE911IdHandlerSpy.called).to.equal(true);

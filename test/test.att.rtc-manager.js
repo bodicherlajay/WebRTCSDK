@@ -371,6 +371,101 @@ describe('RTC Manager', function () {
         });
       });
 
+      describe('updateSessionWithE911Id', function () {
+
+        it('should exist', function () {
+          expect(rtcManager.updateSessionE911Id).to.be.a('function');
+        });
+
+        it('should throw an error if `options` are invalid', function () {
+
+          var options = {e911Id : '1234', sessionId : '1234', token : 'dsfgdsdf'};
+          expect(rtcManager.updateSessionE911Id.bind(rtcManager, undefined)).to.throw('Invalid options');
+          expect(rtcManager.updateSessionE911Id.bind(rtcManager, {
+            e911Id : options.e911Id,
+            sessionId : options.sessionId,
+            onSuccess : function () {},
+            onError : function () {}
+          })).to.throw('No token passed');
+          expect(rtcManager.updateSessionE911Id.bind(rtcManager, {
+            sessionId : options.sessionId,
+            token : options.token,
+            onSuccess : function () {},
+            onError : function () {}
+          })).to.throw('No e911Id passed');
+          expect(rtcManager.updateSessionE911Id.bind(rtcManager, {
+            e911Id : options.e911Id,
+            token : options.token,
+            onSuccess : function () {},
+            onError : function () {}
+          })).to.throw('No session Id passed');
+
+          expect(rtcManager.updateSessionE911Id.bind(rtcManager, {
+            e911Id : options.e911Id,
+            sessionId : options.sessionId,
+            token : options.token,
+            onError : function () {}
+          })).to.throw('No success callback passed');
+
+          expect(rtcManager.updateSessionE911Id.bind(rtcManager, {
+            e911Id : options.e911Id,
+            sessionId : options.sessionId,
+            token : options.token,
+            onSuccess : function () {}
+          })).to.throw('No error callback passed');
+
+          expect(rtcManager.updateSessionE911Id.bind(rtcManager, {
+            e911Id : options.e911Id,
+            sessionId : options.sessionId,
+            token : options.token,
+            onSuccess : function () {},
+            onError : function () {}
+          })).to.not.throw('No token passed');
+        });
+
+        it('should call resourceManager.doOperation with `updateSessionE911Id`', function () {
+
+          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
+
+          rtcManager.updateSessionE911Id({
+            token: 'token',
+            sessionId: '1234',
+            e911Id: '1232',
+            onSuccess : function () {},
+            onError : function () {}
+          });
+
+          expect(doOperationSpy.called).to.equal(true);
+          expect(doOperationSpy.getCall(0).args[0]).to.equal('refreshWebRTCSessionWithE911Id');
+          expect(doOperationSpy.getCall(0).args[1].params.url[0]).to.equal('1234');
+          expect(doOperationSpy.getCall(0).args[1].params.headers.Authorization).to.equal('token');
+          expect(doOperationSpy.getCall(0).args[1].data.e911Association.e911Id).to.equal('1232');
+
+          doOperationSpy.restore();
+        });
+
+        describe('Success', function () {
+          it('should execute the `success` callback', function () {
+            var  onSuccessSpy = sinon.spy(),
+              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {
+                options.success();
+              });
+
+            rtcManager.updateSessionE911Id({
+              token: 'token',
+              sessionId: '1234',
+              e911Id: '1232',
+              onSuccess : onSuccessSpy,
+              onError : function () {}
+            });
+
+
+            expect(onSuccessSpy.called).to.equal(true);
+            doOperationStub.restore();
+          });
+        });
+      });
+
       describe('disconnectSession', function () {
 
         var optionsForDisconn,

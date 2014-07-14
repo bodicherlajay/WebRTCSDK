@@ -456,6 +456,72 @@ describe('Session', function () {
       });
     });
 
+    describe('updateE911Id', function () {
+      var updateE911stub, updateOptions, onSuccessCall = function () {
+      }, onError = function () {};
+
+      beforeEach(function () {
+        updateOptions = {
+          e911Id: '1234',
+          sessionId: session.getId(),
+          token: 'dsfgdsdf',
+          onSuccess: onSuccessCall,
+          onError: onError
+        };
+
+        options = { timeout : 123};
+        updateE911stub = sinon.stub(rtcManager, 'updateSessionE911Id', function (options) {
+          options.onSuccess();
+        });
+      });
+
+      afterEach(function () {
+        updateE911stub.restore();
+      });
+      it('Should exist', function () {
+        expect(session.updateE911Id).to.be.a('function');
+      });
+
+      it('should throw Error when parameters passed are not correct ', function () {
+        expect(session.updateE911Id).to.throw('options not defined');
+        expect(session.updateE911Id.bind(session, {e911Id: '1234'})).to.not.throw('e911Id not defined');
+      });
+
+      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
+        session.token = 'dsfgdsdf';
+        session.updateE911Id({e911Id : '1234'});
+        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
+        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
+        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
+
+      });
+
+      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
+        session.token = 'dsfgdsdf';
+        session.updateE911Id({e911Id : '1234'});
+        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
+        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
+        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
+      });
+
+      it('Should publish `updatedE911` on success callback ', function (done) {
+        var  onNeedsRefreshSpy = sinon.spy();
+
+        session.on('updatedE911Id', onNeedsRefreshSpy);
+        session.updateE911Id({e911Id : '1234'});
+
+        setTimeout(function () {
+          try {
+            expect(onNeedsRefreshSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 300);
+
+      });
+    });
+
     describe('createCall', function () {
       var callOpts;
 
@@ -590,12 +656,6 @@ describe('Session', function () {
 
       });
 
-    });
-
-    describe('updateE911Id', function () {
-      it('Should exist', function () {
-        expect(session.updateE911Id).to.be.a('function');
-      });
     });
 
     describe('DeleteCurrentCall', function () {

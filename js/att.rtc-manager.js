@@ -430,6 +430,49 @@
       userMediaSvc.enableMediaStream();
     }
 
+    function updateSessionE911Id(options) {
+      var dataForRefreshWebRTCSessionWithE911Id;
+      if (undefined === options ) {
+        throw 'Invalid options';
+      }
+      if (undefined === options.token || '' === options.token) {
+        throw 'No token passed';
+      }
+      if (undefined === options.e911Id || '' === options.e911Id) {
+        throw 'No e911Id passed';
+      }
+
+      if (undefined === options.sessionId || '' === options.sessionId) {
+        throw 'No session Id passed';
+      }
+
+      if (undefined === options.onSuccess  || typeof options.onSuccess !== 'function') {
+        throw 'No success callback passed';
+      }
+
+      if (undefined === options.onError || typeof options.onError !== 'function') {
+        throw 'No error callback passed';
+      }
+
+      dataForRefreshWebRTCSessionWithE911Id = {
+        data: {
+          "e911Association": { "e911Id": options.e911Id }
+        },
+        params: {
+          url: [options.sessionId],
+          headers: {
+            'Authorization': options.token
+          }
+        },
+        success: options.onSuccess,
+        error: options.onError
+      };
+
+    // Call BF to refresh WebRTC Session.
+      resourceManager.doOperation('refreshWebRTCSessionWithE911Id', dataForRefreshWebRTCSessionWithE911Id);
+    }
+
+
     this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
@@ -444,6 +487,7 @@
     this.enableMediaStream = enableMediaStream.bind(this);
     this.holdCall = holdCall.bind(this);
     this.resumeCall = resumeCall.bind(this);
+    this.updateSessionE911Id = updateSessionE911Id.bind(this);
   }
 
   if (undefined === ATT.private) {
