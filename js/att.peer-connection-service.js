@@ -158,12 +158,8 @@
           throw new Error('Cannot set the remote description. The remote SDP is undefined');
         }
 
-        this.setTheRemoteDescription({
-          sdp: config.remoteSdp,
-          type: 'offer'
-         }, function () {
-          this.createAnswer();
-        });
+        this.setTheRemoteDescription(config.remoteSdp, 'offer');
+        this.createAnswer();
       }
     },
 
@@ -298,7 +294,7 @@
       var self = this;
       logger.logDebug('onRemoteStreamAdded');
 
-      logger.logTrace('Adding Remote Stream...', evt.stream);
+      logger.logTrace('Adding Remote Stream...', evt.remoteStream);
 
       ATT.PeerConnectionService.onRemoteStream(evt.stream);
     },
@@ -333,31 +329,29 @@
     * @param {Object} sdp description
     * @param {String} type 'answer' or 'offer'
     */
-    setTheRemoteDescription: function (remoteDescription, success) {
+    setTheRemoteDescription: function (description, type) {
       logger.logDebug('setTheRemoteDescription');
-      this.remoteDescription = remoteDescription;
+      this.remoteDescription = {
+        'sdp' : description,
+        'type' : type
+      };
 
-      var sessDesc;
       try {
-        sessDesc = new RTCSessionDescription(this.remoteDescription);
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
+          logger.logInfo('Set Remote Description Success');
+        }, function (err) {
+          // difference between FF and Chrome
+          if (typeof err === 'object') {
+            err = err.message;
+          }
+          // Need to figure out why Chrome throws this event though it works
+          //Error.publish('Set Remote Description Fail: ' + err);
+        });
       } catch (err) {
         console.log(err);
         // Need to figure out why Chrome throws this event though it works
         //Error.publish('Set Remote Description Fail: ' + err.message);
       }
-
-      this.peerConnection.setRemoteDescription(sessDesc, function () {
-        logger.logInfo('Set Remote Description Success');
-        success();
-      }, function (err) {
-        // difference between FF and Chrome
-        if (typeof err === 'object') {
-          err = err.message;
-        }
-        // Need to figure out why Chrome throws this event though it works
-        //Error.publish('Set Remote Description Fail: ' + err);
-      });
-
     },
 
     /**
@@ -371,13 +365,9 @@
       logger.logDebug('modId', modId);
       this.modificationId = modId;
       this.incrementModCount();
-      this.setTheRemoteDescription({
-        sdp: sdp,
-        type: 'offer'
-      }, function () {
-        this.isModInitiator = false;
-        this.createAnswer();
-      });
+      this.setTheRemoteDescription(sdp, 'offer');
+      this.isModInitiator = false;
+      this.createAnswer();
     },
 
     /**

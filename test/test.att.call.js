@@ -159,6 +159,7 @@ describe('Call', function () {
     it('should get an instance of RTCManager', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
+
   });
 
   describe('Methods', function () {
@@ -308,6 +309,7 @@ describe('Call', function () {
         incomingCall.connect(options);
         expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
       });
+
 
       describe('success on connectCall', function () {
 

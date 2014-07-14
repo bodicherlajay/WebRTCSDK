@@ -347,7 +347,6 @@
           });
         },
         onMediaEstablished: function () {
-          eventManager.publish('media-established');
         }
       });
     }

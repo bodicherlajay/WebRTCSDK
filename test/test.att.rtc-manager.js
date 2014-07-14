@@ -542,8 +542,7 @@ describe('RTC Manager', function () {
           initPeerConnectionStub,
           onCallConnectingSpy,
           setRemoteSdpStub,
-          remoteSdp,
-          eventManagerPublishSpy;
+          remoteSdp;
 
         before(function () {
           onCallConnectingSpy = sinon.spy();
@@ -574,8 +573,6 @@ describe('RTC Manager', function () {
             options.success();
           });
 
-          eventManagerPublishSpy = sinon.spy(eventManager, 'publish');
-
           rtcManager.connectCall(options);
         });
 
@@ -583,7 +580,6 @@ describe('RTC Manager', function () {
           getUserMediaStub.restore();
           initPeerConnectionStub.restore();
           setRemoteSdpStub.restore();
-          eventManagerPublishSpy.restore();
         });
 
         it('should exist', function () {
@@ -639,9 +635,7 @@ describe('RTC Manager', function () {
 
           describe('onMediaEstablished', function () {
 
-            it('should execute eventManager.publish on successfully establishing the media', function () {
-              expect(eventManagerPublishSpy.calledWith('media-established')).to.equal(true);
-            });
+            it('should execute callback onMediaEstablished');
           });
 
         });

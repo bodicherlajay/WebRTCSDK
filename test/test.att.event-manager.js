@@ -227,6 +227,7 @@ describe('Event Manager', function () {
       });
     });
 
+
   });
 
   describe('Events', function () {
