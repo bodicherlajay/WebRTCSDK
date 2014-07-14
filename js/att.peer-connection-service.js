@@ -224,6 +224,8 @@
                   success: function (response) {
                     if (response && response.callId && response.xState && response.xState === 'invitation-sent') {
                       logger.logInfo('success for offer sent, outgoing call');
+                      // keep copy of callId for future requests
+                      self.callId = response.callId;
                       // trigger callback meaning successfully sent the offer
                       return self.onPeerConnectionInitiated({
                         state: response.xState,
@@ -283,7 +285,8 @@
       }
 
       // add remote stream
-      pc.onaddstream = self.onRemoteStreamAdded.bind(this);
+      //self.onRemoteStreamAdded.bind(this);
+      pc.onaddstream = self.onRemoteStreamAdded;
     },
 
     /**
@@ -297,7 +300,7 @@
 
       logger.logTrace('Adding Remote Stream...', evt.stream);
 
-      self.onRemoteStream(evt.stream);
+      ATT.PeerConnectionService.onRemoteStream(evt.stream);
     },
 
     /**
@@ -450,7 +453,7 @@
     * Hold Call
     *
     */
-    holdCall: function () {
+    holdCall: function (options) {
       logger.logDebug('holdCall');
 
       var sdp = this.peerConnection.localDescription;
@@ -474,7 +477,6 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        this.session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -484,7 +486,11 @@
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendHoldCall({
           sdp : sdp,
-          sessionInfo: this.sessionInfo
+          sessionInfo: this.sessionInfo,
+          callId: options.callId,
+          success: function () {
+            options.onHoldSuccess(sdp);
+          }
         });
       } catch (e) {
         Error.publish('Send hold signal fail: ' + e.message);
@@ -497,7 +503,7 @@
     *
     * Resume Call
     */
-    resumeCall: function () {
+    resumeCall: function (options) {
       logger.logDebug('resumeCall');
 
       var sdp = this.localDescription;
@@ -520,7 +526,6 @@
         // set local description
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
-        this.session.getCurrentCall().setLocalSdp(sdp);
       } catch (e) {
         Error.publish('Could not set local description. Exception: ' + e.message);
       }
@@ -530,7 +535,11 @@
         logger.logTrace('sending modified sdp', sdp);
         SignalingService.sendResumeCall({
           sdp : sdp,
-          sessionInfo: this.sessionInfo
+          sessionInfo: this.sessionInfo,
+          callId: options.callId,
+          success: function () {
+            options.onResumeSuccess(sdp);
+          }
         });
       } catch (e) {
         Error.publish('Send resume call Fail: ' + e.message);

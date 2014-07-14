@@ -27,15 +27,6 @@
     }
   }
 
-  // function handleCallMediaModifications(event, data) {
-  //   peerConnSvc.setRemoteAndCreateAnswer(data.sdp, data.modId);
-  //   if (event.state === ATT.CallStatus.HOLD) {
-  //     userMediaSvc.muteStream();
-  //   } else if (event.state === ATT.CallStatus.RESUMED) {
-  //     userMediaSvc.unmuteStream();
-  //   }
-  // }
-
   // function handleCallMediaTerminations(event, data) {
   //   if (data.modId) {
   //     peerConnSvc.setModificationId(data.modId);
@@ -50,20 +41,6 @@
   //     userMediaSvc.resumeVideoStream();
   //     userMediaSvc.unmuteStream();
   //   }
-  // }
-
-  // function handleCallOpen(data) {
-  //   if (data.sdp) {
-  //     peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
-  //   }
-  // }
-
-  // function holdCall() {
-  //   peerConnSvc.holdCall();
-  // }
-
-  // function resumeCall() {
-  //   peerConnSvc.resumeCall();
   // }
 
   /**
@@ -171,16 +148,51 @@
       }
 
       rtcManager.on('media-modifications', function (modifications) {
-        call.setRemoteSdp(modifications.remoteSdp);
         rtcManager.setMediaModifications(modifications);
+        if (modifications.remoteSdp
+            && modifications.remoteSdp.indexOf('recvonly') !== -1) {
+          call.setState(ATT.CallStates.HELD);
+          rtcManager.disableMediaStream(); 
+        }
+        if (modifications.remoteSdp
+            && call.remoteSdp
+            && call.remoteSdp.indexOf
+            && call.remoteSdp.indexOf('recvonly') !== -1
+            && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+          call.setState(ATT.CallStates.RESUMED);
+          rtcManager.enableMediaStream();
+        }
+        call.setRemoteSdp(modifications.remoteSdp);
       });
 
-      rtcManager.on('call-connected', function (remoteSdp) {
-        call.setRemoteSdp(remoteSdp);
+      rtcManager.on('media-mod-terminations', function (modifications) {
+        if (modifications.remoteSdp) {
+          rtcManager.setRemoteDescription({
+            remoteSdp: modifications.remoteSdp.sdp,
+            type: 'answer'
+          });
+          if (modifications.reason === 'success'
+              && modifications.remoteSdp.indexOf('sendonly') !== -1
+              && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+            call.setState(ATT.CallStates.HELD);
+            rtcManager.disableMediaStream();
+          }
+          if (modifications.reason === 'success'
+              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+            call.setState(ATT.CallStates.RESUMED);
+            rtcManager.enableMediaStream();
+          }
+          call.setRemoteSdp(modifications.remoteSdp);
+        }
+      });
+
+      rtcManager.on('call-connected', function (data) {
+        call.setRemoteSdp(data.remoteSdp);
         rtcManager.setRemoteDescription({
-          remoteSdp: remoteSdp,
+          remoteSdp: data.remoteSdp,
           type: 'answer'
         });
+        emitter.publish('connected');
       });
 
       rtcManager.on('media-established', function () {
@@ -250,7 +262,6 @@
 
     function setRemoteSdp(remoteSdp) {
       this.remoteSdp = remoteSdp;
-      emitter.publish('connected');
     }
 
     function mute() {
@@ -278,21 +289,22 @@
     function hold() {
       var call = this;
 
-      rtcManager.holdCall();
-
-      rtcManager.on('hold', function () {
-        call.state = ATT.CallStates.HOLD;
-        emitter.publish('hold');
+      rtcManager.holdCall({
+        onSuccess: function (localSdp) {
+          call.localSdp = localSdp;
+        },
+        callId: call.id
       });
     }
 
     function resume() {
       var call = this;
-      rtcManager.resumeCall();
 
-      rtcManager.on('resume', function () {
-        call.state = ATT.CallStates.ONGOING;
-        emitter.publish('resume');
+      rtcManager.resumeCall({
+        onSuccess: function (localSdp) {
+          call.localSdp = localSdp;
+        },
+        callId: call.id
       });
     }
 

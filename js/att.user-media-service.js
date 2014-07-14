@@ -96,10 +96,11 @@
     * @returns {HTMLElement} remoteMedia
     */
     onRemoteMediaStart: function (callback) {
+/*
       // remove all event handlers by cloning
       var clone = this.remoteMedia.cloneNode(true);// Deep clone
       this.remoteMedia.parentNode.replaceChild(clone, this.remoteMedia);
-      
+*/      
       this.remoteMedia.addEventListener('playing', callback);
     },
 
@@ -192,9 +193,9 @@
     },
 
     /**
-    * Disable the remote video stream
+    * Disable the remote media stream
     */
-    holdVideoStream: function () {
+    disableMediaStream: function () {
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,
@@ -206,9 +207,9 @@
     },
 
     /**
-    * Enable the remote video stream
+    * Enable the remote media stream
     */
-    resumeVideoStream: function () {
+    enableMediaStream: function () {
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,

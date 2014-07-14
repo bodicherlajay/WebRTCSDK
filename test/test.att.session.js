@@ -868,7 +868,6 @@ describe('Session', function () {
 
         session.currentCall = new ATT.rtc.Call(callInfo);
 
-
         callEndedSpy = sinon.spy();
 
         session.on('call-disconnected', callEndedSpy);
@@ -881,28 +880,6 @@ describe('Session', function () {
       afterEach(function () {
         getRTCMgrStub.restore();
         createCallStub.restore();
-      });
-
-      it('should trigger `call-disconnected` on call Disconnected ', function (done) {
-        setTimeout(function () {
-          try {
-            expect(callEndedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
-      });
-
-      it('should delete the current Call object on Call-disconnected event', function (done) {
-        setTimeout(function () {
-          try {
-            expect(session.currentCall).to.equal(null);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
       });
     });
   });
