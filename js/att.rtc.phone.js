@@ -76,7 +76,7 @@
           && 'call-unmuted' !== event
           && 'call-hold' !== event
           && 'call-resume' !== event
-          && 'updateE911Id' !== event
+          && 'updatedE911Id' !== event
           && 'call-established' !== event
           && 'call-error' !== event) {
         throw new Error('Event not defined');
@@ -263,14 +263,8 @@
     }
 
     function  updateE911Id(options) {
-      if (undefined === options) {
-        throw new Error('options not defined');
-      }
-      if (undefined === options.e911Id) {
-        throw new Error('e911Id not defined');
-      }
-      session.on('updateE911Id', function () {
-        emitter.publish('updateE911Id');
+      session.on('updatedE911Id', function () {
+        emitter.publish('updatedE911Id');
       });
 
       session.updateE911Id(options);

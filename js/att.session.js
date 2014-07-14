@@ -58,7 +58,7 @@
           'call-disconnected' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event &&
-          'updateE911Id' !== event &&
+          'updatedE911Id' !== event &&
           'allcallsterminated' !== event) {
         throw new Error('Event not defined');
       }
@@ -242,7 +242,25 @@
       }
     };
 
-    this.updateE911Id = function () {};
+    this.updateE911Id = function (options) {
+      if (undefined === options) {
+        throw new Error('options not defined');
+      }
+      if (undefined === options.e911Id) {
+        throw new Error('e911Id not defined');
+      }
+      ATT.utils.extend(options, {
+        sessionId: this.getId(),
+        token: this.token,
+        onSuccess : function () {
+          emitter.publish('updatedE911Id');
+        },
+        onError : function () {
+
+        }
+      });
+      rtcManager.updateSessionE911Id(options);
+    };
 
   }
 
