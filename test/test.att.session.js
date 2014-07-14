@@ -105,7 +105,8 @@ describe('Session', function () {
       rtcManager,
       getRTCMgrStub,
       connectSessionStub,
-      disconnectSessionStub;
+      disconnectSessionStub,
+      getTokenstub;
 
     beforeEach(function () {
       onSessionReadyData = {
@@ -145,6 +146,10 @@ describe('Session', function () {
       });
 
       session = new ATT.rtc.Session(options);
+
+      getTokenstub = sinon.stub(session, 'getToken', function () {
+        return 'dsfgdsdf';
+      });
 
       call = new ATT.rtc.Call({
         id: '12345',
@@ -464,7 +469,7 @@ describe('Session', function () {
         updateOptions = {
           e911Id: '1234',
           sessionId: session.getId(),
-          token: 'dsfgdsdf',
+          token: session.getToken(),
           onSuccess: onSuccessCall,
           onError: onError
         };
