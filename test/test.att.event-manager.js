@@ -390,7 +390,8 @@ describe('Event Manager', function () {
             'resourceURL': '/RTC/v1/sessions/00000/calls/1111',
             'modId': '12345',
             'state': 'mod-terminated',
-            'sdp': 'abcdefg'
+            'sdp': 'abcdefg',
+            'reason': 'success'
           };
 
           emitterEC.publish('api-event', event);
@@ -398,7 +399,8 @@ describe('Event Manager', function () {
           setTimeout(function () {
             expect(publishSpy.calledWith('media-mod-terminations', {
               remoteSdp: 'abcdefg',
-              modificationId: '12345'
+              modificationId: '12345',
+              reason: 'success'
             })).to.equal(true);
             done();
           }, 100);

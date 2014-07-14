@@ -561,7 +561,8 @@ describe('Call', function () {
         before(function () {
           modifications = {
             remoteSdp: 'abcsendonly',
-            modificationId: '123'
+            modificationId: '123',
+            reason: 'success'
           };
 
           setRemoteDescriptionSpy = sinon.spy(rtcMgr, 'setRemoteDescription');
@@ -604,7 +605,8 @@ describe('Call', function () {
         it('should execute setState(ATT.CallStates.RESUMED) if the new remoteSdp contains `sendrecv`', function (done) {
           emitterEM.publish('media-mod-terminations', {
             remoteSdp: 'abcsendrecv',
-            modificationId: '12345'
+            modificationId: '12345',
+            reason: 'success'
           });
           setTimeout(function () {
             try {

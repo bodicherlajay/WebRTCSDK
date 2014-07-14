@@ -220,6 +220,8 @@
                   success: function (response) {
                     if (response && response.callId && response.xState && response.xState === 'invitation-sent') {
                       logger.logInfo('success for offer sent, outgoing call');
+                      // keep copy of callId for future requests
+                      self.callId = response.callId;
                       // trigger callback meaning successfully sent the offer
                       return self.onPeerConnectionInitiated({
                         state: response.xState,

@@ -148,6 +148,7 @@
       }
 
       rtcManager.on('media-modifications', function (modifications) {
+        rtcManager.setMediaModifications(modifications);
         if (modifications.remoteSdp
             && modifications.remoteSdp.indexOf('recvonly') !== -1) {
           call.setState(ATT.CallStates.HELD);
@@ -162,7 +163,6 @@
           rtcManager.enableMediaStream();
         }
         call.setRemoteSdp(modifications.remoteSdp);
-        rtcManager.setMediaModifications(modifications);
       });
 
       rtcManager.on('media-mod-terminations', function (modifications) {
@@ -171,12 +171,14 @@
             remoteSdp: modifications.remoteSdp.sdp,
             type: 'answer'
           });
-          if (modifications.remoteSdp.indexOf('sendonly') !== -1 
+          if (modifications.reason === 'success'
+              && modifications.remoteSdp.indexOf('sendonly') !== -1
               && modifications.remoteSdp.indexOf('sendrecv') === -1) {
             call.setState(ATT.CallStates.HELD);
             rtcManager.disableMediaStream();
           }
-          if (modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+          if (modifications.reason === 'success'
+              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
             call.setState(ATT.CallStates.RESUMED);
             rtcManager.enableMediaStream();
           }

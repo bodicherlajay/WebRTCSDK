@@ -227,7 +227,8 @@
       case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
         emitter.publish('media-mod-terminations', {
           remoteSdp: event.sdp,
-          modificationId: event.modId
+          modificationId: event.modId,
+          reason: event.reason
         });
         break;
       case ATT.RTCCallEvents.SESSION_OPEN:
