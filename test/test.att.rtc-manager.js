@@ -447,8 +447,7 @@ describe('RTC Manager', function () {
           initPeerConnectionStub,
           onCallConnectingSpy,
           setRemoteSdpStub,
-          remoteSdp,
-          eventManagerPublishSpy;
+          remoteSdp;
 
         before(function () {
           onCallConnectingSpy = sinon.spy();
@@ -479,8 +478,6 @@ describe('RTC Manager', function () {
             options.success();
           });
 
-          eventManagerPublishSpy = sinon.spy(eventManager, 'publish');
-
           rtcManager.connectCall(options);
         });
 
@@ -488,7 +485,6 @@ describe('RTC Manager', function () {
           getUserMediaStub.restore();
           initPeerConnectionStub.restore();
           setRemoteSdpStub.restore();
-          eventManagerPublishSpy.restore();
         });
 
         it('should exist', function () {
@@ -525,45 +521,26 @@ describe('RTC Manager', function () {
           expect(getUserMediaStub.called).to.equal(true);
         });
 
-        describe('success get user media', function () {
+        describe('getUserMedia callbacks', function () {
 
-          it('should register for `remote-sdp` event on eventManager', function () {
-            expect(onSpy.calledWith('remote-sdp')).to.equal(true);
+          describe('onUserMedia', function () {
+
+            it('should invoke initiatePeerConnection', function () {
+              expect(initPeerConnectionStub.called).to.equal(true);
+            });
+
+            describe('initiatePeerConnection success', function () {
+
+              it('should invoke callback `onCallConnecting`', function () {
+                expect(onCallConnectingSpy.called).to.equal(true);
+              });
+            });
+
           });
 
-          it('should invoke initiatePeerConnection', function () {
-            expect(initPeerConnectionStub.called).to.equal(true);
-          });
+          describe('onMediaEstablished', function () {
 
-          describe('success initiatePeerConnection', function () {
-
-            it('should invoke callback `onCallConnecting`', function () {
-              expect(onCallConnectingSpy.called).to.equal(true);
-            });
-          });
-
-          describe('success event', function () {
-
-            it('should call setTheRemoteDescription on the peer connection on getting `remote-sdp` event from eventManager', function (done) {
-              setTimeout(function () {
-                try {
-                  expect(setRemoteSdpStub.called).to.equal(true);
-                  expect(setRemoteSdpStub.getCall(0).args[0].remoteSdp).to.equal(remoteSdp);
-                  expect(setRemoteSdpStub.getCall(0).args[0].type).to.equal('answer');
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 100);
-            });
-
-            it('should execute eventManager.publish with `media-modifications`', function () {
-              expect(eventManagerPublishSpy.calledWith('media-modifications')).to.equal(true);
-            });
-
-            it('should execute eventManager.publish on successfully establishing the media', function () {
-              expect(eventManagerPublishSpy.calledWith('media-established')).to.equal(true);
-            });
+            it('should execute callback onMediaEstablished');
           });
 
         });

@@ -333,11 +333,6 @@
     this.hold = hold.bind(this);
     this.resume = resume.bind(this);
 
-    if (undefined !== this.id) {
-      emitter.publish('created', this.id);
-      return;
-    }
-    emitter.publish('created');
   }
 
   if (undefined === ATT.rtc) {

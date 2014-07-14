@@ -54,7 +54,8 @@ describe('Call', function () {
     optionsIncoming = {
       peer: '12345',
       mediaType: 'audio',
-      type: ATT.CallTypes.INCOMING
+      type: ATT.CallTypes.INCOMING,
+      remoteSdp: 'abc'
     };
 
     optionsforRTCM = {
@@ -295,10 +296,20 @@ describe('Call', function () {
         });
       });
 
-      it('should execute RTCManager.connectCall', function () {
+      it('should execute RTCManager.connectCall for outgoing calls', function () {
         outgoingCall.connect(connectOptions);
         expect(connectCallStub.called).to.equal(true);
       });
+
+      it('should execute RTCManager.connectCall with `remoteSdp` for incoming calls', function () {
+        var options = {
+          localMedia: {},
+          remoteMedia: {}
+        };
+        incomingCall.connect(options);
+        expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
+      });
+
 
       describe('success on connectCall', function () {
 

@@ -227,12 +227,7 @@ describe('Event Manager', function () {
       });
     });
 
-    describe('publish', function () {
 
-      it('should exist', function () {
-        expect(eventManager.publish).to.be.a('function');
-      });
-    });
   });
 
   describe('Events', function () {

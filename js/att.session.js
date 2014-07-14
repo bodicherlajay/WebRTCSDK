@@ -141,12 +141,12 @@
       this.timer = setInterval(function () {
         emitter.publish('needs-refresh');
         console.log('needs-refresh');
-        // rtcManager.refreshSession({
-        //   sessionId : id,
-        //   token : token,
-        //   success : function () {},
-        //   error : function () {return; }
-        // });
+        rtcManager.refreshSession({
+           sessionId : id,
+           token : token,
+           success : function () {},
+           error : function () {return; }
+        });
       }, this.timeout);
     };
 
