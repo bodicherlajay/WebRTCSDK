@@ -129,4 +129,13 @@ describe('ATT.rtc', function () {
     });
   });
 
+  describe("hasWebRTC", function () {
+    it('should exist', function () {
+      expect(ATT.rtc.hasWebRTC).to.be.a('function');
+    });
+    it('should return a boolean value', function() {
+      expect(ATT.rtc.hasWebRTC()).to.be.a('boolean');
+    });
+  });
+
 });

@@ -64,12 +64,19 @@
     return;
   }
 
+  function hasWebRTC() {
+    return typeof navigator.mozGetUserMedia === 'function' ||
+      typeof navigator.webkitGetUserMedia === 'function' ||
+      typeof navigator.getUserMedia === 'function';
+  }
+
   if (undefined === ATT.rtc) {
     throw new Error('Error exporting ATT.rtc.Phone.');
   }
 
   ATT.rtc.configure = configure;
   ATT.rtc.getConfiguration = getConfiguration;
+  ATT.rtc.hasWebRTC = hasWebRTC;
 
   // if no one calls ATT.rtc.configure, it should still
   // configure the APIConfigs
