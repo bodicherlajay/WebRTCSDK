@@ -182,7 +182,8 @@ describe('Session', function () {
       connectSessionStub.restore();
       disconnectSessionStub.restore();
       getRTCMgrStub.restore();
-      createEventEmitterStub.restore();   
+      createEventEmitterStub.restore();
+      getTokenstub.restore();
     });
 
     describe('On', function () {
