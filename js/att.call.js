@@ -186,10 +186,10 @@
         }
       });
 
-      rtcManager.on('call-connected', function (remoteSdp) {
-        call.setRemoteSdp(remoteSdp);
+      rtcManager.on('call-connected', function (data) {
+        call.setRemoteSdp(data.remoteSdp);
         rtcManager.setRemoteDescription({
-          remoteSdp: remoteSdp.remoteSdp,
+          remoteSdp: data.remoteSdp,
           type: 'answer'
         });
         emitter.publish('connected');
