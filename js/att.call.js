@@ -302,11 +302,14 @@
 
     function reject() {
       var call = this;
-
       rtcManager.reject({
-        sessionId : call.sessionId,
+        sessionId : call.sessionInfo.sessionId,
         callId : call.id,
+        token : call.sessionInfo.token,
         onSuccess : function () {
+        },
+        onError : function () {
+
         }
       });
 
