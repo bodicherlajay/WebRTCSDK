@@ -934,6 +934,56 @@ describe('Phone', function () {
 
       });
 
+      describe('reject', function () {
+
+        var session,
+          options,
+          call,
+          callRejectStub,
+          createCallStub;
+
+        beforeEach(function () {
+
+          options = {
+            destination: '12345',
+            mediaType: 'audio',
+            localMedia: '#foo',
+            remoteMedia: '#bar'
+          };
+
+          call = new ATT.rtc.Call({
+            peer: '1234567',
+            mediaType: 'audio'
+          });
+
+
+          session = phone.getSession();
+
+          createCallStub = sinon.stub(session, 'createCall', function () {
+            return call;
+          });
+
+          callRejectStub = sinon.stub(call, 'reject', function () {
+          });
+
+          phone.dial(options);
+          phone.reject();
+        });
+
+        afterEach(function () {
+          callRejectStub.restore();
+          createCallStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.reject).to.be.a('function');
+        });
+
+        it('should execute call.disconnect', function () {
+          expect(callRejectStub.called).to.equal(true);
+        });
+      });
+
       describe('hold/resume ', function () {
 
         var session,
@@ -1073,7 +1123,7 @@ describe('Phone', function () {
           sessionOnSpy = sinon.spy(session, 'on');
 
           updateE911IdStub = sinon.stub(session, 'updateE911Id', function () {
-            emitter.publish('updatedE911Id');
+            emitter.publish('address-updated');
           });
 
           phone.updateE911Id(options);
@@ -1088,16 +1138,16 @@ describe('Phone', function () {
         });
 
         it('should register for the `updateE911Id` event on the session', function () {
-          expect(sessionOnSpy.calledWith('updatedE911Id')).to.equal(true);
+          expect(sessionOnSpy.calledWith('address-updated')).to.equal(true);
         });
 
         it('should execute session.updateE911Id', function () {
           expect(updateE911IdStub.called).to.equal(true);
         });
 
-        it('should trigger `updatedE911Id` when call publishes `updatedE911Id` event', function (done) {
+        it('should trigger `address-updated` when call publishes `address-updated` event', function (done) {
           updateE911IdHandlerSpy = sinon.spy();
-          phone.on('updatedE911Id', updateE911IdHandlerSpy);
+          phone.on('address-updated', updateE911IdHandlerSpy);
           setTimeout(function () {
             try {
               expect(updateE911IdHandlerSpy.called).to.equal(true);

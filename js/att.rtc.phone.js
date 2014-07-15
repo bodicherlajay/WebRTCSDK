@@ -76,7 +76,7 @@
           && 'call-unmuted' !== event
           && 'call-hold' !== event
           && 'call-resume' !== event
-          && 'updatedE911Id' !== event
+          && 'address-updated' !== event
           && 'call-established' !== event
           && 'call-error' !== event) {
         throw new Error('Event not defined');
@@ -256,6 +256,10 @@
       call.disconnect();
     }
 
+    function reject() {
+      call.reject();
+    }
+
     function hold() {
       call.hold();
     }
@@ -265,8 +269,8 @@
     }
 
     function  updateE911Id(options) {
-      session.on('updatedE911Id', function () {
-        emitter.publish('updatedE911Id');
+      session.on('address-updated', function () {
+        emitter.publish('address-updated');
       });
 
       session.updateE911Id(options);
@@ -284,6 +288,7 @@
     this.hangup = hangup.bind(this);
     this.hold = hold.bind(this);
     this.resume = resume.bind(this);
+    this.reject = reject.bind(this);
     this.updateE911Id = updateE911Id.bind(this);
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;

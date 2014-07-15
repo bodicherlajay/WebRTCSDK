@@ -58,7 +58,7 @@
           'call-disconnected' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event &&
-          'updatedE911Id' !== event &&
+          'address-updated' !== event &&
           'allcallsterminated' !== event) {
         throw new Error('Event not defined');
       }
@@ -142,10 +142,10 @@
         emitter.publish('needs-refresh');
         console.log('needs-refresh');
         rtcManager.refreshSession({
-           sessionId : id,
-           token : token,
-           success : function () {},
-           error : function () {return; }
+          sessionId : id,
+          token : token,
+          success : function () {},
+          error : function () {return; }
         });
       }, this.timeout);
     };
@@ -251,9 +251,9 @@
       }
       ATT.utils.extend(options, {
         sessionId: this.getId(),
-        token: this.token,
+        token: this.getToken(),
         onSuccess : function () {
-          emitter.publish('updatedE911Id');
+          emitter.publish('address-updated');
         },
         onError : function () {
 

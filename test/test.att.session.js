@@ -105,7 +105,8 @@ describe('Session', function () {
       rtcManager,
       getRTCMgrStub,
       connectSessionStub,
-      disconnectSessionStub;
+      disconnectSessionStub,
+      getTokenstub;
 
     beforeEach(function () {
       onSessionReadyData = {
@@ -146,6 +147,10 @@ describe('Session', function () {
 
       session = new ATT.rtc.Session(options);
 
+      getTokenstub = sinon.stub(session, 'getToken', function () {
+        return 'dsfgdsdf';
+      });
+
       call = new ATT.rtc.Call({
         id: '12345',
         peer: '12345',
@@ -177,7 +182,8 @@ describe('Session', function () {
       connectSessionStub.restore();
       disconnectSessionStub.restore();
       getRTCMgrStub.restore();
-      createEventEmitterStub.restore();   
+      createEventEmitterStub.restore();
+      getTokenstub.restore();
     });
 
     describe('On', function () {
@@ -464,7 +470,7 @@ describe('Session', function () {
         updateOptions = {
           e911Id: '1234',
           sessionId: session.getId(),
-          token: 'dsfgdsdf',
+          token: session.getToken(),
           onSuccess: onSuccessCall,
           onError: onError
         };
@@ -507,7 +513,7 @@ describe('Session', function () {
       it('Should publish `updatedE911` on success callback ', function (done) {
         var  onNeedsRefreshSpy = sinon.spy();
 
-        session.on('updatedE911Id', onNeedsRefreshSpy);
+        session.on('address-updated', onNeedsRefreshSpy);
         session.updateE911Id({e911Id : '1234'});
 
         setTimeout(function () {

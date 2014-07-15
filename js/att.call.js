@@ -300,6 +300,18 @@
       });
     }
 
+    function reject() {
+      var call = this;
+
+      rtcManager.reject({
+        sessionId : call.sessionId,
+        callId : call.id,
+        onSuccess : function () {
+        }
+      });
+
+    }
+
     // Call attributes
     this.id = options.id;
     this.peer = options.peer;
@@ -324,6 +336,7 @@
     this.unmute = unmute.bind(this);
     this.hold = hold.bind(this);
     this.resume = resume.bind(this);
+    this.reject = reject.bind(this);
 
   }
 
