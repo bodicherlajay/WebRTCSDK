@@ -2,7 +2,7 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert, after*/
 
-describe('Phone', function () {
+describe.only('Phone', function () {
   'use strict';
 
   var getRTCManagerStub;
@@ -97,9 +97,13 @@ describe('Phone', function () {
 
       var phone,
         emitter,
-        createEventEmitterStub;
+        createEventEmitterStub,
+        remoteVideo,
+        localVideo;
 
       beforeEach(function () {
+        remoteVideo = document.createElement('video');
+        localVideo = document.createElement('video')
         emitter = ATT.private.factories.createEventEmitter();
 
         createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
@@ -306,8 +310,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'video',
-            localMedia: '#foo',
-            remoteMedia: 'bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -322,7 +326,7 @@ describe('Phone', function () {
             emitter.publish('canceled');
             emitter.publish('rejected');
             emitter.publish('connected');
-            emitter.publish('established');
+            emitter.publish('media-established');
             emitter.publish('hold');
             emitter.publish('resume');
             emitter.publish('error');
@@ -347,7 +351,7 @@ describe('Phone', function () {
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
-          phone.on('call-established', callEstablishedHandlerSpy);
+          phone.on('media-established', callEstablishedHandlerSpy);
           phone.on('call-hold', callHoldHandlerSpy);
           phone.on('call-resume', callResumeHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
@@ -368,21 +372,21 @@ describe('Phone', function () {
         it('should throw an error if options are invalid', function () {
           expect(phone.dial).to.throw('Options not defined');
           expect(phone.dial.bind(phone, {
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           })).to.throw('Destination not defined');
           expect(phone.dial.bind(phone, {
-            localMedia: '#foo',
+            localMedia: localVideo,
             destination: '1234'
           })).to.throw('remoteMedia not defined');
           expect(phone.dial.bind(phone, {
             destination: '1234',
-            remoteMedia: '#foo'
+            remoteMedia: localVideo
           })).to.throw('localMedia not defined');
           expect(phone.dial.bind(phone, {
             destination: '12345',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           })).to.not.throw(Error);
         });
 
@@ -409,8 +413,8 @@ describe('Phone', function () {
           expect(onSpy.calledWith('connected')).to.equal(true);
         });
 
-        it('should register for the `established` event on the call object', function () {
-          expect(onSpy.calledWith('established')).to.equal(true);
+        it('should register for the `media-established` event on the call object', function () {
+          expect(onSpy.calledWith('media-established')).to.equal(true);
         });
 
         it('should register for the `hold` event on the call object', function () {
@@ -462,7 +466,7 @@ describe('Phone', function () {
           }, 200);
         });
 
-        it('should trigger `call-established` when call publishes `established` event', function (done) {
+        it('should trigger `media-established` when call publishes `media-established` event', function (done) {
           setTimeout(function () {
             try {
               expect(callEstablishedHandlerSpy.called).to.equal(true);
@@ -526,8 +530,8 @@ describe('Phone', function () {
         beforeEach(function () {
 
           options = {
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -552,7 +556,7 @@ describe('Phone', function () {
             emitter.publish('canceled');
             emitter.publish('rejected');
             emitter.publish('connected');
-            emitter.publish('established');
+            emitter.publish('media-established');
             emitter.publish('hold');
             emitter.publish('resume');
             emitter.publish('error');
@@ -566,7 +570,7 @@ describe('Phone', function () {
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
-          phone.on('call-established', callEstablishedHandlerSpy);
+          phone.on('media-established', callEstablishedHandlerSpy);
           phone.on('call-hold', callHoldHandlerSpy);
           phone.on('call-resume', callResumeHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
@@ -591,10 +595,10 @@ describe('Phone', function () {
         it('should throw an error if called without valid options', function () {
           expect(phone.answer.bind(phone)).to.throw('Options not defined');
           expect(phone.answer.bind(phone, {
-            localMedia: '#bar'
+            localMedia: remoteVideo
           })).to.throw('remoteMedia not defined');
           expect(phone.answer.bind(phone, {
-            remoteMedia: '#foo'
+            remoteMedia: localVideo
           })).to.throw('localMedia not defined');
         });
 
@@ -617,8 +621,8 @@ describe('Phone', function () {
           expect(onSpy.calledWith('connected')).to.equal(true);
         });
 
-        it('should register for the `established` event on the call object', function () {
-          expect(onSpy.calledWith('established')).to.equal(true);
+        it('should register for the `media-established` event on the call object', function () {
+          expect(onSpy.calledWith('media-established')).to.equal(true);
         });
 
         it('should register for the `hold` event on the call object', function () {
@@ -671,7 +675,7 @@ describe('Phone', function () {
           }, 200);
         });
 
-        it('should trigger `call-established` when call publishes `established` event', function (done) {
+        it('should trigger `media-established` when call publishes `media-established` event', function (done) {
           setTimeout(function () {
             try {
               expect(callEstablishedHandlerSpy.called).to.equal(true);
@@ -733,8 +737,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'video',
-            localMedia: '#foo',
-            remoteMedia: 'bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -851,8 +855,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'audio',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -947,8 +951,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'audio',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -1002,8 +1006,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'audio',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -1093,8 +1097,8 @@ describe('Phone', function () {
           options = {
             destination: '42512345678',
             mediaType: 'audio',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           phone.dial(options);

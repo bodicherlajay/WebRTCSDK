@@ -27,7 +27,9 @@ describe('Call', function () {
     onDisconnectedSpy,
     remoteSdp,
     resourceManager,
-    doOperationStub;
+    doOperationStub,
+    localVideo,
+    remoteVideo;
 
   before(function () {
 
@@ -38,9 +40,12 @@ describe('Call', function () {
       options.success();
     });
 
+    remoteVideo = document.createElement('video');
+    localVideo = document.createElement('video');
+
     connectOptions = {
-      localMedia: '#foo',
-      remoteMedia: '#bar'
+      localMedia: localVideo,
+      remoteMedia: remoteVideo
     };
 
     optionsOutgoing = {
@@ -218,8 +223,8 @@ describe('Call', function () {
 
       it('should set localMedia & remoteMedia if passed in', function () {
         outgoingCall.connect(connectOptions);
-        expect(outgoingCall.localMedia).to.equal('#foo');
-        expect(outgoingCall.remoteMedia).to.equal('#bar');
+        expect(outgoingCall.localMedia).to.equal(connectOptions.localMedia);
+        expect(outgoingCall.remoteMedia).to.equal(connectOptions.remoteMedia);
       });
 
       it('should register for event `media-modifications` from RTCManager', function () {
@@ -237,6 +242,18 @@ describe('Call', function () {
         expect(onSpy.calledWith('call-connected')).to.equal(true);
         expect(onSpy.getCall(0).args[1]).to.be.a('function');
       });
+
+      it('should register for `playing` event from remote video element', function () {
+        var addEventListenerStub = sinon.stub(connectOptions.remoteMedia, 'addEventListener', function () {
+        });
+
+        outgoingCall.connect(connectOptions);
+
+        expect(addEventListenerStub.calledWith('playing')).to.equal(true);
+
+        addEventListenerStub.restore();
+      });
+
 
       describe('call-disconnected', function () {
 
@@ -268,8 +285,8 @@ describe('Call', function () {
 
       it('should execute RTCManager.connectCall with `remoteSdp` for incoming calls', function () {
         var options = {
-          localMedia: {},
-          remoteMedia: {}
+          localMedia: localVideo,
+          remoteMedia: remoteVideo
         };
         incomingCall.connect(options);
         expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
@@ -435,18 +452,15 @@ describe('Call', function () {
 
       var setRemoteSdpSpy,
         setStateSpy,
-        onEstablishedHandlerSpy,
         onConnectedHandlerSpy,
         connectCallStub;
 
       before(function () {
         setRemoteSdpSpy = sinon.spy(outgoingCall, 'setRemoteSdp');
         setStateSpy = sinon.spy(outgoingCall, 'setState');
-        onEstablishedHandlerSpy = sinon.spy();
         onConnectedHandlerSpy = sinon.spy();
         connectCallStub = sinon.stub(rtcMgr, 'connectCall', function () {});
 
-        outgoingCall.on('established', onEstablishedHandlerSpy);
         outgoingCall.on('connected', onConnectedHandlerSpy);
 
         outgoingCall.connect(connectOptions);
@@ -610,16 +624,19 @@ describe('Call', function () {
 
       describe('call-connected', function () {
 
-        var setRemoteDescriptionSpy;
+        var setRemoteDescriptionSpy,
+          playStreamSpy;
 
         before(function () {
           setRemoteDescriptionSpy = sinon.spy(rtcMgr, 'setRemoteDescription');
+          playStreamSpy = sinon.spy(rtcMgr, 'playStream');
 
           emitterEM.publish('call-connected', remoteSdp);
         });
 
         after(function () {
           setRemoteDescriptionSpy.restore();
+          playStreamSpy.restore();
         });
 
         it('should execute setRemoteSdp on getting a `call-connected` event from eventManager', function (done) {
@@ -658,22 +675,17 @@ describe('Call', function () {
           }
           }, 100);
         });
-      });
 
-      describe('media-established', function () {
-        it('should publish `established` event on getting a `media-established` event from RTC Manager', function (done) {
-          emitterEM.publish('media-established');
+        it('should call `rtcManager.playStream`', function (done) {
 
           setTimeout(function () {
-            try {
-              expect(onEstablishedHandlerSpy.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
+            expect(playStreamSpy.called).to.equal(true);
+            expect(playStreamSpy.calledWith('remote')).to.equal(true);
+            done();
           }, 100);
         });
       });
+
     });
 
     describe('disconnect', function () {

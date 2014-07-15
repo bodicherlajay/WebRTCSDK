@@ -350,6 +350,8 @@
           console.log('media-established');
         }
       });
+
+
     }
 
     function disconnectCall (options) {
@@ -386,6 +388,10 @@
           logger.logError(error);
         }
       });
+    }
+
+    function playStream() {
+
     }
 
     function muteCall(options) {
@@ -488,6 +494,7 @@
     this.connectCall = connectCall.bind(this);
     this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);
+    this.playStream = playStream;
     this.muteCall = muteCall.bind(this);
     this.unmuteCall = unmuteCall.bind(this);
     this.setMediaModifications = setMediaModifications.bind(this);

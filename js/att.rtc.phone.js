@@ -77,7 +77,7 @@
           && 'call-hold' !== event
           && 'call-resume' !== event
           && 'address-updated' !== event
-          && 'call-established' !== event
+          && 'media-established' !== event
           && 'call-error' !== event) {
         throw new Error('Event not defined');
       }
@@ -153,8 +153,8 @@
       call.on('connected', function () {
         emitter.publish('call-connected');
       });
-      call.on('established', function () {
-        emitter.publish('call-established');
+      call.on('media-established', function () {
+        emitter.publish('media-established');
       });
       call.on('hold', function () {
         emitter.publish('call-hold');
@@ -209,8 +209,8 @@
       call.on('connected', function () {
         emitter.publish('call-connected');
       });
-      call.on('established', function () {
-        emitter.publish('call-established');
+      call.on('media-established', function () {
+        emitter.publish('media-established');
       });
       call.on('hold', function () {
         emitter.publish('call-hold');

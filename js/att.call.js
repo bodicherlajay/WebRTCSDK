@@ -139,6 +139,10 @@
         call.remoteMedia = config.remoteMedia;
       }
 
+      call.remoteMedia.addEventListener('playing', function () {
+        emitter.publish('media-established');
+      });
+
       rtcManager.on('media-modifications', function (modifications) {
         rtcManager.setMediaModifications(modifications);
         if (modifications.remoteSdp
@@ -185,6 +189,8 @@
           type: 'answer'
         });
         emitter.publish('connected');
+
+        rtcManager.playStream('remote');
       });
 
       rtcManager.on('media-established', function () {
