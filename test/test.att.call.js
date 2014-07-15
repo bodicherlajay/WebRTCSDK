@@ -19,8 +19,6 @@ describe('Call', function () {
     createEventManagerStub,
     outgoingCall,
     incomingCall,
-    onDialingSpy,
-    onAnsweringSpy,
     onConnectingSpy,
     onConnectedSpy,
     onMutedSpy,
@@ -95,8 +93,6 @@ describe('Call', function () {
     outgoingCall = new ATT.rtc.Call(optionsOutgoing);
     incomingCall = new ATT.rtc.Call(optionsIncoming);
 
-    onDialingSpy = sinon.spy();
-    onAnsweringSpy = sinon.spy();
     onConnectingSpy = sinon.spy();
     onConnectedSpy = sinon.spy();
     onMutedSpy = sinon.spy();
@@ -104,16 +100,12 @@ describe('Call', function () {
     onDisconnectingSpy = sinon.spy();
     onDisconnectedSpy = sinon.spy();
 
-    outgoingCall.on('dialing', onDialingSpy);
     outgoingCall.on('connecting', onConnectingSpy);
     outgoingCall.on('connected', onConnectedSpy);
     outgoingCall.on('muted', onMutedSpy);
     outgoingCall.on('unmuted', onUnmutedSpy);
     outgoingCall.on('disconnecting', onDisconnectingSpy);
     outgoingCall.on('disconnected', onDisconnectedSpy);
-
-    incomingCall.on('answering', onAnsweringSpy);
-
   });
 
   after(function () {
@@ -179,7 +171,7 @@ describe('Call', function () {
           subscribeSpy = sinon.spy(emitterEM, 'subscribe'),
           unsubscribeSpy = sinon.spy(emitterEM, 'unsubscribe');
 
-        expect(outgoingCall.on.bind(outgoingCall, 'dialing', fn)).to.not.throw(Error);
+        expect(outgoingCall.on.bind(outgoingCall, 'connecting', fn)).to.not.throw(Error);
 
         expect(unsubscribeSpy.called).to.equal(true);
         expect(subscribeSpy.called).to.equal(true);
@@ -222,33 +214,6 @@ describe('Call', function () {
 
       it('Should exist', function () {
         expect(outgoingCall.connect).to.be.a('function');
-      });
-
-      it('Should trigger `dialing` event immediately if callType is Outgoing', function (done) {
-
-        outgoingCall.connect(connectOptions);
-
-        setTimeout(function () {
-          try {
-            expect(onDialingSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
-      });
-
-      it('should trigger `answering` event immediately if callType is Incoming', function (done) {
-        incomingCall.connect(connectOptions);
-
-        setTimeout(function () {
-          try {
-            expect(onAnsweringSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
       });
 
       it('should set localMedia & remoteMedia if passed in', function () {

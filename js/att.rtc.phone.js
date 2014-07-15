@@ -63,8 +63,8 @@
     function on(event, handler) {
       if ('session-ready' !== event
           && 'session-disconnected' !== event
-          && 'call-dialing' !== event
-          && 'call-answering' !== event
+          && 'dialing' !== event
+          && 'answering' !== event
           && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
@@ -109,6 +109,8 @@
       });
 
       session.disconnect();
+
+      session = undefined;
     }
 
     function dial(options) {
@@ -129,6 +131,8 @@
         throw new Error('Destination not defined');
       }
 
+      emitter.publish('dialing');
+
       call = session.createCall({
         peer: options.destination,
         type: ATT.CallTypes.OUTGOING,
@@ -137,9 +141,6 @@
         remoteMedia: options.remoteMedia
       });
 
-      call.on('dialing', function () {
-        emitter.publish('call-dialing');
-      });
       call.on('connecting', function () {
         emitter.publish('call-connecting');
       });
@@ -170,6 +171,8 @@
       });
 
       call.connect(options);
+
+
     }
 
     function answer(options) {
@@ -186,15 +189,14 @@
         throw new Error('remoteMedia not defined');
       }
 
+      emitter.publish('answering');
+
       call = session.currentCall;
 
       if (call === null) {
         throw new Error('Call object not defined');
       }
 
-      call.on('answering', function () {
-        emitter.publish('call-answering');
-      });
       call.on('connecting', function () {
         emitter.publish('call-connecting');
       });
