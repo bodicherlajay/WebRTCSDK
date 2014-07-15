@@ -109,7 +109,7 @@
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
-          'established' !== event &&
+          'media-established' !== event &&
           'ended' !== event &&
           'error' !== event &&
           'hold' !== event &&
@@ -138,6 +138,10 @@
       if (undefined !== config.remoteMedia) {
         call.remoteMedia = config.remoteMedia;
       }
+
+      call.remoteMedia.addEventListener('playing', function () {
+        emitter.publish('media-established');
+      });
 
       rtcManager.on('media-modifications', function (modifications) {
         rtcManager.setMediaModifications(modifications);
@@ -185,10 +189,8 @@
           type: 'answer'
         });
         emitter.publish('connected');
-      });
 
-      rtcManager.on('media-established', function () {
-        emitter.publish('established');
+        rtcManager.playStream('remote');
       });
 
       rtcManager.on('call-disconnected', function (data) {

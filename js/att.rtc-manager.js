@@ -388,6 +388,10 @@
       });
     }
 
+    function playStream() {
+
+    }
+
     function muteCall(options) {
       userMediaSvc.muteStream({
         onLocalStreamMuted: function () {
@@ -488,6 +492,7 @@
     this.connectCall = connectCall.bind(this);
     this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);
+    this.playStream = playStream;
     this.muteCall = muteCall.bind(this);
     this.unmuteCall = unmuteCall.bind(this);
     this.setMediaModifications = setMediaModifications.bind(this);
