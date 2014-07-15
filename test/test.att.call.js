@@ -748,6 +748,29 @@ describe('Call', function () {
       });
     });
 
+    describe('reject', function () {
+      var rejectCallStub;
+
+      before(function () {
+        rejectCallStub = sinon.stub(rtcMgr, 'reject');
+
+        outgoingCall.reject();
+      });
+
+      after(function () {
+        rejectCallStub.restore();
+      });
+
+      it('Should exist', function () {
+        expect(outgoingCall.reject).to.be.a('function');
+      });
+
+      xit('should call rtcManager.disconnectCall', function () {
+        outgoingCall.disconnect();
+        expect(rejectCallStub.called).to.equal(true);
+      });
+    });
+
     describe('getState', function () {
       it('should exist', function () {
         expect(outgoingCall.getState).to.be.a('function');
