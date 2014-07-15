@@ -97,8 +97,8 @@
       peerConnSvc.setRemoteAndCreateAnswer(modifications.remoteSdp, modifications.modificationId);
     }
 
-    function setRemoteDescription(options) {
-      peerConnSvc.setTheRemoteDescription(options.remoteSdp, options.type);
+    function setRemoteDescription(modifications) {
+      peerConnSvc.setTheRemoteDescription(modifications.remoteSdp, modifications.type);
     }
 
     function extractSessionInformation(responseObject) {

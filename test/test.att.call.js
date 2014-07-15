@@ -590,10 +590,11 @@ describe('Call', function () {
           enableMediaStreamStub.restore();
         });
 
-        it('should call `RTCManager.setTheRemoteDescription` if there is a remoteSdp', function (done) {
+        it('should call `RTCManager.setRemoteDescription` if there is a remoteSdp', function (done) {
           setTimeout(function () {
             try {
-              expect(setRemoteDescriptionSpy.getCall(0).args[0]).to.be.an('object');
+              expect(setRemoteDescriptionSpy.getCall(0).args[0].remoteSdp).to.equal('abcsendonly');
+              expect(setRemoteDescriptionSpy.getCall(0).args[0].type).to.equal('answer');
               done();
             } catch (e) {
               done(e);

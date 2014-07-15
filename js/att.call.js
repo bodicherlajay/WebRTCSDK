@@ -168,7 +168,7 @@
       rtcManager.on('media-mod-terminations', function (modifications) {
         if (modifications.remoteSdp) {
           rtcManager.setRemoteDescription({
-            remoteSdp: modifications.remoteSdp.sdp,
+            remoteSdp: modifications.remoteSdp,
             type: 'answer'
           });
           if (modifications.reason === 'success'
