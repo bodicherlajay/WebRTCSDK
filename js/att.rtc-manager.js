@@ -347,6 +347,7 @@
           });
         },
         onMediaEstablished: function () {
+          console.log('media-established');
         }
       });
     }
