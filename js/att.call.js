@@ -103,9 +103,7 @@
 
     function on(event, handler) {
 
-      if ('dialing' !== event &&
-          'answering' !== event &&
-          'connecting' !== event &&
+      if ('connecting' !== event &&
           'canceled' !== event &&
           'rejected' !== event &&
           'connected' !== event &&
@@ -132,12 +130,6 @@
     */
     function connect(config) {
       var call = this;
-
-      if ('Outgoing' === call.type) {
-        emitter.publish('dialing');
-      } else if ('Incoming' === call.type) {
-        emitter.publish('answering');
-      }
 
       if (undefined !== config.localMedia) {
         call.localMedia = config.localMedia;
@@ -308,6 +300,18 @@
       });
     }
 
+    function reject() {
+      var call = this;
+
+      rtcManager.reject({
+        sessionId : call.sessionId,
+        callId : call.id,
+        onSuccess : function () {
+        }
+      });
+
+    }
+
     // Call attributes
     this.id = options.id;
     this.peer = options.peer;
@@ -332,6 +336,7 @@
     this.unmute = unmute.bind(this);
     this.hold = hold.bind(this);
     this.resume = resume.bind(this);
+    this.reject = reject.bind(this);
 
   }
 

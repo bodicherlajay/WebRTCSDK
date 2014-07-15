@@ -513,7 +513,7 @@ describe('Session', function () {
       it('Should publish `updatedE911` on success callback ', function (done) {
         var  onNeedsRefreshSpy = sinon.spy();
 
-        session.on('updatedE911Id', onNeedsRefreshSpy);
+        session.on('address-updated', onNeedsRefreshSpy);
         session.updateE911Id({e911Id : '1234'});
 
         setTimeout(function () {

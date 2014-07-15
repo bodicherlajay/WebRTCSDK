@@ -471,6 +471,15 @@
       resourceManager.doOperation('refreshWebRTCSessionWithE911Id', dataForRefreshWebRTCSessionWithE911Id);
     }
 
+    function reject(options) {
+      resourceManager.doOperation('rejectCall', {
+        params: {
+          url: [options.sessionId, options.callId]
+        },
+        success: options.onSuccess
+      });
+    }
+
 
     this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
@@ -486,6 +495,7 @@
     this.enableMediaStream = enableMediaStream.bind(this);
     this.holdCall = holdCall.bind(this);
     this.resumeCall = resumeCall.bind(this);
+    this.reject = reject.bind(this);
     this.updateSessionE911Id = updateSessionE911Id.bind(this);
   }
 

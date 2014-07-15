@@ -845,6 +845,26 @@ describe('RTC Manager', function () {
         });
       });
 
+      describe('rejectCall', function () {
+
+        var doOperationSpyreject;
+
+
+        it('should exist', function () {
+          expect(rtcManager.reject).to.be.a('function');
+        });
+
+        it('should call doOperation on the resourceManager with `rejectCall`', function () {
+          doOperationSpyreject = sinon.spy(resourceManagerStub, 'doOperation', function () {});
+
+          rtcManager.reject({sessionID : '1234', token : '1234', onSuccess : function () { }});
+
+          expect(doOperationSpyreject.calledWith('rejectCall')).to.equal(true);
+
+          doOperationSpyreject.restore();
+        });
+      });
+
     });
   });
 });

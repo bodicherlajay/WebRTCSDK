@@ -63,8 +63,8 @@
     function on(event, handler) {
       if ('session-ready' !== event
           && 'session-disconnected' !== event
-          && 'call-dialing' !== event
-          && 'call-answering' !== event
+          && 'dialing' !== event
+          && 'answering' !== event
           && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
@@ -76,7 +76,7 @@
           && 'call-unmuted' !== event
           && 'call-hold' !== event
           && 'call-resume' !== event
-          && 'updatedE911Id' !== event
+          && 'address-updated' !== event
           && 'call-established' !== event
           && 'call-error' !== event) {
         throw new Error('Event not defined');
@@ -109,6 +109,8 @@
       });
 
       session.disconnect();
+
+      session = undefined;
     }
 
     function dial(options) {
@@ -129,6 +131,8 @@
         throw new Error('Destination not defined');
       }
 
+      emitter.publish('dialing');
+
       call = session.createCall({
         peer: options.destination,
         type: ATT.CallTypes.OUTGOING,
@@ -137,9 +141,6 @@
         remoteMedia: options.remoteMedia
       });
 
-      call.on('dialing', function () {
-        emitter.publish('call-dialing');
-      });
       call.on('connecting', function () {
         emitter.publish('call-connecting');
       });
@@ -170,6 +171,8 @@
       });
 
       call.connect(options);
+
+
     }
 
     function answer(options) {
@@ -186,15 +189,14 @@
         throw new Error('remoteMedia not defined');
       }
 
+      emitter.publish('answering');
+
       call = session.currentCall;
 
       if (call === null) {
         throw new Error('Call object not defined');
       }
 
-      call.on('answering', function () {
-        emitter.publish('call-answering');
-      });
       call.on('connecting', function () {
         emitter.publish('call-connecting');
       });
@@ -254,6 +256,10 @@
       call.disconnect();
     }
 
+    function reject() {
+      call.reject();
+    }
+
     function hold() {
       call.hold();
     }
@@ -263,8 +269,8 @@
     }
 
     function  updateE911Id(options) {
-      session.on('updatedE911Id', function () {
-        emitter.publish('updatedE911Id');
+      session.on('address-updated', function () {
+        emitter.publish('address-updated');
       });
 
       session.updateE911Id(options);
@@ -282,6 +288,7 @@
     this.hangup = hangup.bind(this);
     this.hold = hold.bind(this);
     this.resume = resume.bind(this);
+    this.reject = reject.bind(this);
     this.updateE911Id = updateE911Id.bind(this);
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;

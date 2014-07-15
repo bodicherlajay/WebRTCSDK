@@ -58,7 +58,7 @@
           'call-disconnected' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event &&
-          'updatedE911Id' !== event &&
+          'address-updated' !== event &&
           'allcallsterminated' !== event) {
         throw new Error('Event not defined');
       }
@@ -253,7 +253,7 @@
         sessionId: this.getId(),
         token: this.getToken(),
         onSuccess : function () {
-          emitter.publish('updatedE911Id');
+          emitter.publish('address-updated');
         },
         onError : function () {
 
