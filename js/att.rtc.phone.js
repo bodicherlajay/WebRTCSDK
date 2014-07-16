@@ -104,6 +104,7 @@
     * @fires Phone#session-ready  This callback gets invoked when SDK is initialized and ready to make, receive calls
     * @example
     *
+      var phone = ATT.rtc.Phone.getPhone();
       phone.login({
         token: token,
         e911Id: e911Id
@@ -189,6 +190,7 @@
 
    * @example
     // Start video call with an ICMN User
+    var phone = ATT.rtc.Phone.getPhone();
     phone.dial({  
       destination: '11231231234',
       mediaType: 'video',
@@ -197,6 +199,7 @@
     };
     @example  
     // Start audio call with a NoTN/VTN User
+    var phone = ATT.rtc.Phone.getPhone();
     phone.dial({  
       destination: 'john@domain.com',
       mediaType: 'audio',
