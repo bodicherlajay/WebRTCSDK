@@ -3,10 +3,6 @@
 
 //Dependency: ATT.logManager
 
-/** 
-  @fileOverview Session Class definition. 
-*/
-
 (function () {
   'use strict';
 

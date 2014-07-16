@@ -151,6 +151,7 @@ module.exports = function (grunt) {
     jsdoc: {
       dist: {
         src: [
+        '../../../README.md',
         'js/att.rtc.phone.js', 
         'js/att.session.js'],
         options: {

@@ -1,16 +1,6 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, RESTClient, Env, cmgmt */
 
-/**
- *  The WebRTC SDK.
- *  @file Handles all the calls related to WebRTC
- *  @namespace Phone
- *  @overview ATT RTC SDK [TODO: To be filled by marketing?]
- *  @copyright AT&T [TODO: what we show here]
- *  @ ATT.rtc.Phone
- *  @license [TODO: to be filled by marketing]
- *  @classdesc RTC Phone Implementation [TODO: to be filled by marketing]
- */
 (function () {
   'use strict';
 
