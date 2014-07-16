@@ -205,10 +205,6 @@
 
       switch (event.state) {
       case ATT.RTCCallEvents.INVITATION_RECEIVED:
-        //Check if invite is an announcement
-        if (event.sdp && event.sdp.indexOf('sendonly') !== -1) {
-          event.sdp = event.sdp.replace(/sendonly/g, 'sendrecv');
-        }
         codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
 
         emitter.publish('call-incoming', {

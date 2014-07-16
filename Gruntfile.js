@@ -131,6 +131,12 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
+    watch: {
+      jsdoc: {
+        files: ['js/**/*.js'],
+        tasks: ['jsdoc']
+      }
+    },
     jslint: {
       // lint your project's server code
       server: {
@@ -144,9 +150,11 @@ module.exports = function (grunt) {
     },
     jsdoc: {
       dist: {
-        src: ['js/**/*.js', 'README.md'],
+        src: ['js/att.rtc.phone.js', 'README.md'],
         options: {
-          destination: 'doc'
+          destination: 'doc',
+          template : 'node_modules/grunt-jsdoc/node_modules/ink-docstrap/template',
+          configure : 'jsdoc.conf.json'
         }
       }
     },
@@ -202,6 +210,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('default', ['karma:jenkins', 'jslint']);
   grunt.registerTask('test', ['karma:unit']);

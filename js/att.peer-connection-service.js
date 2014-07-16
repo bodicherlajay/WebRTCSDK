@@ -158,6 +158,11 @@
           throw new Error('Cannot set the remote description. The remote SDP is undefined');
         }
 
+        //Check if invite is an announcement
+        if (config.remoteSdp && config.remoteSdp.indexOf('sendonly') !== -1) {
+          config.remoteSdp = config.remoteSdp.replace(/sendonly/g, 'sendrecv');
+        }
+
         this.setTheRemoteDescription(config.remoteSdp, 'offer');
         this.createAnswer();
       }

@@ -610,7 +610,10 @@ describe('Call', function () {
           setRemoteDescriptionSpy = sinon.spy(rtcMgr, 'setRemoteDescription');
           playStreamSpy = sinon.spy(rtcMgr, 'playStream');
 
-          emitterEM.publish('call-connected', remoteSdp);
+          emitterEM.publish('call-connected', {
+            remoteSdp: 'abcdefg',
+            type: 'answer'
+          });
         });
 
         after(function () {
@@ -619,7 +622,6 @@ describe('Call', function () {
         });
 
         it('should execute setRemoteSdp on getting a `call-connected` event from eventManager', function (done) {
-
           setTimeout(function () {
             try {
               expect(setRemoteSdpSpy.called).to.equal(true);
@@ -634,7 +636,7 @@ describe('Call', function () {
           setTimeout(function () {
             try {
               expect(setRemoteDescriptionSpy.calledWith({
-                remoteSdp: remoteSdp.sdp,
+                remoteSdp: 'abcdefg',
                 type: 'answer'
               })).to.equal(true);
               done();

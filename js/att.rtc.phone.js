@@ -3,11 +3,11 @@
 
 /**
  *  The WebRTC SDK.
- *  @fileOverview Handles all the calls related to web rtc
- *  @namespace ATT.rtc.Phone
+ *  @file Handles all the calls related to WebRTC
+ *  @namespace Phone
  *  @overview ATT RTC SDK [TODO: To be filled by marketing?]
  *  @copyright AT&T [TODO: what we show here]
- *  @class ATT.rtc.Phone
+ *  @ ATT.rtc.Phone
  *  @license [TODO: to be filled by marketing]
  *  @classdesc RTC Phone Implementation [TODO: to be filled by marketing]
  */
@@ -46,6 +46,12 @@
 //  }
 //
 
+  /** 
+    Creates a new Phone.
+    @global
+    @class Represents a Phone.
+    @constructor
+  */
   function Phone() {
 
     var emitter = ATT.private.factories.createEventEmitter(),
@@ -86,6 +92,24 @@
       emitter.subscribe(event, handler, this);
     }
 
+  /**
+    * @summary Creates a WebRTC Session.
+    * @desc Used to establish webRTC session so that the user can place webRTC calls.
+    * The service parameter indicates the desired service such as audio or video call
+    * @memberOf Phone
+    * @instance
+    * @param {Object} options
+    * @param {String} options.token OAuth Access Token.
+    * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
+    * @fires Phone#session-ready
+    * @example
+    *
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.login({
+        token: token,
+        e911Id: e911Id
+      });
+   */
     function login(options) {
       if (undefined === options) {
         //todo remove throw and publish it using error callback handler
@@ -97,14 +121,44 @@
       }
 
       session.on('ready', function (data) {
+        /**
+        * Session Ready event.
+        * @desc Indicates the SDK is initialized and ready to make, receive calls
+        *
+        * @event Phone#session-ready
+        * @type {object}
+        * @property {String} sessionId - The ID of the session.
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('session-ready', data);
       });
 
       session.connect(options);
     }
 
+    /**
+    * @summary Deletes the current RTC Session
+    * @desc
+    * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
+    * requests gets stopped
+    * @memberof Phone
+    * @instance
+    * @fires Phone#session-disconnected
+    * @fires Phone#call-error
+    * @example
+    * var phone = ATT.rtc.Phone.getPhone();
+    * phone.logout();
+    */
     function logout() {
       session.on('disconnected', function (data) {
+        /**
+        * Session Disconnected event.
+        * @desc Session was successfully deleted.
+        *
+        * @event Phone#session-disconnected
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('session-disconnected', data);
       });
 
@@ -113,6 +167,47 @@
       session = undefined;
     }
 
+  /**
+   * @summary
+   * Start a call.
+   * @param {Object} options
+   * @memberOf Phone
+   * @instance
+   * @param {String} options.destination The Phone Number or User Id of the called party.
+   * @param {HTMLElement} options.localVideo
+   * @param {HTMLElement} options.remoteVideo
+   * @param {String} options.mediaType
+   
+   * @fires Phone#dialing
+   * @fires Phone#call-connecting
+   * @fires Phone#call-canceled
+   * @fires Phone#call-rejected
+   * @fires Phone#call-connected
+   * @fires Phone#media-established
+   * @fires Phone#call-hold
+   * @fires Phone#call-resume
+   * @fires Phone#call-disconnected
+   * @fires Phone#call-error
+
+   * @example
+    // Start video call with an ICMN User
+    var phone = ATT.rtc.Phone.getPhone();
+    phone.dial({  
+      destination: '11231231234',
+      mediaType: 'video',
+      localMedia: document.getElementById('localVideo'),
+      remoteMedia: document.getElementById('remoteVideo'),
+    };
+    @example  
+    // Start audio call with a NoTN/VTN User
+    var phone = ATT.rtc.Phone.getPhone();
+    phone.dial({  
+      destination: 'john@domain.com',
+      mediaType: 'audio',
+      localMedia: document.getElementById('localVideo'),
+      remoteMedia: document.getElementById('remoteVideo'),
+    };
+   */
     function dial(options) {
 
       if (undefined === options) {
@@ -131,6 +226,13 @@
         throw new Error('Destination not defined');
       }
 
+      /**
+      * Dialing event.
+      * @desc Triggered immediately.
+      * @event Phone#dialing
+      * @type {object}
+      * @property {Date} timestamp - Event fire time.
+      */
       emitter.publish('dialing');
 
       call = session.createCall({
@@ -142,37 +244,131 @@
       });
 
       call.on('connecting', function () {
+
+        /**
+        * Call connecting event.
+        * @desc Indicates succesful creation of the call.
+        * @event Phone#call-connecting
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-connecting');
       });
       call.on('canceled', function () {
+        /**
+        * Call canceled event.
+        * @desc Succesfully canceled the current call.
+        * @event Phone#call-canceled
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-canceled');
       });
       call.on('rejected', function () {
+        /**
+        * Call rejected event.
+        * @desc Successfully rejected an incoming call.
+        * @event Phone#call-rejected
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-rejected');
       });
       call.on('connected', function () {
+        /**
+        * Call connected event.
+        * @desc Successfully established a call.
+        * @event Phone#call-connected
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-connected');
       });
       call.on('media-established', function () {
+        /**
+        * Media established event.
+        * @desc Triggered when both parties are completed negotiation 
+        * and engaged in active conversation.
+        * @event Phone#media-established
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('media-established');
       });
       call.on('hold', function () {
+        /**
+        * Call on hold event.
+        * @desc Successfully put the current call on hold.
+        * @event Phone#call-hold
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-hold');
       });
       call.on('resume', function () {
+        /**
+        * Call resumed event.
+        * @desc Successfully resume a call that was on hold.
+        * @event Phone#call-resume
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-resume');
       });
       call.on('disconnected', function (data) {
+        /**
+        * Call disconnected event.
+        * @desc Successfully disconnected the current call.
+        * @event Phone#call-disconnected
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-disconnected', data);
         session.deleteCurrentCall();
       });
       call.on('error', function () {
+        /**   
+        * Call Error event.
+        * @desc Indicates an error condition during a call's flow
+        *
+        * @event Phone#call-error
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-error');
       });
 
       call.connect(options);
     }
 
+  /**
+   * @summary
+   * Answer an incoming call
+   * @desc
+   * When call arrives via an incoming call event, call can be answered by using this method
+   * @memberof Phone
+   * @instance
+   * @param {Object} options
+   * @param {HTMLElement} options.localVideo
+   * @param {HTMLElement} options.remoteVideo
+
+   * @fires Phone#call-connecting
+   * @fires Phone#call-canceled
+   * @fires Phone#call-rejected
+   * @fires Phone#call-connected
+   * @fires Phone#media-established
+   * @fires Phone#call-hold
+   * @fires Phone#call-resume
+   * @fires Phone#call-disconnected
+   * @fires Phone#call-error
+
+   * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.answer({
+        localMedia: document.getElementById('localVideo'),
+        remoteMedia: document.getElementById('remoteVideo')
+      });
+   */
     function answer(options) {
 
       if (undefined === options) {
@@ -306,10 +502,34 @@
   if (undefined === ATT.rtc) {
     throw new Error('Error exporting ATT.rtc.Phone.');
   }
+
+  /**
+  * AT&T SDK.
+  * @namespace ATT
+  */
+
+  /**
+  * Real-Time Communications functionality.
+  * @namespace ATT.rtc
+  */
+
+  /**
+  * Phone API for RTC functionality.
+  * @namespace ATT.rtc.Phone
+  */
+
   ATT.rtc.Phone = (function () {
     var instance;
 
     return {
+      /**
+      * @summary Get the current instance of Phone.
+      * @description There can only be one instance of the Phone object.
+      * @function getPhone 
+      * @static
+      * @memberof ATT.rtc.Phone
+      * @returns {Phone} A Phone object.
+      */
       getPhone: function () {
         if (undefined === instance) {
           instance = new ATT.private.Phone();

@@ -1,9 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT:true*/
 /**
-*  WebRTC API REST configuration file.
-*  All configured methods will be placed in the ATT.ATT namespace.
-*  @namespace ATT
+* @file WebRTC API REST configuration file.
 */
 
 if (!ATT) {
@@ -16,7 +14,6 @@ if (!ATT) {
   var configure = function (appConfig) {
     /**
      * Property defaults.
-     * @namespace ATT.DEFAULTS
      * @type {object}
      */
     var DEFAULTS = {
@@ -41,7 +38,6 @@ if (!ATT) {
     },
       /**
        *  Property defaults.
-       * @namespace ATT.APIConfigs
        * @type {object}
        */
       APIConfigs = {
