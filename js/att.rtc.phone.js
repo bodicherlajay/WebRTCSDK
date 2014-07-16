@@ -101,7 +101,7 @@
     * @param {Object} options
     * @param {String} options.token OAuth Access Token.
     * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
-    * @fires Phone#session-ready  This callback gets invoked when SDK is initialized and ready to make, receive calls
+    * @fires Phone#session-ready
     * @example
     *
       var phone = ATT.rtc.Phone.getPhone();
@@ -123,6 +123,7 @@
       session.on('ready', function (data) {
         /**
         * Session Ready event.
+        * @desc Indicates the SDK is initialized and ready to make, receive calls
         *
         * @event Phone#session-ready
         * @type {object}
@@ -142,8 +143,8 @@
     * requests gets stopped
     * @memberof Phone
     * @instance
-    * @fires Phone#session-disconnected  This callback gets invoked when the session gets successfully deleted
-    * @fires Phone#error  This callback gets invoked while encountering issues
+    * @fires Phone#session-disconnected
+    * @fires Phone#call-error
     * @example
     * var phone = ATT.rtc.Phone.getPhone();
     * phone.logout();
@@ -152,6 +153,7 @@
       session.on('disconnected', function (data) {
         /**
         * Session Disconnected event.
+        * @desc Session was successfully deleted.
         *
         * @event Phone#session-disconnected
         * @type {object}
@@ -176,17 +178,16 @@
    * @param {HTMLElement} options.remoteVideo
    * @param {String} options.mediaType
    
-   * @fires Phone#dialing This callback function gets invoked immediately.
-   * @fires Phone#call-connecting Indicates succesful creation of the call.
-   * @fires Phone#call-cancelled
+   * @fires Phone#dialing
+   * @fires Phone#call-connecting
+   * @fires Phone#call-canceled
    * @fires Phone#call-rejected
    * @fires Phone#call-connected
-   * @fires Phone#media-established This callback function gets invoked when both
-   *        parties are completed negotiation and engaged in active conversation.
-   * @fires Phone#call-hold This callback function gets invoked when hold call is successful
-   * @fires Phone#call-resume This callback function gets invoked when the current call successfully resumed
-   * @fires Phone#call-disconnected This callback function gets invoked when outgoing call is ended
-   * @fires Phone#call-error This callback function gets invoked when encountering issues during the call flow
+   * @fires Phone#media-established
+   * @fires Phone#call-hold
+   * @fires Phone#call-resume
+   * @fires Phone#call-disconnected
+   * @fires Phone#call-error
 
    * @example
     // Start video call with an ICMN User
@@ -227,7 +228,7 @@
 
       /**
       * Dialing event.
-      *
+      * @desc Triggered immediately.
       * @event Phone#dialing
       * @type {object}
       * @property {Date} timestamp - Event fire time.
@@ -246,7 +247,7 @@
 
         /**
         * Call connecting event.
-        *
+        * @desc Indicates succesful creation of the call.
         * @event Phone#call-connecting
         * @type {object}
         * @property {Date} timestamp - Event fire time.
@@ -256,7 +257,7 @@
       call.on('canceled', function () {
         /**
         * Call canceled event.
-        *
+        * @desc Succesfully canceled the current call.
         * @event Phone#call-canceled
         * @type {object}
         * @property {Date} timestamp - Event fire time.
@@ -266,7 +267,7 @@
       call.on('rejected', function () {
         /**
         * Call rejected event.
-        *
+        * @desc Successfully rejected an incoming call.
         * @event Phone#call-rejected
         * @type {object}
         * @property {Date} timestamp - Event fire time.
@@ -276,7 +277,7 @@
       call.on('connected', function () {
         /**
         * Call connected event.
-        *
+        * @desc Successfully established a call.
         * @event Phone#call-connected
         * @type {object}
         * @property {Date} timestamp - Event fire time.
@@ -286,7 +287,8 @@
       call.on('media-established', function () {
         /**
         * Media established event.
-        *
+        * @desc Triggered when both parties are completed negotiation 
+        * and engaged in active conversation.
         * @event Phone#media-established
         * @type {object}
         * @property {Date} timestamp - Event fire time.
@@ -296,7 +298,7 @@
       call.on('hold', function () {
         /**
         * Call on hold event.
-        *
+        * @desc Successfully put the current call on hold.
         * @event Phone#call-hold
         * @type {object}
         * @property {Date} timestamp - Event fire time.
@@ -306,7 +308,7 @@
       call.on('resume', function () {
         /**
         * Call resumed event.
-        *
+        * @desc Successfully resume a call that was on hold.
         * @event Phone#call-resume
         * @type {object}
         * @property {Date} timestamp - Event fire time.
@@ -316,7 +318,7 @@
       call.on('disconnected', function (data) {
         /**
         * Call disconnected event.
-        *
+        * @desc Successfully disconnected the current call.
         * @event Phone#call-disconnected
         * @type {object}
         * @property {Date} timestamp - Event fire time.
@@ -327,6 +329,7 @@
       call.on('error', function () {
         /**   
         * Call Error event.
+        * @desc Indicates an error condition during a call's flow
         *
         * @event Phone#call-error
         * @type {object}
@@ -338,6 +341,34 @@
       call.connect(options);
     }
 
+  /**
+   * @summary
+   * Answer an incoming call
+   * @desc
+   * When call arrives via an incoming call event, call can be answered by using this method
+   * @memberof Phone
+   * @instance
+   * @param {Object} options
+   * @param {HTMLElement} options.localVideo
+   * @param {HTMLElement} options.remoteVideo
+
+   * @fires Phone#call-connecting
+   * @fires Phone#call-canceled
+   * @fires Phone#call-rejected
+   * @fires Phone#call-connected
+   * @fires Phone#media-established
+   * @fires Phone#call-hold
+   * @fires Phone#call-resume
+   * @fires Phone#call-disconnected
+   * @fires Phone#call-error
+
+   * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.answer({
+        localMedia: document.getElementById('localVideo'),
+        remoteMedia: document.getElementById('remoteVideo')
+      });
+   */
     function answer(options) {
 
       if (undefined === options) {
