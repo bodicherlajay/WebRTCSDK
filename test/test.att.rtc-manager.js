@@ -851,7 +851,7 @@ describe('RTC Manager', function () {
         });
       });
 
-      describe.only('rejectCall', function () {
+      describe('rejectCall', function () {
 
         var doOperationSpyreject;
 

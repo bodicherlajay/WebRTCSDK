@@ -546,7 +546,7 @@
       if (undefined === call || null === call) {
         throw new Error('Call object not defined');
       }
-      call.on('call-disconnected', function () {
+      call.on('rejected', function () {
         emitter.publish('call-rejected');
       });
       call.reject();

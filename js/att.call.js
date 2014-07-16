@@ -309,6 +309,11 @@
 
     function reject() {
       var call = this;
+
+      rtcManager.on("call-disconnected", function () {
+        call.id = null;
+        emitter.publish('rejected');
+      });
       rtcManager.rejectCall({
         sessionId : call.sessionInfo.sessionId,
         callId : call.id,

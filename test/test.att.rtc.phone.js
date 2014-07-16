@@ -945,7 +945,8 @@ describe('Phone', function () {
           call,
           callRejectStub,
           createCallStub,
-          onSpy ;
+          onSpy,
+          callRejectedSpy;
 
         beforeEach(function () {
 
@@ -968,14 +969,14 @@ describe('Phone', function () {
             return call;
           });
 
-          callRejectStub = sinon.stub(call, 'reject', function () {
-            emitter.publish('call-disconnected');
-          });
+          callRejectStub = sinon.stub(call, 'reject');
 
-          onSpy = sinon.stub(call, 'on');
-
-          phone.dial(options);
           session.currentCall = call;
+
+          callRejectedSpy = sinon.spy();
+          phone.on('call-rejected', callRejectedSpy);
+
+          onSpy = sinon.spy(call, 'on');
           phone.reject();
         });
 
@@ -998,17 +999,18 @@ describe('Phone', function () {
 
         });
 
-        it('should register for the `call-disconnected` event on the call object', function () {
-          expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+        it('should register for the `rejected` event on the call object', function () {
+          expect(onSpy.calledOnce).to.equal(true);
+          expect(onSpy.calledWith('rejected')).to.equal(true);
         });
 
-        xit('should trigger `call-rejected` when call publishes `call-disconnected` event', function (done) {
-          var callrejectedhandler = sinon.spy();
-          phone.on('call-rejected', callrejectedhandler);
-          phone.reject();
+        it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+
+          emitter.publish('rejected');
+
           setTimeout(function () {
             try {
-              expect(callrejectedhandler.called).to.equal(true);
+              expect(callRejectedSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
