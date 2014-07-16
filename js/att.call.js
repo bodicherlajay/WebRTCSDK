@@ -180,10 +180,13 @@
 
       rtcManager.on('call-connected', function (data) {
         call.setRemoteSdp(data.remoteSdp);
-        rtcManager.setRemoteDescription({
-          remoteSdp: data.remoteSdp,
-          type: 'answer'
-        });
+        if (data.remoteSdp) {
+          rtcManager.setRemoteDescription({
+            remoteSdp: data.remoteSdp,
+            type: 'answer'
+          });
+        }
+        
         emitter.publish('connected');
       });
 
