@@ -662,13 +662,8 @@ describe('RTC Manager', function () {
             callId: '1234'
           })).to.throw('sessionInfo not defined');
           expect(rtcManager.disconnectCall.bind(rtcManager, {
-            callId: '1234',
-            sessionInfo: {}
-          })).to.throw('type not defined');
-          expect(rtcManager.disconnectCall.bind(rtcManager, {
             sessionInfo: {},
-            callId: '1234',
-            type : 'hangup'
+            callId: '1234'
           })).to.not.throw(Error);
         });
 
@@ -677,25 +672,10 @@ describe('RTC Manager', function () {
 
           rtcManager.disconnectCall({
             sessionInfo: {},
-            callId: '1234',
-            type: 'hangup'
+            callId: '1234'
           });
 
           expect(doOperationSpy.calledWith('endCall')).to.equal(true);
-
-          doOperationSpy.restore();
-        });
-
-        it('should call doOperation on the resourceManager with `rejectCall`', function () {
-          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
-
-          rtcManager.disconnectCall({
-            sessionInfo: {},
-            callId: '1234',
-            type: 'reject'
-          });
-
-          expect(doOperationSpy.calledWith('rejectCall')).to.equal(true);
 
           doOperationSpy.restore();
         });
@@ -871,6 +851,86 @@ describe('RTC Manager', function () {
         });
       });
 
+      describe.only('rejectCall', function () {
+
+        var doOperationSpyreject;
+
+
+        it('should exist', function () {
+          expect(rtcManager.rejectCall).to.be.a('function');
+        });
+
+        it('should throw an error if `options` are invalid', function () {
+
+          var options = {
+            callId : '1234',
+            sessionId : '1234',
+            token : 'dsfgdsdf'
+          };
+          expect(rtcManager.rejectCall.bind(rtcManager, undefined)).to.throw('Invalid options');
+          expect(rtcManager.rejectCall.bind(rtcManager, {
+            callId : options.callId,
+            sessionId : options.sessionId,
+            onSuccess : function () {},
+            onError : function () {}
+          })).to.throw('No token passed');
+          expect(rtcManager.rejectCall.bind(rtcManager, {
+            sessionId : options.sessionId,
+            token : options.token,
+            onSuccess : function () {},
+            onError : function () {}
+          })).to.throw('No callId passed');
+          expect(rtcManager.rejectCall.bind(rtcManager, {
+            callId : options.callId,
+            token : options.token,
+            onSuccess : function () {},
+            onError : function () {}
+          })).to.throw('No session Id passed');
+
+          expect(rtcManager.rejectCall.bind(rtcManager, {
+            callId : options.callId,
+            sessionId : options.sessionId,
+            token : options.token,
+            onError : function () {}
+          })).to.throw('No success callback passed');
+
+          expect(rtcManager.rejectCall.bind(rtcManager, {
+            callId : options.callId,
+            sessionId : options.sessionId,
+            token : options.token,
+            onSuccess : function () {}
+          })).to.throw('No error callback passed');
+
+          expect(rtcManager.rejectCall.bind(rtcManager, {
+            callId : options.callId,
+            sessionId : options.sessionId,
+            token : options.token,
+            onSuccess : function () {},
+            onError : function () {}
+          })).to.not.throw('No token passed');
+        });
+
+
+        it('should call doOperation on the resourceManager with `rejectCall`', function () {
+          doOperationSpyreject = sinon.spy(resourceManagerStub, 'doOperation', function () {});
+
+          rtcManager.rejectCall({
+            callId : '1234',
+            sessionId : '2345',
+            token : 'dsfgdsdf',
+            onSuccess : function () { },
+            onError : function () {}
+          });
+
+          expect(doOperationSpyreject.calledWith('rejectCall')).to.equal(true);
+          expect(doOperationSpyreject.getCall(0).args[0]).to.equal('rejectCall');
+          expect(doOperationSpyreject.getCall(0).args[1].params.url[0]).to.equal('2345');
+          expect(doOperationSpyreject.getCall(0).args[1].params.url[1]).to.equal('1234');
+          expect(doOperationSpyreject.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer dsfgdsdf');
+
+          doOperationSpyreject.restore();
+        });
+      });
 
     });
   });

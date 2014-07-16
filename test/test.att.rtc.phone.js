@@ -907,7 +907,7 @@ describe('Phone', function () {
         });
 
         it('should execute call.disconnect', function () {
-          expect(callDisconnectStub.calledWith('hangup')).to.equal(true);
+          expect(callDisconnectStub.called).to.equal(true);
         });
 
         it('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
@@ -943,8 +943,9 @@ describe('Phone', function () {
         var session,
           options,
           call,
-          callDisconnectStub,
-          createCallStub;
+          callRejectStub,
+          createCallStub,
+          onSpy ;
 
         beforeEach(function () {
 
@@ -967,8 +968,11 @@ describe('Phone', function () {
             return call;
           });
 
-          callDisconnectStub = sinon.stub(call, 'disconnect', function () {
+          callRejectStub = sinon.stub(call, 'reject', function () {
+            emitter.publish('call-disconnected');
           });
+
+          onSpy = sinon.stub(call, 'on');
 
           phone.dial(options);
           session.currentCall = call;
@@ -976,7 +980,7 @@ describe('Phone', function () {
         });
 
         afterEach(function () {
-          callDisconnectStub.restore();
+          callRejectStub.restore();
           createCallStub.restore();
         });
 
@@ -985,13 +989,31 @@ describe('Phone', function () {
         });
 
         it('should execute call.reject', function () {
-          expect(callDisconnectStub.calledWith('reject')).to.equal(true);
+          expect(callRejectStub.called).to.equal(true);
         });
 
         it('should throw an Error when there is no currentcall', function () {
           session.currentCall = null;
           expect(phone.reject.bind(phone)).to.throw('Call object not defined');
 
+        });
+
+        it('should register for the `call-disconnected` event on the call object', function () {
+          expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+        });
+
+        xit('should trigger `call-rejected` when call publishes `call-disconnected` event', function (done) {
+          var callrejectedhandler = sinon.spy();
+          phone.on('call-rejected', callrejectedhandler);
+          phone.reject();
+          setTimeout(function () {
+            try {
+              expect(callrejectedhandler.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
         });
       });
 

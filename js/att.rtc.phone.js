@@ -524,7 +524,7 @@
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
       });
-      call.disconnect('hangup');
+      call.disconnect();
     }
 
    /**
@@ -546,7 +546,10 @@
       if (undefined === call || null === call) {
         throw new Error('Call object not defined');
       }
-      call.disconnect('reject');
+      call.on('call-disconnected', function () {
+        emitter.publish('call-rejected');
+      });
+      call.reject();
     }
 
    /**

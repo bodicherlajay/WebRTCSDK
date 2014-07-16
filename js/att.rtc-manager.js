@@ -338,7 +338,7 @@
     }
 
     function disconnectCall (options) {
-      var sessionInfo, method;
+      var sessionInfo;
 
       if (undefined === options) {
         throw new Error('No options defined.');
@@ -351,19 +351,10 @@
       if (undefined === options.sessionInfo) {
         throw new Error('sessionInfo not defined');
       }
-      if (undefined === options.type) {
-        throw new Error('type not defined');
-      }
 
       sessionInfo = options.sessionInfo;
 
-      if (options.type === 'hangup'){
-        method = 'endCall';
-      } else if (options.type === 'reject') {
-        method = 'rejectCall';
-      }
-
-      resourceManager.doOperation(method, {
+      resourceManager.doOperation('endCall', {
         params: {
           url: [
             sessionInfo.sessionId,
@@ -470,6 +461,52 @@
       resourceManager.doOperation('refreshWebRTCSessionWithE911Id', dataForRefreshWebRTCSessionWithE911Id);
     }
 
+    function rejectCall(options) {
+
+
+      if (undefined === options ) {
+        throw 'Invalid options';
+      }
+      if (undefined === options.token || '' === options.token) {
+        throw 'No token passed';
+      }
+      if (undefined === options.callId || '' === options.callId) {
+        throw 'No callId passed';
+      }
+
+      if (undefined === options.sessionId || '' === options.sessionId) {
+        throw 'No session Id passed';
+      }
+
+      if (undefined === options.onSuccess  || typeof options.onSuccess !== 'function') {
+        throw 'No success callback passed';
+      }
+
+      if (undefined === options.onError || typeof options.onError !== 'function') {
+        throw 'No error callback passed';
+      }
+
+
+      resourceManager.doOperation('rejectCall', {
+        params: {
+          url: [
+            options.sessionId,
+            options.callId
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + options.token
+          }
+        },
+        success: function () {
+          logger.logInfo('EndCall Request success');
+        },
+        error: function (error) {
+          logger.logError(error);
+        }
+      });
+    }
+
+
     this.on = on.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
@@ -485,6 +522,7 @@
     this.enableMediaStream = enableMediaStream.bind(this);
     this.holdCall = holdCall.bind(this);
     this.resumeCall = resumeCall.bind(this);
+    this.rejectCall = rejectCall.bind(this);
     this.updateSessionE911Id = updateSessionE911Id.bind(this);
   }
 

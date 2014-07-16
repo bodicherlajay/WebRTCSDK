@@ -52,7 +52,7 @@ describe('Call', function () {
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.OUTGOING,
-      sessionInfo : {sessionId : '12345'}
+      sessionInfo : {sessionId : '12345', token : '123'}
     };
 
     optionsIncoming = {
@@ -682,6 +682,8 @@ describe('Call', function () {
         disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall', function () {
           emitterEM.publish('call-disconnected');
         });
+
+        outgoingCall.disconnect();
       });
 
       after(function () {
@@ -708,7 +710,6 @@ describe('Call', function () {
       });
 
       it('should register for `call-disconnected` event on rtcMgr', function () {
-        outgoingCall.disconnect();
         expect(onSpy.calledWith('call-disconnected')).to.equal(true);
       });
 
@@ -736,6 +737,37 @@ describe('Call', function () {
 
     });
 
+    describe('reject', function () {
+      var rejectCallStub;
+
+      beforeEach(function () {
+        rejectCallStub = sinon.stub(rtcMgr, 'rejectCall');
+
+        outgoingCall.id = '123';
+        outgoingCall.reject();
+      });
+
+      afterEach(function () {
+        rejectCallStub.restore();
+      });
+
+      it('Should exist', function () {
+        expect(outgoingCall.reject).to.be.a('function');
+      });
+
+      it('should call rtcManager.disconnectCall', function () {
+        var args;
+
+        expect(rejectCallStub.called).to.equal(true);
+        console.log(JSON.stringify(rejectCallStub.getCall(0).args[0]));
+        args = rejectCallStub.getCall(0).args[0];
+        expect(args.sessionId).to.equal(outgoingCall.sessionInfo.sessionId);
+        expect(args.token).to.equal(outgoingCall.sessionInfo.token);
+        expect(args.callId).to.equal(outgoingCall.id);
+        expect(args.onSuccess).to.be.a('function');
+        expect(args.onError).to.be.a('function');
+      });
+    });
 
     describe('getState', function () {
       it('should exist', function () {
