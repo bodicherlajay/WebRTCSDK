@@ -44,42 +44,6 @@
   // }
 
   /**
-   * Call cancel
-   * @param {Object} options The options
-   */
-  // function cancelCall(session) {
-  //   logger.logInfo('Canceling up...');
-  //   ATT.SignalingService.sendCancelCall({
-  //     success: function () {
-  //       session.deleteCall(session.getCurrentCall().id());
-  //     },
-  //     error: function () {
-  //       ATT.Error.publish('SDK-20034', null, session.onError);
-  //       logger.logWarning('Cancel request failed.');
-  //     },
-  //     session: session
-  //   });
-  // }
-
-  // *
-  //  * Call reject
-  //  * @param {Object} options The options
-   
-  // function rejectCall(session) {
-  //   logger.logInfo('Rejecting call...');
-  //   ATT.SignalingService.sendRejectCall({
-  //     success: function () {
-  //       session.deleteCall(session.getCurrentCall().id());
-  //     },
-  //     error: function () {
-  //       ATT.Error.publish('SDK-20035', null, options.onError);
-  //       logger.logWarning('Reject request failed.');
-  //     },
-  //     session: session
-  //   });
-  // }
-
-  /**
   * Call Prototype
   * @param {String} peer The peer
   * @param {String} mediaType The mediaType
@@ -216,7 +180,7 @@
       });
     }
 
-    function disconnect() {
+    function disconnect(type) {
       var call = this;
 
       emitter.publish('disconnecting');
@@ -226,6 +190,7 @@
       });
 
       rtcManager.disconnectCall({
+        type : type,
         sessionInfo: this.sessionInfo,
         callId: this.id
       });
@@ -343,7 +308,6 @@
     this.unmute = unmute.bind(this);
     this.hold = hold.bind(this);
     this.resume = resume.bind(this);
-    this.reject = reject.bind(this);
 
   }
 

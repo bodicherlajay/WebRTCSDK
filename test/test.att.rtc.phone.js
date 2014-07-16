@@ -907,7 +907,7 @@ describe('Phone', function () {
         });
 
         it('should execute call.disconnect', function () {
-          expect(callDisconnectStub.called).to.equal(true);
+          expect(callDisconnectStub.calledWith('hangup')).to.equal(true);
         });
 
         it('should trigger `call-disconnecting` when call publishes `disconnecting` event', function (done) {
@@ -943,7 +943,7 @@ describe('Phone', function () {
         var session,
           options,
           call,
-          callRejectStub,
+          callDisconnectStub,
           createCallStub;
 
         beforeEach(function () {
@@ -967,7 +967,7 @@ describe('Phone', function () {
             return call;
           });
 
-          callRejectStub = sinon.stub(call, 'reject', function () {
+          callDisconnectStub = sinon.stub(call, 'disconnect', function () {
           });
 
           phone.dial(options);
@@ -976,7 +976,7 @@ describe('Phone', function () {
         });
 
         afterEach(function () {
-          callRejectStub.restore();
+          callDisconnectStub.restore();
           createCallStub.restore();
         });
 
@@ -985,7 +985,7 @@ describe('Phone', function () {
         });
 
         it('should execute call.reject', function () {
-          expect(callRejectStub.called).to.equal(true);
+          expect(callDisconnectStub.calledWith('reject')).to.equal(true);
         });
 
         it('should throw an Error when there is no currentcall', function () {

@@ -251,7 +251,7 @@
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
       });
-      call.disconnect();
+      call.disconnect('hangup');
     }
 
     function reject() {
@@ -260,7 +260,7 @@
       if (undefined === call || null === call) {
         throw new Error('Call object not defined');
       }
-      call.reject();
+      call.disconnect('reject');
     }
 
     function hold() {
@@ -271,7 +271,7 @@
       call.resume();
     }
 
-    function  updateE911Id(options) {
+    function updateE911Id(options) {
       session.on('address-updated', function () {
         emitter.publish('address-updated');
       });
