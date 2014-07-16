@@ -2,7 +2,7 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert, after*/
 
-describe.only('Phone', function () {
+describe('Phone', function () {
   'use strict';
 
   var getRTCManagerStub;
@@ -322,14 +322,6 @@ describe.only('Phone', function () {
           onSpy = sinon.spy(call, 'on');
 
           callConnectStub = sinon.stub(call, 'connect', function () {
-            emitter.publish('connecting');
-            emitter.publish('canceled');
-            emitter.publish('rejected');
-            emitter.publish('connected');
-            emitter.publish('media-established');
-            emitter.publish('hold');
-            emitter.publish('resume');
-            emitter.publish('error');
           });
 
           session = phone.getSession();
@@ -434,6 +426,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-connecting` when call publishes `connecting` event', function (done) {
+          emitter.publish('connecting');
           setTimeout(function () {
             try {
               expect(callConnectingHandlerSpy.called).to.equal(true);
@@ -445,6 +438,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-canceled` when call publishes `canceled` event', function (done) {
+          emitter.publish('canceled');
           setTimeout(function () {
             try {
               expect(callCanceledHandlerSpy.called).to.equal(true);
@@ -456,6 +450,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+          emitter.publish('rejected');
           setTimeout(function () {
             try {
               expect(callRejectedHandlerSpy.called).to.equal(true);
@@ -467,6 +462,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `media-established` when call publishes `media-established` event', function (done) {
+          emitter.publish('media-established');
           setTimeout(function () {
             try {
               expect(callEstablishedHandlerSpy.called).to.equal(true);
@@ -478,6 +474,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-hold` when call publishes `call-hold` event', function (done) {
+          emitter.publish('hold');
           setTimeout(function () {
             try {
               expect(callHoldHandlerSpy.called).to.equal(true);
@@ -489,6 +486,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-resume` when call publishes `call-resume` event', function (done) {
+          emitter.publish('resume');
           setTimeout(function () {
             try {
               expect(callResumeHandlerSpy.called).to.equal(true);
@@ -500,6 +498,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-error` when call publishes `error` event', function (done) {
+          emitter.publish('error');
           setTimeout(function () {
             try {
               expect(callErrorHandlerSpy.called).to.equal(true);
@@ -552,14 +551,6 @@ describe.only('Phone', function () {
           session = phone.getSession();
 
           callConnectStub = sinon.stub(call, 'connect', function () {
-            emitter.publish('connecting');
-            emitter.publish('canceled');
-            emitter.publish('rejected');
-            emitter.publish('connected');
-            emitter.publish('media-established');
-            emitter.publish('hold');
-            emitter.publish('resume');
-            emitter.publish('error');
           });
 
           session = phone.getSession();
@@ -643,6 +634,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-connecting` when call publishes `connecting` event', function (done) {
+          emitter.publish('connecting');
           setTimeout(function () {
             try {
               expect(callConnectingHandlerSpy.called).to.equal(true);
@@ -654,6 +646,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-canceled` when call publishes `canceled` event', function (done) {
+          emitter.publish('canceled');
           setTimeout(function () {
             try {
               expect(callCanceledHandlerSpy.called).to.equal(true);
@@ -665,6 +658,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+          emitter.publish('rejected');
           setTimeout(function () {
             try {
               expect(callRejectedHandlerSpy.called).to.equal(true);
@@ -676,6 +670,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `media-established` when call publishes `media-established` event', function (done) {
+          emitter.publish('media-established');
           setTimeout(function () {
             try {
               expect(callEstablishedHandlerSpy.called).to.equal(true);
@@ -687,6 +682,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-hold` when call publishes `call-hold` event', function (done) {
+          emitter.publish('hold');
           setTimeout(function () {
             try {
               expect(callHoldHandlerSpy.called).to.equal(true);
@@ -698,6 +694,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-resume` when call publishes `call-resume` event', function (done) {
+          emitter.publish('resume');
           setTimeout(function () {
             try {
               expect(callResumeHandlerSpy.called).to.equal(true);
@@ -709,6 +706,7 @@ describe.only('Phone', function () {
         });
 
         it('should trigger `call-error` when call publishes `error` event', function (done) {
+          emitter.publish('error');
           setTimeout(function () {
             try {
               expect(callErrorHandlerSpy.called).to.equal(true);

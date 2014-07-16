@@ -203,7 +203,6 @@ describe('Call', function () {
             callId: '1234',
             localSdp: localSdp
           });
-          emitterEM.publish('call-disconnected');
         });
 
         onSpy = sinon.spy(rtcMgr, 'on');
@@ -254,30 +253,6 @@ describe('Call', function () {
         addEventListenerStub.restore();
       });
 
-
-      describe('call-disconnected', function () {
-
-        beforeEach(function () {
-          outgoingCall.connect(connectOptions);
-
-        });
-
-        it('should register for `call-disconnected` event on rtcMgr', function () {
-          expect(onSpy.calledWith('call-disconnected')).to.equal(true);
-        });
-
-        it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
-          setTimeout(function () {
-            try {
-              expect(setIdSpy.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 300);
-        });
-      });
-
       it('should execute RTCManager.connectCall for outgoing calls', function () {
         outgoingCall.connect(connectOptions);
         expect(connectCallStub.called).to.equal(true);
@@ -291,7 +266,6 @@ describe('Call', function () {
         incomingCall.connect(options);
         expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
       });
-
 
       describe('success on connectCall', function () {
 
@@ -312,7 +286,10 @@ describe('Call', function () {
         });
       });
 
-      it('Should execute the onError callback if there is an error');
+      describe('error on connectCall', function () {
+        it('Should execute the onError callback if there is an error');
+      });
+
     });
 
     describe('Mute/Unmute', function () {
@@ -394,7 +371,7 @@ describe('Call', function () {
       });
     });
 
-    describe('hold/Resume', function () {
+    describe('Hold/Resume', function () {
 
       var holdCallStub,
         resumeCallStub;
@@ -689,9 +666,15 @@ describe('Call', function () {
     });
 
     describe('disconnect', function () {
-      var disconnectCallStub;
+      var onSpy,
+        setIdSpy,
+        disconnectCallStub;
 
       before(function () {
+        setIdSpy = sinon.spy(outgoingCall, 'setId');
+
+        onSpy = sinon.spy(rtcMgr, 'on');
+
         disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall', function () {
           emitterEM.publish('call-disconnected');
         });
@@ -700,6 +683,8 @@ describe('Call', function () {
       });
 
       after(function () {
+        setIdSpy.restore();
+        onSpy.restore();
         disconnectCallStub.restore();
       });
 
@@ -720,10 +705,32 @@ describe('Call', function () {
         }, 100);
       });
 
+      it('should register for `call-disconnected` event on rtcMgr', function () {
+        expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+      });
+
       it('should call rtcManager.disconnectCall', function () {
         outgoingCall.disconnect();
         expect(disconnectCallStub.called).to.equal(true);
       });
+
+      describe('call-disconnected', function () {
+
+        it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
+
+          emitterEM.publish('call-disconnected');
+
+          setTimeout(function () {
+            try {
+              expect(setIdSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
+        });
+      });
+
     });
 
     describe('reject', function () {
