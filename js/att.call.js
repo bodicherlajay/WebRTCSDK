@@ -101,6 +101,8 @@
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
 
+
+
     function on(event, handler) {
 
       if ('connecting' !== event &&

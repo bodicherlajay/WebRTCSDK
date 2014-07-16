@@ -63,23 +63,6 @@
   }
 
   /**
-  * reject call
-  */
-  function rejectCall() {
-    if (!session) {
-      throw 'No session found. Please login first';
-    }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-
-    session.getCurrentCall().reject(session);
-  }
-
-  /**
   * Create a new RTC Manager
   * @param {Object} options The options
   * })
