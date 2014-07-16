@@ -3,11 +3,11 @@
 
 /**
  *  The WebRTC SDK.
- *  @fileOverview Handles all the calls related to web rtc
- *  @namespace ATT.rtc.Phone
+ *  @file Handles all the calls related to WebRTC
+ *  @namespace Phone
  *  @overview ATT RTC SDK [TODO: To be filled by marketing?]
  *  @copyright AT&T [TODO: what we show here]
- *  @class ATT.rtc.Phone
+ *  @ ATT.rtc.Phone
  *  @license [TODO: to be filled by marketing]
  *  @classdesc RTC Phone Implementation [TODO: to be filled by marketing]
  */
@@ -46,6 +46,12 @@
 //  }
 //
 
+  /** 
+    Creates a new Phone.
+    @global
+    @class Represents a Phone.
+    @constructor
+  */
   function Phone() {
 
     var emitter = ATT.private.factories.createEventEmitter(),
@@ -86,6 +92,23 @@
       emitter.subscribe(event, handler, this);
     }
 
+  /**
+    * @summary Creates a WebRTC Session.
+    * @desc Used to establish webRTC session so that the user can place webRTC calls.
+    * The service parameter indicates the desired service such as audio or video call
+    * @memberOf Phone
+    * @instance
+    * @param {Object} options
+    * @param {String} options.token OAuth Access Token.
+    * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
+    * @fires Phone#session-ready  This callback gets invoked when SDK is initialized and ready to make, receive calls
+    * @example
+    *
+      phone.login({
+        token: token,
+        e911Id: e911Id
+      });
+   */
     function login(options) {
       if (undefined === options) {
         //todo remove throw and publish it using error callback handler
@@ -97,14 +120,42 @@
       }
 
       session.on('ready', function (data) {
+        /**
+        * Session Ready event.
+        *
+        * @event Phone#session-ready
+        * @type {object}
+        * @property {String} sessionId - The ID of the session.
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('session-ready', data);
       });
 
       session.connect(options);
     }
 
+    /**
+    * @summary Deletes the current RTC Session
+    * @desc
+    * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
+    * requests gets stopped
+    * @memberof Phone
+    * @instance
+    * @fires Phone#session-disconnected  This callback gets invoked when the session gets successfully deleted
+    * @fires Phone#error  This callback gets invoked while encountering issues
+    * @example
+    * var phone = ATT.rtc.Phone.getPhone();
+    * phone.logout();
+    */
     function logout() {
       session.on('disconnected', function (data) {
+        /**
+        * Session Disconnected event.
+        *
+        * @event Phone#session-disconnected
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('session-disconnected', data);
       });
 
@@ -113,6 +164,46 @@
       session = undefined;
     }
 
+  /**
+   * @summary
+   * Start a call.
+   * @param {Object} options
+   * @memberOf Phone
+   * @instance
+   * @param {String} options.destination The Phone Number or User Id of the called party.
+   * @param {HTMLElement} options.localVideo
+   * @param {HTMLElement} options.remoteVideo
+   * @param {String} options.mediaType
+   
+   * @fires Phone#dialing This callback function gets invoked immediately.
+   * @fires Phone#call-connecting Indicates succesful creation of the call.
+   * @fires Phone#call-cancelled
+   * @fires Phone#call-rejected
+   * @fires Phone#call-connected
+   * @fires Phone#media-established This callback function gets invoked when both
+   *        parties are completed negotiation and engaged in active conversation.
+   * @fires Phone#call-hold This callback function gets invoked when hold call is successful
+   * @fires Phone#call-resume This callback function gets invoked when the current call successfully resumed
+   * @fires Phone#call-disconnected This callback function gets invoked when outgoing call is ended
+   * @fires Phone#call-error This callback function gets invoked when encountering issues during the call flow
+
+   * @example
+    // Start video call with an ICMN User
+    phone.dial({  
+      destination: '11231231234',
+      mediaType: 'video',
+      localMedia: document.getElementById('localVideo'),
+      remoteMedia: document.getElementById('remoteVideo'),
+    };
+    @example  
+    // Start audio call with a NoTN/VTN User
+    phone.dial({  
+      destination: 'john@domain.com',
+      mediaType: 'audio',
+      localMedia: document.getElementById('localVideo'),
+      remoteMedia: document.getElementById('remoteVideo'),
+    };
+   */
     function dial(options) {
 
       if (undefined === options) {
@@ -131,6 +222,13 @@
         throw new Error('Destination not defined');
       }
 
+      /**
+      * Dialing event.
+      *
+      * @event Phone#dialing
+      * @type {object}
+      * @property {Date} timestamp - Event fire time.
+      */
       emitter.publish('dialing');
 
       call = session.createCall({
@@ -142,31 +240,95 @@
       });
 
       call.on('connecting', function () {
+
+        /**
+        * Call connecting event.
+        *
+        * @event Phone#call-connecting
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-connecting');
       });
       call.on('canceled', function () {
+        /**
+        * Call canceled event.
+        *
+        * @event Phone#call-canceled
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-canceled');
       });
       call.on('rejected', function () {
+        /**
+        * Call rejected event.
+        *
+        * @event Phone#call-rejected
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-rejected');
       });
       call.on('connected', function () {
+        /**
+        * Call connected event.
+        *
+        * @event Phone#call-connected
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-connected');
       });
       call.on('media-established', function () {
+        /**
+        * Media established event.
+        *
+        * @event Phone#media-established
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('media-established');
       });
       call.on('hold', function () {
+        /**
+        * Call on hold event.
+        *
+        * @event Phone#call-hold
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-hold');
       });
       call.on('resume', function () {
+        /**
+        * Call resumed event.
+        *
+        * @event Phone#call-resume
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-resume');
       });
       call.on('disconnected', function (data) {
+        /**
+        * Call disconnected event.
+        *
+        * @event Phone#call-disconnected
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-disconnected', data);
         session.deleteCurrentCall();
       });
       call.on('error', function () {
+        /**   
+        * Call Error event.
+        *
+        * @event Phone#call-error
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-error');
       });
 
@@ -306,10 +468,34 @@
   if (undefined === ATT.rtc) {
     throw new Error('Error exporting ATT.rtc.Phone.');
   }
+
+  /**
+  * AT&T SDK.
+  * @namespace ATT
+  */
+
+  /**
+  * Real-Time Communications functionality.
+  * @namespace ATT.rtc
+  */
+
+  /**
+  * Phone API for RTC functionality.
+  * @namespace ATT.rtc.Phone
+  */
+
   ATT.rtc.Phone = (function () {
     var instance;
 
     return {
+      /**
+      * @summary Get the current instance of Phone.
+      * @description There can only be one instance of the Phone object.
+      * @function getPhone 
+      * @static
+      * @memberof ATT.rtc.Phone
+      * @returns {Phone} A Phone object.
+      */
       getPhone: function () {
         if (undefined === instance) {
           instance = new ATT.private.Phone();

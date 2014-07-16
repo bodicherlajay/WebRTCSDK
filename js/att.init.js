@@ -6,8 +6,7 @@
 (function () {
   'use strict';
 
-  // export global ATT namespace
-  window.ATT = {
+  var ATT = {
     private: {
       factories: {
       },
@@ -28,6 +27,9 @@
     rtc: {
     }
   };
+
+  // export ATT namespace
+  window.ATT = ATT;
 
 }());
 

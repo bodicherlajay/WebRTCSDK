@@ -1,7 +1,8 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
 /*global ATT, Env*/
+
 /**
-* Application configuration file.  This must be loaded first.
+* @file Application configuration file.
 *
 */
 
