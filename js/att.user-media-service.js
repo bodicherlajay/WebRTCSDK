@@ -191,6 +191,12 @@
         for (i = 0; i < l; i = i + 1) {
           videoTracks[i].enabled = false;
         }
+        var audioTracks = this.remoteStream.getAudioTracks(),
+          i,
+          l = audioTracks.length;
+        for (i = 0; i < l; i = i + 1) {
+          audioTracks[i].enabled = false;
+        }
       }
     },
 
@@ -204,6 +210,12 @@
           l = videoTracks.length;
         for (i = 0; i < l; i = i + 1) {
           videoTracks[i].enabled = true;
+        }
+        var audioTracks = this.remoteStream.getAudioTracks(),
+          i,
+          l = audioTracks.length;
+        for (i = 0; i < l; i = i + 1) {
+          audioTracks[i].enabled = true;
         }
       }
     },

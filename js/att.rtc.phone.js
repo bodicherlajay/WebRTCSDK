@@ -171,8 +171,6 @@
       });
 
       call.connect(options);
-
-
     }
 
     function answer(options) {
@@ -257,6 +255,11 @@
     }
 
     function reject() {
+      call = session.currentCall;
+
+      if (undefined === call || null === call) {
+        throw new Error('Call object not defined');
+      }
       call.reject();
     }
 

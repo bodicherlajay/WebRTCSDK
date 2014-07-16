@@ -93,7 +93,7 @@ describe('Phone', function () {
 
     });
 
-    describe('Methods', function () {
+    describe.only('Methods', function () {
 
       var phone,
         emitter,
@@ -102,8 +102,10 @@ describe('Phone', function () {
         localVideo;
 
       beforeEach(function () {
+
+        localVideo = document.createElement('video');
         remoteVideo = document.createElement('video');
-        localVideo = document.createElement('video')
+
         emitter = ATT.private.factories.createEventEmitter();
 
         createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
@@ -299,7 +301,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy,
           callCanceledHandlerSpy,
           callRejectedHandlerSpy,
-          callEstablishedHandlerSpy,
+          mediaEstablishedHandlerSpy,
           callHoldHandlerSpy,
           callResumeHandlerSpy,
           callErrorHandlerSpy,
@@ -334,7 +336,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
           callRejectedHandlerSpy = sinon.spy();
-          callEstablishedHandlerSpy = sinon.spy();
+          mediaEstablishedHandlerSpy = sinon.spy();
           callErrorHandlerSpy = sinon.spy();
           callHoldHandlerSpy = sinon.spy();
           callResumeHandlerSpy = sinon.spy();
@@ -343,7 +345,7 @@ describe('Phone', function () {
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
-          phone.on('media-established', callEstablishedHandlerSpy);
+          phone.on('media-established', mediaEstablishedHandlerSpy);
           phone.on('call-hold', callHoldHandlerSpy);
           phone.on('call-resume', callResumeHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
@@ -465,7 +467,7 @@ describe('Phone', function () {
           emitter.publish('media-established');
           setTimeout(function () {
             try {
-              expect(callEstablishedHandlerSpy.called).to.equal(true);
+              expect(mediaEstablishedHandlerSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -521,7 +523,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy,
           callCanceledHandlerSpy,
           callRejectedHandlerSpy,
-          callEstablishedHandlerSpy,
+          mediaEstablishedHandlerSpy,
           callHoldHandlerSpy,
           callResumeHandlerSpy,
           callErrorHandlerSpy;
@@ -543,7 +545,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
           callRejectedHandlerSpy = sinon.spy();
-          callEstablishedHandlerSpy = sinon.spy();
+          mediaEstablishedHandlerSpy = sinon.spy();
           callErrorHandlerSpy = sinon.spy();
           callHoldHandlerSpy = sinon.spy();
           callResumeHandlerSpy = sinon.spy();
@@ -561,7 +563,7 @@ describe('Phone', function () {
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
-          phone.on('media-established', callEstablishedHandlerSpy);
+          phone.on('media-established', mediaEstablishedHandlerSpy);
           phone.on('call-hold', callHoldHandlerSpy);
           phone.on('call-resume', callResumeHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
@@ -673,7 +675,7 @@ describe('Phone', function () {
           emitter.publish('media-established');
           setTimeout(function () {
             try {
-              expect(callEstablishedHandlerSpy.called).to.equal(true);
+              expect(mediaEstablishedHandlerSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -969,6 +971,7 @@ describe('Phone', function () {
           });
 
           phone.dial(options);
+          session.currentCall = call;
           phone.reject();
         });
 
@@ -981,8 +984,14 @@ describe('Phone', function () {
           expect(phone.reject).to.be.a('function');
         });
 
-        it('should execute call.disconnect', function () {
+        it('should execute call.reject', function () {
           expect(callRejectStub.called).to.equal(true);
+        });
+
+        it('should throw an Error when there is no currentcall', function () {
+          session.currentCall = null;
+          expect(phone.reject.bind(phone)).to.throw('Call object not defined');
+
         });
       });
 

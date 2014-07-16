@@ -193,10 +193,6 @@
         rtcManager.playStream('remote');
       });
 
-      rtcManager.on('media-established', function () {
-        emitter.publish('established');
-      });
-
       rtcManager.connectCall({
         peer: call.peer,
         callId: call.id,
@@ -308,11 +304,14 @@
 
     function reject() {
       var call = this;
-
       rtcManager.reject({
-        sessionId : call.sessionId,
+        sessionId : call.sessionInfo.sessionId,
         callId : call.id,
+        token : call.sessionInfo.token,
         onSuccess : function () {
+        },
+        onError : function () {
+
         }
       });
 

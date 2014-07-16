@@ -51,14 +51,16 @@ describe('Call', function () {
     optionsOutgoing = {
       peer: '12345',
       mediaType: 'audio',
-      type: ATT.CallTypes.OUTGOING
+      type: ATT.CallTypes.OUTGOING,
+      sessionInfo : {sessionId : '12345'}
     };
 
     optionsIncoming = {
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.INCOMING,
-      remoteSdp: 'abc'
+      remoteSdp: 'abc',
+      sessionInfo : {sessionId : '12345'}
     };
 
     optionsforRTCM = {

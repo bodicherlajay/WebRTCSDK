@@ -130,12 +130,13 @@
         logger.logInfo('checking number: ' + callable);
         cleaned = ATT.phoneNumber.translate(number);
         console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
-        if (number.charAt(0) === '*') {
-          cleaned = '*' + cleaned;
-        }
+//        if (number.charAt(0) === '*') {
+//          cleaned = '*' + cleaned;
+//        }
         ATT.Error.publish('SDK-20027', null, function (error) {
           logger.logWarning('Undefined `onError`: ' + error);
         });
+        return false;
       },
       formatNumber : function (number) {
         var callable = this.cleanPhoneNumber(number);
