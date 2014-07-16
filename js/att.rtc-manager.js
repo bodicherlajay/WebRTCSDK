@@ -477,11 +477,47 @@
     }
 
     function reject(options) {
+
+
+      if (undefined === options ) {
+        throw 'Invalid options';
+      }
+      if (undefined === options.token || '' === options.token) {
+        throw 'No token passed';
+      }
+      if (undefined === options.callId || '' === options.callId) {
+        throw 'No callId passed';
+      }
+
+      if (undefined === options.sessionId || '' === options.sessionId) {
+        throw 'No session Id passed';
+      }
+
+      if (undefined === options.onSuccess  || typeof options.onSuccess !== 'function') {
+        throw 'No success callback passed';
+      }
+
+      if (undefined === options.onError || typeof options.onError !== 'function') {
+        throw 'No error callback passed';
+      }
+
+
       resourceManager.doOperation('rejectCall', {
         params: {
-          url: [options.sessionId, options.callId]
+          url: [
+            options.sessionId,
+            options.callId
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + options.token
+          }
         },
-        success: options.onSuccess
+        success: function () {
+          logger.logInfo('EndCall Request success');
+        },
+        error: function (error) {
+          logger.logError(error);
+        }
       });
     }
 

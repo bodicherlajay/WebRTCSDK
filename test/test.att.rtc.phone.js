@@ -973,6 +973,7 @@ describe('Phone', function () {
           });
 
           phone.dial(options);
+          session.currentCall = call;
           phone.reject();
         });
 
@@ -985,8 +986,14 @@ describe('Phone', function () {
           expect(phone.reject).to.be.a('function');
         });
 
-        it('should execute call.disconnect', function () {
+        it('should execute call.reject', function () {
           expect(callRejectStub.called).to.equal(true);
+        });
+
+        it('should throw an Error when there is no currentcall', function () {
+          session.currentCall = null;
+          expect(phone.reject.bind(phone)).to.throw('Call object not defined');
+
         });
       });
 
