@@ -159,8 +159,8 @@
             && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
           call.setState(ATT.CallStates.RESUMED);
           rtcManager.enableMediaStream();
+          call.setRemoteSdp(modifications.remoteSdp);
         }
-        call.setRemoteSdp(modifications.remoteSdp);
       });
 
       rtcManager.on('media-mod-terminations', function (modifications) {
@@ -185,12 +185,12 @@
       });
 
       rtcManager.on('call-connected', function (data) {
-        call.setRemoteSdp(data.remoteSdp);
         if (data.remoteSdp) {
           rtcManager.setRemoteDescription({
             remoteSdp: data.remoteSdp,
             type: 'answer'
           });
+          call.setRemoteSdp(data.remoteSdp);
         }
         
         emitter.publish('connected');
