@@ -93,7 +93,7 @@ describe('Phone', function () {
 
     });
 
-    describe.only('Methods', function () {
+    describe('Methods', function () {
 
       var phone,
         emitter,
