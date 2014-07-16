@@ -62,10 +62,32 @@
       emitter.publish('call-incoming');
     });
 
+    /**
+    * @summary
+    * Get the current WebRTC Session.
+    * @memberOf Phone
+    * @instance
+    * @returns {Session} The current Session.
+
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.getSession();
+    */
     function getSession() {
       return session;
     }
+   /**
+    * @summary
+    * Subscribe to events on a Phone object.
+    * @memberOf Phone
+    * @instance
 
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.on('session-ready', function (data) {
+        // ... do something
+      });
+    */
     function on(event, handler) {
       if ('session-ready' !== event
           && 'session-disconnected' !== event
@@ -423,26 +445,91 @@
       call.connect(options);
     }
 
+    /**
+    * @summary
+    * Mute the current call.
+    * @memberOf Phone
+    * @instance
+
+    * @fires Phone#call-muted
+    * @fires Phone#call-error
+
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.mute();
+    */
     function mute() {
       call.on('muted', function () {
+        /**
+        * Call muted event.
+        * @desc Call was successfully muted.
+        *
+        * @event Phone#call-muted
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-muted');
       });
 
       call.mute();
     }
 
+    /**
+    * @summary
+    * Unmute the current call.
+    * @memberOf Phone
+    * @instance
+
+    * @fires Phone#call-unmuted
+    * @fires Phone#call-error
+
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.unmute();
+    */
     function unmute() {
       call.on('unmuted', function () {
+        /**
+        * Call unmuted event.
+        * @desc Call was successfully unmuted.
+        *
+        * @event Phone#call-unmuted
+        * @type {object}
+        * @property {Date} timestamp - Event fire time.
+        */
         emitter.publish('call-unmuted');
       });
 
       call.unmute();
     }
 
+    /**
+    * @summary
+    * Get the media type of the current call.
+    * @memberOf Phone
+    * @instance
+
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.getMediaType();
+    */
     function getMediaType() {
       return call ? call.mediaType : null;
     }
 
+    /**
+    * @summary
+    * Hangup current call.
+    * @memberOf Phone
+    * @instance
+
+    * @fires Phone#call-disconnected
+    * @fires Phone#call-error
+
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.hangup();
+    */
     function hangup() {
       call.on('disconnecting', function () {
         emitter.publish('call-disconnecting');
@@ -450,6 +537,19 @@
       call.disconnect('hangup');
     }
 
+   /**
+    * @summary
+    * Reject current incoming call.
+    * @memberOf Phone
+    * @instance
+
+    * @fires Phone#call-rejected
+    * @fires Phone#call-error
+
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.reject();
+    */
     function reject() {
       call = session.currentCall;
 
@@ -459,14 +559,54 @@
       call.disconnect('reject');
     }
 
+   /**
+   * @summary
+   * Put the current call on hold.
+   * @memberOf Phone
+   * @instance
+   
+   * @fires Phone#call-hold
+   * @fires Phone#call-error
+
+   * @example
+    var phone = ATT.rtc.Phone.getPhone();
+    phone.hold();
+   */
     function hold() {
       call.hold();
     }
 
+    /**
+    * @summary
+    * Resume the current call that is on hold.
+    * @memberOf Phone
+    * @instance
+
+    * @fires Phone#call-resume
+    * @fires Phone#call-error
+
+    * @example
+    var phone = ATT.rtc.Phone.getPhone();
+    phone.resume();
+    */
     function resume() {
       call.resume();
     }
 
+    /**
+    * @summary
+    * Update the E911 current call.
+    * @memberOf Phone
+    * @instance
+
+    * @fires Phone#call-error
+
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.updateE911Id({
+        e911Id: e911AddressId
+      }); 
+    */
     function updateE911Id(options) {
       session.on('address-updated', function () {
         emitter.publish('address-updated');

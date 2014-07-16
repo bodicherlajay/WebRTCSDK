@@ -3,6 +3,9 @@
 
 //Dependency: ATT.logManager
 
+/** 
+  @fileOverview Session Class definition. 
+*/
 
 (function () {
   'use strict';
@@ -11,8 +14,11 @@
     errMgr,
     logManager = ATT.logManager.getInstance();
 
-  /**
-  * Session prototype
+  /** 
+    Creates a new WebRTC Session.
+    @global
+    @class Represents a WebRTC Session.
+    @constructor
   */
   function Session() {
 

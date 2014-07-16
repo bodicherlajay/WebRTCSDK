@@ -150,7 +150,9 @@ module.exports = function (grunt) {
     },
     jsdoc: {
       dist: {
-        src: ['js/att.rtc.phone.js', 'README.md'],
+        src: [
+        'js/att.rtc.phone.js', 
+        'js/att.session.js'],
         options: {
           destination: 'doc',
           template : 'node_modules/grunt-jsdoc/node_modules/ink-docstrap/template',
