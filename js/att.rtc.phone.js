@@ -634,16 +634,6 @@
   }
 
   /**
-  * AT&T SDK.
-  * @namespace ATT
-  */
-
-  /**
-  * Real-Time Communications functionality.
-  * @namespace ATT.rtc
-  */
-
-  /**
   * Phone API for RTC functionality.
   * @namespace ATT.rtc.Phone
   */
