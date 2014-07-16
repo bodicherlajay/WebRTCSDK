@@ -33,6 +33,9 @@
     remoteMedia: null,
     localStream: null,
     remoteStream: null,
+    mediaConstraints: null,
+    onUserMedia: null,
+    onMediaEstablished: null,
 
     /**
     * Start Call
@@ -44,35 +47,31 @@
     * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
     */
     getUserMedia: function (options) {
+      var that = this;
       logger.logTrace('starting call');
 
       this.localMedia = options.localMedia;
       this.remoteMedia = options.remoteMedia;
       this.mediaConstraints = defaultMediaConstraints;
+      this.onUserMedia = options.onUserMedia;
+      this.onMediaEstablished = options.onMediaEstablished;
 
       if(undefined !== options.mediaType) {
         this.mediaConstraints.video = 'audio' !== options.mediaType
       }
 
-      var config = {
-        mediaConstraints: this.mediaConstraints,
-        onUserMedia: options.onUserMedia
-      };
-
       // get a local stream, show it in a self-view and add it to be sent
-      getUserMedia(this.mediaConstraints, this.getUserMediaSuccess.bind(this, config), function (err) {
+      getUserMedia(this.mediaConstraints, that.getUserMediaSuccess.bind(that), function (err) {
         options.onError(Error.create('Get user media failed: ' + err));
       });
 
-      // set up listener for remote media start
-      this.onRemoteMediaStart(options.onMediaEstablished);
     },
 
     /**
     * getUserMediaSuccess
     * @param {Object} stream The media stream
     */
-    getUserMediaSuccess: function (config, stream) {
+    getUserMediaSuccess: function (stream) {
       logger.logDebug('getUserMediaSuccess');
 
       // call the user media service to show stream
@@ -83,25 +82,11 @@
 
       // created user media object
       var userMedia = {
-        mediaConstraints: config.mediaConstraints,
+        mediaConstraints: this.mediaConstraints,
         localStream: stream
       };
 
-      config.onUserMedia(userMedia);
-    },
-
-    /**
-    * Listen for start of remote media
-    * @param {HTMLElement} remoteMedia The remote media element
-    * @returns {HTMLElement} remoteMedia
-    */
-    onRemoteMediaStart: function (callback) {
-/*
-      // remove all event handlers by cloning
-      var clone = this.remoteMedia.cloneNode(true);// Deep clone
-      this.remoteMedia.parentNode.replaceChild(clone, this.remoteMedia);
-*/      
-      this.remoteMedia.addEventListener('playing', callback);
+      this.onUserMedia(userMedia);
     },
 
     /**
@@ -127,6 +112,9 @@
         if (videoStreamEl) {
           videoStreamEl.src = window.URL.createObjectURL(args.stream);
           videoStreamEl.play();
+          if(args.localOrRemote === 'remote') {
+            this.onMediaEstablished();
+          }
         }
       } catch (e) {
         Error.publish('Could not start stream: ' + e.message);
