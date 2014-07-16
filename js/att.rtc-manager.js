@@ -63,23 +63,6 @@
   }
 
   /**
-  * reject call
-  */
-  function rejectCall() {
-    if (!session) {
-      throw 'No session found. Please login first';
-    }
-    if (!session.getCurrentCall()) {
-      throw 'No current call. Please establish a call first.';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-
-    session.getCurrentCall().reject(session);
-  }
-
-  /**
   * Create a new RTC Manager
   * @param {Object} options The options
   * })
@@ -347,8 +330,11 @@
           });
         },
         onMediaEstablished: function () {
+          console.log('media-established');
         }
       });
+
+
     }
 
     function disconnectCall (options) {
@@ -385,6 +371,10 @@
           logger.logError(error);
         }
       });
+    }
+
+    function playStream() {
+
     }
 
     function muteCall(options) {
@@ -472,11 +462,47 @@
     }
 
     function reject(options) {
+
+
+      if (undefined === options ) {
+        throw 'Invalid options';
+      }
+      if (undefined === options.token || '' === options.token) {
+        throw 'No token passed';
+      }
+      if (undefined === options.callId || '' === options.callId) {
+        throw 'No callId passed';
+      }
+
+      if (undefined === options.sessionId || '' === options.sessionId) {
+        throw 'No session Id passed';
+      }
+
+      if (undefined === options.onSuccess  || typeof options.onSuccess !== 'function') {
+        throw 'No success callback passed';
+      }
+
+      if (undefined === options.onError || typeof options.onError !== 'function') {
+        throw 'No error callback passed';
+      }
+
+
       resourceManager.doOperation('rejectCall', {
         params: {
-          url: [options.sessionId, options.callId]
+          url: [
+            options.sessionId,
+            options.callId
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + options.token
+          }
         },
-        success: options.onSuccess
+        success: function () {
+          logger.logInfo('EndCall Request success');
+        },
+        error: function (error) {
+          logger.logError(error);
+        }
       });
     }
 
@@ -487,6 +513,7 @@
     this.connectCall = connectCall.bind(this);
     this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);
+    this.playStream = playStream;
     this.muteCall = muteCall.bind(this);
     this.unmuteCall = unmuteCall.bind(this);
     this.setMediaModifications = setMediaModifications.bind(this);

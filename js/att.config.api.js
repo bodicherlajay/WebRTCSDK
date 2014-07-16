@@ -344,7 +344,7 @@ if (!ATT) {
           method: 'delete',
           formatters: {
             url: function (params) {
-              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + '/calls/' + params.callId;
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
             },
             headers: {
               'Authorization': function (param) {

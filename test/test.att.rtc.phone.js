@@ -97,9 +97,15 @@ describe('Phone', function () {
 
       var phone,
         emitter,
-        createEventEmitterStub;
+        createEventEmitterStub,
+        remoteVideo,
+        localVideo;
 
       beforeEach(function () {
+
+        localVideo = document.createElement('video');
+        remoteVideo = document.createElement('video');
+
         emitter = ATT.private.factories.createEventEmitter();
 
         createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
@@ -295,7 +301,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy,
           callCanceledHandlerSpy,
           callRejectedHandlerSpy,
-          callEstablishedHandlerSpy,
+          mediaEstablishedHandlerSpy,
           callHoldHandlerSpy,
           callResumeHandlerSpy,
           callErrorHandlerSpy,
@@ -306,8 +312,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'video',
-            localMedia: '#foo',
-            remoteMedia: 'bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -318,14 +324,6 @@ describe('Phone', function () {
           onSpy = sinon.spy(call, 'on');
 
           callConnectStub = sinon.stub(call, 'connect', function () {
-            emitter.publish('connecting');
-            emitter.publish('canceled');
-            emitter.publish('rejected');
-            emitter.publish('connected');
-            emitter.publish('established');
-            emitter.publish('hold');
-            emitter.publish('resume');
-            emitter.publish('error');
           });
 
           session = phone.getSession();
@@ -338,7 +336,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
           callRejectedHandlerSpy = sinon.spy();
-          callEstablishedHandlerSpy = sinon.spy();
+          mediaEstablishedHandlerSpy = sinon.spy();
           callErrorHandlerSpy = sinon.spy();
           callHoldHandlerSpy = sinon.spy();
           callResumeHandlerSpy = sinon.spy();
@@ -347,7 +345,7 @@ describe('Phone', function () {
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
-          phone.on('call-established', callEstablishedHandlerSpy);
+          phone.on('media-established', mediaEstablishedHandlerSpy);
           phone.on('call-hold', callHoldHandlerSpy);
           phone.on('call-resume', callResumeHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
@@ -368,21 +366,21 @@ describe('Phone', function () {
         it('should throw an error if options are invalid', function () {
           expect(phone.dial).to.throw('Options not defined');
           expect(phone.dial.bind(phone, {
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           })).to.throw('Destination not defined');
           expect(phone.dial.bind(phone, {
-            localMedia: '#foo',
+            localMedia: localVideo,
             destination: '1234'
           })).to.throw('remoteMedia not defined');
           expect(phone.dial.bind(phone, {
             destination: '1234',
-            remoteMedia: '#foo'
+            remoteMedia: localVideo
           })).to.throw('localMedia not defined');
           expect(phone.dial.bind(phone, {
             destination: '12345',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           })).to.not.throw(Error);
         });
 
@@ -409,8 +407,8 @@ describe('Phone', function () {
           expect(onSpy.calledWith('connected')).to.equal(true);
         });
 
-        it('should register for the `established` event on the call object', function () {
-          expect(onSpy.calledWith('established')).to.equal(true);
+        it('should register for the `media-established` event on the call object', function () {
+          expect(onSpy.calledWith('media-established')).to.equal(true);
         });
 
         it('should register for the `hold` event on the call object', function () {
@@ -430,6 +428,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-connecting` when call publishes `connecting` event', function (done) {
+          emitter.publish('connecting');
           setTimeout(function () {
             try {
               expect(callConnectingHandlerSpy.called).to.equal(true);
@@ -441,6 +440,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-canceled` when call publishes `canceled` event', function (done) {
+          emitter.publish('canceled');
           setTimeout(function () {
             try {
               expect(callCanceledHandlerSpy.called).to.equal(true);
@@ -452,6 +452,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+          emitter.publish('rejected');
           setTimeout(function () {
             try {
               expect(callRejectedHandlerSpy.called).to.equal(true);
@@ -462,10 +463,11 @@ describe('Phone', function () {
           }, 200);
         });
 
-        it('should trigger `call-established` when call publishes `established` event', function (done) {
+        it('should trigger `media-established` when call publishes `media-established` event', function (done) {
+          emitter.publish('media-established');
           setTimeout(function () {
             try {
-              expect(callEstablishedHandlerSpy.called).to.equal(true);
+              expect(mediaEstablishedHandlerSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -474,6 +476,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-hold` when call publishes `call-hold` event', function (done) {
+          emitter.publish('hold');
           setTimeout(function () {
             try {
               expect(callHoldHandlerSpy.called).to.equal(true);
@@ -485,6 +488,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-resume` when call publishes `call-resume` event', function (done) {
+          emitter.publish('resume');
           setTimeout(function () {
             try {
               expect(callResumeHandlerSpy.called).to.equal(true);
@@ -496,6 +500,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-error` when call publishes `error` event', function (done) {
+          emitter.publish('error');
           setTimeout(function () {
             try {
               expect(callErrorHandlerSpy.called).to.equal(true);
@@ -518,7 +523,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy,
           callCanceledHandlerSpy,
           callRejectedHandlerSpy,
-          callEstablishedHandlerSpy,
+          mediaEstablishedHandlerSpy,
           callHoldHandlerSpy,
           callResumeHandlerSpy,
           callErrorHandlerSpy;
@@ -526,8 +531,8 @@ describe('Phone', function () {
         beforeEach(function () {
 
           options = {
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -540,7 +545,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
           callRejectedHandlerSpy = sinon.spy();
-          callEstablishedHandlerSpy = sinon.spy();
+          mediaEstablishedHandlerSpy = sinon.spy();
           callErrorHandlerSpy = sinon.spy();
           callHoldHandlerSpy = sinon.spy();
           callResumeHandlerSpy = sinon.spy();
@@ -548,14 +553,6 @@ describe('Phone', function () {
           session = phone.getSession();
 
           callConnectStub = sinon.stub(call, 'connect', function () {
-            emitter.publish('connecting');
-            emitter.publish('canceled');
-            emitter.publish('rejected');
-            emitter.publish('connected');
-            emitter.publish('established');
-            emitter.publish('hold');
-            emitter.publish('resume');
-            emitter.publish('error');
           });
 
           session = phone.getSession();
@@ -566,7 +563,7 @@ describe('Phone', function () {
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
-          phone.on('call-established', callEstablishedHandlerSpy);
+          phone.on('media-established', mediaEstablishedHandlerSpy);
           phone.on('call-hold', callHoldHandlerSpy);
           phone.on('call-resume', callResumeHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
@@ -591,10 +588,10 @@ describe('Phone', function () {
         it('should throw an error if called without valid options', function () {
           expect(phone.answer.bind(phone)).to.throw('Options not defined');
           expect(phone.answer.bind(phone, {
-            localMedia: '#bar'
+            localMedia: remoteVideo
           })).to.throw('remoteMedia not defined');
           expect(phone.answer.bind(phone, {
-            remoteMedia: '#foo'
+            remoteMedia: localVideo
           })).to.throw('localMedia not defined');
         });
 
@@ -617,8 +614,8 @@ describe('Phone', function () {
           expect(onSpy.calledWith('connected')).to.equal(true);
         });
 
-        it('should register for the `established` event on the call object', function () {
-          expect(onSpy.calledWith('established')).to.equal(true);
+        it('should register for the `media-established` event on the call object', function () {
+          expect(onSpy.calledWith('media-established')).to.equal(true);
         });
 
         it('should register for the `hold` event on the call object', function () {
@@ -639,6 +636,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-connecting` when call publishes `connecting` event', function (done) {
+          emitter.publish('connecting');
           setTimeout(function () {
             try {
               expect(callConnectingHandlerSpy.called).to.equal(true);
@@ -650,6 +648,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-canceled` when call publishes `canceled` event', function (done) {
+          emitter.publish('canceled');
           setTimeout(function () {
             try {
               expect(callCanceledHandlerSpy.called).to.equal(true);
@@ -661,6 +660,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+          emitter.publish('rejected');
           setTimeout(function () {
             try {
               expect(callRejectedHandlerSpy.called).to.equal(true);
@@ -671,10 +671,11 @@ describe('Phone', function () {
           }, 200);
         });
 
-        it('should trigger `call-established` when call publishes `established` event', function (done) {
+        it('should trigger `media-established` when call publishes `media-established` event', function (done) {
+          emitter.publish('media-established');
           setTimeout(function () {
             try {
-              expect(callEstablishedHandlerSpy.called).to.equal(true);
+              expect(mediaEstablishedHandlerSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -683,6 +684,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-hold` when call publishes `call-hold` event', function (done) {
+          emitter.publish('hold');
           setTimeout(function () {
             try {
               expect(callHoldHandlerSpy.called).to.equal(true);
@@ -694,6 +696,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-resume` when call publishes `call-resume` event', function (done) {
+          emitter.publish('resume');
           setTimeout(function () {
             try {
               expect(callResumeHandlerSpy.called).to.equal(true);
@@ -705,6 +708,7 @@ describe('Phone', function () {
         });
 
         it('should trigger `call-error` when call publishes `error` event', function (done) {
+          emitter.publish('error');
           setTimeout(function () {
             try {
               expect(callErrorHandlerSpy.called).to.equal(true);
@@ -733,8 +737,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'video',
-            localMedia: '#foo',
-            remoteMedia: 'bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -851,8 +855,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'audio',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -947,8 +951,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'audio',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -967,6 +971,7 @@ describe('Phone', function () {
           });
 
           phone.dial(options);
+          session.currentCall = call;
           phone.reject();
         });
 
@@ -979,8 +984,14 @@ describe('Phone', function () {
           expect(phone.reject).to.be.a('function');
         });
 
-        it('should execute call.disconnect', function () {
+        it('should execute call.reject', function () {
           expect(callRejectStub.called).to.equal(true);
+        });
+
+        it('should throw an Error when there is no currentcall', function () {
+          session.currentCall = null;
+          expect(phone.reject.bind(phone)).to.throw('Call object not defined');
+
         });
       });
 
@@ -1002,8 +1013,8 @@ describe('Phone', function () {
           options = {
             destination: '12345',
             mediaType: 'audio',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           call = new ATT.rtc.Call({
@@ -1093,8 +1104,8 @@ describe('Phone', function () {
           options = {
             destination: '42512345678',
             mediaType: 'audio',
-            localMedia: '#foo',
-            remoteMedia: '#bar'
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
           };
 
           phone.dial(options);

@@ -101,6 +101,8 @@
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
 
+
+
     function on(event, handler) {
 
       if ('connecting' !== event &&
@@ -109,7 +111,7 @@
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
-          'established' !== event &&
+          'media-established' !== event &&
           'ended' !== event &&
           'error' !== event &&
           'hold' !== event &&
@@ -138,6 +140,10 @@
       if (undefined !== config.remoteMedia) {
         call.remoteMedia = config.remoteMedia;
       }
+
+      call.remoteMedia.addEventListener('playing', function () {
+        emitter.publish('media-established');
+      });
 
       rtcManager.on('media-modifications', function (modifications) {
         rtcManager.setMediaModifications(modifications);
@@ -188,14 +194,8 @@
         }
         
         emitter.publish('connected');
-      });
 
-      rtcManager.on('media-established', function () {
-        emitter.publish('established');
-      });
-
-      rtcManager.on('call-disconnected', function (data) {
-        call.setId(null, data);
+        rtcManager.playStream('remote');
       });
 
       rtcManager.connectCall({
@@ -223,6 +223,10 @@
       var call = this;
 
       emitter.publish('disconnecting');
+
+      rtcManager.on('call-disconnected', function (data) {
+        call.setId(null, data);
+      });
 
       rtcManager.disconnectCall({
         sessionInfo: this.sessionInfo,
@@ -305,11 +309,14 @@
 
     function reject() {
       var call = this;
-
       rtcManager.reject({
-        sessionId : call.sessionId,
+        sessionId : call.sessionInfo.sessionId,
         callId : call.id,
+        token : call.sessionInfo.token,
         onSuccess : function () {
+        },
+        onError : function () {
+
         }
       });
 
