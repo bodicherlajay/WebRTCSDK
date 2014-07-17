@@ -189,6 +189,8 @@
           emitter.publish('disconnected');
         }
 
+        rtcManager.resetPeerConnection();
+
       });
 
       rtcManager.connectCall({

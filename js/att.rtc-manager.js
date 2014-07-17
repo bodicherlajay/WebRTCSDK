@@ -56,6 +56,10 @@
       peerConnSvc.setTheRemoteDescription(modifications.remoteSdp, modifications.type);
     }
 
+    function resetPeerConnection() {
+      peerConnSvc.endCall();
+    }
+
     function extractSessionInformation(responseObject) {
       logger.logDebug('extractSessionInformation');
 
@@ -475,6 +479,7 @@
     this.muteCall = muteCall.bind(this);
     this.unmuteCall = unmuteCall.bind(this);
     this.setMediaModifications = setMediaModifications.bind(this);
+    this.resetPeerConnection = resetPeerConnection.bind(this);
     this.setRemoteDescription = setRemoteDescription.bind(this);
     this.disableMediaStream = disableMediaStream.bind(this);
     this.enableMediaStream = enableMediaStream.bind(this);

@@ -552,10 +552,13 @@
 
       if (this.peerConnection) {
         this.peerConnection.close();
+        this.peerConnection = null;
       }
-      this.peerConnection = null;
       this.resetModCount();
       this.resetModId();
+      this.peer = null,
+      this.callId = null,
+      this.callType = null
     },
 
     /**

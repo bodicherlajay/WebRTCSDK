@@ -775,6 +775,23 @@ describe('RTC Manager', function () {
         });
       });
 
+      describe('resetPeerConnection', function () {
+
+        it('should exist', function () {
+          expect(rtcManager.resetPeerConnection).to.be.a('function');
+        });
+
+        it('should execute peerConnSvc.endCall', function () {
+          var peerConnSvcEndCallStub = sinon.stub(ATT.PeerConnectionService, 'endCall');
+
+          rtcManager.resetPeerConnection();
+
+          expect(peerConnSvcEndCallStub.called).to.equal(true);
+
+          peerConnSvcEndCallStub.restore();
+        });
+      });
+
       describe('disableMediaStream', function () {
         it('should exist', function () {
            expect(rtcManager.disableMediaStream).to.be.a('function');
