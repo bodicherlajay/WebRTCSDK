@@ -235,7 +235,8 @@
       case ATT.RTCCallEvents.SESSION_TERMINATED:
         emitter.publish('call-disconnected', {
           id: event.resourceURL.split('/')[6],
-          from: event.from.split('@')[0].split(':')[1]
+          from: event.from.split('@')[0].split(':')[1],
+          reason: event.reason
         });
         break;
       }

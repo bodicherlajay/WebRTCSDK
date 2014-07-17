@@ -192,10 +192,22 @@
           });
           call.setRemoteSdp(data.remoteSdp);
         }
-        
+
         emitter.publish('connected');
 
         rtcManager.playStream('remote');
+      });
+
+      rtcManager.on('call-disconnected', function (data) {
+
+        call.id = null;
+
+        if (undefined !== data && 'rejected' === data.reason) {
+          emitter.publish('rejected');
+        } else {
+          emitter.publish('disconnected');
+        }
+
       });
 
       rtcManager.connectCall({
@@ -248,6 +260,7 @@
     *
     * Set the CallId
     * @param {String} callId The callId
+    * @param <opt> {Object} data Event data
     * @param <opt> {Object} data Event data
     */
     function setId(callId, data) {

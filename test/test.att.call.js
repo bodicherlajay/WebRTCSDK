@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit*/
 
-describe('Call', function () {
+describe.only('Call', function () {
 
   'use strict';
 
@@ -236,6 +236,11 @@ describe('Call', function () {
       it('should register for event `media-mod-terminations` from RTCManager', function () {
         incomingCall.connect(connectOptions);
         expect(onSpy.calledWith('media-mod-terminations')).to.equal(true);
+      });
+
+      it('should register for event `call-disconnected` from RTCManager', function () {
+        incomingCall.connect(connectOptions);
+        expect(onSpy.calledWith('call-disconnected')).to.equal(true);
       });
 
       it('should register for event `call-connected` from RTCManager', function () {
@@ -473,23 +478,6 @@ describe('Call', function () {
       it('should call rtcManager.disconnectCall', function () {
         outgoingCall.disconnect();
         expect(disconnectCallStub.called).to.equal(true);
-      });
-
-      describe('call-disconnected', function () {
-
-        it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
-
-          emitterEM.publish('call-disconnected');
-
-          setTimeout(function () {
-            try {
-              expect(setIdSpy.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 300);
-        });
       });
 
     });
@@ -893,6 +881,67 @@ describe('Call', function () {
           expect(playStreamSpy.calledWith('remote')).to.equal(true);
           done();
         }, 100);
+      });
+    });
+
+    describe('call-disconnected', function () {
+      var setIdSpy;
+
+      beforeEach(function () {
+        setIdSpy = sinon.spy(outgoingCall, 'setId');
+      });
+
+      afterEach(function() {
+          setIdSpy.restore();
+       });
+
+      it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
+
+        emitterEM.publish('call-disconnected');
+
+        setTimeout(function () {
+          try {
+            expect(outgoingCall.id).to.equal(null);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 300);
+      });
+
+
+      it('should publish `disconnected` on getting `call-disconnected` with no reason', function (done) {
+
+        var disconnectedSpy = sinon.spy();
+
+        outgoingCall.on('disconnected', disconnectedSpy);
+
+        emitterEM.publish('call-disconnected', {}); // no reason passed
+
+        setTimeout(function () {
+          expect(disconnectedSpy.called).to.equal(true);
+          done();
+        }, 100);
+
+      });
+
+      it('should publish `rejected` on getting `call-disconnected` with reason: `rejected`', function (done) {
+
+        var rejectedSpy = sinon.spy();
+
+        outgoingCall.on('rejected', rejectedSpy);
+
+        emitterEM.publish('call-disconnected', {
+          reason: 'rejected'
+        });
+
+        setTimeout(function () {
+          console.log(rejectedSpy.callCount);
+          console.log(JSON.stringify(rejectedSpy.getCall(0).args[0]));
+          expect(rejectedSpy.calledOnce).to.equal(true);
+          done();
+        }, 100);
+
       });
     });
 
