@@ -242,7 +242,7 @@ describe('Event Manager', function () {
       startListeningStub,
       publishSpy;
 
-    before(function () {
+    beforeEach(function () {
       emitterEM = ATT.private.factories.createEventEmitter();
       createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
         return emitterEM;
@@ -294,7 +294,7 @@ describe('Event Manager', function () {
 
     });
 
-    after(function () {
+    afterEach(function () {
       createEventEmitterStub.restore();
       createEvtChanStub.restore();
       startListeningStub.restore();
