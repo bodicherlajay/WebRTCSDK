@@ -1,83 +1,10 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global Logger, ATT*/
-
-//Dependency: Runtime - ATT.UserMediaService, ATT.PeerConnectionService, ATT.RTCEvent
-//Dependency: ATT.logManager
-
+/*global ATT*/
 
 (function () {
   'use strict';
 
-  var factories = ATT.private.factories,
-    errMgr = null,
-    userMediaSvc = null,
-    peerConnSvc = null,
-    logManager = ATT.logManager.getInstance(),
-    logger = logManager.getLoggerByName('Call');
-
-  function handleError(operation, errHandler, err) {
-    logger.logDebug('handleError: ' + operation);
-
-    logger.logInfo('There was an error performing operation ' + operation);
-
-    var error = errMgr.create(err, operation);
-
-    if (typeof errHandler === 'function') {
-      errHandler(error);
-    }
-  }
-
-  // function handleCallMediaTerminations(event, data) {
-  //   if (data.modId) {
-  //     peerConnSvc.setModificationId(data.modId);
-  //   }
-  //   if (data.sdp) {
-  //     peerConnSvc.setTheRemoteDescription(data.sdp, 'answer');
-  //   }
-  //   if (event.state === ATT.CallStatus.HOLD) {
-  //     userMediaSvc.holdVideoStream();
-  //     userMediaSvc.muteStream();
-  //   } else if (event.state === ATT.CallStatus.RESUMED) {
-  //     userMediaSvc.resumeVideoStream();
-  //     userMediaSvc.unmuteStream();
-  //   }
-  // }
-
-  /**
-   * Call cancel
-   * @param {Object} options The options
-   */
-  // function cancelCall(session) {
-  //   logger.logInfo('Canceling up...');
-  //   ATT.SignalingService.sendCancelCall({
-  //     success: function () {
-  //       session.deleteCall(session.getCurrentCall().id());
-  //     },
-  //     error: function () {
-  //       ATT.Error.publish('SDK-20034', null, session.onError);
-  //       logger.logWarning('Cancel request failed.');
-  //     },
-  //     session: session
-  //   });
-  // }
-
-  // *
-  //  * Call reject
-  //  * @param {Object} options The options
-   
-  // function rejectCall(session) {
-  //   logger.logInfo('Rejecting call...');
-  //   ATT.SignalingService.sendRejectCall({
-  //     success: function () {
-  //       session.deleteCall(session.getCurrentCall().id());
-  //     },
-  //     error: function () {
-  //       ATT.Error.publish('SDK-20035', null, options.onError);
-  //       logger.logWarning('Reject request failed.');
-  //     },
-  //     session: session
-  //   });
-  // }
+  var factories = ATT.private.factories;
 
   /**
   * Call Prototype

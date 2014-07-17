@@ -1,14 +1,12 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global cmgmt:true, Logger:true, ATT:true, Env:true*/
+/*global ATT*/
 
 //Dependency: ATT.logManager
-
 
 (function () {
   'use strict';
 
   var factories = ATT.private.factories,
-    errMgr,
 
     // TODO: Review if this is the right place to define ATT.APIConfigs
     // define ATT.APIConfigs: this seems to be the logical
@@ -22,45 +20,6 @@
     apiConfigs = ATT.private.config.api,
     appConfig = ATT.private.config.app,
     logManager = ATT.logManager.getInstance();
-
-  function handleError(operation, errHandler, err) {
-//    logger.logDebug('handleError: ' + operation);
-//
-//    logger.logInfo('There was an error performing operation ' + operation);
-
-    var error = errMgr.create(err, operation);
-
-    if (typeof errHandler === 'function') {
-      errHandler(error);
-    }
-  }
-
-  function getSession() {
-    return session;
-  }
-
-
-  /**
-  * cancel call
-  *
-  */
-  function cancelCall() {
-    if (!session) {
-      throw 'No session found . Please login first';
-    }
-    if (!eventManager) {
-      throw 'No event manager found to start a call. Please login first';
-    }
-
-    if (session.getCurrentCall() && session.getCurrentCall().id()) {
-      session.getCurrentCall().cancel(session);
-    } else {
-      peerConnSvc.notifyCallCancelation();
-      eventManager.publishEvent({
-        state: app.RTCCallEvents.SESSION_TERMINATED
-      });
-    }
-  }
 
   /**
   * Create a new RTC Manager
