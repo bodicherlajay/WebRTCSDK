@@ -234,10 +234,9 @@
     };
 
     this.deleteCurrentCall = function () {
-      if (!this.currentCall) {
-        throw new Error('Call not found');
+      if (this.currentCall) {
+        this.currentCall = null;
       }
-      this.currentCall = null;
     };
 
     this.deleteCall =   function deleteCall(callId) {

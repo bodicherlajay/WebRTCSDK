@@ -679,14 +679,12 @@ describe('Session', function () {
         expect(session.deleteCurrentCall).to.be.a('function');
       });
 
-      it('Should throw an error if there is no current call', function () {
-        session.terminateCalls();
-        expect(session.deleteCurrentCall.bind(session)).to.throw('Call not found');
-      });
-
       it('Should delete the current Call', function () {
         session.currentCall = call;
-        expect(session.deleteCurrentCall.bind(session)).to.not.throw('Call not found');
+
+        session.deleteCurrentCall();
+
+        expect(session.currentCall).to.equal(null);
       });
     });
   });
