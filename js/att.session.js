@@ -43,6 +43,7 @@
         type: ATT.CallTypes.INCOMING,
         mediaType: callInfo.mediaType
       });
+
       if (undefined !== call) {
         if (callInfo.remoteSdp) {
           call.setRemoteSdp(callInfo.remoteSdp);
@@ -205,14 +206,16 @@
     };
 
     this.createCall = function (options) {
+      var call;
       ATT.utils.extend(options, {
         sessionInfo: {
           sessionId: this.getId(),
           token: token
         }
       });
-      this.currentCall = new ATT.rtc.Call(options);
-      return this.currentCall;
+      call = new ATT.rtc.Call(options);
+      self.currentCall = call;
+      return call;
     };
 
     this.terminateCalls = function () {

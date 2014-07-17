@@ -909,6 +909,13 @@ describe('Session', function () {
         }, 100);
       });
 
+      it('should set the newly created call as the `currentCall`', function (done) {
+        setTimeout(function () {
+          expect(session.currentCall).to.equal(call);
+          done();
+        }, 100);
+      });
+
       it('should execute call.setRemoteSdp with remoteSdp on the newly created call', function (done) {
         setTimeout(function () {
           try {
