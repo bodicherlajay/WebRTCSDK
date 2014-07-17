@@ -150,7 +150,7 @@
         if (modifications.remoteSdp
             && modifications.remoteSdp.indexOf('recvonly') !== -1) {
           call.setState(ATT.CallStates.HELD);
-          rtcManager.disableMediaStream(); 
+          rtcManager.disableMediaStream();
         }
         if (modifications.remoteSdp
             && call.remoteSdp
@@ -220,10 +220,10 @@
         remoteSdp: call.remoteSdp,
         sessionInfo: call.sessionInfo,
         onCallConnecting: function (callInfo) {
-          if(call.type === ATT.CallTypes.OUTGOING) {
+          if (call.type === ATT.CallTypes.OUTGOING) {
             call.setId(callInfo.callId);
           }
-          if(call.type === ATT.CallTypes.INCOMING) {
+          if (call.type === ATT.CallTypes.INCOMING) {
             call.setState(callInfo.xState);
           }
           call.localSdp = callInfo.localSdp;
@@ -287,7 +287,7 @@
       });
     }
 
-    function unmute() { 
+    function unmute() {
       var call = this;
 
       rtcManager.unmuteCall({
