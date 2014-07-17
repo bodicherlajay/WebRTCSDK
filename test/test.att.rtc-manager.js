@@ -818,6 +818,23 @@ describe('RTC Manager', function () {
         });
       });
 
+      describe('stopUserMedia', function () {
+
+        it('should exist', function () {
+          expect(rtcManager.stopUserMedia).to.be.a('function');
+        });
+
+        it('should execute userMediaSvc.stopStream', function () {
+          var userMediaSvcStopStreamStub = sinon.stub(ATT.UserMediaService, 'stopStream');
+
+          rtcManager.stopUserMedia();
+
+          expect(userMediaSvcStopStreamStub.called).to.equal(true);
+
+          userMediaSvcStopStreamStub.restore();
+        });
+      });
+
       describe('holdCall', function () {
         var holdStreamStub,
           onSuccessSpy = sinon.spy();

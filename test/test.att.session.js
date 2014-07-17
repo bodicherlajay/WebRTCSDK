@@ -382,6 +382,23 @@ describe('Session', function () {
 
       });
 
+      it('should execute rtcManager.stopUserMedia on `disconnected` event', function (done) {
+        var stopUserMediaStub = sinon.stub(rtcManager, 'stopUserMedia');
+
+        session.setId(null);
+          
+        setTimeout(function () {
+          try {
+            expect(stopUserMediaStub.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+
+        stopUserMediaStub.restore();
+      });
+
       it('should update the id of the session', function () {
         session.setId('1334');
         expect(session.getId()).to.equal('1334');

@@ -117,6 +117,7 @@
 
       if (null === sessionId) {
         emitter.publish('disconnected');
+        rtcManager.stopUserMedia();
         return;
       }
 

@@ -60,6 +60,10 @@
       peerConnSvc.endCall();
     }
 
+    function stopUserMedia() {
+      userMediaSvc.stopStream();
+    }
+
     function extractSessionInformation(responseObject) {
       logger.logDebug('extractSessionInformation');
 
@@ -483,6 +487,7 @@
     this.setRemoteDescription = setRemoteDescription.bind(this);
     this.disableMediaStream = disableMediaStream.bind(this);
     this.enableMediaStream = enableMediaStream.bind(this);
+    this.stopUserMedia = stopUserMedia.bind(this);
     this.holdCall = holdCall.bind(this);
     this.resumeCall = resumeCall.bind(this);
     this.rejectCall = rejectCall.bind(this);
