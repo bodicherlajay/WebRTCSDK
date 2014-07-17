@@ -912,10 +912,15 @@ describe('Session', function () {
         }, 100);
       });
 
-      it('should trigger `call-incoming` on creating the new call', function (done) {
+      it('should trigger `call-incoming` with relevant data on creating the new call', function (done) {
         setTimeout(function () {
           try {
             expect(callIncomingHandlerSpy.called).to.equal(true);
+            expect(callIncomingHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(callIncomingHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(callIncomingHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(callIncomingHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof callIncomingHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
           } catch (e) {
             done(e);

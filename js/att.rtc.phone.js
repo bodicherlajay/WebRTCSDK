@@ -48,8 +48,8 @@
       session = new ATT.rtc.Session(),
       call = null;
 
-    session.on('call-incoming', function () {
-      emitter.publish('call-incoming');
+    session.on('call-incoming', function (data) {
+      emitter.publish('call-incoming', data);
     });
 
     /**
@@ -270,7 +270,7 @@
         */
         emitter.publish('call-connecting', data);
       });
-      call.on('canceled', function () {
+      call.on('canceled', function (data) {
         /**
         * Call canceled event.
         * @desc Succesfully canceled the current call.
@@ -278,9 +278,9 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-canceled');
+        emitter.publish('call-canceled', data);
       });
-      call.on('rejected', function () {
+      call.on('rejected', function (data) {
         /**
         * Call rejected event.
         * @desc Successfully rejected an incoming call.
@@ -288,9 +288,9 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-rejected');
+        emitter.publish('call-rejected', data);
       });
-      call.on('connected', function () {
+      call.on('connected', function (data) {
         /**
         * Call connected event.
         * @desc Successfully established a call.
@@ -298,9 +298,9 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-connected');
+        emitter.publish('call-connected', data);
       });
-      call.on('media-established', function () {
+      call.on('media-established', function (data) {
         /**
         * Media established event.
         * @desc Triggered when both parties are completed negotiation 
@@ -309,9 +309,9 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('media-established');
+        emitter.publish('media-established', data);
       });
-      call.on('held', function () {
+      call.on('held', function (data) {
         /**
         * Call on hold event.
         * @desc Successfully put the current call on hold.
@@ -319,9 +319,9 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-held');
+        emitter.publish('call-held', data);
       });
-      call.on('resumed', function () {
+      call.on('resumed', function (data) {
         /**
         * Call resumed event.
         * @desc Successfully resume a call that was on held.
@@ -329,7 +329,7 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-resumed');
+        emitter.publish('call-resumed', data);
       });
       call.on('disconnected', function (data) {
         /**
@@ -342,7 +342,7 @@
         emitter.publish('call-disconnected', data);
         session.deleteCurrentCall();
       });
-      call.on('error', function () {
+      call.on('error', function (data) {
         /**   
         * Call Error event.
         * @desc Indicates an error condition during a call's flow
@@ -351,90 +351,87 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-error');
+        emitter.publish('call-error', data);
       });
 
       call.connect(options);
     }
 
-  /**
-   * @summary
-   * Answer an incoming call
-   * @desc
-   * When call arrives via an incoming call event, call can be answered by using this method
-   * @memberof Phone
-   * @instance
-   * @param {Object} options
-   * @param {HTMLElement} options.localVideo
-   * @param {HTMLElement} options.remoteVideo
+    /**
+     * @summary
+     * Answer an incoming call
+     * @desc
+     * When call arrives via an incoming call event, call can be answered by using this method
+     * @memberof Phone
+     * @instance
+     * @param {Object} options
+     * @param {HTMLElement} options.localVideo
+     * @param {HTMLElement} options.remoteVideo
 
-   * @fires Phone#call-connecting
-   * @fires Phone#call-canceled
-   * @fires Phone#call-rejected
-   * @fires Phone#call-connected
-   * @fires Phone#media-established
-   * @fires Phone#call-held
-   * @fires Phone#call-resume
-   * @fires Phone#call-disconnected
-   * @fires Phone#call-error
+     * @fires Phone#call-connecting
+     * @fires Phone#call-canceled
+     * @fires Phone#call-rejected
+     * @fires Phone#call-connected
+     * @fires Phone#media-established
+     * @fires Phone#call-held
+     * @fires Phone#call-resume
+     * @fires Phone#call-disconnected
+     * @fires Phone#call-error
 
-   * @example
-      var phone = ATT.rtc.Phone.getPhone();
-      phone.answer({
-        localMedia: document.getElementById('localVideo'),
-        remoteMedia: document.getElementById('remoteVideo')
+     * @example
+        var phone = ATT.rtc.Phone.getPhone();
+        phone.answer({
+          localMedia: document.getElementById('localVideo'),
+          remoteMedia: document.getElementById('remoteVideo')
+        });
+     */
+    function answer(options) {
+
+      if (undefined === options) {
+        throw new Error('Options not defined');
+      }
+
+      if (undefined === options.localMedia) {
+        throw new Error('localMedia not defined');
+      }
+
+      if (undefined === options.remoteMedia) {
+        throw new Error('remoteMedia not defined');
+      }
+
+      call = session.currentCall;
+
+      if (call === null) {
+        throw new Error('Call object not defined');
+      }
+
+      emitter.publish('answering', {
+        from: call.peer,
+        mediaType: call.mediaType,
+        codec: call.codec,
+        timestamp: new Date()
       });
-   */
-  function answer(options) {
 
-    if (undefined === options) {
-      throw new Error('Options not defined');
-    }
-
-    if (undefined === options.localMedia) {
-      throw new Error('localMedia not defined');
-    }
-
-    if (undefined === options.remoteMedia) {
-      throw new Error('remoteMedia not defined');
-    }
-
-    call = session.currentCall;
-
-    if (call === null) {
-      throw new Error('Call object not defined');
-    }
-
-    emitter.publish('answering', {
-      from: call.peer,
-      mediaType: call.mediaType,
-      codec: call.codec,
-      timestamp: new Date()
-    });
-
-    call.on('connecting', function () {
-        emitter.publish('call-connecting');
+      call.on('connecting', function (data) {
+        emitter.publish('call-connecting', data);
       });
-      call.on('canceled', function () {
-        emitter.publish('call-canceled');
+      call.on('rejected', function (data) {
+        emitter.publish('call-rejected', data);
       });
-      call.on('rejected', function () {
-        emitter.publish('call-rejected');
+      call.on('connected', function (data) {
+        emitter.publish('call-connected', data);
       });
-      call.on('connected', function () {
-        emitter.publish('call-connected');
+      call.on('media-established', function (data) {
+        emitter.publish('media-established', data);
       });
-      call.on('media-established', function () {
-        emitter.publish('media-established');
+      call.on('held', function (data) {
+        emitter.publish('call-held', data);
       });
-      call.on('held', function () {
-        emitter.publish('call-held');
+      call.on('resumed', function (data) {
+        emitter.publish('call-resumed', data);
       });
-      call.on('resumed', function () {
-        emitter.publish('call-resumed');
-      });
-      call.on('error', function () {
-        emitter.publish('call-error');
+      call.on('error', function (data) {
+        emitter.publish('call-error', data);
       });
       call.on('disconnected', function (data) {
         emitter.publish('call-disconnected', data);
@@ -458,7 +455,7 @@
       phone.mute();
     */
     function mute() {
-      call.on('muted', function () {
+      call.on('muted', function (data) {
         /**
         * Call muted event.
         * @desc Call was successfully muted.
@@ -467,7 +464,7 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-muted');
+        emitter.publish('call-muted', data);
       });
 
       call.mute();
@@ -487,7 +484,7 @@
       phone.unmute();
     */
     function unmute() {
-      call.on('unmuted', function () {
+      call.on('unmuted', function (data) {
         /**
         * Call unmuted event.
         * @desc Call was successfully unmuted.
@@ -496,7 +493,7 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-unmuted');
+        emitter.publish('call-unmuted', data);
       });
 
       call.unmute();
@@ -530,8 +527,8 @@
       phone.hangup();
     */
     function hangup() {
-      call.on('disconnecting', function () {
-        emitter.publish('call-disconnecting');
+      call.on('disconnecting', function (data) {
+        emitter.publish('call-disconnecting', data);
       });
       call.disconnect('hangup');
     }

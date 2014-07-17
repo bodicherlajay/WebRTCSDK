@@ -47,7 +47,13 @@
         if (callInfo.remoteSdp) {
           call.setRemoteSdp(callInfo.remoteSdp);
         }
-        emitter.publish('call-incoming');
+
+        emitter.publish('call-incoming', {
+          from: call.peer,
+          mediaType: call.mediaType,
+          codec: call.codec,
+          timestamp: new Date()
+        });
       }
     });
 

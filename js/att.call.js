@@ -192,7 +192,7 @@
     function disconnect(type) {
       var call = this;
 
-      emitter.publish('disconnecting');
+      this.setState('disconnecting');
 
       rtcManager.on('call-disconnected', function (data) {
         call.setId(null, data);

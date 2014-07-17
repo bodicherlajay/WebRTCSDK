@@ -461,10 +461,13 @@ describe('Call', function () {
 
       var onSpy,
         setIdSpy,
+        setStateStub,
         disconnectCallStub;
 
       beforeEach(function () {
         setIdSpy = sinon.spy(outgoingCall, 'setId');
+
+        setStateStub = sinon.stub(outgoingCall, 'setState');
 
         onSpy = sinon.spy(rtcMgr, 'on');
 
@@ -475,6 +478,7 @@ describe('Call', function () {
       afterEach(function () {
         setIdSpy.restore();
         onSpy.restore();
+        setStateStub.restore();
         disconnectCallStub.restore();
       });
 
@@ -482,12 +486,12 @@ describe('Call', function () {
         expect(outgoingCall.disconnect).to.be.a('function');
       });
 
-      it('Should trigger `disconnecting` event immediately', function (done) {
+      it('Should execute Call.setState with `disconnecting` state', function (done) {
         outgoingCall.disconnect();
 
         setTimeout(function () {
           try {
-            expect(onDisconnectingSpy.called).to.equal(true);
+            expect(setStateStub.calledWith('disconnecting')).to.equal(true);
             done();
           } catch (e) {
             done(e);
@@ -678,6 +682,50 @@ describe('Call', function () {
 
           outgoingCall.on('resumed', onEventHandlerSpy);
           outgoingCall.setState('resumed');
+
+          setTimeout(function () {
+            expect(onEventHandlerSpy.called).to.equal(true);
+            expect(onEventHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].to
+              || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          }, 100);
+        });
+      });
+
+      describe('disconnecting', function () {
+        it('should trigger the `disconnecting` event with relevant data', function (done) {
+          var onEventHandlerSpy = sinon.spy();
+
+          outgoingCall.setRemoteSdp('abc');
+
+          outgoingCall.on('disconnecting', onEventHandlerSpy);
+          outgoingCall.setState('disconnecting');
+
+          setTimeout(function () {
+            expect(onEventHandlerSpy.called).to.equal(true);
+            expect(onEventHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].to
+              || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          }, 100);
+        });
+      });
+
+      describe('disconnected', function () {
+        it('should trigger the `disconnected` event with relevant data', function (done) {
+          var onEventHandlerSpy = sinon.spy();
+
+          outgoingCall.setRemoteSdp('abc');
+
+          outgoingCall.on('disconnected', onEventHandlerSpy);
+          outgoingCall.setState('disconnected');
 
           setTimeout(function () {
             expect(onEventHandlerSpy.called).to.equal(true);
