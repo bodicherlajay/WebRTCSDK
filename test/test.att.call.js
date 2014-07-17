@@ -546,7 +546,7 @@ describe('Call', function () {
       });
 
       describe('connecting', function () {
-        it('should trigger the connecting event with relevant data', function (done) {
+        it('should trigger the `connecting` event with relevant data', function (done) {
           var onEventHandlerSpy = sinon.spy();
 
           outgoingCall.on('connecting', onEventHandlerSpy);
@@ -565,7 +565,7 @@ describe('Call', function () {
       });
 
       describe('connected', function () {
-        it('should trigger the connected event with relevant data', function (done) {
+        it('should trigger the `connected` event with relevant data', function (done) {
           var onEventHandlerSpy = sinon.spy();
 
           outgoingCall.setRemoteSdp('abc');
@@ -585,6 +585,113 @@ describe('Call', function () {
           }, 100);
         });
       });
+
+      describe('mute/unmute', function () {
+        it('should trigger the `muted` event with relevant data', function (done) {
+          var onEventHandlerSpy = sinon.spy();
+
+          outgoingCall.setRemoteSdp('abc');
+
+          outgoingCall.on('muted', onEventHandlerSpy);
+          outgoingCall.setState('muted');
+
+          setTimeout(function () {
+            expect(onEventHandlerSpy.called).to.equal(true);
+            expect(onEventHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].to
+              || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          }, 100);
+        });
+
+        it('should trigger the `unmuted` event with relevant data', function (done) {
+          var onEventHandlerSpy = sinon.spy();
+
+          outgoingCall.setRemoteSdp('abc');
+
+          outgoingCall.on('unmuted', onEventHandlerSpy);
+          outgoingCall.setState('unmuted');
+
+          setTimeout(function () {
+            expect(onEventHandlerSpy.called).to.equal(true);
+            expect(onEventHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].to
+              || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          }, 100);
+        });
+      });
+
+      describe('media-established', function () {
+        it('should trigger the `media-established` event with relevant data', function (done) {
+          var onEventHandlerSpy = sinon.spy();
+
+          outgoingCall.setRemoteSdp('abc');
+
+          outgoingCall.on('media-established', onEventHandlerSpy);
+          outgoingCall.setState('media-established');
+
+          setTimeout(function () {
+            expect(onEventHandlerSpy.called).to.equal(true);
+            expect(onEventHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].to
+              || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          }, 100);
+        });
+      });
+
+      describe('held/resumed', function () {
+        it('should trigger the `held` event with relevant data', function (done) {
+          var onEventHandlerSpy = sinon.spy();
+
+          outgoingCall.setRemoteSdp('abc');
+
+          outgoingCall.on('held', onEventHandlerSpy);
+          outgoingCall.setState('held');
+
+          setTimeout(function () {
+            expect(onEventHandlerSpy.called).to.equal(true);
+            expect(onEventHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].to
+              || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          }, 100);
+        });
+
+        it('should trigger the `resumed` event with relevant data', function (done) {
+          var onEventHandlerSpy = sinon.spy();
+
+          outgoingCall.setRemoteSdp('abc');
+
+          outgoingCall.on('resumed', onEventHandlerSpy);
+          outgoingCall.setState('resumed');
+
+          setTimeout(function () {
+            expect(onEventHandlerSpy.called).to.equal(true);
+            expect(onEventHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].to
+              || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          }, 100);
+        });
+      });
+
     });
 
     describe('setId', function () {

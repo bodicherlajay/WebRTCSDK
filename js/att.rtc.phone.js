@@ -92,8 +92,8 @@
           && 'call-connected' !== event
           && 'call-muted' !== event
           && 'call-unmuted' !== event
-          && 'call-hold' !== event
-          && 'call-resume' !== event
+          && 'call-held' !== event
+          && 'call-resumed' !== event
           && 'address-updated' !== event
           && 'media-established' !== event
           && 'call-error' !== event) {
@@ -311,7 +311,7 @@
         */
         emitter.publish('media-established');
       });
-      call.on('hold', function () {
+      call.on('held', function () {
         /**
         * Call on hold event.
         * @desc Successfully put the current call on hold.
@@ -319,17 +319,17 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-hold');
+        emitter.publish('call-held');
       });
-      call.on('resume', function () {
+      call.on('resumed', function () {
         /**
         * Call resumed event.
-        * @desc Successfully resume a call that was on hold.
+        * @desc Successfully resume a call that was on held.
         * @event Phone#call-resume
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-resume');
+        emitter.publish('call-resumed');
       });
       call.on('disconnected', function (data) {
         /**
@@ -373,7 +373,7 @@
    * @fires Phone#call-rejected
    * @fires Phone#call-connected
    * @fires Phone#media-established
-   * @fires Phone#call-hold
+   * @fires Phone#call-held
    * @fires Phone#call-resume
    * @fires Phone#call-disconnected
    * @fires Phone#call-error
@@ -427,11 +427,11 @@
       call.on('media-established', function () {
         emitter.publish('media-established');
       });
-      call.on('hold', function () {
-        emitter.publish('call-hold');
+      call.on('held', function () {
+        emitter.publish('call-held');
       });
-      call.on('resume', function () {
-        emitter.publish('call-resume');
+      call.on('resumed', function () {
+        emitter.publish('call-resumed');
       });
       call.on('error', function () {
         emitter.publish('call-error');
@@ -560,11 +560,11 @@
 
    /**
    * @summary
-   * Put the current call on hold.
+   * Put the current call on held.
    * @memberOf Phone
    * @instance
    
-   * @fires Phone#call-hold
+   * @fires Phone#call-held
    * @fires Phone#call-error
 
    * @example

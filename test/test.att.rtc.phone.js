@@ -347,8 +347,8 @@ describe('Phone', function () {
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
           phone.on('media-established', mediaEstablishedHandlerSpy);
-          phone.on('call-hold', callHoldHandlerSpy);
-          phone.on('call-resume', callResumeHandlerSpy);
+          phone.on('call-held', callHoldHandlerSpy);
+          phone.on('call-resumed', callResumeHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
 
           phone.dial(options);
@@ -416,12 +416,12 @@ describe('Phone', function () {
           expect(onSpy.calledWith('media-established')).to.equal(true);
         });
 
-        it('should register for the `hold` event on the call object', function () {
-          expect(onSpy.calledWith('hold')).to.equal(true);
+        it('should register for the `held` event on the call object', function () {
+          expect(onSpy.calledWith('held')).to.equal(true);
         });
 
-        it('should register for the `resume` event on the call object', function () {
-          expect(onSpy.calledWith('resume')).to.equal(true);
+        it('should register for the `resumed` event on the call object', function () {
+          expect(onSpy.calledWith('resumed')).to.equal(true);
         });
 
         it('should register for the `error` event on the call object', function () {
@@ -487,8 +487,8 @@ describe('Phone', function () {
           }, 200);
         });
 
-        it('should trigger `call-hold` when call publishes `call-hold` event', function (done) {
-          emitter.publish('hold');
+        it('should trigger `call-held` when call publishes `call-held` event', function (done) {
+          emitter.publish('held');
           setTimeout(function () {
             try {
               expect(callHoldHandlerSpy.called).to.equal(true);
@@ -499,8 +499,8 @@ describe('Phone', function () {
           }, 300);
         });
 
-        it('should trigger `call-resume` when call publishes `call-resume` event', function (done) {
-          emitter.publish('resume');
+        it('should trigger `call-resumed` when call publishes `call-resumed` event', function (done) {
+          emitter.publish('resumed');
           setTimeout(function () {
             try {
               expect(callResumeHandlerSpy.called).to.equal(true);
@@ -579,8 +579,8 @@ describe('Phone', function () {
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
           phone.on('media-established', mediaEstablishedHandlerSpy);
-          phone.on('call-hold', callHoldHandlerSpy);
-          phone.on('call-resume', callResumeHandlerSpy);
+          phone.on('call-held', callHoldHandlerSpy);
+          phone.on('call-resumed', callResumeHandlerSpy);
           phone.on('call-error', callErrorHandlerSpy);
 
           phone.answer(options);
@@ -639,12 +639,12 @@ describe('Phone', function () {
           expect(onSpy.calledWith('media-established')).to.equal(true);
         });
 
-        it('should register for the `hold` event on the call object', function () {
-          expect(onSpy.calledWith('hold')).to.equal(true);
+        it('should register for the `held` event on the call object', function () {
+          expect(onSpy.calledWith('held')).to.equal(true);
         });
 
-        it('should register for the `resume` event on the call object', function () {
-          expect(onSpy.calledWith('resume')).to.equal(true);
+        it('should register for the `resumed` event on the call object', function () {
+          expect(onSpy.calledWith('resumed')).to.equal(true);
         });
 
         it('should register for the `error` event on the call object', function () {
@@ -704,8 +704,8 @@ describe('Phone', function () {
           }, 200);
         });
 
-        it('should trigger `call-hold` when call publishes `call-hold` event', function (done) {
-          emitter.publish('hold');
+        it('should trigger `call-held` when call publishes `call-held` event', function (done) {
+          emitter.publish('held');
           setTimeout(function () {
             try {
               expect(callHoldHandlerSpy.called).to.equal(true);
@@ -716,8 +716,8 @@ describe('Phone', function () {
           }, 300);
         });
 
-        it('should trigger `call-resume` when call publishes `call-resume` event', function (done) {
-          emitter.publish('resume');
+        it('should trigger `call-resumed` when call publishes `call-resumed` event', function (done) {
+          emitter.publish('resumed');
           setTimeout(function () {
             try {
               expect(callResumeHandlerSpy.called).to.equal(true);
@@ -1057,11 +1057,11 @@ describe('Phone', function () {
           });
 
           callholdStub = sinon.stub(call, 'hold', function () {
-            emitter.publish('hold');
+            emitter.publish('held');
           });
 
           callresumeStub = sinon.stub(call, 'resume', function () {
-            emitter.publish('resume');
+            emitter.publish('resumed');
           });
 
           phone.dial(options);
@@ -1076,7 +1076,7 @@ describe('Phone', function () {
           sessionOnSpy.restore();
         });
 
-        describe('hold', function () {
+        describe('held', function () {
 
           it('should exist', function () {
             expect(phone.hold).to.be.a('function');
@@ -1087,23 +1087,23 @@ describe('Phone', function () {
           });
         });
 
-        describe('resume', function () {
+        describe('resumed', function () {
 
           it('should exist', function () {
             expect(phone.resume).to.be.a('function');
           });
 
-          it('should register for the `resume` event on the call object', function () {
-            expect(onSpy.calledWith('resume')).to.equal(true);
+          it('should register for the `resumed` event on the call object', function () {
+            expect(onSpy.calledWith('resumed')).to.equal(true);
           });
 
           it('should execute call.resume', function () {
             expect(callholdStub.called).to.equal(true);
           });
 
-          it('should trigger `call-resume` when call publishes `call-resume` event', function (done) {
+          it('should trigger `call-resumed` when call publishes `call-resumed` event', function (done) {
             callresumeSpy = sinon.spy();
-            phone.on('call-resume', callresumeSpy);
+            phone.on('call-resumed', callresumeSpy);
             setTimeout(function () {
               try {
                 expect(callresumeSpy.called).to.equal(true);

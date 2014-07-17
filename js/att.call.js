@@ -77,10 +77,9 @@
           'muted' !== event &&
           'unmuted' !== event &&
           'media-established' !== event &&
-          'ended' !== event &&
           'error' !== event &&
-          'hold' !== event &&
-          'resume' !== event &&
+          'held' !== event &&
+          'resumed' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event) {
         throw new Error('Event not defined');
@@ -107,7 +106,7 @@
       }
 
       call.remoteMedia.addEventListener('playing', function () {
-        emitter.publish('media-established');
+        call.setState('media-established');
       });
 
       rtcManager.on('media-modifications', function (modifications) {
