@@ -188,7 +188,7 @@
       pc.onicecandidate = function (evt) {
         logger.logDebug('pc.onicecandidate');
         if (evt.candidate) {
-          logger.logTrace('ICE candidate', evt.candidate);
+          logger.logDebug('ICE candidate', evt.candidate);
         } else {
           if (self.peerConnection !== null) {
             var sdp = pc.localDescription;
