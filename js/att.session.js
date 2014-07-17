@@ -41,10 +41,12 @@
         id: callInfo.id,
         peer: callInfo.from,
         type: ATT.CallTypes.INCOMING,
-        mediaType: callInfo.mediaType,
-        remoteSdp: callInfo.remoteSdp
+        mediaType: callInfo.mediaType
       });
       if (undefined !== call) {
+        if (callInfo.remoteSdp) {
+          call.setRemoteSdp(callInfo.remoteSdp);
+        }
         emitter.publish('call-incoming');
       }
     });

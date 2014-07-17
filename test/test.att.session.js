@@ -154,12 +154,14 @@ describe('Session', function () {
       call = new ATT.rtc.Call({
         id: '12345',
         peer: '12345',
+        type: 'abc',
         mediaType: 'audio'
       });
 
       secondCall = new ATT.rtc.Call({
         id: '98765',
         peer: '12452',
+        type: 'abc',
         mediaType: 'video'
       });
 
@@ -534,6 +536,7 @@ describe('Session', function () {
       beforeEach(function () {
         callOpts = {
           peer: '12345',
+          type: 'incoming',
           mediaType: 'video'
         };
       });
@@ -827,10 +830,12 @@ describe('Session', function () {
         emitterEM,
         createEventEmitterStub,
         getRTCMgrStub,
-        createCallStub,
-        callIncomingHandlerSpy;
+        createCallSpy,
+        callIncomingHandlerSpy,
+        setRemoteSdpSpy,
+        callConstructorStub;
 
-      before(function () {
+      beforeEach(function () {
         callInfo = {
           id: '123',
           from: '1234',
@@ -858,24 +863,37 @@ describe('Session', function () {
 
         session.on('call-incoming', callIncomingHandlerSpy);
 
-        createCallStub = sinon.stub(session, 'createCall');
+        call = new ATT.rtc.Call({
+          peer: callInfo.from,
+          type: ATT.CallTypes.INCOMING,
+          mediaType: callInfo.mediaType
+        });
+
+        callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+          return call;
+        });
+
+        createCallSpy = sinon.spy(session, 'createCall');
+
+        setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
 
         emitterEM.publish('call-incoming', callInfo);
       });
 
       afterEach(function () {
         getRTCMgrStub.restore();
-        createCallStub.restore();
+        createCallSpy.restore();
+        setRemoteSdpSpy.restore();
+        callConstructorStub.restore();
       });
 
       it('should create a new call on getting call-incoming event from event manager', function (done) {
         setTimeout(function () {
           try {
-            expect(createCallStub.called).to.equal(true);
-            expect(createCallStub.getCall(0).args[0].id).to.equal(callInfo.id);
-            expect(createCallStub.getCall(0).args[0].peer).to.equal(callInfo.from);
-            expect(createCallStub.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
-            expect(createCallStub.getCall(0).args[0].remoteSdp).to.equal(callInfo.remoteSdp);
+            expect(createCallSpy.called).to.equal(true);
+            expect(createCallSpy.getCall(0).args[0].id).to.equal(callInfo.id);
+            expect(createCallSpy.getCall(0).args[0].peer).to.equal(callInfo.from);
+            expect(createCallSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
             done();
           } catch (e) {
             done(e);
@@ -883,7 +901,18 @@ describe('Session', function () {
         }, 100);
       });
 
-      xit('should trigger `call-incoming` on creating the new call', function (done) {
+      it('should execute call.setRemoteSdp with remoteSdp on the newly created call', function (done) {
+        setTimeout(function () {
+          try {
+            expect(setRemoteSdpSpy.calledWith(callInfo.remoteSdp)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should trigger `call-incoming` on creating the new call', function (done) {
         setTimeout(function () {
           try {
             expect(callIncomingHandlerSpy.called).to.equal(true);
@@ -892,60 +921,6 @@ describe('Session', function () {
             done(e);
           }
         }, 300);
-      });
-    });
-
-    describe('call-disconnected', function () {
-
-      var rtcManager,
-        session,
-        call,
-        callInfo,
-        emitterEM,
-        createEventEmitterStub,
-        getRTCMgrStub,
-        createCallStub,
-        callEndedSpy;
-
-      beforeEach(function () {
-        callInfo = {
-          id: '123',
-          from: '1234',
-          mediaType: 'video',
-          remoteSdp: 'abc',
-          peer: 'abc'
-        };
-
-        emitterEM = ATT.private.factories.createEventEmitter();
-
-        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-          return emitterEM;
-        });
-
-        rtcManager = new ATT.private.RTCManager(optionsforRTCM);
-
-        getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
-          return rtcManager;
-        });
-
-        createEventEmitterStub.restore();
-
-        session = new ATT.rtc.Session();
-
-        session.currentCall = new ATT.rtc.Call(callInfo);
-
-        callEndedSpy = sinon.spy();
-
-        session.on('call-disconnected', callEndedSpy);
-
-        createCallStub = sinon.stub(session, 'createCall');
-
-        emitterEM.publish('call-disconnected', callInfo);
-      });
-
-      afterEach(function () {
-        getRTCMgrStub.restore();
-        createCallStub.restore();
       });
     });
   });

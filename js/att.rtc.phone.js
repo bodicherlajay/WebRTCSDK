@@ -245,7 +245,11 @@
       * @type {object}
       * @property {Date} timestamp - Event fire time.
       */
-      emitter.publish('dialing');
+      emitter.publish('dialing', {
+        to: options.destination,
+        mediaType: options.mediaType,
+        timestamp: new Date()
+      });
 
       call = session.createCall({
         peer: options.destination,
@@ -255,7 +259,7 @@
         remoteMedia: options.remoteMedia
       });
 
-      call.on('connecting', function () {
+      call.on('connecting', function (data) {
 
         /**
         * Call connecting event.
@@ -264,7 +268,7 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
-        emitter.publish('call-connecting');
+        emitter.publish('call-connecting', data);
       });
       call.on('canceled', function () {
         /**
@@ -381,29 +385,34 @@
         remoteMedia: document.getElementById('remoteVideo')
       });
    */
-    function answer(options) {
+  function answer(options) {
 
-      if (undefined === options) {
-        throw new Error('Options not defined');
-      }
+    if (undefined === options) {
+      throw new Error('Options not defined');
+    }
 
-      if (undefined === options.localMedia) {
-        throw new Error('localMedia not defined');
-      }
+    if (undefined === options.localMedia) {
+      throw new Error('localMedia not defined');
+    }
 
-      if (undefined === options.remoteMedia) {
-        throw new Error('remoteMedia not defined');
-      }
+    if (undefined === options.remoteMedia) {
+      throw new Error('remoteMedia not defined');
+    }
 
-      emitter.publish('answering');
+    call = session.currentCall;
 
-      call = session.currentCall;
+    if (call === null) {
+      throw new Error('Call object not defined');
+    }
 
-      if (call === null) {
-        throw new Error('Call object not defined');
-      }
+    emitter.publish('answering', {
+      from: call.peer,
+      mediaType: call.mediaType,
+      codec: call.codec,
+      timestamp: new Date()
+    });
 
-      call.on('connecting', function () {
+    call.on('connecting', function () {
         emitter.publish('call-connecting');
       });
       call.on('canceled', function () {

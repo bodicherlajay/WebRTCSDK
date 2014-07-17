@@ -56,6 +56,9 @@
     if (undefined === options.peer) {
       throw new Error('No peer provided');
     }
+    if (undefined === options.type) {
+      throw new Error('No type provided');
+    }
     if (undefined === options.mediaType) {
       throw new Error('No mediaType provided');
     }
@@ -64,8 +67,6 @@
     var state = 'created',
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
-
-
 
     function on(event, handler) {
 
@@ -111,19 +112,25 @@
 
       rtcManager.on('media-modifications', function (modifications) {
         rtcManager.setMediaModifications(modifications);
+
         if (modifications.remoteSdp
             && modifications.remoteSdp.indexOf('recvonly') !== -1) {
-          call.setState(ATT.CallStates.HELD);
+
+          call.setState('held');
           rtcManager.disableMediaStream(); 
+
         }
+
         if (modifications.remoteSdp
             && call.remoteSdp
             && call.remoteSdp.indexOf
             && call.remoteSdp.indexOf('recvonly') !== -1
             && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-          call.setState(ATT.CallStates.RESUMED);
+
+          call.setState('resumed');
           rtcManager.enableMediaStream();
           call.setRemoteSdp(modifications.remoteSdp);
+
         }
       });
 
@@ -136,12 +143,12 @@
           if (modifications.reason === 'success'
               && modifications.remoteSdp.indexOf('sendonly') !== -1
               && modifications.remoteSdp.indexOf('sendrecv') === -1) {
-            call.setState(ATT.CallStates.HELD);
+            call.setState('held');
             rtcManager.disableMediaStream();
           }
           if (modifications.reason === 'success'
               && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-            call.setState(ATT.CallStates.RESUMED);
+            call.setState('resumed');
             rtcManager.enableMediaStream();
           }
           call.setRemoteSdp(modifications.remoteSdp);
@@ -157,7 +164,7 @@
           call.setRemoteSdp(data.remoteSdp);
         }
         
-        emitter.publish('connected');
+        call.setState('connected');
 
         rtcManager.playStream('remote');
       });
@@ -199,6 +206,23 @@
       });
     }
 
+    function createEventData() {
+      var data = {
+        timestamp: new Date(),
+        mediaType: this.mediaType
+      };
+
+      if (this.codec) {
+        data.codec = this.codec;
+      }
+      if (this.type === ATT.CallTypes.OUTGOING) {
+        data.to = this.peer;
+      } else if (this.type === ATT.CallTypes.INCOMING) {
+        data.from = this.peer;
+      }
+      return data;
+    }
+
     function getState() {
       return state;
     }
@@ -206,7 +230,7 @@
     function setState(newState) {
       state = newState;
 
-      emitter.publish(state);
+      emitter.publish(state, createEventData.call(this));
     }
 
     /**
@@ -217,15 +241,17 @@
     */
     function setId(callId, data) {
       this.id  = callId;
+
       if (this.id === null) {
-        emitter.publish('disconnected', data);
+        this.setState('disconnected');
       } else {
-        emitter.publish('connecting');
+        this.setState('connecting');
       }
     }
 
     function setRemoteSdp(remoteSdp) {
       this.remoteSdp = remoteSdp;
+      this.codec = ATT.sdpFilter.getInstance().getCodecfromSDP(remoteSdp);
     }
 
     function mute() {
@@ -233,8 +259,7 @@
 
       rtcManager.muteCall({
         onSuccess: function () {
-          call.state = ATT.CallStates.MUTED;
-          emitter.publish('muted');
+          call.setState('muted');
         }
       });
     }
@@ -244,8 +269,7 @@
 
       rtcManager.unmuteCall({
         onSuccess: function () {
-          call.state = ATT.CallStates.ONGOING;
-          emitter.publish('unmuted');
+          call.setState('unmuted');
         }
       });
     }
@@ -294,10 +318,11 @@
     this.type = options.type;
     this.sessionInfo = options.sessionInfo;
     this.localSdp = null;
-    this.remoteSdp = options.remoteSdp || null;
+    this.remoteSdp = null;
     this.localMedia = options.localMedia;
     this.remoteMedia = options.remoteMedia;
     this.state = null;
+    this.codec = null;
 
     // Call methods
     this.on = on.bind(this);

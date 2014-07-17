@@ -318,6 +318,7 @@ describe('Phone', function () {
 
           call = new ATT.rtc.Call({
             peer: '1234567',
+            type: 'abc',
             mediaType: 'video'
           });
 
@@ -384,9 +385,13 @@ describe('Phone', function () {
           })).to.not.throw(Error);
         });
 
-        it('should trigger the `dialing` event', function (done) {
+        it('should trigger the `dialing` event with event data', function (done) {
           setTimeout(function () {
             expect(onDialingSpy.called).to.equal(true);
+            expect(onDialingSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onDialingSpy.getCall(0).args[0].to).to.be.a('string');
+            expect(onDialingSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(typeof onDialingSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
           }, 100);
         });
@@ -427,11 +432,18 @@ describe('Phone', function () {
           expect(callConnectStub.calledWith(options)).to.equal(true);
         });
 
-        it('should trigger `call-connecting` when call publishes `connecting` event', function (done) {
-          emitter.publish('connecting');
+        it('should trigger `call-connecting` with event data when call publishes `connecting` event', function (done) {
+          var eventData = {
+            timestamp: new Date(),
+            to: '1-800-foo',
+            mediaType: 'audio',
+            codec: ['abc']
+          };
+
+          emitter.publish('connecting', eventData);
           setTimeout(function () {
             try {
-              expect(callConnectingHandlerSpy.called).to.equal(true);
+              expect(callConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -516,6 +528,7 @@ describe('Phone', function () {
       describe('answer', function () {
         var session,
           options,
+          createCallOptions,
           call,
           onSpy,
           callConnectStub,
@@ -535,12 +548,13 @@ describe('Phone', function () {
             remoteMedia: remoteVideo
           };
 
-          call = new ATT.rtc.Call({
+          createCallOptions = {
+            id: '123',
             peer: '1234567',
+            type: 'abc',
             mediaType: 'video'
-          });
+          };
 
-          onSpy = sinon.spy(call, 'on');
           onAnsweringSpy = sinon.spy();
           callConnectingHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
@@ -552,12 +566,13 @@ describe('Phone', function () {
 
           session = phone.getSession();
 
+          call = session.createCall(createCallOptions);
+          call.setRemoteSdp('abc');
+
+          onSpy = sinon.spy(call, 'on');
+
           callConnectStub = sinon.stub(call, 'connect', function () {
           });
-
-          session = phone.getSession();
-
-          session.currentCall = call;
 
           phone.on('answering', onAnsweringSpy);
           phone.on('call-connecting', callConnectingHandlerSpy);
@@ -595,9 +610,15 @@ describe('Phone', function () {
           })).to.throw('localMedia not defined');
         });
 
-        it('should trigger `answering` event', function (done) {
+        it('should trigger `answering` with event data', function (done) {
+
           setTimeout(function () {
             expect(onAnsweringSpy.called).to.equal(true);
+            expect(onAnsweringSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onAnsweringSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onAnsweringSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onAnsweringSpy.getCall(0).args[0].codec).to.be.an('array');
+            expect(typeof onAnsweringSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
           }, 100);
         });
@@ -743,6 +764,7 @@ describe('Phone', function () {
 
           call = new ATT.rtc.Call({
             peer: '1234567',
+            type: 'abc',
             mediaType: 'video'
           });
 
@@ -861,6 +883,7 @@ describe('Phone', function () {
 
           call = new ATT.rtc.Call({
             peer: '1234567',
+            type: 'abc',
             mediaType: 'audio'
           });
 
@@ -957,6 +980,7 @@ describe('Phone', function () {
 
           call = new ATT.rtc.Call({
             peer: '1234567',
+            type: 'abc',
             mediaType: 'audio'
           });
 
@@ -1019,6 +1043,7 @@ describe('Phone', function () {
 
           call = new ATT.rtc.Call({
             peer: '1234567',
+            type: 'abc',
             mediaType: 'audio'
           });
 
@@ -1234,6 +1259,7 @@ describe('Phone', function () {
 
           call = phone.getSession().createCall({
             peer: '123',
+            type: 'abc',
             mediaType: 'video'
           });
 
