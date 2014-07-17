@@ -52,9 +52,7 @@ describe('Call', function () {
     };
 
     optionsforRTCM = {
-      errorManager: ATT.Error,
       resourceManager: resourceManager,
-      rtcEvent: ATT.RTCEvent.getInstance(),
       userMediaSvc: ATT.UserMediaService,
       peerConnSvc: ATT.PeerConnectionService
     };

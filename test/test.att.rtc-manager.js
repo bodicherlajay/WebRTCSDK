@@ -97,14 +97,11 @@ describe('RTC Manager', function () {
 
     before(function () {
 
-      rtcEvent = ATT.RTCEvent.getInstance();
       userMediaSvc = ATT.UserMediaService;
       peerConnSvc = ATT.PeerConnectionService;
 
       optionsForRTCM = {
-        errorManager: ATT.Error,
         resourceManager: resourceManagerStub,
-        rtcEvent: rtcEvent,
         userMediaSvc: userMediaSvc,
         peerConnSvc: peerConnSvc
       };

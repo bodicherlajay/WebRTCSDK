@@ -16,7 +16,6 @@ module.exports = function (grunt) {
       'test/test.att.session.js',
       'test/test.att.utils.event-channel.js',
 //      'test/test.att.peer-connection-service.js',
-//      'test/test.att.rtc.event.js',
 //      'test/test.att.signaling.service.js',
 //      'test/test.att.utils.sdp-filter.js',
 //      'test/test.att.user-media-service.js',
@@ -43,7 +42,6 @@ module.exports = function (grunt) {
       'js/att.rtc.js',
       'js/att.resource-manager.js',
       'js/att.utils.event-channel.js',
-      'js/att.rtc.event.js',
       'js/att.event-manager.js',
       'js/att.rtc-manager.js',
       'js/adapter.js',
@@ -52,7 +50,6 @@ module.exports = function (grunt) {
       'js/att.peer-connection-service.js',
       'js/att.call.js',
       'js/att.session.js',
-      'js/eventDispatcher.js',
       'js/att.rtc.dhs.js',
       'js/att.rtc.phone.js',
       'js/att.main.js'

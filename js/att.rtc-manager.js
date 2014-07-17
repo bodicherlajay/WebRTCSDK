@@ -19,7 +19,8 @@
 
     apiConfigs = ATT.private.config.api,
     appConfig = ATT.private.config.app,
-    logManager = ATT.logManager.getInstance();
+    logManager = ATT.logManager.getInstance(),
+    logger = logManager.getLoggerByName("RTCManager");
 
   /**
   * Create a new RTC Manager
@@ -31,9 +32,21 @@
     var appConfiguration,
       eventManager,
       resourceManager,
-      logger,
       userMediaSvc,
       peerConnSvc;
+
+    resourceManager = options.resourceManager;
+    userMediaSvc = options.userMediaSvc;
+    peerConnSvc = options.peerConnSvc;
+
+    logger.logDebug('RTCManager');
+
+    appConfiguration = appConfig.getConfiguration();
+
+    eventManager = factories.createEventManager({
+      resourceManager:resourceManager,
+      channelConfig: appConfiguration.eventChannelConfig
+    });
 
     function setMediaModifications(modifications) {
       peerConnSvc.setRemoteAndCreateAnswer(modifications.remoteSdp, modifications.modificationId);
@@ -47,7 +60,7 @@
       logger.logDebug('extractSessionInformation');
 
       var sessionId = null,
-          timeout = null;
+        timeout = null;
 
       if (responseObject) {
         if (responseObject.getResponseHeader('Location')) {
@@ -69,20 +82,6 @@
         timeout: timeout
       };
     }
-
-    resourceManager = options.resourceManager;
-    userMediaSvc = options.userMediaSvc;
-    peerConnSvc = options.peerConnSvc;
-
-    logger = logManager.getLoggerByName("RTCManager");
-
-    logger.logDebug('createRTCManager');
-
-    appConfiguration = appConfig.getConfiguration();
-    eventManager = factories.createEventManager({
-      resourceManager:resourceManager,
-      channelConfig: appConfiguration.eventChannelConfig
-    });
 
     function on(event, handler) {
       eventManager.on(event, handler);
@@ -501,12 +500,9 @@
         if (undefined === instance) {
 
           resourceManager = factories.createResourceManager(apiConfigs);
-          rtcEvent = ATT.RTCEvent.getInstance();
 
           instance = new RTCManager({
-            errorManager: ATT.Error,
             resourceManager: resourceManager,
-            rtcEvent: rtcEvent,
             userMediaSvc: ATT.UserMediaService,
             peerConnSvc: ATT.PeerConnectionService
           });
