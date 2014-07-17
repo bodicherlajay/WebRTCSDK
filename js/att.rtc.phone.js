@@ -284,6 +284,7 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
+        session.deleteCurrentCall();
         emitter.publish('call-rejected');
       });
       call.on('connected', function () {

@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit*/
 
-describe.only('Call', function () {
+describe('Call', function () {
 
   'use strict';
 
@@ -925,14 +925,14 @@ describe.only('Call', function () {
 
       });
 
-      it('should publish `rejected` on getting `call-disconnected` with reason: `rejected`', function (done) {
+      it('should publish `rejected` on getting `call-disconnected` with reason: `Call rejected`', function (done) {
 
         var rejectedSpy = sinon.spy();
 
         outgoingCall.on('rejected', rejectedSpy);
 
         emitterEM.publish('call-disconnected', {
-          reason: 'rejected'
+          reason: 'Call rejected'
         });
 
         setTimeout(function () {

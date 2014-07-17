@@ -202,7 +202,7 @@
 
         call.id = null;
 
-        if (undefined !== data && 'rejected' === data.reason) {
+        if (undefined !== data && 'Call rejected' === data.reason) {
           emitter.publish('rejected');
         } else {
           emitter.publish('disconnected');

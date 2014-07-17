@@ -419,6 +419,15 @@ describe('Phone', function () {
           expect(onSpy.calledWith('resume')).to.equal(true);
         });
 
+        it('should register for the `disconnected` event on the call object', function () {
+          expect(onSpy.calledWith('disconnected')).to.equal(true);
+        });
+
+        it('should register for the `rejected` event on the call object', function () {
+          expect(onSpy.calledWith('rejected')).to.equal(true);
+        });
+
+
         it('should register for the `error` event on the call object', function () {
           expect(onSpy.calledWith('error')).to.equal(true);
         });
@@ -1294,6 +1303,89 @@ describe('Phone', function () {
 
         });
 
+      });
+
+      describe('call-rejected', function () {
+
+        var factories,
+          emitterCall,
+          phone,
+          callRejectedSpy,
+          options,
+          call,
+          createEmitterStub,
+          createCallStub,
+          sessionConstructorStub,
+          session,
+          connectStub,
+          deleteCurrentCallStub;
+
+        beforeEach(function () {
+
+          factories = ATT.private.factories;
+          emitterCall = factories.createEventEmitter();
+
+          createEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+            return emitterCall;
+          });
+          call = new ATT.rtc.Call({
+            peer: '123',
+            mediaType: 'video'
+          });
+          createEmitterStub.restore();
+
+          options = {
+            destination: '12345',
+            mediaType: 'video',
+            localMedia: {},
+            remoteMedia: {}
+          };
+
+          phone = new ATT.private.Phone();
+
+          callRejectedSpy = sinon.spy();
+          phone.on('call-rejected', callRejectedSpy);
+
+
+          session = new ATT.rtc.Session();
+
+          sessionConstructorStub = sinon.stub(ATT.rtc, 'Session', function () {
+            return session;
+          });
+
+          createCallStub = sinon.stub(phone.getSession(), 'createCall', function () {
+            return call;
+          });
+
+          connectStub = sinon.stub(call, 'connect');
+          deleteCurrentCallStub = sinon.stub(phone.getSession(), 'deleteCurrentCall');
+
+          phone.dial(options);
+
+          sessionConstructorStub.restore();
+          createCallStub.restore();
+
+        });
+
+        afterEach(function () {
+          deleteCurrentCallStub.restore();
+          connectStub.restore();
+        });
+
+        it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+
+          emitterCall.publish('rejected');
+
+          setTimeout(function () {
+            try {
+              expect(callRejectedSpy.called).to.equal(true);
+              expect(deleteCurrentCallStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 200);
+        });
       });
     });
   });
