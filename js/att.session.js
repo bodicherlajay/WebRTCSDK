@@ -7,7 +7,6 @@
   'use strict';
 
   var factories = ATT.private.factories,
-    errMgr,
     logManager = ATT.logManager.getInstance();
 
   /** 
@@ -18,17 +17,16 @@
   */
   function Session() {
 
-    // dependencies
-    var emitter,
-      self = this,
+    var session = this,
+
+      // dependencies
+      emitter,
       rtcManager,
+
       // private attributes
       id = null,
       token = null,
-      calls = {},
-      logger;
-
-    logger = logManager.getLoggerByName('Session');
+      calls = {};
 
     // instantiate event emitter
     emitter = factories.createEventEmitter();
@@ -37,12 +35,13 @@
     rtcManager = ATT.private.rtcManager.getRTCManager();
 
     rtcManager.on('call-incoming', function (callInfo) {
-      var call = self.createCall({
+      var call = session.createCall({
         id: callInfo.id,
         peer: callInfo.from,
         type: ATT.CallTypes.INCOMING,
         mediaType: callInfo.mediaType
       });
+
       if (undefined !== call) {
         if (callInfo.remoteSdp) {
           call.setRemoteSdp(callInfo.remoteSdp);
@@ -205,14 +204,16 @@
     };
 
     this.createCall = function (options) {
+      var call;
       ATT.utils.extend(options, {
         sessionInfo: {
           sessionId: this.getId(),
           token: token
         }
       });
-      this.currentCall = new ATT.rtc.Call(options);
-      return this.currentCall;
+      call = new ATT.rtc.Call(options);
+      session.currentCall = call;
+      return call;
     };
 
     this.terminateCalls = function () {

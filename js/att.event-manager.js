@@ -1,15 +1,14 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global cmgmt:true, Logger:true, ATT:true, Env:true*/
+/*global ATT*/
 
 //Dependency: ATT.logManager
-
 
 (function () {
   'use strict';
 
-  var logManager = ATT.logManager.getInstance(),
-    logger,
-    factories = ATT.private.factories;
+  var factories = ATT.private.factories,
+    logManager = ATT.logManager.getInstance(),
+    logger = logManager.getLoggerByName("EventManager");
 
   function handleError(operation, errHandler, err) {
     logger.logDebug('handleError: ' + operation);
@@ -22,165 +21,6 @@
       errHandler(error);
     }
   }
-
-  function mapEventNameToCallback(callEvent) {
-    switch (callEvent) {
-    case ATT.CallStatus.SESSION_READY:
-      return 'onSessionReady';
-    case ATT.CallStatus.SESSION_DELETED:
-      return 'onLogout';
-    case ATT.CallStatus.SESSION_ERROR:
-      return 'onError';
-    case ATT.CallStatus.CONNECTING:
-      return 'onConnecting';
-    case ATT.CallStatus.CALLING:
-      return 'onCalling';
-    case ATT.CallStatus.RINGING:
-      return 'onIncomingCall';
-    case ATT.CallStatus.ESTABLISHED:
-      return 'onCallEstablished';
-    case ATT.CallStatus.INPROGRESS:
-      return 'onCallInProgress';
-    case ATT.CallStatus.HOLD:
-      return 'onCallHold';
-    case ATT.CallStatus.RESUMED:
-      return 'onCallResume';
-    case ATT.CallStatus.TRANSITION:
-      return 'onSessionReady';
-    case ATT.CallStatus.WAITING:
-      return 'onCallWaiting';
-    case ATT.CallStatus.ENDED:
-      return 'onCallEnded';
-    case ATT.CallStatus.ERROR:
-      return 'onCallError';
-    default:
-      return null;
-    }
-  }
-
-  // function processCurrentEvent() {
-  //   var currentEvent = this.getCurrentEvent(),
-  //     state = currentEvent.state,
-  //     action_data = {};
-
-  //   switch(state) {
-  //   case ATT.SessionEvents.RTC_SESSION_CREATED:
-  //     this.onEvent(rtcEvent.createRTCEvent({
-  //       state: ATT.CallStatus.SESSION_READY,
-  //       data: {
-  //         sessionId: this.getSession().getSessionId()
-  //       }
-  //     }));
-  //     break;
-  //   case ATT.RTCCallEvents.CALL_CONNECTING:
-  //     this.onEvent(rtcEvent.createRTCEvent({
-  //       state: ATT.CallStatus.CONNECTING,
-  //       to: currentEvent.to
-  //     }));
-  //     break;
-  //   case ATT.RTCCallEvents.CALL_RINGING:
-  //     this.onEvent(rtcEvent.createRTCEvent({
-  //       state: ATT.CallStatus.CALLING,
-  //       to: currentEvent.to
-  //     }));
-  //     break;
-  //   case ATT.RTCCallEvents.INVITATION_RECEIVED:
-  //     // Added a getCodec method to the util to get access the codec
-  //     var CODEC =  ATT.sdpFilter.getInstance().getCodecfromSDP(currentEvent.sdp),
-  //       mediaType = (CODEC.length === 1) ? 'audio' : 'video';
-
-  //     this.onEvent(rtcEvent.createRTCEvent({
-  //       state: ATT.CallStatus.RINGING,
-  //       from: currentEvent.from ? currentEvent.from.split('@')[0].split(':')[1] : ''
-  //     }), {
-  //       id: currentEvent.resourceURL.split('/')[6],
-  //       from: currentEvent.from ? currentEvent.from.split('@')[0].split(':')[1] : '',
-  //       mediaType: mediaType,
-  //       remoteSdp: currentEvent.sdp
-  //     });
-  //     break;
-  //   case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
-  //     action_data = {
-  //       action: 'accept-mods',
-  //       sdp: currentEvent.sdp,
-  //       modId: currentEvent.modId
-  //     };
-  //     if (currentEvent.sdp.indexOf('recvonly') !== -1) {
-  //       // Received hold request...
-  //       this.onEvent(rtcEvent.createRTCEvent({
-  //         state: ATT.CallStatus.HOLD,
-  //         from: this.getSession().getCurrentCall().from
-  //       }), action_data);
-  //     } else if (currentEvent.sdp.indexOf('sendrecv') !== -1 && this.getSession().getCurrentCall().getRemoteSdp().sdp.indexOf('recvonly') !== -1) {
-  //       // Received resume request...
-  //       this.onEvent(rtcEvent.createRTCEvent({
-  //         state: ATT.CallStatus.RESUMED,
-  //         from: this.getSession().getCurrentCall().from
-  //       }), action_data);
-  //     } else {
-  //       this.onEvent(null, action_data);
-  //     }
-  //     break;
-  //   case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
-  //     action_data = {
-  //       action: 'term-mods',
-  //       sdp: currentEvent.sdp,
-  //       modId: currentEvent.modId
-  //     };
-  //     if (currentEvent.reason !== 'success') {
-  //       this.onEvent(rtcEvent.createRTCEvent({
-  //         state: ATT.CallStatus.ERROR,
-  //         from: this.getSession().getCurrentCall().from
-  //       }), action_data);
-  //     }
-  //     if (currentEvent.sdp && currentEvent.reason === 'success') {
-  //       if (currentEvent.sdp.indexOf('sendonly') !== -1 && currentEvent.sdp.indexOf('sendrecv') === -1) {
-  //         // Hold call successful...other party is waiting...
-  //         this.onEvent(rtcEvent.createRTCEvent({
-  //           state: ATT.CallStatus.HOLD,
-  //           from: this.getSession().getCurrentCall().from
-  //         }), action_data);
-  //       }
-  //       if (currentEvent.sdp.indexOf('sendrecv') !== -1) {
-  //         // Resume call successful...call is ongoing...
-  //         this.onEvent(rtcEvent.createRTCEvent({
-  //           state: ATT.CallStatus.RESUMED,
-  //           from: this.getSession().getCurrentCall().from
-  //         }), action_data);
-  //       }
-  //     }
-  //     break;
-  //   case ATT.RTCCallEvents.SESSION_OPEN:
-  //     this.onEvent(rtcEvent.createRTCEvent({
-  //       state: ATT.CallStatus.ESTABLISHED
-  //     }), {
-  //       sdp: currentEvent.sdp
-  //     });
-  //     break;
-  //   case ATT.RTCCallEvents.CALL_IN_PROGRESS:
-  //     this.onEvent(rtcEvent.createRTCEvent({
-  //       state: ATT.CallStatus.INPROGRESS
-  //     }));
-  //     break;
-  //   case ATT.RTCCallEvents.SESSION_TERMINATED:
-  //     action_data = {
-  //       action: 'term-session'
-  //     };
-  //     if (currentEvent.reason) {
-  //       this.onEvent(rtcEvent.createRTCEvent({
-  //         state: ATT.CallStatus.ERROR,
-  //         error: errMgr.create(currentEvent.reason)
-  //       }), action_data);
-  //     } else {
-  //       this.onEvent(rtcEvent.createRTCEvent({
-  //         state: ATT.CallStatus.ENDED
-  //       }), action_data);
-  //     }
-  //     break;
-  //   default:
-  //     logger.logError('Event with state ' + currentEvent.state + ' not handled');
-  //   }
-  // }
 
   function createEventManager(options) {
 
@@ -235,7 +75,8 @@
       case ATT.RTCCallEvents.SESSION_TERMINATED:
         emitter.publish('call-disconnected', {
           id: event.resourceURL.split('/')[6],
-          from: event.from.split('@')[0].split(':')[1]
+          from: event.from.split('@')[0].split(':')[1],
+          reason: event.reason
         });
         break;
       }
@@ -317,7 +158,6 @@
       setupEventChannel(options);
     }
 
-    logger = logManager.getLoggerByName("EventManager");
     logger.logDebug('createEventManager');
 
     if (undefined === options

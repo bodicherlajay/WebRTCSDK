@@ -1,42 +1,10 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RESTClient, Env, cmgmt */
+/*global ATT*/
 
 (function () {
   'use strict';
 
-//  /**
-//   * @summary
-//   * Cancel an outgoing call before it's completed.
-//   * @desc
-//   * Similar to hangup, but before the call is connected.
-//   */
-//  function cancel() {
-//    try {
-//      rtcManager.cancelCall();
-//    } catch (e) {
-//      ATT.Error.publish('SDK-20034', null);
-//    }
-//  }
-//
-//  /**
-//   * @summary
-//   * Reject an incoming call
-//   * @desc
-//  * Rejects an incoming call
-//  */
-//  function reject() {
-//    try {
-//      if (!rtcManager) {
-//        throw 'Unable to reject a web rtc call. There is no valid RTC manager to perform this operation';
-//      }
-//      rtcManager.rejectCall();
-//    } catch (e) {
-//      ATT.Error.publish('SDK-20035', null);
-//    }
-//  }
-//
-
-  /** 
+  /**
     Creates a new Phone.
     @global
     @class Represents a Phone.
@@ -288,6 +256,7 @@
         * @type {object}
         * @property {Date} timestamp - Event fire time.
         */
+        session.deleteCurrentCall();
         emitter.publish('call-rejected', data);
       });
       call.on('connected', function (data) {
@@ -530,7 +499,7 @@
       call.on('disconnecting', function (data) {
         emitter.publish('call-disconnecting', data);
       });
-      call.disconnect('hangup');
+      call.disconnect();
     }
 
    /**
@@ -552,7 +521,10 @@
       if (undefined === call || null === call) {
         throw new Error('Call object not defined');
       }
-      call.disconnect('reject');
+      call.on('rejected', function () {
+        emitter.publish('call-rejected');
+      });
+      call.reject();
     }
 
    /**

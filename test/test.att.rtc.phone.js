@@ -7,19 +7,19 @@ describe('Phone', function () {
 
   var getRTCManagerStub;
 
-  before(function () {
+  beforeEach(function () {
 
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return {
         on: function (event, handler) {
-          return {}
+          return {};
         },
         connectCall: function () {}
-      }
+      };
     });
   });
 
-  after(function () {
+  afterEach(function () {
     getRTCManagerStub.restore();
   });
 
@@ -60,7 +60,7 @@ describe('Phone', function () {
         sessionConstructorSpy,
         onSpy;
 
-      before(function () {
+      beforeEach(function () {
         session = new ATT.rtc.Session();
         createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
         sessionConstructorSpy = sinon.stub(ATT.rtc, 'Session', function () {
@@ -70,7 +70,7 @@ describe('Phone', function () {
         phone = new ATT.private.Phone();
       });
 
-      after(function () {
+      afterEach(function () {
         createEventEmitterSpy.restore();
         sessionConstructorSpy.restore();
       });
@@ -296,19 +296,19 @@ describe('Phone', function () {
       describe('dial', function () {
 
         var session,
-          options,
-          call,
-          createCallStub,
-          onSpy,
-          callConnectStub,
-          callConnectingHandlerSpy,
-          callCanceledHandlerSpy,
-          callRejectedHandlerSpy,
-          mediaEstablishedHandlerSpy,
-          callHoldHandlerSpy,
-          callResumeHandlerSpy,
-          callErrorHandlerSpy,
-          onDialingSpy;
+            options,
+            call,
+            createCallStub,
+            onSpy,
+            callConnectStub,
+            callConnectingHandlerSpy,
+            callCanceledHandlerSpy,
+            callRejectedHandlerSpy,
+            mediaEstablishedHandlerSpy,
+            callHoldHandlerSpy,
+            callResumeHandlerSpy,
+            callErrorHandlerSpy,
+            onDialingSpy;
 
         beforeEach(function () {
 
@@ -427,6 +427,15 @@ describe('Phone', function () {
           expect(onSpy.calledWith('resumed')).to.equal(true);
         });
 
+        it('should register for the `disconnected` event on the call object', function () {
+          expect(onSpy.calledWith('disconnected')).to.equal(true);
+        });
+
+        it('should register for the `rejected` event on the call object', function () {
+          expect(onSpy.calledWith('rejected')).to.equal(true);
+        });
+
+
         it('should register for the `error` event on the call object', function () {
           expect(onSpy.calledWith('error')).to.equal(true);
         });
@@ -435,90 +444,95 @@ describe('Phone', function () {
           expect(callConnectStub.calledWith(options)).to.equal(true);
         });
 
-        it('should trigger `call-connecting` with relevant data when call publishes `connecting` event', function (done) {
-          emitter.publish('connecting', eventData);
-          setTimeout(function () {
-            try {
-              expect(callConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 200);
-        });
+        describe('Events for Dial', function () {
 
-        it('should trigger `call-canceled` with relevant data when call publishes `canceled` event', function (done) {
-          emitter.publish('canceled', eventData);
-          setTimeout(function () {
-            try {
-              expect(callCanceledHandlerSpy.calledWith(eventData)).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 200);
-        });
+          it('should trigger `call-connecting` with relevant data when call publishes `connecting` event', function (done) {
+            emitter.publish('connecting', eventData);
+            setTimeout(function () {
+              try {
+                expect(callConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
 
-        it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
-          emitter.publish('rejected', eventData);
-          setTimeout(function () {
-            try {
-              expect(callRejectedHandlerSpy.calledWith(eventData)).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 200);
-        });
+          it('should trigger `call-canceled` with relevant data when call publishes `canceled` event', function (done) {
+            emitter.publish('canceled', eventData);
+            setTimeout(function () {
+              try {
+                expect(callCanceledHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
 
-        it('should trigger `media-established` with relevant data when call publishes `media-established` event', function (done) {
-          emitter.publish('media-established', eventData);
-          setTimeout(function () {
-            try {
-              expect(mediaEstablishedHandlerSpy.calledWith(eventData)).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 200);
-        });
+          it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
+            // since createCall is stubbed the session never gets a `currentCall`
+            // so we set it as part of the setup for this test
+            session.currentCall = call;
+            emitter.publish('rejected', eventData);
+            setTimeout(function () {
+              try {
+                expect(callRejectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
 
-        it('should trigger `call-held` with relevant data when call publishes `call-held` event', function (done) {
-          emitter.publish('held', eventData);
-          setTimeout(function () {
-            try {
-              expect(callHoldHandlerSpy.calledWith(eventData)).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 300);
-        });
+          it('should trigger `media-established` with relevant data when call publishes `media-established` event', function (done) {
+            emitter.publish('media-established', eventData);
+            setTimeout(function () {
+              try {
+                expect(mediaEstablishedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
 
-        it('should trigger `call-resumed` with relevant data when call publishes `call-resumed` event', function (done) {
-          emitter.publish('resumed', eventData);
-          setTimeout(function () {
-            try {
-              expect(callResumeHandlerSpy.calledWith(eventData)).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 300);
-        });
+          it('should trigger `call-held` with relevant data when call publishes `call-held` event', function (done) {
+            emitter.publish('held', eventData);
+            setTimeout(function () {
+              try {
+                expect(callHoldHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
 
-        it('should trigger `call-error` with relevant data when call publishes `error` event', function (done) {
-          emitter.publish('error', eventData);
-          setTimeout(function () {
-            try {
-              expect(callErrorHandlerSpy.calledWith(eventData)).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 200);
-        });
+          it('should trigger `call-resumed` with relevant data when call publishes `call-resumed` event', function (done) {
+            emitter.publish('resumed', eventData);
+            setTimeout(function () {
+              try {
+                expect(callResumeHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
 
+          it('should trigger `call-error` with relevant data when call publishes `error` event', function (done) {
+            emitter.publish('error', eventData);
+            setTimeout(function () {
+              try {
+                expect(callErrorHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
+        });
       });
 
       describe('answer', function () {
@@ -918,7 +932,7 @@ describe('Phone', function () {
         });
 
         it('should execute call.disconnect', function () {
-          expect(callDisconnectStub.calledWith('hangup')).to.equal(true);
+          expect(callDisconnectStub.called).to.equal(true);
         });
 
         it('should trigger `call-disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
@@ -980,8 +994,10 @@ describe('Phone', function () {
         var session,
           options,
           call,
-          callDisconnectStub,
-          createCallStub;
+          callRejectStub,
+          createCallStub,
+          onSpy,
+          callRejectedSpy;
 
         beforeEach(function () {
 
@@ -1005,16 +1021,19 @@ describe('Phone', function () {
             return call;
           });
 
-          callDisconnectStub = sinon.stub(call, 'disconnect', function () {
-          });
+          callRejectStub = sinon.stub(call, 'reject');
 
-          phone.dial(options);
           session.currentCall = call;
+
+          callRejectedSpy = sinon.spy();
+          phone.on('call-rejected', callRejectedSpy);
+
+          onSpy = sinon.spy(call, 'on');
           phone.reject();
         });
 
         afterEach(function () {
-          callDisconnectStub.restore();
+          callRejectStub.restore();
           createCallStub.restore();
         });
 
@@ -1023,13 +1042,32 @@ describe('Phone', function () {
         });
 
         it('should execute call.reject', function () {
-          expect(callDisconnectStub.calledWith('reject')).to.equal(true);
+          expect(callRejectStub.called).to.equal(true);
         });
 
         it('should throw an Error when there is no currentcall', function () {
           session.currentCall = null;
           expect(phone.reject.bind(phone)).to.throw('Call object not defined');
 
+        });
+
+        it('should register for the `rejected` event on the call object', function () {
+          expect(onSpy.calledOnce).to.equal(true);
+          expect(onSpy.calledWith('rejected')).to.equal(true);
+        });
+
+        it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+
+          emitter.publish('rejected');
+
+          setTimeout(function () {
+            try {
+              expect(callRejectedSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
         });
       });
 
@@ -1221,7 +1259,7 @@ describe('Phone', function () {
           sessionConstructorStub,
           onCallIncomingHandlerSpy;
 
-        before(function () {
+        beforeEach(function () {
           emitterSession = ATT.private.factories.createEventEmitter();
 
           createEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
@@ -1243,7 +1281,7 @@ describe('Phone', function () {
           phone.on('call-incoming', onCallIncomingHandlerSpy);
         });
 
-        after(function () {
+        afterEach(function () {
           sessionConstructorStub.restore();
         });
 
@@ -1314,6 +1352,91 @@ describe('Phone', function () {
 
         });
 
+      });
+
+      describe('call-rejected', function () {
+
+        var factories,
+          emitterCall,
+          phone,
+          callRejectedSpy,
+          options,
+          call,
+          createEmitterStub,
+          createCallStub,
+          sessionConstructorStub,
+          session,
+          connectStub,
+          deleteCurrentCallStub;
+
+        beforeEach(function () {
+
+          factories = ATT.private.factories;
+          emitterCall = factories.createEventEmitter();
+
+          createEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+            return emitterCall;
+          });
+
+          call = new ATT.rtc.Call({
+            type: 'abc',
+            peer: '123',
+            mediaType: 'video'
+          });
+          createEmitterStub.restore();
+
+          options = {
+            destination: '12345',
+            mediaType: 'video',
+            localMedia: {},
+            remoteMedia: {}
+          };
+
+          phone = new ATT.private.Phone();
+
+          callRejectedSpy = sinon.spy();
+          phone.on('call-rejected', callRejectedSpy);
+
+
+          session = new ATT.rtc.Session();
+
+          sessionConstructorStub = sinon.stub(ATT.rtc, 'Session', function () {
+            return session;
+          });
+
+          createCallStub = sinon.stub(phone.getSession(), 'createCall', function () {
+            return call;
+          });
+
+          connectStub = sinon.stub(call, 'connect');
+          deleteCurrentCallStub = sinon.stub(phone.getSession(), 'deleteCurrentCall');
+
+          phone.dial(options);
+
+          sessionConstructorStub.restore();
+          createCallStub.restore();
+
+        });
+
+        afterEach(function () {
+          deleteCurrentCallStub.restore();
+          connectStub.restore();
+        });
+
+        it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+
+          emitterCall.publish('rejected');
+
+          setTimeout(function () {
+            try {
+              expect(callRejectedSpy.called).to.equal(true);
+              expect(deleteCurrentCallStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 200);
+        });
       });
     });
   });

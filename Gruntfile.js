@@ -119,6 +119,9 @@ module.exports = function (grunt) {
     }
   }
 
+  // Karma Tests for Jenkins
+  karmaConfigJenkins.files = srcFiles.concat(unitTestFiles);
+
   // Karma tests for all files
   karmaConfigUnit.files = srcFiles.concat(unitTestFiles);
 
@@ -151,9 +154,9 @@ module.exports = function (grunt) {
     jsdoc: {
       dist: {
         src: [
-        '../../../README.md',
-        'js/att.rtc.phone.js', 
-        'js/att.session.js'],
+          '../../../README.md',
+          'js/att.rtc.phone.js',
+          'js/att.session.js'],
         options: {
           destination: 'doc',
           template : 'node_modules/grunt-jsdoc/node_modules/ink-docstrap/template',

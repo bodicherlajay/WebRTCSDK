@@ -9,13 +9,15 @@ describe('Session', function () {
     options,
     optionsforRTCM,
     resourceManager,
-    doOperationStub;
+    doOperationStub,
+    createResourceManagerStub;
 
   beforeEach(function () {
     factories = ATT.private.factories;
     apiConfig = ATT.private.config.api;
 
     resourceManager = factories.createResourceManager(apiConfig);
+
     doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) {
       options.success({
         getResponseHeader: function () {
@@ -23,6 +25,11 @@ describe('Session', function () {
         }
       });
     });
+
+    createResourceManagerStub = sinon.stub(factories, 'createResourceManager', function () {
+      return resourceManager;
+    });
+
     options = {
       token: 'dsfgdsdf',
       e911Id: 'sdfghfds'
@@ -38,6 +45,7 @@ describe('Session', function () {
 
   });
   afterEach(function () {
+    createResourceManagerStub.restore();
     doOperationStub.restore();
   });
 
@@ -898,6 +906,13 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
+        }, 100);
+      });
+
+      it('should set the newly created call as the `currentCall`', function (done) {
+        setTimeout(function () {
+          expect(session.currentCall).to.equal(call);
+          done();
         }, 100);
       });
 

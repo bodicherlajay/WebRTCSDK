@@ -20,17 +20,13 @@ describe('Call', function () {
     remoteSdp,
     resourceManager,
     doOperationStub,
+    createResourceManagerStub,
     localVideo,
     remoteVideo;
 
   before(function () {
-
     apiConfig = ATT.private.config.api;
     factories = ATT.private.factories;
-    resourceManager = factories.createResourceManager(apiConfig);
-    doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) { // never hit the network
-      options.success();
-    });
 
     remoteVideo = document.createElement('video');
     localVideo = document.createElement('video');
@@ -44,7 +40,7 @@ describe('Call', function () {
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.OUTGOING,
-      sessionInfo : {sessionId : '12345'}
+      sessionInfo : {sessionId : '12345', token : '123'}
     };
 
     optionsIncoming = {
@@ -63,9 +59,19 @@ describe('Call', function () {
       peerConnSvc: ATT.PeerConnectionService
     };
 
-    emitterEM = ATT.private.factories.createEventEmitter();
-
     remoteSdp = 'JFGLSDFDJKS';
+  });
+
+  beforeEach(function () {
+    resourceManager = factories.createResourceManager(apiConfig);
+    doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) { // never hit the network
+      options.success();
+    });
+    createResourceManagerStub = sinon.stub(factories, 'createResourceManager', function () {
+      return resourceManager;
+    });
+
+    emitterEM = ATT.private.factories.createEventEmitter();
 
     createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
       return emitterEM;
@@ -91,7 +97,8 @@ describe('Call', function () {
 
   });
 
-  after(function () {
+  afterEach(function () {
+    createResourceManagerStub.restore();
     doOperationStub.restore();
     createEventEmitterStub.restore();
     createEventManagerStub.restore();
@@ -103,6 +110,8 @@ describe('Call', function () {
   });
 
   describe('Constructor', function () {
+
+    var call;
 
     it('Should throw an error if invalid options', function () {
       var func = function (options) {
@@ -139,7 +148,11 @@ describe('Call', function () {
     });
 
     it('should get an instance of RTCManager', function () {
+      call = new ATT.rtc.Call(optionsOutgoing);
+
       expect(getRTCManagerStub.called).to.equal(true);
+
+      call = undefined;
     });
 
   });
@@ -247,6 +260,11 @@ describe('Call', function () {
         incomingCall.connect(connectOptions);
 
         expect(onSpy.calledWith('media-mod-terminations')).to.equal(true);
+      });
+
+      it('should register for event `call-disconnected` from RTCManager', function () {
+        incomingCall.connect(connectOptions);
+        expect(onSpy.calledWith('call-disconnected')).to.equal(true);
       });
 
       it('should register for event `call-connected` from RTCManager', function () {
@@ -415,7 +433,6 @@ describe('Call', function () {
         resumeCallStub = sinon.stub(rtcMgr, 'resumeCall', function (options) {
           options.onSuccess('localSdpForResumeRequest');
         });
-
       });
 
       afterEach(function () {
@@ -446,7 +463,7 @@ describe('Call', function () {
         });
 
         it('should execute RTCManager.resumeCall', function () {
-          incomingCall.resume();
+          outgoingCall.resume();
           expect(resumeCallStub.called).to.equal(true);
         });
 
@@ -473,6 +490,8 @@ describe('Call', function () {
 
         disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall', function () {
         });
+
+        outgoingCall.disconnect();
       });
 
       afterEach(function () {
@@ -500,7 +519,6 @@ describe('Call', function () {
       });
 
       it('should register for `call-disconnected` event on rtcMgr', function () {
-        outgoingCall.disconnect();
         expect(onSpy.calledWith('call-disconnected')).to.equal(true);
       });
 
@@ -509,16 +527,77 @@ describe('Call', function () {
         expect(disconnectCallStub.called).to.equal(true);
       });
 
-      describe('call-disconnected', function () {
+    });
 
-        it('should execute Call.setId with null callId when rtcManager publishes `call-disconnected` event', function (done) {
-          outgoingCall.disconnect();
+    describe('reject', function () {
+      var rejectCallStub, onSpy;
+
+      beforeEach(function () {
+        rejectCallStub = sinon.stub(rtcMgr, 'rejectCall');
+        onSpy = sinon.spy(rtcMgr, "on");
+        outgoingCall.id = '123';
+        outgoingCall.reject();
+      });
+
+      afterEach(function () {
+        onSpy.restore();
+        rejectCallStub.restore();
+      });
+
+      it('Should exist', function () {
+        expect(outgoingCall.reject).to.be.a('function');
+      });
+
+      it('should register for `call-disconnected` event on rtcMgr', function () {
+        expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+      });
+
+      it('should call rtcManager.disconnectCall', function () {
+        var args;
+
+        expect(rejectCallStub.called).to.equal(true);
+//        console.log(JSON.stringify(rejectCallStub.getCall(0).args[0]));
+        args = rejectCallStub.getCall(0).args[0];
+        expect(args.sessionId).to.equal(outgoingCall.sessionInfo.sessionId);
+        expect(args.token).to.equal(outgoingCall.sessionInfo.token);
+        expect(args.callId).to.equal(outgoingCall.id);
+        expect(args.onSuccess).to.be.a('function');
+        expect(args.onError).to.be.a('function');
+      });
+
+      describe('call-disconnected', function () {
+        var onRejectedSpy;
+
+        beforeEach(function () {
+          incomingCall.reject();
+        });
+
+        it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
+
+          incomingCall.id = 'notNull';
 
           emitterEM.publish('call-disconnected');
 
           setTimeout(function () {
             try {
-              expect(setIdSpy.called).to.equal(true);
+              expect(incomingCall.id).to.equal(null);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 300);
+        });
+
+        it('should publish `rejected` when rtcManager publishes `call-disconnected`', function (done) {
+
+          onRejectedSpy = sinon.spy();
+          incomingCall.on('rejected', onRejectedSpy);
+
+          emitterEM.publish('call-disconnected');
+
+          setTimeout(function () {
+            try {
+              expect(onRejectedSpy.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -526,7 +605,6 @@ describe('Call', function () {
           }, 300);
         });
       });
-
     });
 
     describe('getState', function () {
@@ -1096,6 +1174,68 @@ describe('Call', function () {
           expect(playStreamSpy.calledWith('remote')).to.equal(true);
           done();
         }, 100);
+      });
+    });
+
+    describe('call-disconnected', function () {
+      var setIdSpy;
+
+      beforeEach(function () {
+        setIdSpy = sinon.spy(call, 'setId');
+      });
+
+      afterEach(function () {
+        setIdSpy.restore();
+      });
+
+      it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
+
+        emitterEM.publish('call-disconnected');
+
+        setTimeout(function () {
+          try {
+            expect(call.id).to.equal(null);
+//            expect(setIdSpy.calledWith(null)).to.equal(null);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 300);
+      });
+
+
+      it('should publish `disconnected` on getting `call-disconnected` with no reason', function (done) {
+
+        var disconnectedSpy = sinon.spy();
+
+        call.on('disconnected', disconnectedSpy);
+
+        emitterEM.publish('call-disconnected', {}); // no reason passed
+
+        setTimeout(function () {
+          expect(disconnectedSpy.called).to.equal(true);
+          done();
+        }, 100);
+
+      });
+
+      it('should publish `rejected` on getting `call-disconnected` with reason: `Call rejected`', function (done) {
+
+        var rejectedSpy = sinon.spy();
+
+        call.on('rejected', rejectedSpy);
+
+        emitterEM.publish('call-disconnected', {
+          reason: 'Call rejected'
+        });
+
+        setTimeout(function () {
+          console.log(rejectedSpy.callCount);
+          console.log(JSON.stringify(rejectedSpy.getCall(0).args[0]));
+          expect(rejectedSpy.calledOnce).to.equal(true);
+          done();
+        }, 100);
+
       });
     });
 
