@@ -92,6 +92,9 @@
     if (undefined === options.peer) {
       throw new Error('No peer provided');
     }
+    if (undefined === options.type) {
+      throw new Error('No type provided');
+    }
     if (undefined === options.mediaType) {
       throw new Error('No mediaType provided');
     }
@@ -101,7 +104,53 @@
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
 
+    function createEventData() {
+      var data = {
+        timestamp: new Date(),
+        mediaType: this.mediaType
+      };
 
+      if (this.codec) {
+        data.codec = this.codec;
+      }
+      if (this.type === ATT.CallTypes.OUTGOING) {
+        data.to = this.peer;
+      } else if (this.type === ATT.CallTypes.INCOMING) {
+        data.from = this.peer;
+      }
+      return data;
+    }
+
+    /**
+     *
+     * Set the CallId
+     * @param {String} callId The callId
+     * @param <opt> {Object} data Event data
+     */
+    function setId(callId) {
+      this.id  = callId;
+
+      if (this.id === null) {
+        this.setState('disconnected');
+      } else {
+        this.setState('connecting');
+      }
+    }
+
+    function getState() {
+      return state;
+    }
+
+    function setState(newState) {
+      state = newState;
+
+      emitter.publish(state, createEventData.call(this));
+    }
+
+    function setRemoteSdp(remoteSdp) {
+      this.remoteSdp = remoteSdp;
+      this.codec = ATT.sdpFilter.getInstance().getCodecfromSDP(remoteSdp);
+    }
 
     function on(event, handler) {
 
@@ -112,10 +161,9 @@
           'muted' !== event &&
           'unmuted' !== event &&
           'media-established' !== event &&
-          'ended' !== event &&
           'error' !== event &&
-          'hold' !== event &&
-          'resume' !== event &&
+          'held' !== event &&
+          'resumed' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event) {
         throw new Error('Event not defined');
@@ -142,24 +190,30 @@
       }
 
       call.remoteMedia.addEventListener('playing', function () {
-        emitter.publish('media-established');
+        call.setState('media-established');
       });
 
       rtcManager.on('media-modifications', function (modifications) {
         rtcManager.setMediaModifications(modifications);
+
         if (modifications.remoteSdp
             && modifications.remoteSdp.indexOf('recvonly') !== -1) {
-          call.setState(ATT.CallStates.HELD);
-          rtcManager.disableMediaStream();
+
+          call.setState('held');
+          rtcManager.disableMediaStream(); 
+
         }
+
         if (modifications.remoteSdp
             && call.remoteSdp
             && call.remoteSdp.indexOf
             && call.remoteSdp.indexOf('recvonly') !== -1
             && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-          call.setState(ATT.CallStates.RESUMED);
+
+          call.setState('resumed');
           rtcManager.enableMediaStream();
           call.setRemoteSdp(modifications.remoteSdp);
+
         }
       });
 
@@ -172,12 +226,12 @@
           if (modifications.reason === 'success'
               && modifications.remoteSdp.indexOf('sendonly') !== -1
               && modifications.remoteSdp.indexOf('sendrecv') === -1) {
-            call.setState(ATT.CallStates.HELD);
+            call.setState('held');
             rtcManager.disableMediaStream();
           }
           if (modifications.reason === 'success'
               && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-            call.setState(ATT.CallStates.RESUMED);
+            call.setState('resumed');
             rtcManager.enableMediaStream();
           }
           call.setRemoteSdp(modifications.remoteSdp);
@@ -193,14 +247,14 @@
           call.setRemoteSdp(data.remoteSdp);
         }
 
-        emitter.publish('connected');
+        call.setState('connected');
 
         rtcManager.playStream('remote');
       });
 
       rtcManager.on('call-disconnected', function (data) {
 
-        call.id = null;
+        call.setId(null);
 
         if (undefined !== data && 'Call rejected' === data.reason) {
           emitter.publish('rejected');
@@ -234,10 +288,10 @@
     function disconnect() {
       var call = this;
 
-      emitter.publish('disconnecting');
+      this.setState('disconnecting');
 
       rtcManager.on('call-disconnected', function (data) {
-        call.setId(null, data);
+        call.setId(null);
       });
 
       rtcManager.disconnectCall({
@@ -246,43 +300,12 @@
       });
     }
 
-    function getState() {
-      return state;
-    }
-
-    function setState(newState) {
-      state = newState;
-
-      emitter.publish(state);
-    }
-
-    /**
-    *
-    * Set the CallId
-    * @param {String} callId The callId
-    * @param <opt> {Object} data Event data
-    * @param <opt> {Object} data Event data
-    */
-    function setId(callId, data) {
-      this.id  = callId;
-      if (this.id === null) {
-        emitter.publish('disconnected', data);
-      } else {
-        emitter.publish('connecting');
-      }
-    }
-
-    function setRemoteSdp(remoteSdp) {
-      this.remoteSdp = remoteSdp;
-    }
-
     function mute() {
       var call = this;
 
       rtcManager.muteCall({
         onSuccess: function () {
-          call.state = ATT.CallStates.MUTED;
-          emitter.publish('muted');
+          call.setState('muted');
         }
       });
     }
@@ -292,8 +315,7 @@
 
       rtcManager.unmuteCall({
         onSuccess: function () {
-          call.state = ATT.CallStates.ONGOING;
-          emitter.publish('unmuted');
+          call.setState('unmuted');
         }
       });
     }
@@ -347,10 +369,11 @@
     this.type = options.type;
     this.sessionInfo = options.sessionInfo;
     this.localSdp = null;
-    this.remoteSdp = options.remoteSdp || null;
+    this.remoteSdp = null;
     this.localMedia = options.localMedia;
     this.remoteMedia = options.remoteMedia;
     this.state = null;
+    this.codec = null;
 
     // Call methods
     this.on = on.bind(this);
