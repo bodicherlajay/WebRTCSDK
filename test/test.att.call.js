@@ -164,9 +164,18 @@ describe('Call', function () {
       onMutedSpy,
       onUnmutedSpy,
       onDisconnectingSpy,
-      onDisconnectedSpy;
+      onDisconnectedSpy,
+      onErrorHandlerSpy,
+      error,
+      errorData;
 
     beforeEach(function () {
+
+      error = 'Test Error';
+      errorData = {
+        error: error
+      };
+
       outgoingCall = new ATT.rtc.Call(optionsOutgoing);
       incomingCall = new ATT.rtc.Call(optionsIncoming);
 
@@ -178,6 +187,7 @@ describe('Call', function () {
       onUnmutedSpy = sinon.spy()
       onDisconnectingSpy = sinon.spy();
       onDisconnectedSpy = sinon.spy();
+      onErrorHandlerSpy = sinon.spy();
 
       outgoingCall.on('connecting', onConnectingSpy);
       outgoingCall.on('connected', onConnectedSpy);
@@ -185,9 +195,10 @@ describe('Call', function () {
       outgoingCall.on('unmuted', onUnmutedSpy);
       outgoingCall.on('disconnecting', onDisconnectingSpy);
       outgoingCall.on('disconnected', onDisconnectedSpy);
+      outgoingCall.on('error', onErrorHandlerSpy);
     });
 
-    describe('On', function () {
+    describe('on', function () {
 
       it('Should exist', function () {
         expect(outgoingCall.on).to.be.a('function');
@@ -212,7 +223,7 @@ describe('Call', function () {
       });
     });
 
-    describe('Connect', function () {
+    describe('connect', function () {
 
       var connectCallStub,
         setIdStub,
@@ -298,52 +309,115 @@ describe('Call', function () {
         expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
       });
 
-      describe('success on connectCall', function () {
+      describe('Callbacks on connectCall', function () {
 
-        beforeEach(function () {
-          connectCallStub.restore();
+        describe('onCallConnecting', function () {
 
-          connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
-            options.onCallConnecting({
-              callId: '1234',
-              localSdp: localSdp
+          beforeEach(function () {
+            connectCallStub.restore();
+
+            connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
+              options.onCallConnecting({
+                callId: '1234',
+                localSdp: localSdp
+              });
             });
+          });
+
+          afterEach(function () {
+            connectCallStub.restore();
+          });
+
+          it('should execute Call.setId for outgoing calls', function () {
+            outgoingCall.connect(connectOptions);
+
+            expect(setIdStub.called).to.equal(true);
+          });
+
+          it('should execute Call.setState for incoming calls', function () {
+            setStateSpy = sinon.spy(incomingCall, 'setState');
+            incomingCall.connect(connectOptions);
+
+            expect(setStateSpy.called).to.equal(true);
+
+            setStateSpy.restore();
+          });
+
+          it('should set the newly created LocalSdp on the call', function () {
+            outgoingCall.connect(connectOptions);
+
+            expect(outgoingCall.localSdp).to.equal(localSdp);
+          });
+
+          it('Should publish `error` with error data if there is an error in operation', function (done) {
+
+            setIdStub.restore();
+
+            setIdStub = sinon.stub(outgoingCall, 'setId', function () {
+              throw error;
+            });
+
+            outgoingCall.connect(connectOptions);
+
+            setTimeout(function () {
+              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+              done();
+            }, 100);
+
           });
         });
 
-        afterEach(function () {
+        describe('onError', function () {
+
+          beforeEach(function () {
+            connectCallStub.restore();
+
+            connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
+              setTimeout(function () {
+                options.onError(error);
+              }, 0);
+            });
+          });
+
+          afterEach(function () {
+            connectCallStub.restore();
+          });
+
+          it('Should publish `error` with error data', function (done) {
+
+            outgoingCall.connect(connectOptions);
+
+            setTimeout(function () {
+              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+              done();
+            }, 100);
+
+          });
+        });
+
+      });
+
+      describe('Error Handling', function () {
+
+        it('should publish `error` with error data if there is an error in any operation', function (done) {
           connectCallStub.restore();
-        });
 
-        it('should execute Call.setId for outgoing calls', function () {
+          connectCallStub = sinon.stub(rtcMgr, 'connectCall', function () {
+            throw error;
+          });
+
           outgoingCall.connect(connectOptions);
 
-          expect(setIdStub.called).to.equal(true);
+          setTimeout(function () {
+            expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+            done();
+          }, 100);
         });
 
-        it('should execute Call.setState for incoming calls', function () {
-          setStateSpy = sinon.spy(incomingCall, 'setState');
-          incomingCall.connect(connectOptions);
-
-          expect(setStateSpy.called).to.equal(true);
-
-          setStateSpy.restore();
-        });
-
-        it('should set the newly created LocalSdp on the call', function () {
-          outgoingCall.connect(connectOptions);
-
-          expect(outgoingCall.localSdp).to.equal(localSdp);
-        });
       });
-
-      describe('error on connectCall', function () {
-        it('Should execute the onError callback if there is an error');
-      });
-
     });
 
-    describe('Mute/Unmute', function () {
+    describe('mute/unmute', function () {
 
       var muteCallStub,
         unmuteCallStub;
@@ -418,7 +492,7 @@ describe('Call', function () {
       });
     });
 
-    describe('Hold/Resume', function () {
+    describe('hold/resume', function () {
 
       var holdCallStub,
         resumeCallStub;
@@ -606,6 +680,7 @@ describe('Call', function () {
     });
 
     describe('getState', function () {
+
       it('should exist', function () {
         expect(outgoingCall.getState).to.be.a('function');
       });

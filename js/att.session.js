@@ -162,47 +162,79 @@
     };
 
     this.connect =   function connect(options) {
-      if (!options) {
-        throw 'No input provided';
-      }
-      if (!options.token) {
-        throw 'No access token provided';
-      }
-      token = options.token;
-      this.e911Id = options.e911Id;
-
-      emitter.publish('connecting');
-
-      var session = this;
-
-      rtcManager.connectSession({
-        token: options.token,
-        e911Id: options.e911Id,
-        onSessionConnected: function (sessionInfo) {
-          session.setId(sessionInfo.sessionId);
-          session.update({
-            timeout: sessionInfo.timeout
-          });
-        },
-        onSessionReady: function (data) {
-          emitter.publish('ready', data);
+      try {
+        if (undefined === options) {
+          throw new Error('No input provided');
         }
-      });
+        if (undefined === options.token) {
+          throw new Error('No access token provided');
+        }
+
+        token = options.token;
+        this.e911Id = options.e911Id;
+
+        emitter.publish('connecting');
+
+        var session = this;
+
+        rtcManager.connectSession({
+          token: options.token,
+          e911Id: options.e911Id,
+          onSessionConnected: function (sessionInfo) {
+            try {
+              session.setId(sessionInfo.sessionId);
+              session.update({
+                timeout: sessionInfo.timeout
+              });
+            } catch (err) {
+              emitter.publish('error', {
+                error: err
+              });
+            }
+          },
+          onSessionReady: function (data) {
+            emitter.publish('ready', data);
+          },
+          onError: function (error) {
+            emitter.publish('error', {
+              error: error
+            });
+          }
+        });
+
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     };
 
     this.disconnect =   function () {
-      emitter.publish('disconnecting');
+      try {
+        emitter.publish('disconnecting');
 
-      var session = this;
+        var session = this;
 
-      rtcManager.disconnectSession({
-        sessionId: session.getId(),
-        token: session.getToken(),
-        e911Id: session.e911Id,
-        onSessionDisconnected: function () {
-          session.setId(null);
-        }
-      });
+        rtcManager.disconnectSession({
+          sessionId: session.getId(),
+          token: session.getToken(),
+          e911Id: session.e911Id,
+          onSessionDisconnected: function () {
+            try {
+              session.setId(null);
+            } catch (err) {
+              emitter.publish('error', {
+                error: err
+              });
+            }
+          }
+        });
+
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     };
 
     this.createCall = function (options) {

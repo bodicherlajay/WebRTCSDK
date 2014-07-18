@@ -106,106 +106,124 @@
      * @param {Object} The call config
     */
     function connect(config) {
-      var call = this;
+      try {
+        var call = this;
 
-      if (undefined !== config.localMedia) {
-        call.localMedia = config.localMedia;
-      }
-
-      if (undefined !== config.remoteMedia) {
-        call.remoteMedia = config.remoteMedia;
-      }
-
-      call.remoteMedia.addEventListener('playing', function () {
-        call.setState('media-established');
-      });
-
-      rtcManager.on('media-modifications', function (modifications) {
-        rtcManager.setMediaModifications(modifications);
-        if (modifications.remoteSdp
-            && modifications.remoteSdp.indexOf('recvonly') !== -1) {
-          call.setState('held');
-          rtcManager.disableMediaStream(); 
+        if (undefined !== config.localMedia) {
+          call.localMedia = config.localMedia;
         }
-        if (modifications.remoteSdp
+
+        if (undefined !== config.remoteMedia) {
+          call.remoteMedia = config.remoteMedia;
+        }
+
+        call.remoteMedia.addEventListener('playing', function () {
+          call.setState('media-established');
+        });
+
+        rtcManager.on('media-modifications', function (modifications) {
+          rtcManager.setMediaModifications(modifications);
+          if (modifications.remoteSdp
+            && modifications.remoteSdp.indexOf('recvonly') !== -1) {
+            call.setState('held');
+            rtcManager.disableMediaStream();
+          }
+          if (modifications.remoteSdp
             && call.remoteSdp
             && call.remoteSdp.indexOf
             && call.remoteSdp.indexOf('recvonly') !== -1
             && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-          call.setState('resumed');
-          rtcManager.enableMediaStream();
-        }
-        call.setRemoteSdp(modifications.remoteSdp);
-      });
-
-      rtcManager.on('media-mod-terminations', function (modifications) {
-        if (modifications.remoteSdp) {
-          rtcManager.setRemoteDescription({
-            remoteSdp: modifications.remoteSdp,
-            type: 'answer'
-          });
-          if (modifications.reason === 'success'
-              && modifications.remoteSdp.indexOf('sendonly') !== -1
-              && modifications.remoteSdp.indexOf('sendrecv') === -1) {
-            call.setState('held');
-            rtcManager.disableMediaStream();
-          }
-          if (modifications.reason === 'success'
-              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
             call.setState('resumed');
             rtcManager.enableMediaStream();
           }
           call.setRemoteSdp(modifications.remoteSdp);
-        }
-      });
+        });
 
-      rtcManager.on('call-connected', function (data) {
-        if (data.remoteSdp) {
-          rtcManager.setRemoteDescription({
-            remoteSdp: data.remoteSdp,
-            type: 'answer'
-          });
-          call.setRemoteSdp(data.remoteSdp);
-        }
-
-        call.setState('connected');
-
-        rtcManager.playStream('remote');
-      });
-
-      rtcManager.on('call-disconnected', function (data) {
-
-        call.setId(null);
-
-        if (undefined !== data && 'Call rejected' === data.reason) {
-          emitter.publish('rejected');
-        } else {
-          emitter.publish('disconnected');
-        }
-
-        rtcManager.resetPeerConnection();
-
-      });
-
-      rtcManager.connectCall({
-        peer: call.peer,
-        callId: call.id,
-        type: call.type,
-        mediaType: call.mediaType,
-        localMedia: config.localMedia || call.localMedia,
-        remoteMedia: config.remoteMedia || call.remoteMedia,
-        remoteSdp: call.remoteSdp,
-        sessionInfo: call.sessionInfo,
-        onCallConnecting: function (callInfo) {
-          if (call.type === ATT.CallTypes.OUTGOING) {
-            call.setId(callInfo.callId);
+        rtcManager.on('media-mod-terminations', function (modifications) {
+          if (modifications.remoteSdp) {
+            rtcManager.setRemoteDescription({
+              remoteSdp: modifications.remoteSdp,
+              type: 'answer'
+            });
+            if (modifications.reason === 'success'
+              && modifications.remoteSdp.indexOf('sendonly') !== -1
+              && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+              call.setState('held');
+              rtcManager.disableMediaStream();
+            }
+            if (modifications.reason === 'success'
+              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+              call.setState('resumed');
+              rtcManager.enableMediaStream();
+            }
+            call.setRemoteSdp(modifications.remoteSdp);
           }
-          if (call.type === ATT.CallTypes.INCOMING) {
-            call.setState(callInfo.xState);
+        });
+
+        rtcManager.on('call-connected', function (data) {
+          if (data.remoteSdp) {
+            rtcManager.setRemoteDescription({
+              remoteSdp: data.remoteSdp,
+              type: 'answer'
+            });
+            call.setRemoteSdp(data.remoteSdp);
           }
-          call.localSdp = callInfo.localSdp;
-        }
-      });
+
+          call.setState('connected');
+
+          rtcManager.playStream('remote');
+        });
+
+        rtcManager.on('call-disconnected', function (data) {
+
+          call.setId(null);
+
+          if (undefined !== data && 'Call rejected' === data.reason) {
+            emitter.publish('rejected');
+          } else {
+            emitter.publish('disconnected');
+          }
+
+          rtcManager.resetPeerConnection();
+
+        });
+
+        rtcManager.connectCall({
+          peer: call.peer,
+          callId: call.id,
+          type: call.type,
+          mediaType: call.mediaType,
+          localMedia: config.localMedia || call.localMedia,
+          remoteMedia: config.remoteMedia || call.remoteMedia,
+          remoteSdp: call.remoteSdp,
+          sessionInfo: call.sessionInfo,
+          onCallConnecting: function (callInfo) {
+            try {
+              if (call.type === ATT.CallTypes.OUTGOING) {
+                call.setId(callInfo.callId);
+              }
+              if (call.type === ATT.CallTypes.INCOMING) {
+                call.setState(callInfo.xState);
+              }
+              call.localSdp = callInfo.localSdp;
+            } catch (err) {
+              emitter.publish('error', {
+                error: err
+              });
+            }
+          },
+          onError: function (error) {
+            emitter.publish('error', {
+              error: error
+            });
+          }
+        });
+
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
     function disconnect() {

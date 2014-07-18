@@ -42,6 +42,7 @@ describe('Session', function () {
     };
 
   });
+
   afterEach(function () {
     createResourceManagerStub.restore();
     doOperationStub.restore();
@@ -99,22 +100,29 @@ describe('Session', function () {
       call,
       secondCall,
       emitterEM,
-      emitterSession,
+      emitter,
       onConnectingSpy,
       onConnectedSpy,
       onUpdatingSpy,
-      onReadySpy,
+      onReadyHandlerSpy,
       onDisconnectingSpy,
       onDisconnectedSpy,
+      onErrorHandlerSpy,
       onSessionReadyData,
       createEventEmitterStub,
       rtcManager,
       getRTCMgrStub,
-      connectSessionStub,
-      disconnectSessionStub,
-      getTokenstub;
+      getTokenStub,
+      error,
+      errorData;
 
     beforeEach(function () {
+
+      error = 'Test Error';
+      errorData = {
+        error: error
+      };
+
       onSessionReadyData = {
         test: 'test'
       };
@@ -127,33 +135,23 @@ describe('Session', function () {
 
       rtcManager = new ATT.private.RTCManager(optionsforRTCM);
 
-      connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
-        options.onSessionConnected({
-          sessionId: 'sessionid',
-          timeout: 120000
-        });
-        options.onSessionReady(onSessionReadyData);
-      });
-
-      disconnectSessionStub = sinon.stub(rtcManager, 'disconnectSession', function (options) {
-        options.onSessionDisconnected();
-      });
-
       getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcManager;
       });
 
       createEventEmitterStub.restore();
 
-      emitterSession = ATT.private.factories.createEventEmitter();
+      emitter = ATT.private.factories.createEventEmitter();
 
       createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-        return emitterSession;
+        return emitter;
       });
 
       session = new ATT.rtc.Session(options);
 
-      getTokenstub = sinon.stub(session, 'getToken', function () {
+      createEventEmitterStub.restore();
+
+      getTokenStub = sinon.stub(session, 'getToken', function () {
         return 'dsfgdsdf';
       });
 
@@ -174,24 +172,24 @@ describe('Session', function () {
       onConnectingSpy = sinon.spy();
       onConnectedSpy = sinon.spy();
       onUpdatingSpy = sinon.spy();
-      onReadySpy = sinon.spy();
+      onReadyHandlerSpy = sinon.spy();
       onDisconnectingSpy = sinon.spy();
       onDisconnectedSpy = sinon.spy();
+      onErrorHandlerSpy = sinon.spy();
 
       session.on('connecting', onConnectingSpy);
       session.on('connected', onConnectedSpy);
       session.on('updating', onUpdatingSpy);
-      session.on('ready', onReadySpy);
+      session.on('ready', onReadyHandlerSpy);
       session.on('disconnecting', onDisconnectingSpy);
       session.on('disconnected', onDisconnectedSpy);
+      session.on('error', onErrorHandlerSpy);
     });
 
     afterEach(function () {
-      connectSessionStub.restore();
-      disconnectSessionStub.restore();
-      getRTCMgrStub.restore();
       createEventEmitterStub.restore();
-      getTokenstub.restore();
+      getRTCMgrStub.restore();
+      getTokenStub.restore();
     });
 
     describe('On', function () {
@@ -206,8 +204,8 @@ describe('Session', function () {
 
       it('Should register callback for known events', function () {
         var fn = sinon.spy(),
-          unsubscribeSpy = sinon.spy(emitterSession, 'unsubscribe'),
-          subscribeSpy = sinon.spy(emitterSession, 'subscribe');
+          unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
+          subscribeSpy = sinon.spy(emitter, 'subscribe');
 
         expect(session.on.bind(session, 'connected', fn)).to.not.throw(Error);
         expect(session.on.bind(session, 'disconnected', fn)).to.not.throw(Error);
@@ -222,14 +220,35 @@ describe('Session', function () {
 
     describe('Connect', function () {
 
+      var connectSessionStub;
+
+      beforeEach(function () {
+
+        connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
+        });
+
+      });
+
+      afterEach(function () {
+        connectSessionStub.restore();
+      });
+
       it('Should exist', function () {
         expect(session.connect).to.be.a('function');
       });
 
       it('Should fail if no input options specified', function () {
+
+        var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
+          //throw data.error.ErrorMessage;
+          throw data.error.message; // since not using Error codes yet
+        });
+
         expect(session.connect.bind(session)).to.throw('No input provided');
         expect(session.connect.bind(session, {})).to.throw('No access token provided');
         expect(session.connect.bind(session, {token: '123'})).to.not.throw('No access token provided');
+
+        publishStub.restore();
       });
 
       it('Should publish the `connecting` event immediately', function (done) {
@@ -251,56 +270,172 @@ describe('Session', function () {
         expect(connectSessionStub.called).to.equal(true);
       });
 
-      describe('Success on session.connect', function () {
-        var setIdSpy,
-          updateSpy;
+      describe('Callbacks on connectSession', function () {
 
-        beforeEach(function () {
-          setIdSpy = sinon.spy(session, 'setId');
-          updateSpy = sinon.stub(session, 'update');
+        describe('onSessionConnected', function () {
+          var setIdStub,
+            updateSpy;
+
+          beforeEach(function () {
+            setIdStub = sinon.stub(session, 'setId');
+            updateSpy = sinon.stub(session, 'update');
+
+            connectSessionStub.restore();
+
+            connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
+              setTimeout(function () {
+                options.onSessionConnected({
+                  sessionId: 'sessionid',
+                  timeout: 120000
+                });
+              }, 0);
+            });
+
+          });
+
+          afterEach(function () {
+            setIdStub.restore();
+            updateSpy.restore();
+            connectSessionStub.restore();
+          });
+
+          it('Should set the id on session with newly created session id', function (done) {
+            session.connect(options);
+
+            setTimeout(function () {
+              expect(setIdStub.calledWith('sessionid')).to.equal(true);
+              done();
+            }, 100);
+          });
+
+          it('Should execute the update on session with newly created timeout', function (done) {
+            session.connect(options);
+
+            setTimeout(function () {
+              expect(updateSpy.calledWith({
+                timeout: 120000
+              })).to.equal(true);
+              done();
+            }, 100);
+
+          });
+
+          it('should publish `error` with error data if there is an error in any operation', function (done) {
+            setIdStub.restore();
+
+            setIdStub = sinon.stub(session, 'setId', function () {
+              throw error;
+            });
+
+            session.connect(options);
+
+            setTimeout(function () {
+              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+              done();
+            }, 100);
+          });
+
+        });
+
+        describe('onSessionReady', function () {
+
+          beforeEach(function () {
+            connectSessionStub.restore();
+
+            connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
+              setTimeout(function () {
+                options.onSessionReady(onSessionReadyData);
+              }, 0);
+            });
+
+            session.connect(options);
+          });
+
+          afterEach(function () {
+            connectSessionStub.restore();
+          });
+
+          it('should publish the ready event with data on session', function (done) {
+            setTimeout(function () {
+              try {
+                expect(onReadyHandlerSpy.calledWith(onSessionReadyData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+        });
+
+        describe('onError', function () {
+
+          beforeEach(function () {
+
+            connectSessionStub.restore();
+
+            connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
+              setTimeout(function () {
+                options.onError(error);
+              }, 0);
+            });
+
+            session.connect(options);
+
+          });
+
+          afterEach(function () {
+            connectSessionStub.restore();
+          });
+
+          it('should publish `error` event with error data', function (done) {
+
+            setTimeout(function () {
+              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+              done();
+            }, 100);
+          });
+
+        });
+
+      });
+
+      describe('Error Handling', function () {
+
+        it('should publish `error` with error data if there is an error in any operation', function (done) {
+          connectSessionStub.restore();
+
+          connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
+            throw error;
+          });
 
           session.connect(options);
-        });
 
-        afterEach(function () {
-          setIdSpy.restore();
-          updateSpy.restore();
-        });
-
-        it('Should set the id on session with newly created session id', function () {
-          expect(setIdSpy.calledWith('sessionid')).to.equal(true);
-        });
-
-        it('Should execute the update on session with newly created timeout', function () {
-          expect(updateSpy.calledWith({
-            timeout: 120000
-          })).to.equal(true);
-        });
-
-        it('should publish the ready event with data on session', function (done) {
           setTimeout(function () {
-            try {
-              expect(onReadySpy.calledWith(onSessionReadyData)).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
+            expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+            done();
           }, 100);
         });
+
       });
+
     });
 
     describe('Disconnect', function () {
-      var onSetIdSpy;
+      var disconnectSessionStub,
+        setIdStub;
 
       beforeEach(function () {
+        disconnectSessionStub = sinon.stub(rtcManager, 'disconnectSession', function (options) {
+        });
+
         session.setId('123');
-        onSetIdSpy = sinon.spy(session, 'setId');
-        session.disconnect();
+
+        setIdStub = sinon.stub(session, 'setId');
       });
 
       afterEach(function () {
-        onSetIdSpy.restore();
+        disconnectSessionStub.restore();
+        setIdStub.restore();
       });
 
       it('Should exist', function () {
@@ -308,6 +443,8 @@ describe('Session', function () {
       });
 
       it('Should trigger the disconnecting event immediately', function (done) {
+        session.disconnect();
+
         setTimeout(function () {
           try {
             expect(onDisconnectingSpy.called).to.equal(true);
@@ -319,13 +456,70 @@ describe('Session', function () {
       });
 
       it('Should execute RTCManager.disconnectSession', function () {
+        session.disconnect();
+
         expect(disconnectSessionStub.called).to.equal(true);
       });
-      describe('Success on session.disconnect', function () {
-        it('should execute setId(null) if successful', function () {
-          expect(onSetIdSpy.called).to.equal(true);
-          expect(onSetIdSpy.calledWith(null)).to.equal(true);
+
+      describe('Callbacks on session.disconnectSession', function () {
+
+        describe('onSessionDisconnected', function () {
+
+          beforeEach(function () {
+            disconnectSessionStub.restore();
+
+            disconnectSessionStub = sinon.stub(rtcManager, 'disconnectSession', function (options) {
+              setTimeout(function () {
+                options.onSessionDisconnected();
+              }, 0);
+            });
+          });
+
+          it('should execute setId(null) if successful', function (done) {
+            session.disconnect();
+
+            setTimeout(function () {
+              expect(setIdStub.called).to.equal(true);
+              expect(setIdStub.calledWith(null)).to.equal(true);
+              done();
+            }, 100);
+          });
+
+          it('should publish `error` with error data if there is an error in any operation', function (done) {
+            setIdStub.restore();
+
+            setIdStub = sinon.stub(session, 'setId', function () {
+              throw error;
+            });
+
+            session.disconnect();
+
+            setTimeout(function () {
+              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+              done();
+            }, 100);
+          });
         });
+
+      });
+
+      describe('Error Handling', function () {
+
+        it('should publish `error` with error data if there is an error in any operation', function (done) {
+          disconnectSessionStub.restore();
+
+          disconnectSessionStub = sinon.stub(rtcManager, 'disconnectSession', function () {
+            throw error;
+          });
+
+          session.disconnect();
+
+          setTimeout(function () {
+            expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+            done();
+          }, 100);
+        });
+
       });
 
     });
@@ -341,6 +535,7 @@ describe('Session', function () {
       it('should exist', function () {
         expect(sessionForGetToken.getToken).to.be.a('function');
       });
+
       it('return the current token', function () {
         expect(sessionForGetToken.getToken()).to.equal(null);
         sessionForGetToken.update({
@@ -554,6 +749,7 @@ describe('Session', function () {
     });
 
     describe('createCall', function () {
+
       var callOpts;
 
       beforeEach(function () {
