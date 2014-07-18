@@ -68,8 +68,9 @@
           'disconnecting' !== event &&
           'disconnected' !== event &&
           'address-updated' !== event &&
-          'allcallsterminated' !== event) {
-        throw new Error('Event not defined');
+          'allcallsterminated' !== event &&
+          'error' !== event) {
+        throw new Error('Event ' + event + ' not defined');
       }
 
       emitter.unsubscribe(event, handler);
