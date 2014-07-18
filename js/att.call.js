@@ -106,7 +106,7 @@
       that.id = null;
 
       if (undefined !== data && 'Call rejected' === data.reason) {
-        emitter.publish('rejected', data);
+        that.setState('rejected');
       } else {
         emitter.publish('disconnected', data);
       }

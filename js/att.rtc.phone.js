@@ -578,23 +578,23 @@
       phone.reject();
     */
     function reject() {
-     try {
-       var call = session.currentCall;
+      try {
+        var call = session.currentCall;
 
-       if (undefined === call || null === call) {
-         throw new Error('Call object not defined');
-       }
-       call.on('disconnected', function (data) {
-         emitter.publish('call-disconnected', data);
-         session.deleteCurrentCall();
-       });
-       call.reject();
+        if (undefined === call || null === call) {
+          throw new Error('Call object not defined');
+        }
+        call.on('disconnected', function (data) {
+          emitter.publish('call-disconnected', data);
+          session.deleteCurrentCall();
+        });
+        call.reject();
 
-     } catch (err) {
-       emitter.publish('error', {
-         error: err
-       });
-     }
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
    /**

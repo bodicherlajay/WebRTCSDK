@@ -1274,7 +1274,7 @@ describe('Phone', function () {
 
           callRejectedSpy = sinon.spy();
 
-          phone.on('call-rejected', callRejectedSpy);
+          phone.on('call-disconnected', callRejectedSpy);
 
           session.currentCall = call;
         });
@@ -1306,21 +1306,25 @@ describe('Phone', function () {
           expect(callRejectStub.called).to.equal(true);
         });
 
-        it('should register for the `rejected` event on the call object', function () {
+        it('should register for the `disconnected` event on the call object', function () {
           phone.reject();
 
           expect(onSpy.calledOnce).to.equal(true);
-          expect(onSpy.calledWith('rejected')).to.equal(true);
+          expect(onSpy.calledWith('disconnected')).to.equal(true);
         });
 
-        it('should trigger `call-rejected` when call publishes `rejected` event', function (done) {
+        it('should trigger `call-disconnected` with data when call publishes `disconnected` event', function (done) {
+          var data = {
+            data: 'test'
+          };
+
           phone.reject();
 
-          emitterCall.publish('rejected');
+          emitterCall.publish('disconnected', data);
 
           setTimeout(function () {
             try {
-              expect(callRejectedSpy.called).to.equal(true);
+              expect(callRejectedSpy.calledWith(data)).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1336,7 +1340,7 @@ describe('Phone', function () {
 
             callRejectStub = sinon.stub(call, 'reject', function () {
               throw error;
-            })
+            });
 
           });
 
