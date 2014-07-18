@@ -648,6 +648,20 @@ describe('Call', function () {
               }
             }, 200);
           });
+
+          it('should de-register from the `call-disconnected` event from `rtcManager`', function (done) {
+            var offSpy = sinon.spy(rtcMgr, 'off');
+
+            emitterEM.publish('call-disconnected', {
+              reason: 'Call rejected'
+            });
+
+            setTimeout(function () {
+              expect(offSpy.called).to.equal(true);
+              offSpy.restore();
+              done();
+            }, 100);
+          });
         });
       });
     });

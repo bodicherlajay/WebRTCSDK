@@ -110,8 +110,9 @@
       } else {
         emitter.publish('disconnected', data);
       }
-
+      rtcManager.off('call-disconnected', onCallDisconnected);
       rtcManager.resetPeerConnection();
+
     }
     /*
      * Connect the Call
@@ -304,7 +305,7 @@
     this.reject = reject.bind(this);
 
 
-    rtcManager.on("call-disconnected", onCallDisconnected);
+    rtcManager.on('call-disconnected', onCallDisconnected);
 
   }
 
