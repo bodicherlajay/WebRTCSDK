@@ -127,6 +127,10 @@
       emitter.publish('stop-listening');
     }
 
+    function off(event, handler) {
+      emitter.unsubscribe(event, handler);
+    }
+
     function on(event, handler) {
       if ('listening' !== event
           && 'stop-listening' !== event
@@ -176,6 +180,7 @@
 
     return {
       on: on,
+      off: off,
       setup: setup,
       stop: stop
     };

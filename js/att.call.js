@@ -27,7 +27,8 @@
     }
 
     // private properties
-    var state = 'created',
+    var that = this,
+      state = 'created',
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
 
@@ -100,6 +101,19 @@
       emitter.subscribe(event, handler, this);
     }
 
+
+    function onCallDisconnected(data) {
+      that.id = null;
+
+      if (undefined !== data && 'Call rejected' === data.reason) {
+        emitter.publish('rejected', data);
+      } else {
+        emitter.publish('disconnected', data);
+      }
+      rtcManager.off('call-disconnected', onCallDisconnected);
+      rtcManager.resetPeerConnection();
+
+    }
     /*
      * Connect the Call
      * Connects the call based on callType(Incoming|Outgoing)
@@ -174,20 +188,6 @@
           rtcManager.playStream('remote');
         });
 
-        rtcManager.on('call-disconnected', function (data) {
-
-          call.setId(null);
-
-          if (undefined !== data && 'Call rejected' === data.reason) {
-            emitter.publish('rejected');
-          } else {
-            emitter.publish('disconnected');
-          }
-
-          rtcManager.resetPeerConnection();
-
-        });
-
         rtcManager.connectCall({
           peer: call.peer,
           callId: call.id,
@@ -230,10 +230,6 @@
       var call = this;
 
       this.setState('disconnecting');
-
-      rtcManager.on('call-disconnected', function (data) {
-        call.setId(null);
-      });
 
       rtcManager.disconnectCall({
         sessionInfo: this.sessionInfo,
@@ -285,16 +281,12 @@
 
     function reject() {
       var call = this;
-
-      rtcManager.on("call-disconnected", function () {
-        call.id = null;
-        emitter.publish('rejected');
-      });
       rtcManager.rejectCall({
         sessionId : call.sessionInfo.sessionId,
         callId : call.id,
         token : call.sessionInfo.token,
         onSuccess : function () {
+          rtcManager.off('call-disconnected', onCallDisconnected);
         },
         onError : function () {
 
@@ -329,6 +321,9 @@
     this.hold = hold.bind(this);
     this.resume = resume.bind(this);
     this.reject = reject.bind(this);
+
+
+    rtcManager.on('call-disconnected', onCallDisconnected);
 
   }
 
