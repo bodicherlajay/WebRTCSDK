@@ -1176,14 +1176,17 @@ describe('Call', function () {
     });
 
     describe('call-disconnected', function () {
-      var setIdSpy;
+      var setIdSpy,
+        resetPeerConnectionStub;
 
       beforeEach(function () {
         setIdSpy = sinon.spy(call, 'setId');
+        resetPeerConnectionStub = sinon.stub(rtcMgr, 'resetPeerConnection');
       });
 
       afterEach(function () {
         setIdSpy.restore();
+        resetPeerConnectionStub();
       });
 
       it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
@@ -1193,7 +1196,6 @@ describe('Call', function () {
         setTimeout(function () {
           try {
             expect(call.id).to.equal(null);
-//            expect(setIdSpy.calledWith(null)).to.equal(null);
             done();
           } catch (e) {
             done(e);
@@ -1235,6 +1237,20 @@ describe('Call', function () {
         }, 100);
 
       });
+
+      it('should execute rtcMgr.resetPeerConnection', function (done) {
+        emitterEM.publish('call-disconnected');
+
+        setTimeout(function () {
+          try {
+            expect(resetPeerConnectionStub.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 200);
+      });
+
     });
 
   });

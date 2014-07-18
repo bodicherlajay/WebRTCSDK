@@ -122,26 +122,20 @@
 
       rtcManager.on('media-modifications', function (modifications) {
         rtcManager.setMediaModifications(modifications);
-
         if (modifications.remoteSdp
             && modifications.remoteSdp.indexOf('recvonly') !== -1) {
-
           call.setState('held');
           rtcManager.disableMediaStream(); 
-
         }
-
         if (modifications.remoteSdp
             && call.remoteSdp
             && call.remoteSdp.indexOf
             && call.remoteSdp.indexOf('recvonly') !== -1
             && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-
           call.setState('resumed');
           rtcManager.enableMediaStream();
-          call.setRemoteSdp(modifications.remoteSdp);
-
         }
+        call.setRemoteSdp(modifications.remoteSdp);
       });
 
       rtcManager.on('media-mod-terminations', function (modifications) {
@@ -188,6 +182,8 @@
         } else {
           emitter.publish('disconnected');
         }
+
+        rtcManager.resetPeerConnection();
 
       });
 

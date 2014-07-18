@@ -775,6 +775,23 @@ describe('RTC Manager', function () {
         });
       });
 
+      describe('resetPeerConnection', function () {
+
+        it('should exist', function () {
+          expect(rtcManager.resetPeerConnection).to.be.a('function');
+        });
+
+        it('should execute peerConnSvc.endCall', function () {
+          var peerConnSvcEndCallStub = sinon.stub(ATT.PeerConnectionService, 'endCall');
+
+          rtcManager.resetPeerConnection();
+
+          expect(peerConnSvcEndCallStub.called).to.equal(true);
+
+          peerConnSvcEndCallStub.restore();
+        });
+      });
+
       describe('disableMediaStream', function () {
         it('should exist', function () {
            expect(rtcManager.disableMediaStream).to.be.a('function');
@@ -798,6 +815,23 @@ describe('RTC Manager', function () {
           rtcManager.enableMediaStream();
           expect(enableMediaStreamStub.called).to.equal(true);
           enableMediaStreamStub.restore();
+        });
+      });
+
+      describe('stopUserMedia', function () {
+
+        it('should exist', function () {
+          expect(rtcManager.stopUserMedia).to.be.a('function');
+        });
+
+        it('should execute userMediaSvc.stopStream', function () {
+          var userMediaSvcStopStreamStub = sinon.stub(ATT.UserMediaService, 'stopStream');
+
+          rtcManager.stopUserMedia();
+
+          expect(userMediaSvcStopStreamStub.called).to.equal(true);
+
+          userMediaSvcStopStreamStub.restore();
         });
       });
 

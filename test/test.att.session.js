@@ -382,6 +382,23 @@ describe('Session', function () {
 
       });
 
+      it('should execute rtcManager.stopUserMedia on `disconnected` event', function (done) {
+        var stopUserMediaStub = sinon.stub(rtcManager, 'stopUserMedia');
+
+        session.setId(null);
+          
+        setTimeout(function () {
+          try {
+            expect(stopUserMediaStub.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+
+        stopUserMediaStub.restore();
+      });
+
       it('should update the id of the session', function () {
         session.setId('1334');
         expect(session.getId()).to.equal('1334');
@@ -679,14 +696,12 @@ describe('Session', function () {
         expect(session.deleteCurrentCall).to.be.a('function');
       });
 
-      it('Should throw an error if there is no current call', function () {
-        session.terminateCalls();
-        expect(session.deleteCurrentCall.bind(session)).to.throw('Call not found');
-      });
-
       it('Should delete the current Call', function () {
         session.currentCall = call;
-        expect(session.deleteCurrentCall.bind(session)).to.not.throw('Call not found');
+
+        session.deleteCurrentCall();
+
+        expect(session.currentCall).to.equal(null);
       });
     });
   });
