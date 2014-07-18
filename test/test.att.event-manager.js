@@ -120,6 +120,23 @@ describe('Event Manager', function () {
 
     });
 
+    describe('off', function () {
+      it('should exist', function () {
+        expect(eventManager.off).to.be.a('function');
+      });
+      it('should call `emitter.unsubscribe` with the given `handler` and `event`', function () {
+        var offUnsubscribeSpy = sinon.spy(emitterEM, 'unsubscribe'),
+          name = 'topic',
+          handler = function () { return; };
+
+        eventManager.off(name, handler);
+
+        expect(offUnsubscribeSpy.calledWith(name, handler)).to.equal(true);
+
+        offUnsubscribeSpy.restore();
+      });
+    });
+
     describe('setup', function () {
       var onSpy,
         startListeningStub,

@@ -94,7 +94,9 @@
     function on(event, handler) {
       eventManager.on(event, handler);
     }
-
+    function off(event, handler) {
+      eventManager.off(event, handler);
+    }
     function refreshSession (options) {
 
       if (undefined === options
@@ -474,6 +476,7 @@
 
 
     this.on = on.bind(this);
+    this.off = off.bind(this);
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);

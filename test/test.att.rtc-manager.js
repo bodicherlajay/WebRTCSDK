@@ -185,7 +185,20 @@ describe('RTC Manager', function () {
           expect(onStub.calledWith(arg1, arg2)).to.equal(true);
         });
       });
+      describe('Off', function () {
+        it('should exist', function () {
+          expect(rtcManager.off).to.be.a('function');
+        });
 
+        it('should call `eventManager.off`', function () {
+
+          var name, handler, offSpy = sinon.spy(eventManager, 'off');
+          name = 'dummy';
+          handler = function () {};
+          rtcManager.off(name, handler);
+          expect(offSpy.called).to.equal(true);
+        });
+      });
       describe('connectSession', function () {
         var onSessionConnectedSpy,
           onSessionReadySpy,
