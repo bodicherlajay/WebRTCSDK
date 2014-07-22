@@ -5,10 +5,11 @@
 describe('Phone', function () {
   'use strict';
 
-  var getRTCManagerStub;
+  var getRTCManagerStub,
+    factories;
 
   beforeEach(function () {
-
+    factories = ATT.private.factories;
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return {
         on: function (event, handler) {
@@ -761,7 +762,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('answer', function () {
+      describe.only('answer', function () {
 
         var options,
           createCallOptions,
@@ -775,7 +776,8 @@ describe('Phone', function () {
           mediaEstablishedHandlerSpy,
           callHoldHandlerSpy,
           callResumeHandlerSpy,
-          callErrorHandlerSpy;
+          callErrorHandlerSpy,
+          errorHandlerSpy;
 
         beforeEach(function () {
 
@@ -799,6 +801,7 @@ describe('Phone', function () {
           callErrorHandlerSpy = sinon.spy();
           callHoldHandlerSpy = sinon.spy();
           callResumeHandlerSpy = sinon.spy();
+          errorHandlerSpy = sinon.spy();
 
           call = session.createCall(createCallOptions);
 
@@ -816,6 +819,7 @@ describe('Phone', function () {
           phone.on('media-established', mediaEstablishedHandlerSpy);
           phone.on('call-held', callHoldHandlerSpy);
           phone.on('call-resumed', callResumeHandlerSpy);
+          phone.on('error', errorHandlerSpy);
 
         });
 
@@ -828,35 +832,72 @@ describe('Phone', function () {
           expect(phone.answer).to.be.a('function');
         });
 
-        it('should publish `error` event with error data if there is no current call', function () {
-          session.currentCall = null;
+        it('[5004] should be published `error` event with error data if called without any options', function (done) {
 
-          var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
-            //throw data.error.ErrorMessage;
-            throw data.error.message; // since not using Error codes yet
-          });
+          phone.answer();
 
-          expect(phone.answer.bind(phone, options)).to.throw('Call object not defined');
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
+            done();
+          }, 100);
 
-          publishStub.restore();
         });
 
-        it('should publish `error` event with error data if called without valid options', function () {
+        it('[5001] should be published `error` event with error data if called without `localMedia`', function (done) {
 
-          var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
-            //throw data.error.ErrorMessage;
-            throw data.error.message; // since not using Error codes yet
+          phone.answer({
+            test: 'test'
           });
 
-          expect(phone.answer.bind(phone)).to.throw('Options not defined');
-          expect(phone.answer.bind(phone, {
-            localMedia: remoteVideo
-          })).to.throw('remoteMedia not defined');
-          expect(phone.answer.bind(phone, {
-            remoteMedia: localVideo
-          })).to.throw('localMedia not defined');
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            done();
+          }, 100);
 
-          publishStub.restore();
+        });
+
+        it('[5001] should be published `error` event with error data if called without `remoteMedia`', function (done) {
+
+          phone.answer({
+            localMedia: options.localMedia
+          });
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+//            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            done();
+          }, 100);
+
+        });
+
+        it('[5000] should publish `error` event with error data if there is no current call', function (done) {
+
+          session.currentCall = null;
+          phone.on('error', errorHandlerSpy);
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
+            done();
+          }, 100);
+
+        });
+
+        it('[5002] should publish `error` with data when there\'s an uncaught exception', function (done) {
+
+          session.currentCall = undefined;
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
+            done();
+          }, 100);
         });
 
         it('should trigger `answering` with event data', function (done) {

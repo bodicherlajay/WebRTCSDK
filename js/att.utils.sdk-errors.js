@@ -225,6 +225,14 @@
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
+      ErrorCode: "5004",
+      ErrorMessage: "Mandatory fields can not be empty",
+      Cause: "One of the Mandatory Parameters is empty",
+      Resolution: "Please check the values for input parameters"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "answer",
       ErrorCode: "5003",
       ErrorMessage: "User is not logged in",
       Cause: "Invalid operation",
