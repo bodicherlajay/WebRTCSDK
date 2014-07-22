@@ -16,7 +16,8 @@
   function Phone() {
 
     var emitter = ATT.private.factories.createEventEmitter(),
-      session = new ATT.rtc.Session();
+      session = new ATT.rtc.Session(),
+      errorDictionary = ATT.errorDictionary;
 
     session.on('call-incoming', function (data) {
       emitter.publish('call-incoming', data);
@@ -25,6 +26,12 @@
     session.on('error', function (data) {
       emitter.publish('error', data);
     });
+
+    function publishError(error) {
+      emitter.publish('error', {
+        error: error
+      });
+    }
 
     /**
     * @summary
@@ -369,6 +376,9 @@
            * @event Phone#call-error
            * @type {object}
            * @property {Date} timestamp - Event fire time.
+           * @property {Object} error
+           * @property {Object} error.ErrorCode - ABC
+           * @property {Object} error.JSMethod - login
            */
           emitter.publish('error', data);
         });
@@ -386,7 +396,7 @@
      * @summary
      * Answer an incoming call
      * @desc
-     * When call arrives via an incoming call event, call can be answered by using this method
+     * When call arrives via an incoming call event, call can be answered by using this method:
      * @memberof Phone
      * @instance
      * @param {Object} options
@@ -414,21 +424,25 @@
 
       try {
         if (undefined === options) {
-          throw new Error('Options not defined');
+          publishError(errorDictionary.getSDKError(5004));
+          return;
         }
 
         if (undefined === options.localMedia) {
-          throw new Error('localMedia not defined');
+          publishError(errorDictionary.getSDKError(5001));
+          return;
         }
 
         if (undefined === options.remoteMedia) {
-          throw new Error('remoteMedia not defined');
+          publishError(errorDictionary.getSDKError(5001));
+          return;
         }
 
         var call = session.currentCall;
 
         if (call === null) {
-          throw new Error('Call object not defined');
+          publishError(errorDictionary.getSDKError(5000));
+          return;
         }
 
         emitter.publish('answering', {
@@ -467,12 +481,10 @@
         call.connect(options);
 
       } catch (err) {
-        emitter.publish('error', {
-          error: err
-        });
+        publishError(errorDictionary.getSDKError(5002));
       }
-    }
 
+    }
     /**
     * @summary
     * Mute the current call.
