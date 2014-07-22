@@ -105,22 +105,30 @@
           //todo remove throw and publish it using error callback handler
           throw ATT.errorDictionary.getSDKError('2001');
         }
+        if (undefined !== session && null !== session.getId()) {
+          //todo remove throw and publish it using error callback handler
+          throw ATT.errorDictionary.getSDKError('2005');
+        }
 
-        session.on('ready', function (data) {
-          /**
-           * Session Ready event.
-           * @desc Indicates the SDK is initialized and ready to make, receive calls
-           *
-           * @event Phone#session-ready
-           * @type {object}
-           * @property {String} sessionId - The ID of the session.
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('session-ready', data);
-        });
+        try {
+          session.on('ready', function (data) {
+            /**
+             * Session Ready event.
+             * @desc Indicates the SDK is initialized and ready to make, receive calls
+             *
+             * @event Phone#session-ready
+             * @type {object}
+             * @property {String} sessionId - The ID of the session.
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('session-ready', data);
+          });
 
-        session.connect(options);
+          session.connect(options);
 
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('2004');
+        }
       } catch (err) {
         emitter.publish('error', {
           error: err

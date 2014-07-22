@@ -227,7 +227,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('login', function () {
+      describe('[US226847, US226648] login', function () {
 
         var onSpy,
           connectStub,
@@ -265,22 +265,6 @@ describe('Phone', function () {
           expect(phone.login).to.be.a('function');
         });
 
-        it('should publish `error` event if no token in options', function () {
-          var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
-            throw data.error.ErrorMessage
-          });
-
-          //todo check for error object details
-          expect(phone.login.bind(phone)).to.throw('Mandatory fields can not be empty');
-          //todo check for error object details
-          expect(phone.login.bind(phone, {})).to.throw('Missing input parameter');
-          expect(phone.login.bind(phone, {
-            token: '123'
-          })).to.not.throw('Token not defined');
-
-          publishStub.restore();
-        });
-
         it('should register for event `ready` from Session', function () {
           phone.login(options);
 
@@ -310,7 +294,11 @@ describe('Phone', function () {
 
         describe('Error Handling', function () {
 
+          var publishStub;
+
           beforeEach(function () {
+
+            publishStub = sinon.stub(emitter, 'publish', function () {});
 
             connectStub.restore();
 
@@ -320,17 +308,55 @@ describe('Phone', function () {
           });
 
           afterEach(function () {
+            publishStub.restore();
             connectStub.restore();
           });
 
-          it('should publish `error` event if there is an error during the operation', function (done) {
+          it('[SDK-2002] should be published with `error` event if no options', function () {
+
+            phone.login();
+
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('2002')
+            })).to.equal(true);
+
+          });
+
+          it('[SDK-2001] should be published with `error` event if no token in options', function () {
+
+            phone.login({});
+
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('2001')
+            })).to.equal(true);
+
+
+            expect(phone.login.bind(phone, {
+              token: '123'
+            })).to.not.throw(Error);
+
+          });
+
+          it('[SDK-2005] should be published with `error` event if session id already exists', function () {
+            session.setId('123');
+
+            phone.login({
+              token: '123'
+            });
+
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('2005')
+            })).to.equal(true);
+
+          });
+
+          it('[SDK-2004] should be published with `error` event if there is an unknown exception during the operation', function () {
 
             phone.login(options);
 
-            setTimeout(function () {
-              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-              done();
-            }, 100);
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('2004')
+            })).to.equal(true);
           });
 
         });
