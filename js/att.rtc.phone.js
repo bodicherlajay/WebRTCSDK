@@ -4,7 +4,9 @@
 (function () {
   'use strict';
 
-  var logManager = ATT.logManager.getInstance();
+  var logManager = ATT.logManager.getInstance(),
+    logger = logManager.addLoggerForModule('Phone');
+
   /**
     Creates a new Phone.
     @global
@@ -80,12 +82,14 @@
     * @summary Creates a WebRTC Session.
     * @desc Used to establish webRTC session so that the user can place webRTC calls.
     * The service parameter indicates the desired service such as audio or video call
+    * Throw errors 2001, 2002, 2004, 2005
     * @memberOf Phone
     * @instance
     * @param {Object} options
     * @param {String} options.token OAuth Access Token.
     * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
     * @fires Phone#session-ready
+    * @fires Phone#error
     * @example
     *
       var phone = ATT.rtc.Phone.getPhone();
@@ -95,7 +99,6 @@
       });
    */
     function login(options) {
-
       try {
         if (undefined === options) {
           //todo remove throw and publish it using error callback handler
@@ -111,6 +114,8 @@
         }
 
         try {
+          logger.logDebug('Phone.login');
+
           session.on('ready', function (data) {
             /**
              * Session Ready event.
@@ -130,6 +135,18 @@
           throw ATT.errorDictionary.getSDKError('2004');
         }
       } catch (err) {
+
+        logger.logError(err);
+
+        /**
+         * Error event.
+         * @desc Indicates the SDK has thrown an error
+         *
+         * @event Phone#error
+         * @data {object}
+         * @property {Date} timestamp - Event fire time.
+         * @error {Object} error - Error object
+         */
         emitter.publish('error', {
           error: err
         });
@@ -141,16 +158,18 @@
     * @desc
     * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
     * requests gets stopped
+    * publishes error code 3000
     * @memberof Phone
     * @instance
     * @fires Phone#session-disconnected
-    * @fires Phone#call-error
+    * @fires Phone#error
     * @example
     * var phone = ATT.rtc.Phone.getPhone();
     * phone.logout();
     */
     function logout() {
       try {
+        logger.logDebug('Phone.logout');
 
         session.on('disconnected', function (data) {
           /**
@@ -169,8 +188,9 @@
         session = undefined;
 
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
-          error: err
+          error: ATT.errorDictionary.getSDKError('3000')
         });
       }
     }
@@ -727,8 +747,7 @@
   */
 
   ATT.rtc.Phone = (function () {
-    var instance,
-      logger = logManager.addLoggerForModule('Phone');
+    var instance;
 
     return {
       /**

@@ -312,7 +312,7 @@ describe('Phone', function () {
             connectStub.restore();
           });
 
-          it('[SDK-2002] should be published with `error` event if no options', function () {
+          it('[2002] should be published with `error` event if no options', function () {
 
             phone.login();
 
@@ -322,7 +322,7 @@ describe('Phone', function () {
 
           });
 
-          it('[SDK-2001] should be published with `error` event if no token in options', function () {
+          it('[2001] should be published with `error` event if no token in options', function () {
 
             phone.login({});
 
@@ -337,7 +337,7 @@ describe('Phone', function () {
 
           });
 
-          it('[SDK-2005] should be published with `error` event if session id already exists', function () {
+          it('[2005] should be published with `error` event if session id already exists', function () {
             session.setId('123');
 
             phone.login({
@@ -350,7 +350,7 @@ describe('Phone', function () {
 
           });
 
-          it('[SDK-2004] should be published with `error` event if there is an unknown exception during the operation', function () {
+          it('[2004] should be published with `error` event if there is an unknown exception during the operation', function () {
 
             phone.login(options);
 
@@ -363,7 +363,7 @@ describe('Phone', function () {
 
       });
 
-      describe('logout', function () {
+      describe('[US198837, US197999] logout', function () {
 
         var onSpy,
           disconnectStub,
@@ -426,8 +426,12 @@ describe('Phone', function () {
         });
 
         describe('Error Handling', function () {
+          var publishStub;
 
           beforeEach(function () {
+            publishStub = sinon.stub(emitter, 'publish', function () {
+
+            });
 
             disconnectStub.restore();
 
@@ -438,15 +442,18 @@ describe('Phone', function () {
           });
 
           afterEach(function () {
+            publishStub.restore()
             disconnectStub.restore();
           });
 
-          it('should publish `error` event if there is an error during the operation', function (done) {
+          it('[3000] should be published with `error` event if there is an error during the operation', function (done) {
 
             phone.logout();
 
             setTimeout(function () {
-              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('3000')
+              })).to.equal(true);
               done();
             }, 100);
           });
