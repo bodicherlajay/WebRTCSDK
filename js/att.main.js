@@ -19,10 +19,7 @@
 //todo fixme - this file needs to be renamed to something else ? errorDictionaryloader or delete this
 (function () {
   'use strict';
-  var resourceManager,
-    rtcEvent,
-    eventManager,
-    logMgr = ATT.logManager.getInstance(),
+  var logMgr = ATT.logManager.getInstance(),
     logger,
     sdkErrors,
     idx;

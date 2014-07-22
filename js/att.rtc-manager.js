@@ -44,7 +44,7 @@
     appConfiguration = appConfig.getConfiguration();
 
     eventManager = factories.createEventManager({
-      resourceManager:resourceManager,
+      resourceManager : resourceManager,
       channelConfig: appConfiguration.eventChannelConfig
     });
 
@@ -97,14 +97,14 @@
     function off(event, handler) {
       eventManager.off(event, handler);
     }
-    function refreshSession (options) {
+    function refreshSession(options) {
 
       if (undefined === options
-        || Object.keys(options).length === 0) {
+          || Object.keys(options).length === 0) {
         throw new Error('Invalid options');
       }
 
-      if (undefined == options.sessionId) {
+      if (undefined === options.sessionId) {
         throw new Error('No session ID passed');
       }
 
@@ -136,7 +136,7 @@
 
           options.success({ timeout: (timeout * 1000).toString() });
         },
-        error: function() {
+        error: function () {
           return;
         },
         params: {
@@ -212,9 +212,9 @@
         }
       });
 
-    };
+    }
 
-    function disconnectSession (options) {
+    function disconnectSession(options) {
 
       if (undefined === options) {
         throw new Error('No options defined.');
@@ -263,7 +263,7 @@
         throw new Error('No MediaType defined.');
       }
       if (undefined === options.onCallConnecting) {
-        throw new Error('Callback `onCallConnecting` not defined.')
+        throw new Error('Callback `onCallConnecting` not defined.');
       }
 
       userMediaSvc.getUserMedia({
@@ -282,7 +282,7 @@
             sessionInfo: options.sessionInfo,
             onPeerConnectionInitiated: function (callInfo) {
               if (callInfo.xState
-                && (callInfo.xState === 'invitation-sent'
+                  && (callInfo.xState === 'invitation-sent'
                   || callInfo.xState === 'accepted')) { // map connecting to IIP event types
                 callInfo.xState = 'connecting';
               }
@@ -303,7 +303,7 @@
 
     }
 
-    function disconnectCall (options) {
+    function disconnectCall(options) {
       var sessionInfo;
 
       if (undefined === options) {
@@ -429,7 +429,7 @@
 
     function updateSessionE911Id(options) {
       var dataForRefreshWebRTCSessionWithE911Id;
-      if (undefined === options ) {
+      if (undefined === options) {
         throw 'Invalid options';
       }
       if (undefined === options.token || '' === options.token) {
@@ -472,7 +472,7 @@
     function rejectCall(options) {
 
 
-      if (undefined === options ) {
+      if (undefined === options) {
         throw 'Invalid options';
       }
       if (undefined === options.token || '' === options.token) {
@@ -546,8 +546,7 @@
 
   ATT.private.rtcManager = (function () {
     var instance,
-        resourceManager,
-        rtcEvent;
+      resourceManager;
 
     return {
       getRTCManager: function () {

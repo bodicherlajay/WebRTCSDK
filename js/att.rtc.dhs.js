@@ -14,9 +14,6 @@
     logManager = ATT.logManager.getInstance(),
     logger,
 
-    // private methods
-    init,
-
     handleSuccess,
 
     handleError,
@@ -47,7 +44,7 @@
     createE911Id,
 
   // implementions
-  init = function () {
+    init = function () {
 
       logger = logManager.getLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
 

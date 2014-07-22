@@ -471,14 +471,14 @@
   // This will throw an error if ATT.utils is not defined
   if (window.ATT.utils === undefined) {
     throw new Error('Cannot export SDK Errors into ATT.utils.ErrorStore.SDKErrors, ATT.utils namespace is undefined...'
-    + '\n ATT: ' + JSON.stringify(window.ATT));
+      + '\n ATT: ' + JSON.stringify(window.ATT));
   }
 
   window.ATT.utils['ErrorStore'] = {};
   window.ATT.utils.ErrorStore['SDKErrors'] = {
     getAllSDKErrors: function () {
-      var errors = {}, errorId;
-      for (var idx = 0; idx < sdkErrors.length; idx = idx + 1) {
+      var idx, errors = {}, errorId;
+      for (idx = 0; idx < sdkErrors.length; idx = idx + 1) {
         errorId = sdkErrors[idx].ErrorCode;
         errors[errorId] = sdkErrors[idx];
       }

@@ -10,8 +10,7 @@
   'use strict';
 
   var logManager = ATT.logManager.getInstance(),
-    factories = ATT.private.factories,
-    apiConfigs = ATT.APIConfigs;
+    factories = ATT.private.factories;
 
   /**
    * Creates an Event Channel with the given configuration:
@@ -41,8 +40,7 @@
       maxPollingTime = 64000,
       methodName = 'getEvents',
       emitter,
-      logger,
-      resourceManager;
+      logger;
 
     try {
       logger = logManager.getLoggerByName("eventChannel");

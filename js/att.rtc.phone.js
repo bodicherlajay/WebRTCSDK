@@ -52,23 +52,23 @@
     */
     function on(event, handler) {
       if ('session-ready' !== event
-        && 'session-disconnected' !== event
-        && 'dialing' !== event
-        && 'answering' !== event
-        && 'call-incoming' !== event
-        && 'call-connecting' !== event
-        && 'call-disconnecting' !== event
-        && 'call-disconnected' !== event
-        && 'call-canceled' !== event
-        && 'call-rejected' !== event
-        && 'call-connected' !== event
-        && 'call-muted' !== event
-        && 'call-unmuted' !== event
-        && 'call-held' !== event
-        && 'call-resumed' !== event
-        && 'address-updated' !== event
-        && 'media-established' !== event
-        && 'error' !== event) {
+          && 'session-disconnected' !== event
+          && 'dialing' !== event
+          && 'answering' !== event
+          && 'call-incoming' !== event
+          && 'call-connecting' !== event
+          && 'call-disconnecting' !== event
+          && 'call-disconnected' !== event
+          && 'call-canceled' !== event
+          && 'call-rejected' !== event
+          && 'call-connected' !== event
+          && 'call-muted' !== event
+          && 'call-unmuted' !== event
+          && 'call-held' !== event
+          && 'call-resumed' !== event
+          && 'address-updated' !== event
+          && 'media-established' !== event
+          && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -479,7 +479,7 @@
       } catch (err) {
         emitter.publish('error', {
           error: err
-        })
+        });
       }
     }
 
@@ -516,7 +516,7 @@
       } catch (err) {
         emitter.publish('error', {
           error: err
-        })
+        });
       }
     }
 
@@ -627,16 +627,14 @@
     phone.hold();
    */
     function hold() {
-     try {
-      var call = session.currentCall;
-
-      call.hold();
-
-     } catch (err) {
-       emitter.publish('error', {
-         error: err
-       });
-     }
+      try {
+        var call = session.currentCall;
+        call.hold();
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
     /**

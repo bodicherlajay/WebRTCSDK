@@ -8,7 +8,7 @@ if (!ATT) {
   var ATT = {};
 }
 
-(function (app) {
+(function () {
   'use strict';
 
   var configure = function (appConfig) {

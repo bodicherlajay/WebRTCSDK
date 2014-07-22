@@ -108,8 +108,8 @@
 
       function restOperation(successCB, errorCB, onTimeout) {
 
-        var restClient,
-          errorDictionary = ATT.errorDictionary;
+        var restClient;
+        errorDictionary = ATT.errorDictionary;
 
         restConfig.success = successCB;
         restConfig.error = function (errResp) {
@@ -194,13 +194,13 @@
     function doOperation(operationName, config) {
 
       if (undefined === operationName
-        || operationName.length === 0) {
+          || operationName.length === 0) {
         logger.logError('no operation name provided');
         throw new Error('Must specify an operation name.');
       }
 
       if (undefined === config
-        || Object.keys(config).length === 0) {
+           || Object.keys(config).length === 0) {
         throw new Error('No options found.');
       }
 

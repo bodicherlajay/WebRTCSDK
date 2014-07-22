@@ -6,8 +6,7 @@
 (function () {
   'use strict';
 
-  var factories = ATT.private.factories,
-    logManager = ATT.logManager.getInstance();
+  var factories = ATT.private.factories;
 
   /** 
     Creates a new WebRTC Session.
@@ -76,25 +75,6 @@
       emitter.unsubscribe(event, handler);
       emitter.subscribe(event, handler, this);
     }
-
-//    function refreshWebRTCSession() {
-//      var dataForRefreshWebRTCSession = {
-//        params: {
-//          url: [self.sessionId],
-//          headers: {
-//            'Authorization': self.token
-//          }
-//        },
-//        success: function () {
-//          logger.logInfo('Successfully refreshed web rtc session on blackflag');
-//          //this.onWebRTCSessionRefreshed();
-//        },
-//        //error: this.onError
-//      };
-
-      // Call BF to refresh WebRTC Session.
-//      resourceManager.doOperation('refreshWebRTCSession', {});
-//    }
 
     // public attributes
     this.timeout = null;
@@ -175,7 +155,7 @@
 
         emitter.publish('connecting');
 
-        var session = this;
+        session = this;
 
         rtcManager.connectSession({
           token: options.token,
@@ -213,7 +193,7 @@
       try {
         emitter.publish('disconnecting');
 
-        var session = this;
+        session = this;
 
         rtcManager.disconnectSession({
           sessionId: session.getId(),

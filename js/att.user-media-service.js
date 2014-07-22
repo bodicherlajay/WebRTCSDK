@@ -13,8 +13,7 @@
       audio: true,
       video: true
     },
-    logger = logManager.getLoggerByName("UserMediaService"),
-    factories = ATT.private.factories;
+    logger = logManager.getLoggerByName("UserMediaService");
 
   function setError(service) {
     Error = service;
@@ -56,8 +55,8 @@
       this.onUserMedia = options.onUserMedia;
       this.onMediaEstablished = options.onMediaEstablished;
 
-      if(undefined !== options.mediaType) {
-        this.mediaConstraints.video = 'audio' !== options.mediaType
+      if (undefined !== options.mediaType) {
+        this.mediaConstraints.video = 'audio' !== options.mediaType;
       }
 
       // get a local stream, show it in a self-view and add it to be sent
@@ -112,7 +111,7 @@
         if (videoStreamEl) {
           videoStreamEl.src = window.URL.createObjectURL(args.stream);
           videoStreamEl.play();
-          if(args.localOrRemote === 'remote') {
+          if (args.localOrRemote === 'remote') {
             this.onMediaEstablished();
           }
         }
@@ -187,13 +186,13 @@
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,
-          l = videoTracks.length;
+          l = videoTracks.length,
+          audioTracks;
         for (i = 0; i < l; i = i + 1) {
           videoTracks[i].enabled = false;
         }
-        var audioTracks = this.remoteStream.getAudioTracks(),
-          i,
-          l = audioTracks.length;
+        audioTracks = this.remoteStream.getAudioTracks();
+        l = audioTracks.length;
         for (i = 0; i < l; i = i + 1) {
           audioTracks[i].enabled = false;
         }
@@ -207,13 +206,13 @@
       if (this.remoteStream) {
         var videoTracks = this.remoteStream.getVideoTracks(),
           i,
-          l = videoTracks.length;
+          l = videoTracks.length,
+          audioTracks;
         for (i = 0; i < l; i = i + 1) {
           videoTracks[i].enabled = true;
         }
-        var audioTracks = this.remoteStream.getAudioTracks(),
-          i,
-          l = audioTracks.length;
+        audioTracks = this.remoteStream.getAudioTracks();
+        l = audioTracks.length;
         for (i = 0; i < l; i = i + 1) {
           audioTracks[i].enabled = true;
         }

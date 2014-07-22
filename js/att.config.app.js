@@ -10,14 +10,13 @@ if (!ATT) {
   var ATT = {};
 }
 
-(function (app) {
+(function () {
   'use strict';
 
   // keep alive default duration, change
-  var KeepAliveDuration = 0, // ms, set to 0 for using duration from API server
 
   // DHS endpoint
-    DHSConf = {
+  var  DHSConf = {
       HTTP: 'http://localhost:9000',
       HTTPS: 'https://localhost:9001'
     },

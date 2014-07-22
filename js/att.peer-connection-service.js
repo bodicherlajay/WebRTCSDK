@@ -33,19 +33,19 @@
   }
 
   function createCalledPartyUri(destination) {
-    if (destination.match(new RegExp('[^0-9]')) == null) { // Number (ICMN/VTN/PSTN)
-      if (destination.length == 10) {  // 10 digit number
+    if (destination.match(new RegExp('[^0-9]')) === null) { // Number (ICMN/VTN/PSTN)
+      if (destination.length === 10) {  // 10 digit number
         return 'tel:+1' + destination;
       }
       if (destination.indexOf('1') === 0) {  // 1 + 10 digit number
         return 'tel:+' + destination;
       }
-      if (destination.indexOf ('+') === 0) { // '+' + Number
+      if (destination.indexOf('+') === 0) { // '+' + Number
         return 'tel:' + destination;
       }
       return 'sip:' + destination + '@icmn.api.att.net'; // if nothing works this will
     }
-    if (destination.indexOf ('@') > 0) { // NoTN (assuming domain supplied to SDK dial)
+    if (destination.indexOf('@') > 0) { // NoTN (assuming domain supplied to SDK dial)
       return 'sip:' + destination;
     }
     return null;
@@ -304,7 +304,6 @@
     *
     */
     onRemoteStreamAdded: function (evt) {
-      var self = this;
       logger.logDebug('onRemoteStreamAdded');
 
       logger.logTrace('Adding Remote Stream...', evt.remoteStream);
@@ -564,9 +563,9 @@
       this.peerConnection = null;
       this.resetModCount();
       this.resetModId();
-      this.peer = null,
-      this.callId = null,
-      this.callType = null
+      this.peer = null;
+      this.callId = null;
+      this.callType = null;
     },
 
     /**

@@ -140,15 +140,15 @@
         rtcManager.on('media-modifications', function (modifications) {
           rtcManager.setMediaModifications(modifications);
           if (modifications.remoteSdp
-            && modifications.remoteSdp.indexOf('recvonly') !== -1) {
+              && modifications.remoteSdp.indexOf('recvonly') !== -1) {
             call.setState('held');
             rtcManager.disableMediaStream();
           }
           if (modifications.remoteSdp
-            && call.remoteSdp
-            && call.remoteSdp.indexOf
-            && call.remoteSdp.indexOf('recvonly') !== -1
-            && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+              && call.remoteSdp
+              && call.remoteSdp.indexOf
+              && call.remoteSdp.indexOf('recvonly') !== -1
+              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
             call.setState('resumed');
             rtcManager.enableMediaStream();
           }
@@ -162,13 +162,13 @@
               type: 'answer'
             });
             if (modifications.reason === 'success'
-              && modifications.remoteSdp.indexOf('sendonly') !== -1
-              && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+                && modifications.remoteSdp.indexOf('sendonly') !== -1
+                && modifications.remoteSdp.indexOf('sendrecv') === -1) {
               call.setState('held');
               rtcManager.disableMediaStream();
             }
             if (modifications.reason === 'success'
-              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+                && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
               call.setState('resumed');
               rtcManager.enableMediaStream();
             }
