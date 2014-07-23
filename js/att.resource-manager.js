@@ -102,6 +102,62 @@
       return restConfig;
     }
 
+    function parseAPIErrorResponse(err) {
+      var errObj = err.getJson(), error, apiError;
+      if (!errObj.RequestError) {
+        if (err.getResponseStatus() >= 500) {
+          if (err.getJson() !== "") {
+            apiError = JSON.stringify(err.getJson());
+          } else {
+            apiError = err.responseText;
+          }
+          error = ATT.errorDictionary.getAPIError("*", err.getResponseStatus(), "");
+          error.APIError =  apiError;
+          error.ResourceMethod = err.getResourceURL();
+          error.HttpStatusCode = err.getResponseStatus();
+          logger.logError("Service Unavailable");
+          logger.logError(err);
+          logger.logError(error);
+        } else {
+          error = {APIError:err.responseText, ResourceMethod:err.getResourceURL(),HttpStatusCode: err.getResponseStatus()};
+          logger.logError(err);
+          logger.logError(error);
+        }
+        return error;
+      }
+      if (errObj.RequestError.ServiceException) { // API Service Exceptions
+        error = {
+          APIError:errObj.RequestError.ServiceException.MessageId + ":" + errObj.RequestError.ServiceException.Text + ",Variables=" +
+            errObj.RequestError.ServiceException.Variables,
+          ResourceMethod: err.getResourceURL(),       //Resource URI
+          HttpStatusCode:err.getResponseStatus(),    //HTTP Status Code
+          MessageId:errObj.RequestError.ServiceException.MessageId
+        }
+      } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
+        error = {
+          APIError:errObj.RequestError.PolicyException.MessageId + ":" + errObj.RequestError.PolicyException.Text + ",Variables=" + errObj.RequestError.PolicyException.Variables,
+          ResourceMethod: err.getResourceURL(),       //Resource URI
+          HttpStatusCode:err.getResponseStatus(),     //HTTP Status Code
+          MessageId:errObj.RequestError.PolicyException.MessageId
+        }
+      } else if (errObj.RequestError.Exception) { // API Exceptions
+        error = {
+          APIError: errObj.RequestError.Exception.MessageId + ":" + errObj.RequestError.Exception.Text + ",Variables=" + errObj.RequestError.Exception.Variables,
+          ResourceMethod: err.getResourceURL(),       //Resource URI
+          HttpStatusCode:err.getResponseStatus(),     //HTTP Status Code
+          MessageId: errObj.RequestError.Exception.MessageId
+        }
+        error = ATT.errorDictionary.getAPIExceptionError(error);
+      }
+
+      if (!error) {
+        logger.logError("Unable to parse API Error response is empty" + err + ":" + moduleId + ":" + methodName);
+      } else {
+        error.ResourceMethod = err.getResourceURL();
+      }
+      return error;
+    }
+
     function createRESTOperation(restConfig) {
 
       logger.logTrace('configuring REST operation');
@@ -114,12 +170,26 @@
         restConfig.success = successCB;
         restConfig.error = function (errResp) {
           if (errResp.getResponseStatus() === 0 && errResp.responseText === "") {
-            errorCB.call(this, errorDictionary.getError("SDK-10000"));
+            errResp.errorDetail = errorDictionary.getSDKError('0003');
+            errResp.errorDetail.HttpStatusCode = errResp.getResponseStatus();
+            errResp.errorDetail.ResourceMethod = errResp.getResourceURL();
+            errorCB.call(this, errResp);
           } else {
+            errResp.errorDetail = parseAPIErrorResponse(errResp);
             errorCB.call(this, errResp);
           }
         };
-        restConfig.ontimeout = onTimeout;
+        restConfig.ontimeout = function (errResp) {
+          var error = {errorDetail: ""};
+          error.errorDetail = errorDictionary.getSDKError('0003');
+          error.errorDetail.HttpStatusCode = 0;
+          error.errorDetail.ResourceMethod = restConfig.url;
+          if (!onTimeout) {
+            errorCB.call(this,error);
+          } else {
+            onTimeout.call(this,error);
+          }
+        }
 
         restClient = new ATT.RESTClient(restConfig);
 
