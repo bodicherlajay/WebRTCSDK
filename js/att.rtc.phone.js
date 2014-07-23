@@ -89,7 +89,11 @@
     * @summary Creates a WebRTC Session.
     * @desc Used to establish webRTC session so that the user can place webRTC calls.
     * The service parameter indicates the desired service such as audio or video call
-    * Throw errors 2001, 2002, 2004, 2005
+    * #### Error Code
+    *   - 2001 - Missing input parameter
+    *   - 2002 - Mandatory fields can not be empty
+    *   - 2004 - Internal error occurred
+    *   - 2005 - User already logged in
     * @memberOf Phone
     * @instance
     * @param {Object} options
@@ -165,7 +169,8 @@
     * @desc
     * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
     * requests gets stopped
-    * publishes error code 3000
+    * #### Error Codes
+    *   - 3000 - Internal error occurred
     * @memberof Phone
     * @instance
     * @fires Phone#session-disconnected
@@ -508,7 +513,10 @@
     /**
     * @summary
     * Mute the current call.
-    * throws error code 9000,9001
+    * @desc
+    * #### Error Codes
+    *   - 9000 - Mute failed- Call is not in progress
+    *   - 9001 - Internal error occurred
     * @memberOf Phone
     * @instance
 
@@ -559,7 +567,10 @@
     /**
     * @summary
     * Unmute the current call.
-    * throw error codes 10000, 10001
+    * @desc
+    * #### Error Codes
+    *   - 10000 - Unmute failed- No media stream
+    *   - 10001 - Internal error occurred
     * @memberOf Phone
     * @instance
 
