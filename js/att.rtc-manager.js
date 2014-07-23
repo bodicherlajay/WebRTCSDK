@@ -136,8 +136,13 @@
 
           options.success({ timeout: (timeout * 1000).toString() });
         },
-        error: function () {
-          return;
+        error: function(error) {
+          //todo fix this
+/*
+          logger.logError(error);
+          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","refreshSession","RTC"));
+*/
+		  return;
         },
         params: {
           url: [options.sessionId],
@@ -184,7 +189,11 @@
 
         eventManager.setup({
           sessionId: sessionInfo.sessionId,
-          token: options.token
+          token: options.token,
+          onError: function (error) {
+            logger.logError(error);
+            options.onError(error);
+          }
         });
       };
 
@@ -209,12 +218,13 @@
         success: doOperationSuccess,
         error: function (error) {
           logger.logError(error);
+          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","login","RTC"));
         }
       });
 
-    }
+    };
 
-    function disconnectSession(options) {
+    function disconnectSession (options) {
 
       if (undefined === options) {
         throw new Error('No options defined.');
@@ -248,6 +258,7 @@
         },
         error: function (error) {
           logger.logError(error);
+          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","logout","RTC"));
         }
       });
     }
@@ -265,6 +276,10 @@
       if (undefined === options.onCallConnecting) {
         throw new Error('Callback `onCallConnecting` not defined.');
       }
+      if (undefined === options.onUserMediaError) {
+        throw new Error('Callback `onUserMediaError` not defined.')
+      }
+
 
       userMediaSvc.getUserMedia({
         mediaType: options.mediaType,
@@ -294,16 +309,22 @@
                 localOrRemote: 'remote',
                 stream: stream
               });
+            },
+            onPeerConnectionError: function(error) {
+              options.onError(error);
             }
           });
         },
-        onMediaEstablished: function () { }
+        onMediaEstablished: function () { },
+        onUserMediaError: function (error) {
+          options.onError(error);
+        }
       });
 
 
     }
 
-    function disconnectCall(options) {
+    function disconnectCall (options) {
       var sessionInfo;
 
       if (undefined === options) {
@@ -335,6 +356,7 @@
         },
         error: function (error) {
           logger.logError(error);
+          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","hangup","RTC"));
         }
       });
     }
@@ -462,7 +484,10 @@
           }
         },
         success: options.onSuccess,
-        error: options.onError
+        error: function (error) {
+          logger.logError(error);
+          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","updateE911Id","RTC"));
+        }
       };
 
     // Call BF to refresh WebRTC Session.
@@ -510,6 +535,7 @@
         },
         error: function (error) {
           logger.logError(error);
+          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","reject","RTC"));
         }
       });
     }
