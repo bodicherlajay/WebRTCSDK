@@ -10,6 +10,7 @@
     init,
     create,
     publish,
+    createAPIErrorCode,
     logMgr = ATT.logManager.getInstance(),
     logger;
 
@@ -20,10 +21,75 @@
 
     module.create = create;
     module.publish = publish;
+    module.createAPIErrorCode = createAPIErrorCode;
 
     // add to the global namespace
     app.Error = module;
   };
+
+  function parseAPIErrorResponse(err, moduleId, methodName) {
+    var errObj = err.getJson(), error, apiError;
+    if (!errObj.RequestError) {
+      if (err.getResponseStatus() >= 500) {
+        if (err.getJson() !== "") {
+          apiError = JSON.stringify(err.getJson());
+        } else {
+          apiError = err.responseText;
+        }
+        error = ATT.errorDictionary.getAPIError("*", err.getResponseStatus(), "");
+        error.APIError = apiError;
+        error.ResourceMethod = err.getResourceURL();
+        if (moduleId == "DHS") error.ErrorCode = "DHS-0001";
+        logger.logError("Service Unavailable");
+        logger.logError(err);
+        logger.logError(error);
+      }
+      return error;
+    }
+    if (errObj.RequestError.ServiceException) { // API Service Exceptions
+      error = ATT.errorDictionary.getAPIError(methodName,
+        err.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
+      if (error === undefined) {
+        logger.logError("Error code not found in dictionary for key:" + methodName + err.getResponseStatus() +
+          errObj.RequestError.ServiceException.MessageId);
+      } else {
+        error.APIError = errObj.RequestError.ServiceException.MessageId + ":" + errObj.RequestError.ServiceException.Text
+        ",Variables=" +
+        errObj.RequestError.ServiceException.Variables;
+      }
+    } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
+      error = ATT.errorDictionary.getAPIError(methodName,
+        err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+      if (error === undefined) {
+        logger.logError("Error code not found in dictionary for key:" + methodName +
+          err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
+      } else {
+        error.APIError = errObj.RequestError.PolicyException.MessageId + ":" + errObj.RequestError.PolicyException.Text + ",Variables=" + errObj.RequestError.PolicyException.Variables;
+      }
+    } else if (errObj.RequestError.Exception) { // API Exceptions
+      error = {
+        JSObject: moduleId,        //JS Object
+        JSMethod: methodName,       //JS Method
+        ErrorCode: err.getResponseStatus(),         //Error code
+        ErrorMessage: 'Error occurred',         //Error Message
+        PossibleCauses: 'Please look into APIError message',       //Possible Causes
+        PossibleResolution: 'Please look into APIError message',   //Possible Resolution
+        APIError: errObj.RequestError.Exception.Text,          //API Error response
+        ResourceMethod: err.getResourceURL(),       //Resource URI
+        HttpStatusCode: err.getResponseStatus(),     //HTTP Status Code
+        MessageId: ''           //Message ID
+      }
+      error = ATT.errorDictionary.getAPIExceptionError(error);
+    }
+
+    if (!error) {
+      logger.logError("Unable to parse API Error response is empty or not found in error dictionary," + err + ":" + moduleId + ":" + methodName);
+    } else {
+      error.ResourceMethod = err.getResourceURL();
+    }
+    return error;
+  };
+
 
   create = function (err, operation, moduleId) {
     logger.logDebug('error.create');
