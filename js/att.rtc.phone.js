@@ -422,6 +422,8 @@
      */
     function answer(options) {
 
+      var call;
+
       try {
         if (undefined === options) {
           publishError(errorDictionary.getSDKError(5004));
@@ -438,7 +440,11 @@
           return;
         }
 
-        var call = session.currentCall;
+        if (session.getId() === null) {
+          publishError(errorDictionary.getSDKError(5003));
+          return;
+        }
+        call = session.currentCall;
 
         if (call === null) {
           publishError(errorDictionary.getSDKError(5000));

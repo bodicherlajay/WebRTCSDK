@@ -15,7 +15,8 @@ describe('Phone', function () {
         on: function (event, handler) {
           return {};
         },
-        connectCall: function () {}
+        connectCall: function () {},
+        stopUserMedia: function () { return; }
       };
     });
   });
@@ -771,7 +772,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('answer', function () {
+      describe('[US198535] answer', function () {
 
         var options,
           createCallOptions,
@@ -875,11 +876,26 @@ describe('Phone', function () {
 
           setTimeout(function () {
             expect(errorHandlerSpy.called).to.equal(true);
-//            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
           }, 100);
-
         });
+
+        it('[5003] should publish `error` event with data if the user is not logged in', function (done) {
+
+
+          session.setId(null);
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
+            done();
+          }, 100);
+        });
+
+
 
         it('[5000] should publish `error` event with error data if there is no current call', function (done) {
 
