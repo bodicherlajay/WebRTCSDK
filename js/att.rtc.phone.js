@@ -295,8 +295,6 @@
             remoteMedia: options.remoteMedia
           });
 
-          console.log(call.test);
-
           call.on('connecting', function (data) {
 
             /**
