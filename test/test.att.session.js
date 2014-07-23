@@ -237,20 +237,6 @@ describe('Session', function () {
         expect(session.connect).to.be.a('function');
       });
 
-      it('Should fail if no input options specified', function () {
-
-        var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
-          //throw data.error.ErrorMessage;
-          throw data.error.message; // since not using Error codes yet
-        });
-
-        expect(session.connect.bind(session)).to.throw('No input provided');
-        expect(session.connect.bind(session, {})).to.throw('No access token provided');
-        expect(session.connect.bind(session, {token: '123'})).to.not.throw('No access token provided');
-
-        publishStub.restore();
-      });
-
       it('Should publish the `connecting` event immediately', function (done) {
         session.connect(options);
 
@@ -320,21 +306,6 @@ describe('Session', function () {
 
           });
 
-          it('should publish `error` with error data if there is an error in any operation', function (done) {
-            setIdStub.restore();
-
-            setIdStub = sinon.stub(session, 'setId', function () {
-              throw error;
-            });
-
-            session.connect(options);
-
-            setTimeout(function () {
-              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-              done();
-            }, 100);
-          });
-
         });
 
         describe('onSessionReady', function () {
@@ -401,7 +372,43 @@ describe('Session', function () {
 
       describe('Error Handling', function () {
 
-        it('should publish `error` with error data if there is an error in any operation', function (done) {
+        var publishStub,
+          setIdStub;
+
+        beforeEach(function () {
+          publishStub = sinon.stub(emitter, 'publish', function () {});
+
+          setIdStub = sinon.stub(session, 'setId', function () {
+            throw error;
+          });
+        });
+
+        afterEach(function () {
+          publishStub.restore();
+          setIdStub.restore();
+        });
+
+        it('[2002] should be published with `error` event if no options specified', function () {
+          session.connect();
+
+          expect(ATT.errorDictionary.getSDKError('2002')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('2002')
+          })).to.equal(true);
+        });
+
+        it('[2001] should be published with `error` event if no token specified', function () {
+
+          session.connect({});
+
+          expect(ATT.errorDictionary.getSDKError('2001')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('2001')
+          })).to.equal(true);
+
+        });
+
+        it('[2004] should be published with `error` event if there is an unexpected exception during the operation', function () {
           connectSessionStub.restore();
 
           connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
@@ -410,10 +417,39 @@ describe('Session', function () {
 
           session.connect(options);
 
+          expect(ATT.errorDictionary.getSDKError('2004')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('2004')
+          })).to.equal(true);
+
+        });
+
+        it('[2004] should be published with `error` event if there is an unexpeceted exception inside onSessionConnected callback', function (done) {
+          connectSessionStub.restore();
+
+          connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
+            setTimeout(function () {
+              options.onSessionConnected({
+                sessionId: 'sessionid',
+                timeout: 120000
+              });
+            }, 0);
+          });
+
+          session.connect(options);
+
           setTimeout(function () {
-            expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-            done();
+            try {
+              expect(ATT.errorDictionary.getSDKError('2004')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('2004')
+              })).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
           }, 100);
+
         });
 
       });

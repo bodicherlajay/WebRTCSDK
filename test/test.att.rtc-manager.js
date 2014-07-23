@@ -185,6 +185,7 @@ describe('RTC Manager', function () {
           expect(onStub.calledWith(arg1, arg2)).to.equal(true);
         });
       });
+
       describe('Off', function () {
         it('should exist', function () {
           expect(rtcManager.off).to.be.a('function');
@@ -199,22 +200,25 @@ describe('RTC Manager', function () {
           expect(offSpy.called).to.equal(true);
         });
       });
+
       describe('connectSession', function () {
         var onSessionConnectedSpy,
           onSessionReadySpy,
+          onErrorSpy,
           optionsForConn;
 
-        before(function () {
+        beforeEach(function () {
           onSessionConnectedSpy = sinon.spy();
           onSessionReadySpy = sinon.spy();
+          onErrorSpy = sinon.spy();
 
           optionsForConn = {
             token: '123',
             onSessionConnected: onSessionConnectedSpy,
-            onSessionReady: onSessionReadySpy
+            onSessionReady: onSessionReadySpy,
+            onError: onErrorSpy
           };
 
-          rtcManager.connectSession(optionsForConn);
         });
 
         it('should exist', function () {
@@ -239,17 +243,19 @@ describe('RTC Manager', function () {
             token: '123',
             onSessionConnected: function () {},
             onSessionReady: function () {}
+          })).to.throw('Callback onError not defined.');
+          expect(rtcManager.connectSession.bind(rtcManager, {
+            token: '123',
+            onSessionConnected: function () {},
+            onSessionReady: function () {},
+            onError: function () {}
           })).to.not.throw(Error);
         });
 
         it('should call doOperation on the resourceManager with `createWebRTCSession`', function () {
           doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
 
-          rtcManager.connectSession({
-            token: '123',
-            onSessionConnected: function () {},
-            onSessionReady: function () {}
-          });
+          rtcManager.connectSession(optionsForConn);
 
           expect(doOperationSpy.called).to.equal(true);
           expect(doOperationSpy.getCall(0).args[0]).to.equal('createWebRTCSession');
@@ -257,34 +263,75 @@ describe('RTC Manager', function () {
           doOperationSpy.restore();
         });
 
-        describe('Success', function () {
+        describe('Callbacks on doOperation', function () {
 
-          it('should execute the onSessionConnected callback with `sessionId` and `timeout`', function () {
-            expect(onSessionConnectedSpy.calledWith(sessionInfo)).to.equal(true);
+          describe('success', function () {
+
+            it('should execute the onSessionConnected callback with `sessionId` and `timeout`', function () {
+              rtcManager.connectSession(optionsForConn);
+
+              expect(onSessionConnectedSpy.calledWith(sessionInfo)).to.equal(true);
+            });
+
+            it('Should subscribe to event listening from the event manager', function () {
+              rtcManager.connectSession(optionsForConn);
+
+              expect(onSpy.calledWith('listening')).to.equal(true);
+            });
+
+            it('should call EventManager.setup with the session id', function () {
+              rtcManager.connectSession(optionsForConn);
+
+              expect(setupStub.called).to.equal(true);
+            });
+
+            it('should execute onSessionReady with data containing `sessionId` on receiving a `listening` event', function (done) {
+              rtcManager.connectSession(optionsForConn);
+
+              setTimeout(function () {
+                try {
+                  expect(onSessionReadySpy.calledWith({
+                    sessionId: sessionInfo.sessionId
+                  })).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
           });
 
-          it('Should subscribe to event listening from the event manager', function () {
-            expect(onSpy.calledWith('listening')).to.equal(true);
+          describe('error', function () {
+
+            var error,
+              doOperationStub;
+
+            beforeEach(function () {
+
+              error = {
+                error: 'Test Error'
+              };
+
+              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (operationName, options) {
+                options.error(error);
+              });
+
+            });
+
+            afterEach(function () {
+              doOperationStub.restore();
+            });
+
+            it('should invoke the onError callback', function () {
+              rtcManager.connectSession(optionsForConn);
+
+              expect(onErrorSpy.calledWith(error)).to.equal(true);
+            });
+
           });
 
-          it('should call EventManager.setup with the session id', function () {
-            expect(setupStub.called).to.equal(true);
-          });
-
-          it('should execute onSessionReady with data containing `sessionId` on receiving a `listening` event', function (done) {
-
-            setTimeout(function () {
-              try {
-                expect(onSessionReadySpy.calledWith({
-                  sessionId: sessionInfo.sessionId
-                })).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 100);
-          });
         });
+
       });
 
       describe('playStream', function () {
