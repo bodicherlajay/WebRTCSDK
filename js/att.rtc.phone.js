@@ -210,10 +210,10 @@
   /**
    * @summary Used to create a call.
    * @desc
-   * #### Error codes
-   * ##### 4002 - Invalid Media Type
-   * ##### 4003 - Internal error occured
-   * ##### 4004 - User is not logged in
+   * ##### Error codes
+   * ###### 4002 - Invalid Media Type
+   * ###### 4003 - Internal error occured
+   * ###### 4004 - User is not logged in
    * @param {Object} options
    * @memberOf Phone
    * @instance
@@ -242,7 +242,7 @@
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
     };
-    @example  
+    @example
     // Start audio call with a NoTN/VTN User
     var phone = ATT.rtc.Phone.getPhone();
     phone.dial({  
@@ -255,8 +255,6 @@
     function dial(options) {
 
       try {
-
-        console.log(session.getId());
 
         if (null === session.getId()) {
           throw ATT.errorDictionary.getSDKError('4004');
@@ -510,7 +508,7 @@
           var eventData = {
             data: data,
             error: errorDictionary.getSDKError('5002')
-          }
+          };
 
           emitter.publish('error', eventData);
         });
@@ -650,28 +648,42 @@
     }
 
     /**
-    * @summary
-    * Hangup current call.
-    * @memberOf Phone
-    * @instance
+     * @summary Hangup existing call
+     * @desc
+     * ##### Error codes
+     * ###### 6000 - Call is not in progress
+     * ###### 6001 - Internal error occured
+     * @memberOf Phone
+     * @instance
 
-    * @fires Phone#call-disconnected
-    * @fires Phone#call-error
+     * @fires Phone#call-disconnecting
 
-    * @example
+     * @example
       var phone = ATT.rtc.Phone.getPhone();
       phone.hangup();
     */
     function hangup() {
-      try {
-        var call = session.currentCall;
+      var call;
 
-        call.on('disconnecting', function (data) {
-          emitter.publish('call-disconnecting', data);
-        });
-        call.disconnect();
+      try {
+
+        call = session.currentCall;
+
+        if (null === call || null === call.id) {
+          throw ATT.errorDictionary.getSDKError('6000');
+        }
+
+        try {
+          call.on('disconnecting', function (data) {
+            emitter.publish('call-disconnecting', data);
+          });
+          call.disconnect();
+        } catch(err) {
+            throw ATT.errorDictionary.getSDKError('6001');
+        }
 
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });
