@@ -171,8 +171,8 @@
       JSMethod: "dial",
       ErrorCode: "4002",
       ErrorMessage: "Invalid media type",
-      Cause: "Invalid mediaType",
-      Resolution: "Please use either `audio` or `video`"
+      Cause: "Invalid media constraints",
+      Resolution: "Please provide use valid Media constraints attributes"
     },
     {
       JSObject: "ATT.rtc.Phone",

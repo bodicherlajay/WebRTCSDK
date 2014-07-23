@@ -208,14 +208,18 @@
     }
 
   /**
-   * @summary
-   * Start a call.
+   * @summary Used to create a call.
+   * @desc
+   * #### Error codes
+   * ##### 4002 - Invalid Media Type
+   * ##### 4003 - Internal error occured
+   * ##### 4004 - User is not logged in
    * @param {Object} options
    * @memberOf Phone
    * @instance
    * @param {String} options.destination The Phone Number or User Id of the called party.
-   * @param {HTMLElement} options.localVideo
-   * @param {HTMLElement} options.remoteVideo
+   * @param {HTMLElement} options.localMedia
+   * @param {HTMLElement} options.remoteMedia
    * @param {String} options.mediaType
    
    * @fires Phone#dialing
@@ -224,7 +228,7 @@
    * @fires Phone#call-rejected
    * @fires Phone#call-connected
    * @fires Phone#media-established
-   * @fires Phone#call-hold
+   * @fires Phone#call-held
    * @fires Phone#call-resume
    * @fires Phone#call-disconnected
    * @fires Phone#call-error
@@ -252,6 +256,11 @@
 
       try {
 
+        console.log(session.getId());
+
+        if (null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('4004');
+        }
         if (undefined === options) {
           throw ATT.errorDictionary.getSDKError('4009');
         }
@@ -299,8 +308,6 @@
             localMedia: options.localMedia,
             remoteMedia: options.remoteMedia
           });
-
-          console.log(call.test);
 
           call.on('connecting', function (data) {
 
@@ -500,7 +507,12 @@
           session.deleteCurrentCall();
         });
         call.on('error', function (data) {
-          emitter.publish('error', data);
+          var eventData = {
+            data: data,
+            error: errorDictionary.getSDKError('5002')
+          }
+
+          emitter.publish('error', eventData);
         });
 
         call.connect(options);
