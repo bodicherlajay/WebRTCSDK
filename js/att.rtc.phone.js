@@ -212,7 +212,7 @@
    * @desc
    * ##### Error codes
    * ###### 4002 - Invalid Media Type
-   * ###### 4003 - Internal error occured
+   * ###### 4003 - Internal error occurred
    * ###### 4004 - User is not logged in
    * @param {Object} options
    * @memberOf Phone
@@ -652,7 +652,7 @@
      * @desc
      * ##### Error codes
      * ###### 6000 - Call is not in progress
-     * ###### 6001 - Internal error occured
+     * ###### 6001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -738,23 +738,36 @@
       }
     }
 
-   /**
-   * @summary
-   * Put the current call on held.
-   * @memberOf Phone
-   * @instance
-   
-   * @fires Phone#call-held
-   * @fires Phone#call-error
+    /**
+     * @summary Put the current call on hold
+     * @desc
+     * ##### Error codes
+     * ###### 7000 - Hold failed - Call is not in progress
+     * ###### 7001 - Internal error occurred
+     * @memberOf Phone
+     * @instance
 
-   * @example
-    var phone = ATT.rtc.Phone.getPhone();
-    phone.hold();
-   */
-    function hold() {
+     * @fires Phone#error
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.hold();
+     */
+     function hold() {
+     var call;
+
       try {
-        var call = session.currentCall;
-        call.hold();
+        call = session.currentCall;
+
+        if (null === call || null === call.id) {
+          throw ATT.errorDictionary.getSDKError('7000');
+        }
+
+        try {
+          call.hold();
+        } catch(err) {
+          throw ATT.errorDictionary.getSDKError('7001');
+        }
       } catch (err) {
         emitter.publish('error', {
           error: err
@@ -763,23 +776,42 @@
     }
 
     /**
-    * @summary
-    * Resume the current call that is on hold.
-    * @memberOf Phone
-    * @instance
+     * @summary
+     * Resume the current call
+     * @desc
+     * ##### Error Codes
+     * ###### 8000 - Resume failed - Call is not in progress
+     * ###### 8001 - Call is not on hold
+     * ###### 8002 - Internal error occurred
+     * @memberOf Phone
+     * @instance
 
-    * @fires Phone#call-resume
-    * @fires Phone#call-error
 
-    * @example
-    var phone = ATT.rtc.Phone.getPhone();
-    phone.resume();
-    */
+     * @fires Phone#error
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.resume();
+     */
     function resume() {
-      try {
-        var call = session.currentCall;
+      var call;
 
-        call.resume();
+      try {
+        call = session.currentCall;
+
+        if (null === call || null === call.id) {
+          throw ATT.errorDictionary.getSDKError('8000');
+        }
+
+        if ('hold' !== call.getState()) {
+          throw ATT.errorDictionary.getSDKError('8001');
+        }
+
+        try {
+          call.resume();
+        } catch(err) {
+          throw ATT.errorDictionary.getSDKError('8002');
+        }
       } catch (err) {
         emitter.publish('error', {
           error: err
