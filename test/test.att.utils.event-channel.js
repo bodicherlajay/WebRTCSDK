@@ -364,7 +364,10 @@ describe('Event Channel', function () {
         doOperationStub503 = sinon.stub(channelConfig.resourceManager, 'doOperation', function (name, options) {
           options.error({
             getResponseStatus: function () { return 503; },
-            httpStatusCode: '503'
+            getResourceURL: function () { return ""},
+            errorDetail: {
+              HttpStatusCode: '503'
+            }
           });
         });
 
