@@ -107,6 +107,10 @@
           processEvent(event);
         });
 
+        eventChannel.on('channel-error', function (event) {
+          options.onError(event);
+        });
+
         logger.logInfo('Subscribed to api-event from event channel');
 
         eventChannel.startListening({
