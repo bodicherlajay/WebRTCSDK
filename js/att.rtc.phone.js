@@ -493,7 +493,12 @@
           session.deleteCurrentCall();
         });
         call.on('error', function (data) {
-          emitter.publish('error', data);
+          var eventData = {
+            data: data,
+            error: errorDictionary.getSDKError('5002')
+          }
+
+          emitter.publish('error', eventData);
         });
 
         call.connect(options);
