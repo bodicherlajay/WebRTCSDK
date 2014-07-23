@@ -221,141 +221,158 @@
       try {
 
         if (undefined === options) {
-          throw new Error('Options not defined');
+          throw ATT.errorDictionary.getSDKError('4009');
         }
 
         if (undefined === options.localMedia) {
-          throw new Error('localMedia not defined');
+          throw ATT.errorDictionary.getSDKError('4006');
         }
 
         if (undefined === options.remoteMedia) {
-          throw new Error('remoteMedia not defined');
+          throw ATT.errorDictionary.getSDKError('4007');
         }
 
         if (undefined === options.destination) {
-          throw new Error('Destination not defined');
+          throw ATT.errorDictionary.getSDKError('4008');
         }
 
-        /**
-         * Dialing event.
-         * @desc Triggered immediately.
-         * @event Phone#dialing
-         * @type {object}
-         * @property {Date} timestamp - Event fire time.
-         */
-        emitter.publish('dialing', {
-          to: options.destination,
-          mediaType: options.mediaType,
-          timestamp: new Date()
-        });
+        if (undefined !== options.mediaType) {
+          if ('audio' !== options.mediaType
+              && 'video' !== options.mediaType) {
+            throw ATT.errorDictionary.getSDKError('4002');
+          }
+        }
 
-        var call = session.createCall({
-          peer: options.destination,
-          type: ATT.CallTypes.OUTGOING,
-          mediaType: options.mediaType,
-          localMedia: options.localMedia,
-          remoteMedia: options.remoteMedia
-        });
+        try {
 
-        call.on('connecting', function (data) {
+          logger.logDebug('Phone.dial');
 
           /**
-           * Call connecting event.
-           * @desc Indicates succesful creation of the call.
-           * @event Phone#call-connecting
+           * Dialing event.
+           * @desc Triggered immediately.
+           * @event Phone#dialing
            * @type {object}
            * @property {Date} timestamp - Event fire time.
            */
-          emitter.publish('call-connecting', data);
-        });
-        call.on('canceled', function (data) {
-          /**
-           * Call canceled event.
-           * @desc Succesfully canceled the current call.
-           * @event Phone#call-canceled
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-canceled', data);
-        });
-        call.on('rejected', function (data) {
-          /**
-           * Call rejected event.
-           * @desc Successfully rejected an incoming call.
-           * @event Phone#call-rejected
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          session.deleteCurrentCall();
-          emitter.publish('call-rejected', data);
-        });
-        call.on('connected', function (data) {
-          /**
-           * Call connected event.
-           * @desc Successfully established a call.
-           * @event Phone#call-connected
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-connected', data);
-        });
-        call.on('media-established', function (data) {
-          /**
-           * Media established event.
-           * @desc Triggered when both parties are completed negotiation
-           * and engaged in active conversation.
-           * @event Phone#media-established
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('media-established', data);
-        });
-        call.on('held', function (data) {
-          /**
-           * Call on hold event.
-           * @desc Successfully put the current call on hold.
-           * @event Phone#call-hold
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-held', data);
-        });
-        call.on('resumed', function (data) {
-          /**
-           * Call resumed event.
-           * @desc Successfully resume a call that was on held.
-           * @event Phone#call-resume
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-resumed', data);
-        });
-        call.on('disconnected', function (data) {
-          /**
-           * Call disconnected event.
-           * @desc Successfully disconnected the current call.
-           * @event Phone#call-disconnected
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-disconnected', data);
-          session.deleteCurrentCall();
-        });
-        call.on('error', function (data) {
-          /**
-           * Call Error event.
-           * @desc Indicates an error condition during a call's flow
-           *
-           * @event Phone#call-error
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('error', data);
-        });
+          emitter.publish('dialing', {
+            to: options.destination,
+            mediaType: options.mediaType,
+            timestamp: new Date()
+          });
 
-        call.connect(options);
+          var call = session.createCall({
+            peer: options.destination,
+            type: ATT.CallTypes.OUTGOING,
+            mediaType: options.mediaType,
+            localMedia: options.localMedia,
+            remoteMedia: options.remoteMedia
+          });
 
+          console.log(call.test);
+
+          call.on('connecting', function (data) {
+
+            /**
+             * Call connecting event.
+             * @desc Indicates succesful creation of the call.
+             * @event Phone#call-connecting
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-connecting', data);
+          });
+          call.on('canceled', function (data) {
+            /**
+             * Call canceled event.
+             * @desc Succesfully canceled the current call.
+             * @event Phone#call-canceled
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-canceled', data);
+          });
+          call.on('rejected', function (data) {
+            /**
+             * Call rejected event.
+             * @desc Successfully rejected an incoming call.
+             * @event Phone#call-rejected
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            session.deleteCurrentCall();
+            emitter.publish('call-rejected', data);
+          });
+          call.on('connected', function (data) {
+            /**
+             * Call connected event.
+             * @desc Successfully established a call.
+             * @event Phone#call-connected
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-connected', data);
+          });
+          call.on('media-established', function (data) {
+            /**
+             * Media established event.
+             * @desc Triggered when both parties are completed negotiation
+             * and engaged in active conversation.
+             * @event Phone#media-established
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('media-established', data);
+          });
+          call.on('held', function (data) {
+            /**
+             * Call on hold event.
+             * @desc Successfully put the current call on hold.
+             * @event Phone#call-hold
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-held', data);
+          });
+          call.on('resumed', function (data) {
+            /**
+             * Call resumed event.
+             * @desc Successfully resume a call that was on held.
+             * @event Phone#call-resume
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-resumed', data);
+          });
+          call.on('disconnected', function (data) {
+            /**
+             * Call disconnected event.
+             * @desc Successfully disconnected the current call.
+             * @event Phone#call-disconnected
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-disconnected', data);
+            session.deleteCurrentCall();
+          });
+          call.on('error', function (data) {
+            /**
+             * Call Error event.
+             * @desc Indicates an error condition during a call's flow
+             *
+             * @event Phone#call-error
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('error', data);
+          });
+
+          call.connect(options);
+
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('4003');
+        }
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });

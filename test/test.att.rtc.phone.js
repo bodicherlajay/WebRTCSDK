@@ -455,7 +455,7 @@ describe('Phone', function () {
 
       });
 
-      describe('dial', function () {
+      describe('[US225742, US221316, US198801] dial', function () {
 
         var options,
           onSpy,
@@ -510,35 +510,6 @@ describe('Phone', function () {
 
         it('should exist', function () {
           expect(phone.dial).to.be.a('function');
-        });
-
-        it('should publish `error` event with error data if options are invalid', function () {
-
-          var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
-            //throw data.error.ErrorMessage;
-            throw data.error.message; // since not using Error codes yet
-          });
-
-          expect(phone.dial).to.throw('Options not defined');
-          expect(phone.dial.bind(phone, {
-            localMedia: localVideo,
-            remoteMedia: remoteVideo
-          })).to.throw('Destination not defined');
-          expect(phone.dial.bind(phone, {
-            localMedia: localVideo,
-            destination: '1234'
-          })).to.throw('remoteMedia not defined');
-          expect(phone.dial.bind(phone, {
-            destination: '1234',
-            remoteMedia: localVideo
-          })).to.throw('localMedia not defined');
-          expect(phone.dial.bind(phone, {
-            destination: '12345',
-            localMedia: localVideo,
-            remoteMedia: remoteVideo
-          })).to.not.throw(Error);
-
-          publishStub.restore();
         });
 
         it('should trigger the `dialing` event with event data', function (done) {
@@ -719,44 +690,129 @@ describe('Phone', function () {
 
         describe('Error Handling', function () {
 
+          var publishStub;
+
           beforeEach(function () {
+
+            publishStub = sinon.stub(emitter, 'publish', function () {});
 
             callConnectStub.restore();
 
             callConnectStub = sinon.stub(call, 'connect', function () {
               throw error;
-            })
+            });
 
           });
 
           afterEach(function () {
+            publishStub.restore();
             callConnectStub.restore();
           });
 
-          it('should publish `error` event with error data if there is an error during the operation', function (done) {
+          it('[4002] should be published with `error` event if invalid mediaType in options', function () {
 
-            phone.dial(options);
+            phone.dial({
+              destination: '1234',
+              localMedia: 'foo',
+              remoteMedia: 'bar',
+              mediaType: 'foobar'
+            });
 
-            setTimeout(function () {
-              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-              done();
-            }, 100);
+            expect(ATT.errorDictionary.getSDKError('4002')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('4002')
+            })).to.equal(true);
           });
 
-          it('should publish `error` event with error data when call publishes `error` event', function (done) {
-            phone.dial(options);
+          it('[4003] should be published with `error` event if there is an unknown exception during the operation', function () {
 
-            emitterCall.publish('error', eventData);
+            phone.dial({
+              destination: '1234',
+              localMedia: 'foo',
+              remoteMedia: 'bar',
+              mediaType: 'video'
+            });
 
-            setTimeout(function () {
-              try {
-                expect(onErrorHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 200);
+            expect(ATT.errorDictionary.getSDKError('4003')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('4003')
+            })).to.equal(true);
           });
+
+          it('[4006] should be published with `error` event if localMedia is not defined', function () {
+
+            phone.dial({
+              destination: '1234',
+              remoteMedia: 'bar',
+              mediaType: 'audio'
+            });
+
+            expect(ATT.errorDictionary.getSDKError('4006')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('4006')
+            })).to.equal(true);
+          });
+
+          it('[4007] should be published with `error` event if remoteMedia is not defined', function () {
+
+            phone.dial({
+              destination: '1234',
+              localMedia: 'bar',
+              mediaType: 'audio'
+            });
+
+            expect(ATT.errorDictionary.getSDKError('4007')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('4007')
+            })).to.equal(true);
+          });
+
+          it('[4008] should be published with `error` event if destination is not defined', function () {
+
+            phone.dial({
+              localMedia: 'bar',
+              remoteMedia: 'foo',
+              mediaType: 'audio'
+            });
+
+            expect(ATT.errorDictionary.getSDKError('4008')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('4008')
+            })).to.equal(true);
+          });
+
+          it('[4009] should be published with `error` event if options are not defined', function () {
+
+            phone.dial();
+
+            expect(ATT.errorDictionary.getSDKError('4009')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('4009')
+            })).to.equal(true);
+          });
+
+//
+//          it('[SDK-2005] should be published with `error` event if session id already exists', function () {
+//            session.setId('123');
+//
+//            phone.login({
+//              token: '123'
+//            });
+//
+//            expect(publishStub.calledWith('error', {
+//              error: ATT.errorDictionary.getSDKError('2005')
+//            })).to.equal(true);
+//
+//          });
+//
+//          it('[SDK-2004] should be published with `error` event if there is an unknown exception during the operation', function () {
+//
+//            phone.login(options);
+//
+//            expect(publishStub.calledWith('error', {
+//              error: ATT.errorDictionary.getSDKError('2004')
+//            })).to.equal(true);
+//          });
 
         });
       });

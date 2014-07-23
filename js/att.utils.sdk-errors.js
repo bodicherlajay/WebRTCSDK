@@ -171,8 +171,8 @@
       JSMethod: "dial",
       ErrorCode: "4002",
       ErrorMessage: "Invalid media type",
-      Cause: "Invalid media constraints",
-      Resolution: "Please provide use valid Media constraints attributes"
+      Cause: "Invalid mediaType",
+      Resolution: "Please use either `audio` or `video`"
     },
     {
       JSObject: "ATT.rtc.Phone",
@@ -197,6 +197,38 @@
       ErrorMessage: "Can not make second call. Please put the current call on hold before making second call.",
       Cause: "Invalid operation",
       Resolution: "Please ensure that current call is on hold before making second call"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "dial",
+      ErrorCode: "4006",
+      ErrorMessage: "parameter `localMedia` is not defined",
+      Cause: "localMedia is not defined",
+      Resolution: "Please include `localMedia` parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "dial",
+      ErrorCode: "4007",
+      ErrorMessage: "parameter `remoteMedia` is not defined",
+      Cause: "remoteMedia is not defined",
+      Resolution: "Please include `remoteMedia` parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "dial",
+      ErrorCode: "4008",
+      ErrorMessage: "parameter `destination` is not defined",
+      Cause: "destination is not defined",
+      Resolution: "Please include `destination` parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "dial",
+      ErrorCode: "4009",
+      ErrorMessage: "options are not defined",
+      Cause: "options are not defined",
+      Resolution: "Please include the required parameters"
     },
     {
       JSObject: "ATT.rtc.Phone",
