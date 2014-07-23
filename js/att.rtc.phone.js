@@ -488,11 +488,12 @@
     /**
     * @summary
     * Mute the current call.
+    * throws error code 9000,9001
     * @memberOf Phone
     * @instance
 
     * @fires Phone#call-muted
-    * @fires Phone#call-error
+    * @fires Phone#error
 
     * @example
       var phone = ATT.rtc.Phone.getPhone();
@@ -502,21 +503,33 @@
       try {
         var call = session.currentCall;
 
-        call.on('muted', function (data) {
-          /**
-           * Call muted event.
-           * @desc Call was successfully muted.
-           *
-           * @event Phone#call-muted
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-muted', data);
-        });
+        if (null === call || null === call.id) {
+          throw ATT.errorDictionary.getSDKError('9000');
+        }
 
-        call.mute();
+        try {
+          logger.logDebug('Phone.mute');
 
+          call.on('muted', function (data) {
+            /**
+             * Call muted event.
+             * @desc Call was successfully muted.
+             *
+             * @event Phone#call-muted
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-muted', data);
+          });
+
+          call.mute();
+
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('9001');
+        }
       } catch (err) {
+        logger.logError(err);
+
         emitter.publish('error', {
           error: err
         });
@@ -526,11 +539,12 @@
     /**
     * @summary
     * Unmute the current call.
+    * throw error codes 10000, 10001
     * @memberOf Phone
     * @instance
 
     * @fires Phone#call-unmuted
-    * @fires Phone#call-error
+    * @fires Phone#error
 
     * @example
       var phone = ATT.rtc.Phone.getPhone();
@@ -540,20 +554,36 @@
       try {
         var call = session.currentCall;
 
-        call.on('unmuted', function (data) {
-          /**
-           * Call unmuted event.
-           * @desc Call was successfully unmuted.
-           *
-           * @event Phone#call-unmuted
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-unmuted', data);
-        });
+        if (null === call || null === call.id) {
+          throw ATT.errorDictionary.getSDKError('10000');
+        }
 
-        call.unmute();
+        try {
+
+          logger.logDebug('Phone.unmute');
+
+          call.on('unmuted', function (data) {
+            /**
+             * Call unmuted event.
+             * @desc Call was successfully unmuted.
+             *
+             * @event Phone#call-unmuted
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-unmuted', data);
+          });
+
+          call.unmute();
+
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('10001');
+        }
+
       } catch (err) {
+
+        logger.logError(err);
+
         emitter.publish('error', {
           error: err
         });

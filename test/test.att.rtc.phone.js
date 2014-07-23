@@ -317,6 +317,7 @@ describe('Phone', function () {
 
             phone.login();
 
+            expect(ATT.errorDictionary.getSDKError('2002')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('2002')
             })).to.equal(true);
@@ -327,6 +328,7 @@ describe('Phone', function () {
 
             phone.login({});
 
+            expect(ATT.errorDictionary.getSDKError('2001')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('2001')
             })).to.equal(true);
@@ -345,6 +347,7 @@ describe('Phone', function () {
               token: '123'
             });
 
+            expect(ATT.errorDictionary.getSDKError('2005')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('2005')
             })).to.equal(true);
@@ -355,6 +358,7 @@ describe('Phone', function () {
 
             phone.login(options);
 
+            expect(ATT.errorDictionary.getSDKError('2004')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('2004')
             })).to.equal(true);
@@ -447,16 +451,14 @@ describe('Phone', function () {
             disconnectStub.restore();
           });
 
-          it('[3000] should be published with `error` event if there is an error during the operation', function (done) {
+          it('[3000] should be published with `error` event if there is an error during the operation', function () {
 
             phone.logout();
 
-            setTimeout(function () {
-              expect(publishStub.calledWith('error', {
-                error: ATT.errorDictionary.getSDKError('3000')
-              })).to.equal(true);
-              done();
-            }, 100);
+            expect(ATT.errorDictionary.getSDKError('3000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('3000')
+            })).to.equal(true);
           });
 
         });
@@ -769,7 +771,7 @@ describe('Phone', function () {
         });
       });
 
-      describe.only('answer', function () {
+      describe('answer', function () {
 
         var options,
           createCallOptions,
@@ -1111,6 +1113,8 @@ describe('Phone', function () {
           phone.on('call-muted', callMutedHandlerSpy);
           phone.on('call-unmuted', callUnmutedHandlerSpy);
 
+          call.setId('1234');
+
           session.currentCall = call;
         });
 
@@ -1159,7 +1163,11 @@ describe('Phone', function () {
 
           describe('Error Handling', function () {
 
+            var publishStub;
+
             beforeEach(function () {
+
+              publishStub = sinon.stub(emitter, 'publish', function () {});
 
               callMuteStub.restore();
 
@@ -1169,14 +1177,32 @@ describe('Phone', function () {
 
             });
 
-            it('should publish `error` event if there is an error during the operation', function (done) {
+            afterEach(function () {
+              publishStub.restore();
+              callMuteStub.restore();
+            });
+
+            it('[9000] should be published if Session.currentCall does not exist or is not connected', function () {
+
+              session.currentCall.id = null;
 
               phone.mute();
 
-              setTimeout(function () {
-                expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-                done();
-              }, 100);
+              expect(ATT.errorDictionary.getSDKError('9000')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('9000')
+              })).to.equal(true);
+            });
+
+            it('[9001] should be published with `error` event if there is an error during the operation', function () {
+
+              phone.mute();
+
+              expect(ATT.errorDictionary.getSDKError('9001')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('9001')
+              })).to.equal(true);
+
             });
 
           });
@@ -1221,25 +1247,42 @@ describe('Phone', function () {
 
 
           describe('Error Handling', function () {
+            var publishStub;
 
             beforeEach(function () {
-
+              publishStub = sinon.stub(emitter, 'publish', function () {});
               callUnmuteStub.restore();
 
               callUnmuteStub = sinon.stub(call, 'unmute', function () {
                 throw error;
-              })
+              });
 
             });
 
-            it('should publish `error` event if there is an error during the operation', function (done) {
+            afterEach(function () {
+              publishStub.restore();
+              callUnmuteStub.restore();
+            });
+
+            it('[10000] should be published if Session.currentCall does not exist or is not connected', function () {
+              session.currentCall.id = null;
 
               phone.unmute();
 
-              setTimeout(function () {
-                expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-                done();
-              }, 100);
+              expect(ATT.errorDictionary.getSDKError('10000')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('10000')
+              })).to.equal(true);
+            });
+
+            it('[10001] should be published with `error` event if there is an error during the operation', function () {
+
+              phone.unmute();
+
+              expect(ATT.errorDictionary.getSDKError('10001')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('10001')
+              })).to.equal(true);
             });
 
           });
