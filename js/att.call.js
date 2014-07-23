@@ -239,13 +239,19 @@
             logger.logInfo('Call canceled succesfully');
             that.setState('disconnected');
             rtcManager.resetPeerConnection();
+          },
+          onError : function (error) {
+            emitter.publish('error', error);
           }
         });
       } else {
         logger.logInfo('Disconnecting call');
         rtcManager.disconnectCall({
           sessionInfo: this.sessionInfo,
-          callId: this.id
+          callId: this.id,
+          onError : function (error) {
+            emitter.publish('error', error);
+          }
         });
       }
     }
@@ -256,8 +262,12 @@
       rtcManager.muteCall({
         onSuccess: function () {
           call.setState('muted');
+        },
+        onError : function (error) {
+          emitter.publish('error', error);
         }
-      });
+
+    });
     }
 
     function unmute() {
@@ -266,6 +276,9 @@
       rtcManager.unmuteCall({
         onSuccess: function () {
           call.setState('unmuted');
+        },
+        onError : function (error) {
+          emitter.publish('error', error);
         }
       });
     }
@@ -277,6 +290,9 @@
         onSuccess: function (localSdp) {
           call.localSdp = localSdp;
         },
+        onError: function (error) {
+          emitter.publish('error', error);
+        },
         callId: call.id
       });
     }
@@ -287,6 +303,9 @@
       rtcManager.resumeCall({
         onSuccess: function (localSdp) {
           call.localSdp = localSdp;
+        },
+        onError : function (error) {
+          emitter.publish('error', error);
         },
         callId: call.id
       });
@@ -301,8 +320,8 @@
         onSuccess : function () {
           rtcManager.off('call-disconnected', onCallDisconnected);
         },
-        onError : function () {
-
+        onError : function (error) {
+          emitter.publish('error', error);
         }
       });
 
