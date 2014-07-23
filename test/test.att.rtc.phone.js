@@ -1335,7 +1335,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('hangup', function () {
+      describe('[US198537] hangup', function () {
 
         var onSpy,
           callDisconnectStub,
@@ -1358,6 +1358,7 @@ describe('Phone', function () {
           phone.on('call-disconnected', callDisconnectedSpy);
 
           session.currentCall = call;
+          call.setId('1234');
         });
 
         afterEach(function () {
@@ -1395,6 +1396,48 @@ describe('Phone', function () {
               done(e);
             }
           }, 300);
+        });
+
+        describe('Error Handling', function () {
+
+          var publishStub;
+
+          beforeEach(function () {
+
+            publishStub = sinon.stub(emitter, 'publish', function () {});
+
+            callDisconnectStub.restore();
+
+            callDisconnectStub = sinon.stub(call, 'disconnect', function () {
+              throw error;
+            });
+          });
+
+          afterEach(function () {
+            publishStub.restore();
+            callDisconnectStub.restore();
+          });
+
+          it('[6000] should be published with `error` event if call is not in progress', function () {
+            call.setId(null);
+
+            phone.hangup();
+
+            expect(ATT.errorDictionary.getSDKError('6000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('6000')
+            })).to.equal(true);
+          });
+
+          it('[6001] should be published with `error` event if there is an unknown exception during the operation', function () {
+
+            phone.hangup();
+
+            expect(ATT.errorDictionary.getSDKError('6001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('6001')
+            })).to.equal(true);
+          });
         });
       });
 
@@ -1526,6 +1569,9 @@ describe('Phone', function () {
           });
 
           session.currentCall = call;
+
+          call.setId('1234');
+
         });
 
         afterEach(function () {
@@ -1547,37 +1593,56 @@ describe('Phone', function () {
 
           describe('Error Handling', function () {
 
+            var publishStub;
+
             beforeEach(function () {
+
+              publishStub = sinon.stub(emitter, 'publish', function () {});
 
               callHoldStub.restore();
 
               callHoldStub = sinon.stub(call, 'hold', function () {
                 throw error;
-              })
-
+              });
             });
 
-            it('should publish `error` event with error data if there is an error during the operation', function (done) {
+            afterEach(function () {
+              publishStub.restore();
+              callHoldStub.restore();
+            });
+
+            it('[7000] should be published with `error` event if call is not in progress', function () {
+              call.setId(null);
 
               phone.hold();
 
-              setTimeout(function () {
-                expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-                done();
-              }, 100);
+              expect(ATT.errorDictionary.getSDKError('7000')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('7000')
+              })).to.equal(true);
             });
 
+            it('[7001] should be published with `error` event if there is an unknown exception during the operation', function () {
+
+              phone.hold();
+
+              expect(ATT.errorDictionary.getSDKError('7001')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('7001')
+              })).to.equal(true);
+            });
           });
 
         });
 
-        describe('resume', function () {
+        describe.only('resume', function () {
 
           it('should exist', function () {
             expect(phone.resume).to.be.a('function');
           });
 
           it('should execute call.resume', function () {
+            call.setState('hold');
             phone.resume();
 
             expect(callResumeStub.called).to.equal(true);
@@ -1585,26 +1650,58 @@ describe('Phone', function () {
 
           describe('Error Handling', function () {
 
+            var publishStub;
+
             beforeEach(function () {
+
+              publishStub = sinon.stub(emitter, 'publish', function () {});
 
               callResumeStub.restore();
 
               callResumeStub = sinon.stub(call, 'resume', function () {
                 throw error;
               });
-
             });
 
-            it('should publish `error` event with error data if there is an error during the operation', function (done) {
+            afterEach(function () {
+              publishStub.restore();
+              callResumeStub.restore();
+            });
+
+            it('[8000] should be published with `error` event if call is not in progress', function () {
+              call.setId(null);
 
               phone.resume();
 
-              setTimeout(function () {
-                expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-                done();
-              }, 100);
+              expect(ATT.errorDictionary.getSDKError('8000')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('8000')
+              })).to.equal(true);
             });
 
+            it('[8001] should be published with `error` event if the call is not on hold', function () {
+
+              call.setState('foobar');
+
+              phone.resume();
+
+              expect(ATT.errorDictionary.getSDKError('8001')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('8001')
+              })).to.equal(true);
+            });
+
+            it('[8002] should be published with `error` event if there is an unknown exception during the operation', function () {
+
+              call.setState('hold');
+
+              phone.resume();
+
+              expect(ATT.errorDictionary.getSDKError('8002')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('8002')
+              })).to.equal(true);
+            });
           });
 
         });
