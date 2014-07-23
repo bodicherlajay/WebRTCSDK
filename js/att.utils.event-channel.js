@@ -37,7 +37,7 @@
       onError,
       onTimeOut,
       interval = 2000,
-      maxPollingTime = 64000,
+      maxPollingTime = 5*60*1000,
       methodName = 'getEvents',
       emitter,
       logger;
@@ -117,7 +117,7 @@
 
     function on(event, handler) {
 
-      if (event !== 'api-event') {
+      if (event !== 'api-event' && event !='channel-error') {
         throw new Error('Event not defined');
       }
 
@@ -129,15 +129,18 @@
       emitter.subscribe(event, handler, this);
     }
 
-    function retry(config, response) {
+    function retry(config, error) {
       logger.logDebug(config);
       logger.logInfo("Repolling again...");
-      if (response.httpStatusCode !== undefined) {
-        logger.logError("[FATAL] Response code was:" + response.httpStatusCode + " repolling again...");
-      } else if (response.type === "timeout") {
+      if ((error.errorDetail.HttpStatusCode !== 204 )) { //&& error.errorDetail.HttpStatusCode > 0)) {
+        logger.logError("[FATAL] Response code was:" + error + " repolling again...");
+        //stopListening();
+        //emitter.publish('channel-error',ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","events","RTC"));
+        //return;
+      } else if (error.errorDetail.HttpStatusCode == 0) {
         logger.logInfo("Request timed out, repolling again");
       } else {
-        logger.logError("[FATAL] Response code was:" + response + " repolling again...");
+        logger.logError("Response code was:" + error + " repolling again...");
       }
       setTimeout(function () {
         // continue polling
@@ -196,6 +199,8 @@
           logger.logInfo("Stopping Event Channel, maximum polling time reached, interval = "
             + interval + ", maximum polling time = " + maxPollingTime);
           stopListening();
+          emitter.publish('channel-error',ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","events","RTC"));
+          return;
         } else {
           retry(config, error);
         }
