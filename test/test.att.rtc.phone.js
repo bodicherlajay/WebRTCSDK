@@ -1089,7 +1089,7 @@ describe('Phone', function () {
 
       });
 
-      describe('mute & unmute', function () {
+      describe('[US198615] mute & unmute', function () {
 
         var onSpy,
           callMuteStub,
