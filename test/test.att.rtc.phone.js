@@ -6,9 +6,15 @@ describe('Phone', function () {
   'use strict';
 
   var getRTCManagerStub,
-    factories;
+    factories,
+    localVideo,
+    remoteVideo;
 
   beforeEach(function () {
+
+    localVideo = document.createElement('video');
+    remoteVideo = document.createElement('video');
+
     factories = ATT.private.factories;
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return {
@@ -111,8 +117,6 @@ describe('Phone', function () {
         createEventEmitterStub,
         callConstructorStub,
         sessionConstructorStub,
-        remoteVideo,
-        localVideo,
         onErrorHandlerSpy,
         eventData,
         error,
@@ -129,9 +133,6 @@ describe('Phone', function () {
         errorData = {
           error: error
         };
-
-        localVideo = document.createElement('video');
-        remoteVideo = document.createElement('video');
 
         emitterCall = ATT.private.factories.createEventEmitter();
 
@@ -868,6 +869,7 @@ describe('Phone', function () {
           callResumeHandlerSpy = sinon.spy();
           errorHandlerSpy = sinon.spy();
 
+          session.setId('ABC');
           call = session.createCall(createCallOptions);
 
           call.setRemoteSdp('abc');
@@ -902,7 +904,7 @@ describe('Phone', function () {
           phone.answer();
 
           setTimeout(function () {
-            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
             expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
             done();
           }, 100);
@@ -916,7 +918,7 @@ describe('Phone', function () {
           });
 
           setTimeout(function () {
-            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
             expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
           }, 100);
@@ -930,7 +932,7 @@ describe('Phone', function () {
           });
 
           setTimeout(function () {
-            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
             expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
           }, 100);
@@ -944,13 +946,11 @@ describe('Phone', function () {
           phone.answer(options);
 
           setTimeout(function () {
-            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
             expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
             done();
           }, 100);
         });
-
-
 
         it('[5000] should publish `error` event with error data if there is no current call', function (done) {
 
@@ -960,7 +960,7 @@ describe('Phone', function () {
           phone.answer(options);
 
           setTimeout(function () {
-            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
             expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
             done();
           }, 100);
@@ -974,7 +974,7 @@ describe('Phone', function () {
           phone.answer(options);
 
           setTimeout(function () {
-            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
             expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
             done();
           }, 100);
@@ -1113,51 +1113,26 @@ describe('Phone', function () {
             }, 300);
           });
 
-        });
+          it('[5002] should trigger `error` with relevant data when call publishes `error` event', function (done) {
 
-        describe('Error Handling', function () {
-
-          beforeEach(function () {
-
-            callConnectStub.restore();
-
-            callConnectStub = sinon.stub(call, 'connect', function () {
-              throw error;
-            })
-
-          });
-
-          afterEach(function () {
-            callConnectStub.restore();
-          });
-
-          it('should publish `error` event if there is an error during the operation', function (done) {
-
-            phone.answer(options);
-
-            setTimeout(function () {
-              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-              done();
-            }, 100);
-          });
-
-          it('should trigger `error` with relevant data when call publishes `error` event', function (done) {
             phone.answer(options);
 
             emitterCall.publish('error', eventData);
 
             setTimeout(function () {
               try {
-                expect(onErrorHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(errorHandlerSpy.calledOnce).to.equal(true);
+                expect(onErrorHandlerSpy.getCall(0).args[0].data).to.be.an('object');
+                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
                 done();
               } catch (e) {
                 done(e);
               }
             }, 200);
+
           });
 
         });
-
       });
 
       describe('[US198615] mute & unmute', function () {
@@ -1802,16 +1777,32 @@ describe('Phone', function () {
 
           var phone,
             call,
-            connectStub;
+            connectStub,
+            answerOptions,
+            session;
 
           beforeEach(function () {
+            answerOptions = {
+              localMedia: localVideo,
+              remoteMedia: remoteVideo
+            };
+
             phone = new ATT.private.Phone();
 
+            // just to log if there's any error on phone, because now there are no
+            // exceptions thrown, ever
+            phone.on('error', function (data) {
+              console.error(JSON.stringify(data));
+            });
+
+            session = phone.getSession();
+            session.setId('ZBC')
             call = phone.getSession().createCall({
               peer: '123',
               type: 'abc',
               mediaType: 'video'
             });
+
 
             // so that it will just register the event handlers
             connectStub = sinon.stub(call, 'connect', function () {
@@ -1824,20 +1815,18 @@ describe('Phone', function () {
           });
 
           it('should publish `call-connected` when call publishes `connected` event', function (done) {
-            var callConnectedspy = sinon.spy();
+            var callConnectedSpy = sinon.spy();
 
-            phone.on('call-connected', callConnectedspy);
+            phone.on('call-connected', callConnectedSpy);
 
-            phone.answer({
-              localMedia: {},
-              remoteMedia: {}
-            });
+            phone.answer(answerOptions);
 
             call.setState('connected');
 
             setTimeout(function () {
               try {
-                expect(callConnectedspy.calledOnce).to.equal(true);
+                expect(callConnectedSpy.called).to.equal(true);
+                expect(callConnectedSpy.calledOnce).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
