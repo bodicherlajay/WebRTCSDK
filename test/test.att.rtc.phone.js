@@ -2,19 +2,21 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert, after*/
 
-describe('Phone', function () {
+describe.only('Phone', function () {
   'use strict';
 
-  var getRTCManagerStub;
+  var getRTCManagerStub,
+    factories;
 
   beforeEach(function () {
-
+    factories = ATT.private.factories;
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return {
         on: function (event, handler) {
           return {};
         },
-        connectCall: function () {}
+        connectCall: function () {},
+        stopUserMedia: function () { return; }
       };
     });
   });
@@ -312,20 +314,22 @@ describe('Phone', function () {
             connectStub.restore();
           });
 
-          it('[SDK-2002] should be published with `error` event if no options', function () {
+          it('[2002] should be published with `error` event if no options', function () {
 
             phone.login();
 
+            expect(ATT.errorDictionary.getSDKError('2002')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('2002')
             })).to.equal(true);
 
           });
 
-          it('[SDK-2001] should be published with `error` event if no token in options', function () {
+          it('[2001] should be published with `error` event if no token in options', function () {
 
             phone.login({});
 
+            expect(ATT.errorDictionary.getSDKError('2001')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('2001')
             })).to.equal(true);
@@ -337,23 +341,25 @@ describe('Phone', function () {
 
           });
 
-          it('[SDK-2005] should be published with `error` event if session id already exists', function () {
+          it('[2005] should be published with `error` event if session id already exists', function () {
             session.setId('123');
 
             phone.login({
               token: '123'
             });
 
+            expect(ATT.errorDictionary.getSDKError('2005')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('2005')
             })).to.equal(true);
 
           });
 
-          it('[SDK-2004] should be published with `error` event if there is an unknown exception during the operation', function () {
+          it('[2004] should be published with `error` event if there is an unknown exception during the operation', function () {
 
             phone.login(options);
 
+            expect(ATT.errorDictionary.getSDKError('2004')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('2004')
             })).to.equal(true);
@@ -363,7 +369,7 @@ describe('Phone', function () {
 
       });
 
-      describe('logout', function () {
+      describe('[US198837, US197999] logout', function () {
 
         var onSpy,
           disconnectStub,
@@ -426,8 +432,12 @@ describe('Phone', function () {
         });
 
         describe('Error Handling', function () {
+          var publishStub;
 
           beforeEach(function () {
+            publishStub = sinon.stub(emitter, 'publish', function () {
+
+            });
 
             disconnectStub.restore();
 
@@ -438,17 +448,18 @@ describe('Phone', function () {
           });
 
           afterEach(function () {
+            publishStub.restore()
             disconnectStub.restore();
           });
 
-          it('should publish `error` event if there is an error during the operation', function (done) {
+          it('[3000] should be published with `error` event if there is an error during the operation', function () {
 
             phone.logout();
 
-            setTimeout(function () {
-              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-              done();
-            }, 100);
+            expect(ATT.errorDictionary.getSDKError('3000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('3000')
+            })).to.equal(true);
           });
 
         });
@@ -817,7 +828,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('answer', function () {
+      describe('[US198535] answer', function () {
 
         var options,
           createCallOptions,
@@ -831,7 +842,8 @@ describe('Phone', function () {
           mediaEstablishedHandlerSpy,
           callHoldHandlerSpy,
           callResumeHandlerSpy,
-          callErrorHandlerSpy;
+          callErrorHandlerSpy,
+          errorHandlerSpy;
 
         beforeEach(function () {
 
@@ -855,6 +867,7 @@ describe('Phone', function () {
           callErrorHandlerSpy = sinon.spy();
           callHoldHandlerSpy = sinon.spy();
           callResumeHandlerSpy = sinon.spy();
+          errorHandlerSpy = sinon.spy();
 
           call = session.createCall(createCallOptions);
 
@@ -872,6 +885,7 @@ describe('Phone', function () {
           phone.on('media-established', mediaEstablishedHandlerSpy);
           phone.on('call-held', callHoldHandlerSpy);
           phone.on('call-resumed', callResumeHandlerSpy);
+          phone.on('error', errorHandlerSpy);
 
         });
 
@@ -884,35 +898,87 @@ describe('Phone', function () {
           expect(phone.answer).to.be.a('function');
         });
 
-        it('should publish `error` event with error data if there is no current call', function () {
-          session.currentCall = null;
+        it('[5004] should be published `error` event with error data if called without any options', function (done) {
 
-          var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
-            //throw data.error.ErrorMessage;
-            throw data.error.message; // since not using Error codes yet
-          });
+          phone.answer();
 
-          expect(phone.answer.bind(phone, options)).to.throw('Call object not defined');
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
+            done();
+          }, 100);
 
-          publishStub.restore();
         });
 
-        it('should publish `error` event with error data if called without valid options', function () {
+        it('[5001] should be published `error` event with error data if called without `localMedia`', function (done) {
 
-          var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
-            //throw data.error.ErrorMessage;
-            throw data.error.message; // since not using Error codes yet
+          phone.answer({
+            test: 'test'
           });
 
-          expect(phone.answer.bind(phone)).to.throw('Options not defined');
-          expect(phone.answer.bind(phone, {
-            localMedia: remoteVideo
-          })).to.throw('remoteMedia not defined');
-          expect(phone.answer.bind(phone, {
-            remoteMedia: localVideo
-          })).to.throw('localMedia not defined');
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            done();
+          }, 100);
 
-          publishStub.restore();
+        });
+
+        it('[5001] should be published `error` event with error data if called without `remoteMedia`', function (done) {
+
+          phone.answer({
+            localMedia: options.localMedia
+          });
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            done();
+          }, 100);
+        });
+
+        it('[5003] should publish `error` event with data if the user is not logged in', function (done) {
+
+
+          session.setId(null);
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
+            done();
+          }, 100);
+        });
+
+
+
+        it('[5000] should publish `error` event with error data if there is no current call', function (done) {
+
+          session.currentCall = null;
+          phone.on('error', errorHandlerSpy);
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
+            done();
+          }, 100);
+
+        });
+
+        it('[5002] should publish `error` with data when there\'s an uncaught exception', function (done) {
+
+          session.currentCall = undefined;
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.called).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
+            done();
+          }, 100);
         });
 
         it('should trigger `answering` with event data', function (done) {
@@ -1095,7 +1161,7 @@ describe('Phone', function () {
 
       });
 
-      describe('mute & unmute', function () {
+      describe('[US198615] mute & unmute', function () {
 
         var onSpy,
           callMuteStub,
@@ -1118,6 +1184,8 @@ describe('Phone', function () {
 
           phone.on('call-muted', callMutedHandlerSpy);
           phone.on('call-unmuted', callUnmutedHandlerSpy);
+
+          call.setId('1234');
 
           session.currentCall = call;
         });
@@ -1167,7 +1235,11 @@ describe('Phone', function () {
 
           describe('Error Handling', function () {
 
+            var publishStub;
+
             beforeEach(function () {
+
+              publishStub = sinon.stub(emitter, 'publish', function () {});
 
               callMuteStub.restore();
 
@@ -1177,14 +1249,32 @@ describe('Phone', function () {
 
             });
 
-            it('should publish `error` event if there is an error during the operation', function (done) {
+            afterEach(function () {
+              publishStub.restore();
+              callMuteStub.restore();
+            });
+
+            it('[9000] should be published if Session.currentCall does not exist or is not connected', function () {
+
+              session.currentCall.id = null;
 
               phone.mute();
 
-              setTimeout(function () {
-                expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-                done();
-              }, 100);
+              expect(ATT.errorDictionary.getSDKError('9000')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('9000')
+              })).to.equal(true);
+            });
+
+            it('[9001] should be published with `error` event if there is an error during the operation', function () {
+
+              phone.mute();
+
+              expect(ATT.errorDictionary.getSDKError('9001')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('9001')
+              })).to.equal(true);
+
             });
 
           });
@@ -1229,25 +1319,42 @@ describe('Phone', function () {
 
 
           describe('Error Handling', function () {
+            var publishStub;
 
             beforeEach(function () {
-
+              publishStub = sinon.stub(emitter, 'publish', function () {});
               callUnmuteStub.restore();
 
               callUnmuteStub = sinon.stub(call, 'unmute', function () {
                 throw error;
-              })
+              });
 
             });
 
-            it('should publish `error` event if there is an error during the operation', function (done) {
+            afterEach(function () {
+              publishStub.restore();
+              callUnmuteStub.restore();
+            });
+
+            it('[10000] should be published if Session.currentCall does not exist or is not connected', function () {
+              session.currentCall.id = null;
 
               phone.unmute();
 
-              setTimeout(function () {
-                expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-                done();
-              }, 100);
+              expect(ATT.errorDictionary.getSDKError('10000')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('10000')
+              })).to.equal(true);
+            });
+
+            it('[10001] should be published with `error` event if there is an error during the operation', function () {
+
+              phone.unmute();
+
+              expect(ATT.errorDictionary.getSDKError('10001')).to.be.an('object');
+              expect(publishStub.calledWith('error', {
+                error: ATT.errorDictionary.getSDKError('10001')
+              })).to.equal(true);
             });
 
           });

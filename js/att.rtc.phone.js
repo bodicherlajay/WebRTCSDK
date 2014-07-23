@@ -4,7 +4,9 @@
 (function () {
   'use strict';
 
-  var logManager = ATT.logManager.getInstance();
+  var logManager = ATT.logManager.getInstance(),
+    logger = logManager.addLoggerForModule('Phone');
+
   /**
     Creates a new Phone.
     @global
@@ -14,7 +16,8 @@
   function Phone() {
 
     var emitter = ATT.private.factories.createEventEmitter(),
-      session = new ATT.rtc.Session();
+      session = new ATT.rtc.Session(),
+      errorDictionary = ATT.errorDictionary;
 
     session.on('call-incoming', function (data) {
       emitter.publish('call-incoming', data);
@@ -23,6 +26,12 @@
     session.on('error', function (data) {
       emitter.publish('error', data);
     });
+
+    function publishError(error) {
+      emitter.publish('error', {
+        error: error
+      });
+    }
 
     /**
     * @summary
@@ -80,12 +89,14 @@
     * @summary Creates a WebRTC Session.
     * @desc Used to establish webRTC session so that the user can place webRTC calls.
     * The service parameter indicates the desired service such as audio or video call
+    * Throw errors 2001, 2002, 2004, 2005
     * @memberOf Phone
     * @instance
     * @param {Object} options
     * @param {String} options.token OAuth Access Token.
     * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
     * @fires Phone#session-ready
+    * @fires Phone#error
     * @example
     *
       var phone = ATT.rtc.Phone.getPhone();
@@ -95,7 +106,6 @@
       });
    */
     function login(options) {
-
       try {
         if (undefined === options) {
           //todo remove throw and publish it using error callback handler
@@ -111,6 +121,8 @@
         }
 
         try {
+          logger.logDebug('Phone.login');
+
           session.on('ready', function (data) {
             /**
              * Session Ready event.
@@ -130,6 +142,18 @@
           throw ATT.errorDictionary.getSDKError('2004');
         }
       } catch (err) {
+
+        logger.logError(err);
+
+        /**
+         * Error event.
+         * @desc Indicates the SDK has thrown an error
+         *
+         * @event Phone#error
+         * @data {object}
+         * @property {Date} timestamp - Event fire time.
+         * @error {Object} error - Error object
+         */
         emitter.publish('error', {
           error: err
         });
@@ -141,16 +165,18 @@
     * @desc
     * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
     * requests gets stopped
+    * publishes error code 3000
     * @memberof Phone
     * @instance
     * @fires Phone#session-disconnected
-    * @fires Phone#call-error
+    * @fires Phone#error
     * @example
     * var phone = ATT.rtc.Phone.getPhone();
     * phone.logout();
     */
     function logout() {
       try {
+        logger.logDebug('Phone.logout');
 
         session.on('disconnected', function (data) {
           /**
@@ -169,8 +195,9 @@
         session = undefined;
 
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
-          error: err
+          error: ATT.errorDictionary.getSDKError('3000')
         });
       }
     }
@@ -383,7 +410,7 @@
      * @summary
      * Answer an incoming call
      * @desc
-     * When call arrives via an incoming call event, call can be answered by using this method
+     * When call arrives via an incoming call event, call can be answered by using this method:
      * @memberof Phone
      * @instance
      * @param {Object} options
@@ -409,23 +436,33 @@
      */
     function answer(options) {
 
+      var call;
+
       try {
         if (undefined === options) {
-          throw new Error('Options not defined');
+          publishError(errorDictionary.getSDKError(5004));
+          return;
         }
 
         if (undefined === options.localMedia) {
-          throw new Error('localMedia not defined');
+          publishError(errorDictionary.getSDKError(5001));
+          return;
         }
 
         if (undefined === options.remoteMedia) {
-          throw new Error('remoteMedia not defined');
+          publishError(errorDictionary.getSDKError(5001));
+          return;
         }
 
-        var call = session.currentCall;
+        if (session.getId() === null) {
+          publishError(errorDictionary.getSDKError(5003));
+          return;
+        }
+        call = session.currentCall;
 
         if (call === null) {
-          throw new Error('Call object not defined');
+          publishError(errorDictionary.getSDKError(5000));
+          return;
         }
 
         emitter.publish('answering', {
@@ -464,20 +501,19 @@
         call.connect(options);
 
       } catch (err) {
-        emitter.publish('error', {
-          error: err
-        });
+        publishError(errorDictionary.getSDKError(5002));
       }
-    }
 
+    }
     /**
     * @summary
     * Mute the current call.
+    * throws error code 9000,9001
     * @memberOf Phone
     * @instance
 
     * @fires Phone#call-muted
-    * @fires Phone#call-error
+    * @fires Phone#error
 
     * @example
       var phone = ATT.rtc.Phone.getPhone();
@@ -487,21 +523,33 @@
       try {
         var call = session.currentCall;
 
-        call.on('muted', function (data) {
-          /**
-           * Call muted event.
-           * @desc Call was successfully muted.
-           *
-           * @event Phone#call-muted
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-muted', data);
-        });
+        if (null === call || null === call.id) {
+          throw ATT.errorDictionary.getSDKError('9000');
+        }
 
-        call.mute();
+        try {
+          logger.logDebug('Phone.mute');
 
+          call.on('muted', function (data) {
+            /**
+             * Call muted event.
+             * @desc Call was successfully muted.
+             *
+             * @event Phone#call-muted
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-muted', data);
+          });
+
+          call.mute();
+
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('9001');
+        }
       } catch (err) {
+        logger.logError(err);
+
         emitter.publish('error', {
           error: err
         });
@@ -511,11 +559,12 @@
     /**
     * @summary
     * Unmute the current call.
+    * throw error codes 10000, 10001
     * @memberOf Phone
     * @instance
 
     * @fires Phone#call-unmuted
-    * @fires Phone#call-error
+    * @fires Phone#error
 
     * @example
       var phone = ATT.rtc.Phone.getPhone();
@@ -525,20 +574,36 @@
       try {
         var call = session.currentCall;
 
-        call.on('unmuted', function (data) {
-          /**
-           * Call unmuted event.
-           * @desc Call was successfully unmuted.
-           *
-           * @event Phone#call-unmuted
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('call-unmuted', data);
-        });
+        if (null === call || null === call.id) {
+          throw ATT.errorDictionary.getSDKError('10000');
+        }
 
-        call.unmute();
+        try {
+
+          logger.logDebug('Phone.unmute');
+
+          call.on('unmuted', function (data) {
+            /**
+             * Call unmuted event.
+             * @desc Call was successfully unmuted.
+             *
+             * @event Phone#call-unmuted
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-unmuted', data);
+          });
+
+          call.unmute();
+
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('10001');
+        }
+
       } catch (err) {
+
+        logger.logError(err);
+
         emitter.publish('error', {
           error: err
         });
