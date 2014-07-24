@@ -4,8 +4,7 @@
 (function () {
   'use strict';
 
-  var logManager = ATT.logManager.getInstance(),
-    logger = logManager.addLoggerForModule('Phone');
+  var logManager = ATT.logManager.getInstance();
 
   /**
     Creates a new Phone.
@@ -17,9 +16,21 @@
 
     var emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
-      errorDictionary = ATT.errorDictionary;
+      errorDictionary = ATT.errorDictionary,
+      logger = logManager.addLoggerForModule('Phone');
 
     session.on('call-incoming', function (data) {
+      /**
+       * Call incoming event.
+       * @desc Indicates a call is being received.
+       *
+       * @event Phone#call-incoming
+       * @type {object}
+       * @property {String} from - The ID of the caller.
+       * @property {String} mediaType - The type of call being received.
+       * @property {String} codec - The codec used by the incoming call.
+       * @property {Date} timestamp - Event fire time.
+       */
       emitter.publish('call-incoming', data);
     });
 
@@ -420,7 +431,17 @@
      * @summary
      * Answer an incoming call
      * @desc
-     * When call arrives via an incoming call event, call can be answered by using this method:
+     * Once a {@link Phone#call-incoming} event is fired, you can use this method to
+     * answer the incoming call.
+     *
+     * **SDK Error Codes**
+     *
+     *   - 5000 - Answer failed: No incoming call
+     *   - 5001 - Invalid media type 
+     *   - 5002 - Internal error occurred
+     *   - 5003 - User is not logged in
+     *   - 5004 - Mandatory fields can not be empty
+     *
      * @memberof Phone
      * @instance
      * @param {Object} options
@@ -435,7 +456,7 @@
      * @fires Phone#call-held
      * @fires Phone#call-resume
      * @fires Phone#call-disconnected
-     * @fires Phone#call-error
+     * @fires Phone#error
 
      * @example
         var phone = ATT.rtc.Phone.getPhone();
@@ -679,7 +700,7 @@
           });
           call.disconnect();
         } catch (err) {
-            throw ATT.errorDictionary.getSDKError('6001');
+          throw ATT.errorDictionary.getSDKError('6001');
         }
 
       } catch (err) {
@@ -773,8 +794,8 @@
      var phone = ATT.rtc.Phone.getPhone();
      phone.hold();
      */
-     function hold() {
-     var call;
+    function hold() {
+      var call;
 
       try {
         call = session.currentCall;
@@ -785,7 +806,7 @@
 
         try {
           call.hold();
-        } catch(err) {
+        } catch (err) {
           throw ATT.errorDictionary.getSDKError('7001');
         }
       } catch (err) {
@@ -829,7 +850,7 @@
 
         try {
           call.resume();
-        } catch(err) {
+        } catch (err) {
           throw ATT.errorDictionary.getSDKError('8002');
         }
       } catch (err) {
@@ -897,7 +918,7 @@
 
   ATT.rtc.Phone = (function () {
     var instance,
-      logger = logManager.addLoggerForModule('Phone');
+      logger = logManager.addLoggerForModule('rtc');
 
     return {
       /**
