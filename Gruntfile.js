@@ -157,7 +157,6 @@ module.exports = function (grunt) {
         src: [
           '../../../README.md',
           'js/att.rtc.phone.js',
-          'js/att.session.js',
           'js/att.rtc.dhs.js'],
         options: {
           destination: 'doc',
