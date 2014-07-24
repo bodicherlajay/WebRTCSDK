@@ -524,7 +524,7 @@ describe('Phone', function () {
           expect(phone.dial).to.be.a('function');
         });
 
-        it.only('should trigger the `dialing` event with event data', function (done) {
+        it('should trigger the `dialing` event with event data', function (done) {
           phone.dial(options);
 
           setTimeout(function () {
