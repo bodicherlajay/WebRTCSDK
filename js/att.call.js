@@ -218,6 +218,11 @@
             emitter.publish('error', {
               error: error
             });
+          },
+          onUserMediaError: function (error) {
+            emitter.publish('error', {
+              error: error
+            });
           }
         });
 
@@ -249,8 +254,10 @@
         rtcManager.disconnectCall({
           sessionInfo: this.sessionInfo,
           callId: this.id,
-          onError : function (error) {
-            emitter.publish('error', error);
+          onError: function(error) {
+            emitter.publish('error', {
+              error: error
+            });
           }
         });
       }
@@ -266,8 +273,7 @@
         onError : function (error) {
           emitter.publish('error', error);
         }
-
-    });
+      });
     }
 
     function unmute() {
@@ -290,10 +296,10 @@
         onSuccess: function (localSdp) {
           call.localSdp = localSdp;
         },
-        onError: function (error) {
+        callId: call.id,
+        onError : function (error) {
           emitter.publish('error', error);
-        },
-        callId: call.id
+        }
       });
     }
 
@@ -304,10 +310,10 @@
         onSuccess: function (localSdp) {
           call.localSdp = localSdp;
         },
+        callId: call.id,
         onError : function (error) {
           emitter.publish('error', error);
-        },
-        callId: call.id
+        }
       });
     }
 
