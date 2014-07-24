@@ -678,7 +678,7 @@
             emitter.publish('call-disconnecting', data);
           });
           call.disconnect();
-        } catch(err) {
+        } catch (err) {
             throw ATT.errorDictionary.getSDKError('6001');
         }
 
@@ -693,6 +693,10 @@
     /**
      * @summary
      * Cancel current call.
+     * @desc
+     *  ##### Error Code
+     *  - 11000 -Cancel failed-Call has not been initiated
+     *  - 11001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -702,7 +706,23 @@
      */
     function cancel() {
       var call = session.currentCall;
-      call.disconnect();
+
+      try {
+        if (null === call || null === call.id) {
+          throw ATT.errorDictionary.getSDKError('11000');
+        }
+        try {
+
+          call.disconnect();
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('11001');
+        }
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
    /**
