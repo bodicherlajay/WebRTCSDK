@@ -250,7 +250,7 @@
    * @fires Phone#call-connected
    * @fires Phone#media-established
    * @fires Phone#call-held
-   * @fires Phone#call-resume
+   * @fires Phone#call-resumed
    * @fires Phone#call-disconnected
    * @fires Phone#call-error
 
@@ -385,7 +385,7 @@
             /**
              * Call on hold event.
              * @desc Successfully put the current call on hold.
-             * @event Phone#call-hold
+             * @event Phone#call-held
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
@@ -395,7 +395,7 @@
             /**
              * Call resumed event.
              * @desc Successfully resume a call that was on held.
-             * @event Phone#call-resume
+             * @event Phone#call-resumed
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
@@ -464,7 +464,7 @@
      * @fires Phone#call-connected
      * @fires Phone#media-established
      * @fires Phone#call-held
-     * @fires Phone#call-resume
+     * @fires Phone#call-resumed
      * @fires Phone#call-disconnected
      * @fires Phone#error
 
