@@ -13,7 +13,7 @@
     "footer"          : "",
     "copyright"       : "AT&T",
     "navType"         : "vertical",
-    "theme"           : "spacelab",
+    "theme"           : "cerulean",
     "linenums"        : true,
     "collapseSymbols" : true,
     "inverseNav"      : true

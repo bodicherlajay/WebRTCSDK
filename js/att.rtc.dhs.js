@@ -144,6 +144,22 @@
     return false;
   };
 
+  /**
+   * @summary
+   * Create a session on the DHS for a given user
+   * @desc
+   * Confirms the User Session
+   *
+   * **Error Codes**
+   *
+   *   - Code - Desc
+   *
+   * @memberof ATT.rtc.dhs
+   * @static
+   * @param {Object} config
+   * @param {Function} config.success
+   * @param {Function} config.error
+   */
   session = function (config) {
     try {
       // Call DHS to check for a browser session.
@@ -160,6 +176,40 @@
     }
   };
 
+  /**
+   * @summary
+   * Creates a new user in the DHS.
+   * @desc
+   * Used to create new VTN/NoTN users
+   *
+   * **Error Codes**
+   *
+   *   - Code - Desc
+   *
+   * @memberof ATT.rtc.dhs
+   * @static
+   * @param {Object} config
+   * @param {Object} config.data
+   * @param {String} config.data.name
+   * @param {String} config.data.userid
+   * @param {String} config.data.name
+   * @param {String} config.data.password
+   * @param {String} config.data.confpassword
+   * @param {Function} config.success
+   * @param {Function} config.error
+
+   * @example
+   var dhs = ATT.rtc.dhs;
+   dhs.registerUser({
+      data: userData,
+      success: function (data) {
+        // ...
+      },
+      error: function (err) {
+        // ..
+      }
+    });
+   */
   registerUser = function (config) {
     try {
       // Call DHS to register a new user on DHS
@@ -176,6 +226,23 @@
     }
   };
 
+  /**
+   * @summary
+   * Delete a user from the DHS
+   * @desc
+   *
+   * **Error Codes**
+   *
+   *   - Code - Desc
+   *
+   * @memberof ATT.rtc.dhs
+   * @static
+   * @param {Object} config
+   * @param {Object} config.data User's data
+   * @param {String} config.data.name
+   * @param {Function} config.success
+   * @param {Function} config.error
+   */
   deleteUser = function (config) {
     try {
       // Call DHS to delete a user on DHS
@@ -210,8 +277,22 @@
   };
 
   /**
-   * The login method that will be hit by UI.
-   * @param {Object} config The usertype
+   * @summary
+   * Attempts to authorize your mobile to make WebRTC calls
+   * @desc
+   * AT&T OAuth Consent flow
+   *
+   * **Error Codes**
+   *
+   *   - Code - Desc
+   *
+   * @memberof ATT.rtc.dhs
+   * @static
+   * @param {Object} config
+   * @param {Object} config.data
+   * @param {Object} config.data.type User type: `ICMN`, `VTN` or `NOTN`
+   * @param {Function} config.success
+   * @param {Function} config.error
    */
   authorize = function (config) {
     try {
@@ -230,8 +311,20 @@
   };
 
   /**
-   * The token method that will be hit by UI.
-   * @param {Object} config The code
+   * @summary Retrive an Access Token
+   * @description
+   * Uses the authcode obtained from consent flow.
+   * For ICMN user we obtain new access token every time the user goes through
+   * consent flow and authenticated calls dhs to get access token on successful
+   * return it will call address page
+   * @function token
+   * @static
+   * @memberOf ATT.rtc.dhs
+   * @param {Object} config
+   * @param {Object} config.data
+   * @param {Object} config.data.code Authorization Code from Consent flow.
+   * @param {Function} config.success
+   * @param {Function} config.error
    */
   token = function (config) {
     try {
@@ -320,9 +413,21 @@
   };
 
   /**
-   * Create an E911 ID.
+   * @summary
+   * Creates a new E911 ID for the address provided
+   * @desc
+   * Created every time the ICMN user goes through the consent flow and authenticated
+   *
+   * **Error Codes**
+   *
+   *   - Code - Desc
+   *
+   * @memberof ATT.rtc.dhs
+   * @static
    * @param {Object} config
-   * @member {Object} address The user's physical address object.
+   * @param {Object} config.data The address fields
+   * @param {Function} config.success
+   * @param {Function} config.error
    */
   createE911Id = function (config) {
     try {
