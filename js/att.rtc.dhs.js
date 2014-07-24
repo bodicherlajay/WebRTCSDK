@@ -156,7 +156,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'session', config.error, err, "session");
+      handleError(config.error, err, "session");
     }
   };
 
@@ -172,7 +172,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'registerUser', config.error, err, "registerUser");
+      handleError(config.error, err, "registerUser");
     }
   };
 
@@ -190,7 +190,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'deleteUser', config.error, err, "deleteUser");
+      handleError(config.error, err, "deleteUser");
     }
   };
 
@@ -205,7 +205,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'vtnList', config.error, err, "vtnList");
+      handleError(config.error, err, "vtnList");
     }
   };
 
@@ -225,7 +225,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'authorize', config.error, err, "authorize");
+      handleError(config.error, err, "authorize");
     }
   };
 
@@ -245,7 +245,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'token', config.error, err, "token");
+      handleError(config.error, err, "token");
     }
   };
 
@@ -274,7 +274,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'login', config.error, err, "login");
+      handleError(config.error, err, "login");
     }
   };
 
@@ -315,7 +315,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'logout', config.error, err, "logout");
+      handleError(config.error, err, "logout");
     }
   };
 
@@ -346,7 +346,7 @@
         }
       });
     } catch (err) {
-      handleError.call(this, 'createE911Id', config.error, err, "createE911Id");
+      handleError(config.error, err, "createE911Id");
     }
   };
 

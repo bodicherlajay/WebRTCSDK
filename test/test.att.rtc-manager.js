@@ -750,19 +750,22 @@ describe('RTC Manager', function () {
           getUserMediaStub,
           initPeerConnectionStub,
           onCallConnectingSpy,
+          onErrorSpy,
           setRemoteSdpStub,
           remoteSdp,
           onUserMediaErrorSpy;
 
-        before(function () {
+        beforeEach(function () {
           onCallConnectingSpy = sinon.spy();
           onUserMediaErrorSpy = sinon.spy();
+          onErrorSpy = sinon.spy();
 
           options = {
             peer: '123',
             mediaType: 'xyz',
             onCallConnecting: onCallConnectingSpy,
-            onUserMediaError: onUserMediaErrorSpy
+            onUserMediaError: onUserMediaErrorSpy,
+            onError: onErrorSpy
           };
 
           getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
@@ -785,10 +788,9 @@ describe('RTC Manager', function () {
             options.success();
           });
 
-          rtcManager.connectCall(options);
         });
 
-        after(function () {
+        afterEach(function () {
           getUserMediaStub.restore();
           initPeerConnectionStub.restore();
           setRemoteSdpStub.restore();
@@ -822,14 +824,28 @@ describe('RTC Manager', function () {
             mediaType: 'video',
             onCallConnecting: function () {},
             onUserMediaError: function () {}
+          })).to.throw('Callback `onError` not defined.');
+          expect(rtcManager.connectCall.bind(rtcManager, {
+            callId: '123',
+            mediaType: 'video',
+            onCallConnecting: function () {},
+            onUserMediaError: function () {},
+            onError: function () { return; }
           })).to.not.throw(Error);
         });
 
         it('should call getUserMedia on user media service', function () {
+
+          rtcManager.connectCall(options);
+
           expect(getUserMediaStub.called).to.equal(true);
         });
 
         describe('getUserMedia callbacks', function () {
+
+          beforeEach(function () {
+            rtcManager.connectCall(options);
+          });
 
           describe('onUserMedia', function () {
 

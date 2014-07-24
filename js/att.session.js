@@ -11,7 +11,6 @@
 
   /** 
     Creates a new WebRTC Session.
-    @global
     @class Represents a WebRTC Session.
     @constructor
   */

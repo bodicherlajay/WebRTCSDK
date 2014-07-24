@@ -387,7 +387,7 @@ describe('Phone', function () {
           phone.on('session-disconnected', onSessionDisconnectedSpy);
 
           // logout checks for session id
-          session.id = 'sessionid';
+          session.setId('sessionid');
         });
 
         afterEach(function () {
@@ -453,6 +453,20 @@ describe('Phone', function () {
             disconnectStub.restore();
           });
 
+          it('[3001] should be published with `error` event if the session is not connected', function () {
+
+            // clear out session id
+            session.setId(null);
+
+            phone.logout();
+
+            expect(ATT.errorDictionary.getSDKError('3001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('3001')
+            })).to.equal(true);
+
+          });
+
           it('[3000] should be published with `error` event if there is an error during the operation', function () {
 
             phone.logout();
@@ -461,6 +475,7 @@ describe('Phone', function () {
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('3000')
             })).to.equal(true);
+
           });
 
         });

@@ -4,8 +4,7 @@
 (function () {
   'use strict';
 
-  var logManager = ATT.logManager.getInstance(),
-    logger = logManager.addLoggerForModule('Phone');
+  var logManager = ATT.logManager.getInstance();
 
   /**
     Creates a new Phone.
@@ -17,9 +16,21 @@
 
     var emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
-      errorDictionary = ATT.errorDictionary;
+      errorDictionary = ATT.errorDictionary,
+      logger = logManager.addLoggerForModule('Phone');
 
     session.on('call-incoming', function (data) {
+      /**
+       * Call incoming event.
+       * @desc Indicates a call is being received.
+       *
+       * @event Phone#call-incoming
+       * @type {object}
+       * @property {String} from - The ID of the caller.
+       * @property {String} mediaType - The type of call being received.
+       * @property {String} codec - The codec used by the incoming call.
+       * @property {Date} timestamp - Event fire time.
+       */
       emitter.publish('call-incoming', data);
     });
 
@@ -89,11 +100,11 @@
     * @summary Creates a WebRTC Session.
     * @desc Used to establish webRTC session so that the user can place webRTC calls.
     * The service parameter indicates the desired service such as audio or video call
-    * #### Error Code
-    *   - 2001 - Missing input parameter
-    *   - 2002 - Mandatory fields can not be empty
-    *   - 2004 - Internal error occurred
-    *   - 2005 - User already logged in
+    *  **Error Code**
+    *    - 2001 - Missing input parameter
+    *    - 2002 - Mandatory fields can not be empty
+    *    - 2004 - Internal error occurred
+    *    - 2005 - User already logged in
     * @memberOf Phone
     * @instance
     * @param {Object} options
@@ -169,7 +180,7 @@
     * @desc
     * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
     * requests gets stopped
-    * #### Error Codes
+    * **Error Codes**
     *   - 3000 - Internal error occurred
     * @memberof Phone
     * @instance
@@ -181,28 +192,38 @@
     */
     function logout() {
       try {
-        logger.logDebug('Phone.logout');
 
-        session.on('disconnected', function (data) {
-          /**
-           * Session Disconnected event.
-           * @desc Session was successfully deleted.
-           *
-           * @event Phone#session-disconnected
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('session-disconnected', data);
-        });
+        if (null === session || null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('3001');
+        }
 
-        session.disconnect();
+        try {
+          logger.logDebug('Phone.logout');
 
-        session = undefined;
+          session.on('disconnected', function (data) {
+            /**
+             * Session Disconnected event.
+             * @desc Session was successfully deleted.
+             *
+             * @event Phone#session-disconnected
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('session-disconnected', data);
+          });
 
+          session.disconnect();
+
+          session = undefined;
+
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('3000');
+        }
       } catch (err) {
         logger.logError(err);
+
         emitter.publish('error', {
-          error: ATT.errorDictionary.getSDKError('3000')
+          error: err
         });
       }
     }
@@ -210,10 +231,10 @@
   /**
    * @summary Used to create a call.
    * @desc
-   * ##### Error codes
-   * - 4002 - Invalid Media Type
-   * - 4003 - Internal error occurred
-   * - 4004 - User is not logged in
+   * **Error codes**
+   *  - 4002 - Invalid Media Type
+   *  - 4003 - Internal error occurred
+   *  - 4004 - User is not logged in
    * @param {Object} options
    * @memberOf Phone
    * @instance
@@ -420,7 +441,17 @@
      * @summary
      * Answer an incoming call
      * @desc
-     * When call arrives via an incoming call event, call can be answered by using this method:
+     * Once a {@link Phone#call-incoming} event is fired, you can use this method to
+     * answer the incoming call.
+     *
+     * **Error Codes**
+     *
+     *   - 5000 - Answer failed: No incoming call
+     *   - 5001 - Invalid media type 
+     *   - 5002 - Internal error occurred
+     *   - 5003 - User is not logged in
+     *   - 5004 - Mandatory fields can not be empty
+     *
      * @memberof Phone
      * @instance
      * @param {Object} options
@@ -435,7 +466,7 @@
      * @fires Phone#call-held
      * @fires Phone#call-resume
      * @fires Phone#call-disconnected
-     * @fires Phone#call-error
+     * @fires Phone#error
 
      * @example
         var phone = ATT.rtc.Phone.getPhone();
@@ -524,7 +555,7 @@
     * @summary
     * Mute the current call.
     * @desc
-    * #### Error Codes
+    * **Error Codes**
     *   - 9000 - Mute failed- Call is not in progress
     *   - 9001 - Internal error occurred
     * @memberOf Phone
@@ -578,7 +609,7 @@
     * @summary
     * Unmute the current call.
     * @desc
-    * #### Error Codes
+    * **Error Codes**
     *   - 10000 - Unmute failed- No media stream
     *   - 10001 - Internal error occurred
     * @memberOf Phone
@@ -650,9 +681,9 @@
     /**
      * @summary Hangup existing call
      * @desc
-     * ##### Error codes
-     * - 6000 - Call is not in progress
-     * - 6001 - Internal error occurred
+     * **Error codes**
+     *   - 6000 - Call is not in progress
+     *   - 6001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -679,7 +710,7 @@
           });
           call.disconnect();
         } catch (err) {
-            throw ATT.errorDictionary.getSDKError('6001');
+          throw ATT.errorDictionary.getSDKError('6001');
         }
 
       } catch (err) {
@@ -694,9 +725,9 @@
      * @summary
      * Cancel current call.
      * @desc
-     *  ##### Error Code
-     *  - 11000 -Cancel failed-Call has not been initiated
-     *  - 11001 - Internal error occurred
+     *  **Error Code**
+     *    - 11000 -Cancel failed-Call has not been initiated
+     *    - 11001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -729,7 +760,7 @@
     * @summary
     * Reject current incoming call.
     * @desc
-    *  ##### Error Codes
+    *  ** Error Codes **
     *  - 12000 - Reject failed-Call has not been initiated
     *  - 12001 - Internal error occurred
     * @memberOf Phone
@@ -769,9 +800,9 @@
     /**
      * @summary Put the current call on hold
      * @desc
-     * ##### Error codes
-     * - 7000 - Hold failed - Call is not in progress
-     * - 7001 - Internal error occurred
+     * **Error codes**
+     *   - 7000 - Hold failed - Call is not in progress
+     *   - 7001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -781,8 +812,8 @@
      var phone = ATT.rtc.Phone.getPhone();
      phone.hold();
      */
-     function hold() {
-     var call;
+    function hold() {
+      var call;
 
       try {
         call = session.currentCall;
@@ -807,10 +838,10 @@
      * @summary
      * Resume the current call
      * @desc
-     * ##### Error Codes
-     * - 8000 - Resume failed - Call is not in progress
-     * - 8001 - Call is not on hold
-     * - 8002 - Internal error occurred
+     * **Error Codes**
+     *   - 8000 - Resume failed - Call is not in progress
+     *   - 8001 - Call is not on hold
+     *   - 8002 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -905,7 +936,7 @@
 
   ATT.rtc.Phone = (function () {
     var instance,
-      logger = logManager.addLoggerForModule('Phone');
+      logger = logManager.addLoggerForModule('rtc');
 
     return {
       /**
