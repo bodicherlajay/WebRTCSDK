@@ -12,7 +12,8 @@
   var module,
     logManager = ATT.logManager.getInstance(),
     logger = logManager.getLoggerByName('PeerConnectionService'),
-    Error,
+    Error, //todo remove this reference
+    onPeerConnectionError,
     SignalingService,
     SDPFilter;
 
@@ -134,6 +135,7 @@
       this.mediaConstraints = config.mediaConstraints;
       this.localStream = config.localStream;
       this.onPeerConnectionInitiated = config.onPeerConnectionInitiated;
+      onPeerConnectionError = config.onPeerConnectionError,
       this.onRemoteStream = config.onRemoteStream;
       this.sessionInfo = config.sessionInfo;
 
@@ -149,7 +151,7 @@
       if (this.callType === ATT.CallTypes.OUTGOING) {
         logger.logInfo('creating offer for outgoing call');
         this.peerConnection.createOffer(this.setLocalAndSendMessage.bind(this), function () {
-          Error.publish('Create offer failed');
+          onPeerConnectionError('Create offer failed');
         }, {'mandatory': {
           'OfferToReceiveAudio': this.mediaConstraints.audio,
           'OfferToReceiveVideo': this.mediaConstraints.video
@@ -185,7 +187,8 @@
         pc = new RTCPeerConnection(self.pcConfig);
         self.peerConnection = pc;
       } catch (e) {
-        Error.publish('Failed to create PeerConnection. Exception: ' + e.message);
+        //todo get the sdk error
+        onPeerConnectionError('Failed to create PeerConnection. Exception: ' + e.message);
       }
 
       // ICE candidate trickle
@@ -202,7 +205,7 @@
               SDPFilter.processChromeSDPOffer(sdp);
               logger.logInfo('processed Chrome offer SDP');
             } catch (e) {
-              Error.publish('Could not process Chrome offer SDP. Exception: ' + e.message);
+              onPeerConnectionError('Could not process Chrome offer SDP. Exception: ' + e.message);
             }
 
             logger.logTrace('local description', sdp);
@@ -211,7 +214,8 @@
               self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
             } catch (e) {
-              Error.publish('Could not set local description. Exception: ' + e.message);
+              //todo get the sdk error
+              onPeerConnectionError('Could not set local description. Exception: ' + e.message);
             }
 
             if (callType === ATT.CallTypes.OUTGOING) {
@@ -242,14 +246,16 @@
                         localSdp: self.localDescription
                       });
                     }
-                    Error.publish('Failed to send offer', 'SendOffer');
+                    //todo get the sdk error and invoke
+                    onPeerConnectionError('Failed to send offer');
                   },
                   error: function (error) {
-                    Error.publish(error, 'SendOffer');
+                    onPeerConnectionError(error);
                   }
                 });
               } catch (e) {
-                Error.publish('Could not send offer: ' + e);
+                //todo get the sdk error and invoke
+                onPeerConnectionError('Could not send offer: ' + e);
               }
 
             } else if (callType === ATT.CallTypes.INCOMING) {
@@ -269,18 +275,21 @@
                         localSdp: self.localDescription
                       });
                     }
-                    Error.publish('Failed to send answer', 'SendAnswer');
+                    //get the sdk error
+                    onPeerConnectionError('Failed to send answer');
                   },
                   error: function (error) {
-                    Error.publish(error, 'SendAnswer');
+                    onPeerConnectionError(error);
                   }
                 });
               } catch (e) {
-                Error.publish('incoming call, could not send answer. Exception: ' + e.message);
+                //todo get the sdk error
+                onPeerConnectionError('incoming call, could not send answer. Exception: ' + e.message);
               }
             }
           } else {
-            Error.publish('peerConnection is null!');
+            //todo get the sdk error
+            onPeerConnectionError('peerConnection is null!');
           }
         }
       };
@@ -290,7 +299,8 @@
       try {
         pc.addStream(this.localStream);
       } catch (e) {
-        Error.publish('Failed to add local stream. Exception: ' + e.message);
+        //todo get the sdk error
+        onPeerConnectionError('Failed to add local stream. Exception: ' + e.message);
       }
 
       // add remote stream
@@ -320,7 +330,8 @@
       try {
         if (this.userAgent().indexOf('Chrome') < 0) {
           this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this), function () {
-            Error.publish('Create answer failed.');
+            //todo get the sdk error
+            onPeerConnectionError('Create answer failed.');
           }, {
             'mandatory' : {
               'OfferToReceiveAudio': this.mediaConstraints.audio,
@@ -331,7 +342,8 @@
           this.peerConnection.createAnswer(this.setLocalAndSendMessage.bind(this));
         }
       } catch (e) {
-        Error.publish('Create answer failed');
+        //todo get the sdk error
+        onPeerConnectionError('Create answer failed');
       }
     },
 
@@ -357,12 +369,13 @@
             err = err.message;
           }
           // Need to figure out why Chrome throws this event though it works
-          //Error.publish('Set Remote Description Fail: ' + err);
+          //todo get the sdk error
+          onPeerConnectionError('Set Remote Description Fail: ' + err);
         });
       } catch (err) {
         console.log(err);
         // Need to figure out why Chrome throws this event though it works
-        //Error.publish('Set Remote Description Fail: ' + err.message);
+        //onPeerConnectionError('Set Remote Description Fail: ' + err);
       }
     },
 
@@ -399,7 +412,7 @@
       try {
         this.peerConnection.setLocalDescription(this.localDescription);
       } catch (e) {
-        Error.publish('Could not set local description. Exception: ' + e.message);
+        onPeerConnectionError('Could not set local description. Exception: ' + e.message);
       }
 
       // send accept modifications...
@@ -413,7 +426,7 @@
             sessionInfo: this.sessionInfo
           });
         } catch (e) {
-          Error.publish('Accepting modification failed. Exception: ' + e.message);
+          onPeerConnectionError('Accepting modification failed. Exception: ' + e.message);
         }
       }
     },
@@ -472,7 +485,7 @@
       try {
         SDPFilter.incrementSDP(sdp, this.modificationCount);
       } catch (e) {
-        Error.publish('Could not increment SDP. Exception: ' + e.message);
+        onPeerConnectionError('Could not increment SDP. Exception: ' + e.message);
       }
 
       try {
@@ -480,7 +493,7 @@
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
       } catch (e) {
-        Error.publish('Could not set local description. Exception: ' + e.message);
+        onPeerConnectionError('Could not set local description. Exception: ' + e.message);
       }
 
       try {
@@ -495,7 +508,7 @@
           }
         });
       } catch (e) {
-        Error.publish('Send hold signal fail: ' + e.message);
+        onPeerConnectionError('Send hold signal fail: ' + e.message);
       }
 
       this.isModInitiator = true;
@@ -521,7 +534,7 @@
       try {
         SDPFilter.incrementSDP(sdp, this.modificationCount);
       } catch (e) {
-        Error.publish('Could not increment SDP. Exception: ' + e.message);
+        onPeerConnectionError('Could not increment SDP. Exception: ' + e.message);
       }
 
       try {
@@ -529,7 +542,7 @@
         this.peerConnection.setLocalDescription(sdp);
         this.localDescription = sdp;
       } catch (e) {
-        Error.publish('Could not set local description. Exception: ' + e.message);
+        onPeerConnectionError('Could not set local description. Exception: ' + e.message);
       }
 
       try {
@@ -544,7 +557,7 @@
           }
         });
       } catch (e) {
-        Error.publish('Send resume call Fail: ' + e.message);
+        onPeerConnectionError('Send resume call Fail: ' + e.message);
       }
 
       this.isModInitiator = true;
