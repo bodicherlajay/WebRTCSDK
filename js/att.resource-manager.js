@@ -119,7 +119,11 @@
           logger.logError(err);
           logger.logError(error);
         } else {
-          error = {APIError:err.responseText, ResourceMethod:err.getResourceURL(),HttpStatusCode: err.getResponseStatus()};
+          error = {
+            APIError:err.responseText, 
+            ResourceMethod : err.getResourceURL(),
+            HttpStatusCode: err.getResponseStatus()
+          };
           logger.logError(err);
           logger.logError(error);
         }

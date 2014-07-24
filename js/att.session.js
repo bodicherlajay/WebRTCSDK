@@ -26,7 +26,8 @@
       // private attributes
       id = null,
       token = null,
-      calls = {};
+      calls = {},
+	  logger = logManager.getLoggerByName("Session");
 
     // instantiate event emitter
     emitter = factories.createEventEmitter();
@@ -165,55 +166,70 @@
       }, this.timeout);
     };
 
-    this.connect =   function connect(options) {
+    this.connect = function connect(options) {
+	  var session = this;
       try {
         if (undefined === options) {
-          throw new Error('No input provided');
+          throw ATT.errorDictionary.getSDKError('2002');
         }
         if (undefined === options.token) {
-          throw new Error('No access token provided');
+          throw ATT.errorDictionary.getSDKError('2001');
         }
 
-        token = options.token;
-        this.e911Id = options.e911Id;
+        try {
 
-        emitter.publish('connecting');
+          logger.logDebug('Session.connect');
 
-        var session = this;
+		  token = options.token;
+          this.e911Id = options.e911Id;
 
-        rtcManager.connectSession({
-          token: options.token,
-          e911Id: options.e911Id,
-          onSessionConnected: function (sessionInfo) {
-            try {
-              session.setId(sessionInfo.sessionId);
-              session.update({
-                timeout: sessionInfo.timeout
-              });
-            } catch (err) {
+          emitter.publish('connecting');
+
+          session = this;
+
+          rtcManager.connectSession({
+            token: options.token,
+            e911Id: options.e911Id,
+            onSessionConnected: function (sessionInfo) {
+              try {
+                logger.logDebug('connectSession.onSessionConnected');
+
+                session.setId(sessionInfo.sessionId);
+                session.update({
+                  timeout: sessionInfo.timeout
+                });
+              } catch (err) {
+                logger.logError(err);
+
+                emitter.publish('error', {
+                  error: ATT.errorDictionary.getSDKError('2004')
+                });
+              }
+            },
+            onSessionReady: function (data) {
+              emitter.publish('ready', data);
+            },
+            onError: function (error) {
               emitter.publish('error', {
-                error: err
+                error: error
               });
             }
-          },
-          onSessionReady: function (data) {
-            emitter.publish('ready', data);
-          },
-          onError: function (error) {
-            emitter.publish('error', {
-              error: error
-            });
-          }
-        });
+          });
+
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('2004');
+        }
 
       } catch (err) {
+        logger.logError(err);
+
         emitter.publish('error', {
           error: err
         });
       }
     };
 
-    this.disconnect =   function () {
+    this.disconnect = function () {
       try {
         emitter.publish('disconnecting');
 

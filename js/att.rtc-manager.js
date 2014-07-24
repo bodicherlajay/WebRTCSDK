@@ -94,9 +94,11 @@
     function on(event, handler) {
       eventManager.on(event, handler);
     }
+
     function off(event, handler) {
       eventManager.off(event, handler);
     }
+
     function refreshSession(options) {
 
       if (undefined === options
@@ -151,14 +153,6 @@
       });
     }
 
-    /**
-     * start a new session
-     * @param {Object} options The options
-     * rtcManager.connectSession({
-  *   token: 'abcd'
-  *   e911Id: 'e911Id'
-  * })
-     */
     function connectSession(options) {
 
       if (undefined === options) {
@@ -173,28 +167,40 @@
       if (undefined === options.onSessionReady) {
         throw new Error('Callback onSessionReady not defined.');
       }
+      if (undefined === options.onError) {
+        throw new Error('Callback onError not defined.');
+      }
 
       logger.logDebug('connectSession');
 
       var doOperationSuccess = function (response) {
-        logger.logInfo('Successfully created web rtc session on blackflag');
-        var sessionInfo = extractSessionInformation(response);
-        options.onSessionConnected(sessionInfo);
+        try {
+          logger.logInfo('Successfully created web rtc session on blackflag');
 
-        eventManager.on('listening', function () {
-          options.onSessionReady({
-            sessionId: sessionInfo.sessionId
+          var sessionInfo = extractSessionInformation(response);
+
+          options.onSessionConnected(sessionInfo);
+
+          eventManager.on('listening', function () {
+            logger.logInfo('listening@eventManager');
+
+            options.onSessionReady({
+              sessionId: sessionInfo.sessionId
+            });
           });
-        });
 
-        eventManager.setup({
-          sessionId: sessionInfo.sessionId,
-          token: options.token,
-          onError: function (error) {
-            logger.logError(error);
-            options.onError(error);
-          }
-        });
+          eventManager.setup({
+            sessionId: sessionInfo.sessionId,
+            token: options.token
+          });
+
+        } catch(err) {
+          logger.logError (err);
+
+          options.onError({
+            error: ATT.errorDictionary.getSDKError('2004')
+          });
+        }
       };
 
       resourceManager.doOperation('createWebRTCSession', {
@@ -254,6 +260,7 @@
         },
         success: function () {
           logger.logInfo('Successfully deleted web rtc session on blackflag');
+
           options.onSessionDisconnected();
         },
         error: function (error) {
