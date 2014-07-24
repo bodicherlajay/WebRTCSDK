@@ -2,7 +2,7 @@
 /*global ATT:true, cmgmt, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true,
  before: true, sinon: true, expect: true, xit: true, URL: true, assert, after*/
 
-describe.only('Phone', function () {
+describe('Phone', function () {
   'use strict';
 
   var getRTCManagerStub,
