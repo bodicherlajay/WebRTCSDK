@@ -211,9 +211,9 @@
    * @summary Used to create a call.
    * @desc
    * ##### Error codes
-   * ###### 4002 - Invalid Media Type
-   * ###### 4003 - Internal error occurred
-   * ###### 4004 - User is not logged in
+   * - 4002 - Invalid Media Type
+   * - 4003 - Internal error occurred
+   * - 4004 - User is not logged in
    * @param {Object} options
    * @memberOf Phone
    * @instance
@@ -651,8 +651,8 @@
      * @summary Hangup existing call
      * @desc
      * ##### Error codes
-     * ###### 6000 - Call is not in progress
-     * ###### 6001 - Internal error occurred
+     * - 6000 - Call is not in progress
+     * - 6001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -728,6 +728,10 @@
    /**
     * @summary
     * Reject current incoming call.
+    * @desc
+    *  ##### Error Codes
+    *  - 12000 - Reject failed-Call has not been initiated
+    *  - 12001 - Internal error occurred
     * @memberOf Phone
     * @instance
 
@@ -742,14 +746,18 @@
       try {
         var call = session.currentCall;
 
-        if (undefined === call || null === call) {
-          throw new Error('Call object not defined');
+        if (null === call || null === call.Id) {
+          throw ATT.errorDictionary.getSDKError('12000');
         }
-        call.on('disconnected', function (data) {
-          emitter.publish('call-disconnected', data);
-          session.deleteCurrentCall();
-        });
-        call.reject();
+        try {
+          call.on('disconnected', function (data) {
+            emitter.publish('call-disconnected', data);
+            session.deleteCurrentCall();
+          });
+          call.reject();
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('12001');
+        }
 
       } catch (err) {
         emitter.publish('error', {
@@ -762,8 +770,8 @@
      * @summary Put the current call on hold
      * @desc
      * ##### Error codes
-     * ###### 7000 - Hold failed - Call is not in progress
-     * ###### 7001 - Internal error occurred
+     * - 7000 - Hold failed - Call is not in progress
+     * - 7001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -785,7 +793,7 @@
 
         try {
           call.hold();
-        } catch(err) {
+        } catch (err) {
           throw ATT.errorDictionary.getSDKError('7001');
         }
       } catch (err) {
@@ -800,9 +808,9 @@
      * Resume the current call
      * @desc
      * ##### Error Codes
-     * ###### 8000 - Resume failed - Call is not in progress
-     * ###### 8001 - Call is not on hold
-     * ###### 8002 - Internal error occurred
+     * - 8000 - Resume failed - Call is not in progress
+     * - 8001 - Call is not on hold
+     * - 8002 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -829,7 +837,7 @@
 
         try {
           call.resume();
-        } catch(err) {
+        } catch (err) {
           throw ATT.errorDictionary.getSDKError('8002');
         }
       } catch (err) {

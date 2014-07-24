@@ -495,6 +495,8 @@ describe('Phone', function () {
           callConnectStub = sinon.stub(call, 'connect', function () {
           });
 
+          session.setId('1234');
+
           onDialingSpy = sinon.spy();
           callConnectingHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
@@ -529,10 +531,10 @@ describe('Phone', function () {
 
           setTimeout(function () {
             expect(onDialingSpy.called).to.equal(true);
-            // expect(onDialingSpy.getCall(0).args[0]).to.be.an('object');
-            // expect(onDialingSpy.getCall(0).args[0].to).to.be.a('string');
-            // expect(onDialingSpy.getCall(0).args[0].mediaType).to.be.a('string');
-            // expect(typeof onDialingSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onDialingSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onDialingSpy.getCall(0).args[0].to).to.be.a('string');
+            expect(onDialingSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(typeof onDialingSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
           }, 100);
         });
@@ -645,7 +647,7 @@ describe('Phone', function () {
             emitterCall.publish('rejected', eventData);
             setTimeout(function () {
               try {
-                expect(callRejectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(callRejectedHandlerSpy.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -1377,6 +1379,8 @@ describe('Phone', function () {
         });
 
         it('should execute call.disconnect', function () {
+          call.id = '1234';
+
           phone.hangup();
 
           expect(callDisconnectStub.called).to.equal(true);
@@ -1448,8 +1452,8 @@ describe('Phone', function () {
 
         it('should execute call.disconnect', function () {
           var callDisconnectStub = sinon.stub(call, 'disconnect');
+          call.id = '123';
           session.currentCall = call;
-
           phone.cancel();
 
           expect(callDisconnectStub.called).to.equal(true);
@@ -1501,7 +1505,7 @@ describe('Phone', function () {
 
       });
 
-      describe('reject', function () {
+      describe('[US248577] reject', function () {
 
         var onSpy,
           callRejectStub,
@@ -1526,19 +1530,6 @@ describe('Phone', function () {
 
         it('should exist', function () {
           expect(phone.reject).to.be.a('function');
-        });
-
-        it('should publish `error` with error data when there is no current call', function () {
-          session.currentCall = null;
-
-          var publishStub = sinon.stub(emitter, 'publish', function (event, data) {
-            //throw data.error.ErrorMessage;
-            throw data.error.message; // since not using Error codes yet
-          });
-
-          expect(phone.reject.bind(phone)).to.throw('Call object not defined');
-
-          publishStub.restore();
         });
 
         it('should execute call.reject', function () {
@@ -1572,10 +1563,14 @@ describe('Phone', function () {
             }
           }, 300);
         });
-
         describe('Error Handling', function () {
 
+          var publishStub;
+
           beforeEach(function () {
+            session.currentCall = call;
+            call.setId('1234');
+            publishStub = sinon.stub(emitter, 'publish', function () {});
 
             callRejectStub.restore();
 
@@ -1585,16 +1580,30 @@ describe('Phone', function () {
 
           });
 
-          it('should publish `error` event with error data if there is an error during the operation', function (done) {
-
-            phone.reject();
-
-            setTimeout(function () {
-              expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-              done();
-            }, 100);
+          afterEach(function () {
+            publishStub.restore();
+            callRejectStub.restore();
           });
 
+          it('[12000] should be published with `error` event if call has not been initiated', function () {
+            session.currentCall = null;
+            phone.reject();
+            expect(ATT.errorDictionary.getSDKError('12000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('12000')
+            })).to.equal(true);
+          });
+
+          it('[12001] should be published with `error` event if there is an unknown exception during the operation', function () {
+            call.setId('1234');
+            session.currentCall = call;
+            phone.reject();
+
+            expect(ATT.errorDictionary.getSDKError('12001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('12001')
+            })).to.equal(true);
+          });
         });
       });
 
@@ -1622,7 +1631,7 @@ describe('Phone', function () {
           callResumeStub.restore();
         });
 
-        describe('hold', function () {
+        describe('[US198538] hold', function () {
 
           it('should exist', function () {
             expect(phone.hold).to.be.a('function');
@@ -1678,7 +1687,7 @@ describe('Phone', function () {
 
         });
 
-        describe('resume', function () {
+        describe('[US221385] resume', function () {
 
           it('should exist', function () {
             expect(phone.resume).to.be.a('function');
@@ -2015,17 +2024,16 @@ describe('Phone', function () {
               remoteMedia: {}
             };
 
-            phone = new ATT.private.Phone();
-
-            callRejectedSpy = sinon.spy();
-            phone.on('call-rejected', callRejectedSpy);
-
-
             session = new ATT.rtc.Session();
 
             sessionConstructorStub = sinon.stub(ATT.rtc, 'Session', function () {
               return session;
             });
+
+            phone = new ATT.private.Phone();
+
+            callRejectedSpy = sinon.spy();
+            phone.on('call-rejected', callRejectedSpy);
 
             createCallStub = sinon.stub(phone.getSession(), 'createCall', function () {
               return call;
@@ -2034,14 +2042,14 @@ describe('Phone', function () {
             connectStub = sinon.stub(call, 'connect');
             deleteCurrentCallStub = sinon.stub(phone.getSession(), 'deleteCurrentCall');
 
+            session.setId('1234');
+
             phone.dial(options);
-
-            sessionConstructorStub.restore();
-            createCallStub.restore();
-
           });
 
           afterEach(function () {
+            sessionConstructorStub.restore();
+            createCallStub.restore();
             deleteCurrentCallStub.restore();
             connectStub.restore();
           });
