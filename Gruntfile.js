@@ -224,5 +224,5 @@ module.exports = function (grunt) {
   grunt.registerTask('test', ['karma:unit']);
   grunt.registerTask('test:concat', ['concat', 'karma:concat']);
   grunt.registerTask('test:min', ['concat', 'uglify', 'karma:min']);
-  grunt.registerTask('release', ['concat', 'uglify', 'compress', 'jsdoc']);
+  grunt.registerTask('release', ['concat', 'uglify']);
 };
