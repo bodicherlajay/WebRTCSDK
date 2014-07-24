@@ -39,6 +39,7 @@
     });
 
     function publishError(error) {
+      logger.logError(error);
       emitter.publish('error', {
         error: error
       });
@@ -540,7 +541,7 @@
             data: data,
             error: errorDictionary.getSDKError('5002')
           };
-
+          logger.logError(data.error);
           emitter.publish('error', eventData);
         });
 
