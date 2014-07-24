@@ -37,7 +37,7 @@
       currentConfiguration.environment = options.environment;
     }
 
-    if (undefined === options.useWebSockets) {
+    if (undefined === options.useWebSockets || options.useWebSockets === false) {
       currentConfiguration.useWebSockets = false;
       currentConfiguration.eventChannelConfig = eventChannelConfig.LongPolling;
     } else {
