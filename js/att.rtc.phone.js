@@ -192,28 +192,38 @@
     */
     function logout() {
       try {
-        logger.logDebug('Phone.logout');
 
-        session.on('disconnected', function (data) {
-          /**
-           * Session Disconnected event.
-           * @desc Session was successfully deleted.
-           *
-           * @event Phone#session-disconnected
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('session-disconnected', data);
-        });
+        if (null === session || null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('3001');
+        }
 
-        session.disconnect();
+        try {
+          logger.logDebug('Phone.logout');
 
-        session = undefined;
+          session.on('disconnected', function (data) {
+            /**
+             * Session Disconnected event.
+             * @desc Session was successfully deleted.
+             *
+             * @event Phone#session-disconnected
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('session-disconnected', data);
+          });
 
+          session.disconnect();
+
+          session = undefined;
+
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('3000');
+        }
       } catch (err) {
         logger.logError(err);
+
         emitter.publish('error', {
-          error: ATT.errorDictionary.getSDKError('3000')
+          error: err
         });
       }
     }
