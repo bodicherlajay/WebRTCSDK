@@ -6,7 +6,8 @@
 (function () {
   'use strict';
 
-  var factories = ATT.private.factories;
+  var factories = ATT.private.factories,
+    logManager = ATT.logManager.getInstance();
 
   /** 
     Creates a new WebRTC Session.
@@ -76,6 +77,25 @@
       emitter.subscribe(event, handler, this);
     }
 
+//    function refreshWebRTCSession() {
+//      var dataForRefreshWebRTCSession = {
+//        params: {
+//          url: [self.sessionId],
+//          headers: {
+//            'Authorization': self.token
+//          }
+//        },
+//        success: function () {
+//          logger.logInfo('Successfully refreshed web rtc session on blackflag');
+//          //this.onWebRTCSessionRefreshed();
+//        },
+//        //error: this.onError
+//      };
+
+      // Call BF to refresh WebRTC Session.
+//      resourceManager.doOperation('refreshWebRTCSession', {});
+//    }
+
     // public attributes
     this.timeout = null;
     this.e911Id = null;
@@ -136,7 +156,11 @@
           sessionId : id,
           token : token,
           success : function () {},
-          error : function () {return; }
+          error : function (error) {
+            emitter.publish('error', {
+              error: error
+            });
+          }
         });
       }, this.timeout);
     };
@@ -155,7 +179,7 @@
 
         emitter.publish('connecting');
 
-        session = this;
+        var session = this;
 
         rtcManager.connectSession({
           token: options.token,
@@ -193,7 +217,7 @@
       try {
         emitter.publish('disconnecting');
 
-        session = this;
+        var session = this;
 
         rtcManager.disconnectSession({
           sessionId: session.getId(),
@@ -207,6 +231,11 @@
                 error: err
               });
             }
+          },
+          onError: function (error) {
+            emitter.publish('error', {
+              error: error
+            });
           }
         });
 
@@ -279,8 +308,10 @@
         onSuccess : function () {
           emitter.publish('address-updated');
         },
-        onError : function () {
-
+        onError : function (error) {
+          emitter.publish('error', {
+            error: error
+          });
         }
       });
       rtcManager.updateSessionE911Id(options);
