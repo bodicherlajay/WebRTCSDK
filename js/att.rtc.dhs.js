@@ -14,6 +14,9 @@
     logManager = ATT.logManager.getInstance(),
     logger,
 
+    // private methods
+    init,
+
     handleSuccess,
 
     handleError,
@@ -44,7 +47,7 @@
     createE911Id,
 
   // implementions
-    init = function () {
+  init = function () {
 
       logger = logManager.getLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
 
@@ -72,15 +75,12 @@
     }
   };
 
-  handleError = function (operation, errHandler, err) {
-    logger.logDebug('handleError: ' + operation);
-    logger.logInfo('There was an error performing operation ' + operation);
+  handleError = function (errHandler, err, methodName) {
+    logger.logDebug('handleError: ' + methodName);
+    logger.logInfo('There was an error performing operation ' + methodName);
 
-    var error = ATT.Error.create(err, operation, 'DHS');
-
-    if (typeof errHandler === 'function') {
-      ATT.Error.publish(error, operation, errHandler);
-    }
+    var error = ATT.Error.createAPIErrorCode(err,"ATT.rtc.dhs",methodName,"DHS");
+    errHandler(error);
   };
 
   /**
@@ -150,10 +150,13 @@
       resourceManager.doOperation('checkDhsSession', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'session', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"session");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'session', config.error, err);
+      handleError.call(this, 'session', config.error, err, "session");
     }
   };
 
@@ -163,10 +166,13 @@
       resourceManager.doOperation('registerUser', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'registerUser', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"registerUser");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'registerUser', config.error, err);
+      handleError.call(this, 'registerUser', config.error, err, "registerUser");
     }
   };
 
@@ -178,10 +184,13 @@
           url: config.data.userId
         },
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'deleteUser', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"deleteUser");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'deleteUser', config.error, err);
+      handleError.call(this, 'deleteUser', config.error, err, "deleteUser");
     }
   };
 
@@ -190,10 +199,13 @@
       // Call DHS to get a list of VTN phone numbers
       resourceManager.doOperation('getVTNList', {
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'vtnList', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"vtnList");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'vtnList', config.error, err);
+      handleError.call(this, 'vtnList', config.error, err, "vtnList");
     }
   };
 
@@ -207,10 +219,13 @@
       resourceManager.doOperation('oAuthAuthorize', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'authorize', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"authorize");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'authorize', config.error, err);
+      handleError.call(this, 'authorize', config.error, err, "authorize");
     }
   };
 
@@ -224,10 +239,13 @@
       resourceManager.doOperation('oAuthToken', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'token', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"token");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'token', config.error, err);
+      handleError.call(this, 'token', config.error, err, "token");
     }
   };
 
@@ -250,10 +268,13 @@
       resourceManager.doOperation('authenticateUser', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'login', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"login");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'login', config.error, err);
+      handleError.call(this, 'login', config.error, err, "login");
     }
   };
 
@@ -288,10 +309,13 @@
             config.success(data);
           }
         },
-        error: handleError.bind(this, 'logout', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"logout");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'logout', config.error, err);
+      handleError.call(this, 'logout', config.error, err, "logout");
     }
   };
 
@@ -316,10 +340,13 @@
       resourceManager.doOperation('createE911Id', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    handleError.bind(this, 'createE911Id', config.error)
+        error:    function(error)
+        {
+          handleError(config.error,error,"createE911Id");
+        }
       });
     } catch (err) {
-      handleError.call(this, 'createE911Id', config.error, err);
+      handleError.call(this, 'createE911Id', config.error, err, "createE911Id");
     }
   };
 
