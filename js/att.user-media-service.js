@@ -8,7 +8,7 @@
 
   var module,
     logManager = ATT.logManager.getInstance(),
-    Error,
+    Error, //todo remove this reference
     defaultMediaConstraints = { // default to video call
       audio: true,
       video: true
@@ -35,6 +35,7 @@
     mediaConstraints: null,
     onUserMedia: null,
     onMediaEstablished: null,
+    onUserMediaError: null,
 
     /**
     * Start Call
@@ -46,7 +47,7 @@
     * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
     */
     getUserMedia: function (options) {
-      var that = this;
+      var that = this, error;
       logger.logTrace('starting call');
 
       this.localMedia = options.localMedia;
@@ -54,16 +55,19 @@
       this.mediaConstraints = defaultMediaConstraints;
       this.onUserMedia = options.onUserMedia;
       this.onMediaEstablished = options.onMediaEstablished;
+      this.onUserMediaError = options.onUserMediaError;
 
       if (undefined !== options.mediaType) {
         this.mediaConstraints.video = 'audio' !== options.mediaType;
       }
 
       // get a local stream, show it in a self-view and add it to be sent
-      getUserMedia(this.mediaConstraints, that.getUserMediaSuccess.bind(that), function (err) {
-        options.onError(Error.create('Get user media failed: ' + err));
+      getUserMedia(this.mediaConstraints, that.getUserMediaSuccess.bind(that), function (mediaError) {
+        logger.logError(mediaError);
+        var error = ATT.errorDictionary.getSDKError(14000);
+        options.onUserMediaError(error);
+        logger.logError(error);
       });
-
     },
 
     /**
@@ -116,7 +120,8 @@
           }
         }
       } catch (e) {
-        Error.publish('Could not start stream: ' + e.message);
+        //get the sdk error
+        onUserMediaError(e);
       }
     },
 
@@ -141,7 +146,8 @@
           this.remoteStream = null;
         }
       } catch (e) {
-        Error.publish('Could not stop stream: ' + e.message);
+        //todo get the sdk error
+        onUserMediaError(e);
       }
     },
 
