@@ -21,7 +21,7 @@
   'use strict';
   var logMgr = ATT.logManager.getInstance(),
     logger,
-    sdkErrors,
+    apiErrors,
     idx;
 
   logger = logMgr.getLogger('ATTMain');
@@ -59,10 +59,10 @@
   }
 
   // Load all SDK errors in the dictionary
-  sdkErrors = ATT.utils.SDKErrorStore.getAllErrors();
+  apiErrors = ATT.utils.ErrorStore.APIErrors.getAllAPIErrors();
   // adds all the errors in the list to the Dictionary
-  for (idx = 0; idx < sdkErrors.length; idx = idx + 1) {
-    ATT.errorDictionary.createError(sdkErrors[idx]);
+  for (idx = 0; idx < apiErrors.length; idx = idx + 1) {
+    ATT.errorDictionary.createError(apiErrors[idx]);
   }
   logger.logTrace("SDK Errors loaded into the Dictionary.");
 
