@@ -286,6 +286,9 @@
       if (undefined === options.onUserMediaError) {
         throw new Error('Callback `onUserMediaError` not defined.')
       }
+      if (undefined === options.onError) {
+        throw new Error('Callback `onError` not defined.');
+      }
 
 
       userMediaSvc.getUserMedia({
