@@ -100,11 +100,11 @@
     * @summary Creates a WebRTC Session.
     * @desc Used to establish webRTC session so that the user can place webRTC calls.
     * The service parameter indicates the desired service such as audio or video call
-    * #### Error Code
-    *   - 2001 - Missing input parameter
-    *   - 2002 - Mandatory fields can not be empty
-    *   - 2004 - Internal error occurred
-    *   - 2005 - User already logged in
+    *  **Error Code**
+    *    - 2001 - Missing input parameter
+    *    - 2002 - Mandatory fields can not be empty
+    *    - 2004 - Internal error occurred
+    *    - 2005 - User already logged in
     * @memberOf Phone
     * @instance
     * @param {Object} options
@@ -180,7 +180,7 @@
     * @desc
     * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
     * requests gets stopped
-    * #### Error Codes
+    * **Error Codes**
     *   - 3000 - Internal error occurred
     * @memberof Phone
     * @instance
@@ -231,10 +231,10 @@
   /**
    * @summary Used to create a call.
    * @desc
-   * ##### Error codes
-   * ###### 4002 - Invalid Media Type
-   * ###### 4003 - Internal error occurred
-   * ###### 4004 - User is not logged in
+   * **Error codes**
+   *  - 4002 - Invalid Media Type
+   *  - 4003 - Internal error occurred
+   *  - 4004 - User is not logged in
    * @param {Object} options
    * @memberOf Phone
    * @instance
@@ -444,7 +444,7 @@
      * Once a {@link Phone#call-incoming} event is fired, you can use this method to
      * answer the incoming call.
      *
-     * **SDK Error Codes**
+     * **Error Codes**
      *
      *   - 5000 - Answer failed: No incoming call
      *   - 5001 - Invalid media type 
@@ -555,7 +555,7 @@
     * @summary
     * Mute the current call.
     * @desc
-    * #### Error Codes
+    * **Error Codes**
     *   - 9000 - Mute failed- Call is not in progress
     *   - 9001 - Internal error occurred
     * @memberOf Phone
@@ -609,7 +609,7 @@
     * @summary
     * Unmute the current call.
     * @desc
-    * #### Error Codes
+    * **Error Codes**
     *   - 10000 - Unmute failed- No media stream
     *   - 10001 - Internal error occurred
     * @memberOf Phone
@@ -681,9 +681,9 @@
     /**
      * @summary Hangup existing call
      * @desc
-     * ##### Error codes
-     * ###### 6000 - Call is not in progress
-     * ###### 6001 - Internal error occurred
+     * **Error codes**
+     *   - 6000 - Call is not in progress
+     *   - 6001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -725,9 +725,9 @@
      * @summary
      * Cancel current call.
      * @desc
-     *  ##### Error Code
-     *  - 11000 -Cancel failed-Call has not been initiated
-     *  - 11001 - Internal error occurred
+     *  **Error Code**
+     *    - 11000 -Cancel failed-Call has not been initiated
+     *    - 11001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -792,9 +792,9 @@
     /**
      * @summary Put the current call on hold
      * @desc
-     * ##### Error codes
-     * ###### 7000 - Hold failed - Call is not in progress
-     * ###### 7001 - Internal error occurred
+     * **Error codes**
+     *   - 7000 - Hold failed - Call is not in progress
+     *   - 7001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -830,10 +830,10 @@
      * @summary
      * Resume the current call
      * @desc
-     * ##### Error Codes
-     * ###### 8000 - Resume failed - Call is not in progress
-     * ###### 8001 - Call is not on hold
-     * ###### 8002 - Internal error occurred
+     * **Error Codes**
+     *   - 8000 - Resume failed - Call is not in progress
+     *   - 8001 - Call is not on hold
+     *   - 8002 - Internal error occurred
      * @memberOf Phone
      * @instance
 
