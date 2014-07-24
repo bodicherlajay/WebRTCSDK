@@ -15,26 +15,33 @@
    */
   function createErrorWith(spec, utils) {
 
-    var prototypeError = {
-        userErrorCode: '',    //5 digit error code
-        errorType: '',        //Error type
-        operationName: '',    //Name of the REST operation
-        httpStatusCode: '',   //HTTP Status code
-        messageId: '',        //SVC or POL Error
-        reasonText: '',       //High level reason text, invalid input, forbidden
-        errorDescription: '', //Error Description
-        moduleID: '',
-        isSdkErr: ''
+    var protoTypeAPIError = {
+        JSObject:'',           //JS Object
+        JSMethod:'',           //JS Method
+        ErrorCode: '',         //Error code
+        ErrorMessage: '',      //Error Message
+        PossibleCauses: '',    //Possible Causes
+        PossibleResolution: '',//Possible Resolution
+        APIError: '',          //API Error response
+        ResourceMethod: '',    //Resource URI
+        HttpStatusCode:'',     //HTTP Status Code
+        MessageId:''           //Message ID
       },
       newError;
 
     // will add a `formatError` method to `error`
     function addFormatter(error) {
       error.formatError = function () {
-        var errorString = error.moduleID + '-' + error.userErrorCode + '-'
-          + error.errorType + '-'
-          + error.operationName + '-' + error.httpStatusCode + '-'
-          + error.messageId + '-' + error.errorDescription + '-' + error.reasonText;
+        var errorString = error.JSObject + '-' +
+          error.JSMethod + '-' +
+          error.ErrorCode + '-' +
+          error.ErrorMessage + '-' +
+          error.PossibleCauses + '-' +
+          error.PossibleResolution + '-' +
+          error.APIError + '-' +
+          error.ResourceMethod + '-' +
+          error.HttpStatusCode + '-' +
+          error.MessageId;
         return errorString;
       };
       return error;
@@ -43,7 +50,7 @@
     // will add a `getId` method to `error`
     function addIdGetter(error) {
       error.getId = function () {
-        var errorID = error.userErrorCode;
+        var errorID = error.ErrorCode;
         return errorID;
       };
       return error;
@@ -51,13 +58,12 @@
     // second key to lookup using operation name, http status code and message id
     function addOpStatusMessageId(error) {
       error.opStatusMsgId = function () {
-        var opStatusMsgId = error.operationName + error.httpStatusCode + error.messageId;
+        var opStatusMsgId = error.JSMethod + error.HttpStatusCode + error.MessageId;
         return opStatusMsgId;
       };
       return error;
     }
-    newError = Object.create(prototypeError);
-    newError.isSdkErr = true; // set this as SDK generated error
+    newError = Object.create(protoTypeAPIError);
     // extend with the properties in the spec
     newError = utils.extend(newError, spec);
     newError = addFormatter(newError);// add `formatMethod`
@@ -67,54 +73,40 @@
   }
 
   function createErrorDictionary(spec, utils) {
-    var allErrors = ATT.utils.SDKErrorStore.getAllErrors(), // collection of all errors in this dictionary
+    var apiErrors = ATT.utils.ErrorStore.APIErrors.getAllAPIErrors(), // collection of all errors in this dictionary
       sdkErrors = ATT.utils.ErrorStore.SDKErrors.getAllSDKErrors(),
-      // `modules` is an immutable of abbreviations for the modules of this `app`
-      modules = Object.freeze(spec.modules),
-      newError = null,
-      allErrorsOpStats = [];
+      newError = null;
 
     return { // return the error dictionary
       createError: function (spec) {
-        // only allow creation of error for modules in the list
-        if (!modules.hasOwnProperty(spec.moduleID)) {
-          throw new Error('Invalid Module ID-' + spec.moduleID);
-        }
         // create the error
         newError = createErrorWith(spec, utils);
         // add it to the dictionary
-        allErrors[newError.getId()] = newError;
-        allErrorsOpStats[newError.opStatusMsgId()] = newError;
+        apiErrors[newError.getId()] = newError;
+        apiErrors[newError.opStatusMsgId()] = newError;
         return newError;
       },
       getSDKError: function (errorId) {
         return sdkErrors[errorId];
       },
       getError: function (errorId) {
-        return allErrors[errorId];
+        return apiErrors[errorId];
       },
-      getErrorByOpStatus: function (operationName, httpStatusCode, messageId) {
-        return allErrorsOpStats[operationName + httpStatusCode + messageId];
+      getAPIError: function (methodName, httpStatusCode, messageId) {
+        return createErrorWith(apiErrors[methodName + httpStatusCode + messageId],utils);
       },
-      getMissingError: function () {
-        return allErrors['SDK-00000'];
+      getMissingError: function (errSpec) {
+        return this.createError(errSpec);
       },
-      getDefaultError: function (errSpec) {
-        var err = utils.extend({}, allErrors['SDK-00001']);
-        err.operationName = errSpec.operationName || err.operationName;
-        err.httpStatusCode = errSpec.httpStatusCode || err.httpStatusCode;
-        err.reasonText = errSpec.reasonText || err.reasonText;
-        err.errorDescription = errSpec.errorDescription || err.errorDescription;
-        return err;
+      getAPIExceptionError: function (errSpec) {
+        return this.createError(errSpec);
       },
       getDHSError: function (dhsErrSpec) {
-        var err = utils.extend({}, allErrors['SDK-50000']);
-        err.operationName = dhsErrSpec.operationName;
-        err.httpStatusCode = dhsErrSpec.httpStatusCode;
-        err.reasonText = dhsErrSpec.reasonText;
-        return err;
+        return this.createError(dhsErrSpec);
       },
-      modules: modules
+      getDefaultError: function (errorSpec) {
+        return this.createError(errorSpec);
+      }
     };
   }
 
