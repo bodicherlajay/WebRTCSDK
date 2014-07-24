@@ -169,24 +169,33 @@
       logger.logDebug('connectSession');
 
       var doOperationSuccess = function (response) {
-        logger.logInfo('Successfully created web rtc session on blackflag');
+        try {
+          logger.logInfo('Successfully created web rtc session on blackflag');
 
-        var sessionInfo = extractSessionInformation(response);
+          var sessionInfo = extractSessionInformation(response);
 
-        options.onSessionConnected(sessionInfo);
+          options.onSessionConnected(sessionInfo);
 
-        eventManager.on('listening', function () {
-          logger.logInfo('listening@eventManager');
+          eventManager.on('listening', function () {
+            logger.logInfo('listening@eventManager');
 
-          options.onSessionReady({
-            sessionId: sessionInfo.sessionId
+            options.onSessionReady({
+              sessionId: sessionInfo.sessionId
+            });
           });
-        });
 
-        eventManager.setup({
-          sessionId: sessionInfo.sessionId,
-          token: options.token
-        });
+          eventManager.setup({
+            sessionId: sessionInfo.sessionId,
+            token: options.token
+          });
+
+        } catch(err) {
+          logger.logError (err);
+
+          options.onError({
+            error: ATT.errorDictionary.getSDKError('2004')
+          });
+        }
       };
 
       resourceManager.doOperation('createWebRTCSession', {
@@ -210,6 +219,7 @@
         success: doOperationSuccess,
         error: function (error) {
           logger.logError(error);
+
           options.onError(error);
         }
       });
@@ -245,10 +255,13 @@
         },
         success: function () {
           logger.logInfo('Successfully deleted web rtc session on blackflag');
+
           options.onSessionDisconnected();
         },
         error: function (error) {
           logger.logError(error);
+
+          options.onError(error);
         }
       });
     }

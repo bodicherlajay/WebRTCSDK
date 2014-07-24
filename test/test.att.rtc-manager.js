@@ -4,7 +4,9 @@
 describe('RTC Manager', function () {
   'use strict';
 
-  var factories,
+  var error,
+    createWebRTCSessionResponse,
+    factories,
     resourceManagerStub,
     createEventManagerStub,
     eventManager,
@@ -22,21 +24,26 @@ describe('RTC Manager', function () {
       timeout: timeout * 1000 // milliseconds
     };
 
+    error = {
+      error: 'Test Error'
+    };
+
+    createWebRTCSessionResponse = {
+      getResponseHeader : function (name) {
+        switch (name) {
+          case 'Location':
+            return '123/123/123/123/' + sessionInfo.sessionId;
+          case 'x-expires':
+            return String(timeout); // seconds
+          default:
+            break;
+        }
+      }
+    };
+
     resourceManagerStub = {
       doOperation: function (operationName, options) {
-        var response = {
-          getResponseHeader : function (name) {
-            switch (name) {
-            case 'Location':
-              return '123/123/123/123/' + sessionInfo.sessionId;
-            case 'x-expires':
-              return String(timeout); // seconds
-            default:
-              break;
-            }
-          }
-        };
-        options.success(response);
+        options.success(createWebRTCSessionResponse);
       },
       getLogger : function () {
         return {
@@ -130,11 +137,11 @@ describe('RTC Manager', function () {
     describe('Methods', function () {
       var rtcManager,
         onSpy,
-        doOperationSpy,
+        doOperationStub,
         setupStub,
         stopStub;
 
-      before(function () {
+      beforeEach(function () {
 
         onSpy = sinon.spy(eventManager, 'on');
 
@@ -148,25 +155,32 @@ describe('RTC Manager', function () {
 
         rtcManager = new ATT.private.RTCManager(optionsForRTCM);
 
+        doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (operationName, options) {
+          setTimeout(function () {
+            options.success(createWebRTCSessionResponse);
+          }, 0);
+        });
+
       });
 
-      after(function () {
+      afterEach(function () {
         onSpy.restore();
         setupStub.restore();
         stopStub.restore();
+        doOperationStub.restore();
       });
 
       describe('On', function () {
 
         var onStub;
 
-        before(function () {
+        beforeEach(function () {
           // change spy to stub
           onSpy.restore();
           onStub = sinon.stub(eventManager, 'on', function () {});
         });
 
-        after(function () {
+        afterEach(function () {
           // restore stub to spy
           onStub.restore();
           onSpy = sinon.spy(eventManager, 'on');
@@ -253,36 +267,54 @@ describe('RTC Manager', function () {
         });
 
         it('should call doOperation on the resourceManager with `createWebRTCSession`', function () {
-          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
-
           rtcManager.connectSession(optionsForConn);
 
-          expect(doOperationSpy.called).to.equal(true);
-          expect(doOperationSpy.getCall(0).args[0]).to.equal('createWebRTCSession');
-
-          doOperationSpy.restore();
+          expect(doOperationStub.called).to.equal(true);
+          expect(doOperationStub.getCall(0).args[0]).to.equal('createWebRTCSession');
         });
 
         describe('Callbacks on doOperation', function () {
 
           describe('success', function () {
 
-            it('should execute the onSessionConnected callback with `sessionId` and `timeout`', function () {
+            it('should execute the onSessionConnected callback with `sessionId` and `timeout`', function (done) {
               rtcManager.connectSession(optionsForConn);
 
-              expect(onSessionConnectedSpy.calledWith(sessionInfo)).to.equal(true);
+              setTimeout(function () {
+                try {
+                  expect(onSessionConnectedSpy.calledWith(sessionInfo)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
             });
 
-            it('Should subscribe to event listening from the event manager', function () {
+            it('Should subscribe to event listening from the event manager', function (done) {
               rtcManager.connectSession(optionsForConn);
 
-              expect(onSpy.calledWith('listening')).to.equal(true);
+              setTimeout(function () {
+                try {
+                  expect(onSpy.calledWith('listening')).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
             });
 
-            it('should call EventManager.setup with the session id', function () {
+            it('should call EventManager.setup with the session id', function (done) {
               rtcManager.connectSession(optionsForConn);
 
-              expect(setupStub.called).to.equal(true);
+              setTimeout(function () {
+                try {
+                  expect(setupStub.called).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+
             });
 
             it('should execute onSessionReady with data containing `sessionId` on receiving a `listening` event', function (done) {
@@ -299,35 +331,71 @@ describe('RTC Manager', function () {
                 }
               }, 100);
             });
+
           });
 
           describe('error', function () {
 
-            var error,
-              doOperationStub;
-
             beforeEach(function () {
-
-              error = {
-                error: 'Test Error'
-              };
+              doOperationStub.restore();
 
               doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (operationName, options) {
-                options.error(error);
+                setTimeout(function () {
+                  options.error(error);
+                }, 0);
               });
 
             });
 
-            afterEach(function () {
-              doOperationStub.restore();
-            });
-
-            it('should invoke the onError callback', function () {
+            it('should invoke the onError callback', function (done) {
               rtcManager.connectSession(optionsForConn);
 
-              expect(onErrorSpy.calledWith(error)).to.equal(true);
+              setTimeout(function () {
+                try {
+                  expect(onErrorSpy.calledWith(error)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
             });
 
+          });
+
+        });
+
+        describe('Error Handling', function () {
+
+          beforeEach(function () {
+            doOperationStub.restore();
+
+            doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (operationName, options) {
+              setTimeout(function () {
+                options.success(error);
+              }, 0);
+            });
+
+          });
+
+          it('[2004] should be published with error event if unexpected exception is thrown', function(done) {
+
+            optionsForConn.onSessionConneceted = function () {
+              throw error;
+            };
+
+            rtcManager.connectSession(optionsForConn);
+
+            setTimeout(function () {
+              try {
+                expect(ATT.errorDictionary.getSDKError('2004')).to.be.an('object');
+                expect(onErrorSpy.calledWith({
+                  error: ATT.errorDictionary.getSDKError('2004')
+                })).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
           });
 
         });
@@ -379,8 +447,6 @@ describe('RTC Manager', function () {
 
         it('should call resourceManager.doOperation with `refreshWebRTCSession`', function () {
 
-          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
-
           rtcManager.refreshSession({
             token: 'token',
             sessionId: '1234',
@@ -388,35 +454,39 @@ describe('RTC Manager', function () {
             error: function () {}
           });
 
-          expect(doOperationSpy.called).to.equal(true);
-          expect(doOperationSpy.getCall(0).args[0]).to.equal('refreshWebRTCSession');
-          expect(doOperationSpy.getCall(0).args[1].params.url[0]).to.equal('1234');
-          expect(doOperationSpy.getCall(0).args[1].params.headers.Authorization).to.equal('token');
-
-          doOperationSpy.restore();
+          expect(doOperationStub.called).to.equal(true);
+          expect(doOperationStub.getCall(0).args[0]).to.equal('refreshWebRTCSession');
+          expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal('1234');
+          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('token');
         });
 
         describe('Success', function () {
-          it('should execute the `success` callback', function () {
+
+          it('should execute the `success` callback', function (done) {
             var timeout = 200,
               onSuccessSpy = sinon.spy(),
-              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {
-                var response = {
-                  getResponseHeader : function (name) {
-                    var header;
-                    switch (name) {
+              response = {
+                getResponseHeader : function (name) {
+                  var header;
+                  switch (name) {
                     case 'x-expires':
                       header = timeout.toString(); // seconds
                       break;
                     default:
                       header = timeout.toString(); // seconds
                       break;
-                    }
-                    return header;
                   }
-                };
+                  return header;
+                }
+              };
+
+            doOperationStub.restore();
+
+            doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {
+              setTimeout(function () {
                 options.success(response);
-              });
+              }, 0)
+            });
 
             rtcManager.refreshSession({
               token: '123',
@@ -425,11 +495,18 @@ describe('RTC Manager', function () {
               error: function () { return; }
             });
 
-            expect(onSuccessSpy.called).to.equal(true);
-            expect(onSuccessSpy.calledWith({
-              timeout: (timeout * 1000).toString()
-            })).to.equal(true);
-            doOperationStub.restore();
+            setTimeout(function () {
+              try {
+                expect(onSuccessSpy.called).to.equal(true);
+                expect(onSuccessSpy.calledWith({
+                  timeout: (timeout * 1000).toString()
+                })).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+
           });
         });
       });
@@ -488,8 +565,6 @@ describe('RTC Manager', function () {
 
         it('should call resourceManager.doOperation with `updateSessionE911Id`', function () {
 
-          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
-
           rtcManager.updateSessionE911Id({
             token: 'token',
             sessionId: '1234',
@@ -498,21 +573,26 @@ describe('RTC Manager', function () {
             onError : function () {}
           });
 
-          expect(doOperationSpy.called).to.equal(true);
-          expect(doOperationSpy.getCall(0).args[0]).to.equal('refreshWebRTCSessionWithE911Id');
-          expect(doOperationSpy.getCall(0).args[1].params.url[0]).to.equal('1234');
-          expect(doOperationSpy.getCall(0).args[1].params.headers.Authorization).to.equal('token');
-          expect(doOperationSpy.getCall(0).args[1].data.e911Association.e911Id).to.equal('1232');
+          expect(doOperationStub.called).to.equal(true);
+          expect(doOperationStub.getCall(0).args[0]).to.equal('refreshWebRTCSessionWithE911Id');
+          expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal('1234');
+          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('token');
+          expect(doOperationStub.getCall(0).args[1].data.e911Association.e911Id).to.equal('1232');
 
-          doOperationSpy.restore();
         });
 
         describe('Success', function () {
-          it('should execute the `success` callback', function () {
-            var  onSuccessSpy = sinon.spy(),
-              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {
+
+          it('should execute the `success` callback', function (done) {
+            var  onSuccessSpy = sinon.spy();
+
+            doOperationStub.restore();
+
+            doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (name, options) {
+              setTimeout(function () {
                 options.success();
-              });
+              }, 0);
+            });
 
             rtcManager.updateSessionE911Id({
               token: 'token',
@@ -523,25 +603,48 @@ describe('RTC Manager', function () {
             });
 
 
-            expect(onSuccessSpy.called).to.equal(true);
-            doOperationStub.restore();
+            setTimeout(function () {
+              try {
+                expect(onSuccessSpy.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+
           });
         });
       });
 
       describe('disconnectSession', function () {
 
-        var optionsForDisconn,
-          onSessionDisconnectedSpy;
+        var error,
+          optionsForDisconn,
+          onSessionDisconnectedSpy,
+          onErrorSpy;
 
-        before(function () {
+        beforeEach(function () {
+          error = {
+            error: 'Test Error'
+          };
+
           onSessionDisconnectedSpy = sinon.spy();
+          onErrorSpy = sinon.spy();
 
           optionsForDisconn = {
             sessionId: 'sessionid',
             token: '123',
-            onSessionDisconnected: onSessionDisconnectedSpy
+            onSessionDisconnected: onSessionDisconnectedSpy,
+            onError: onErrorSpy
           };
+
+          doOperationStub.restore();
+
+          doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function(operationName, options){
+            setTimeout(function () {
+              options.success();
+            }, 0);
+          });
 
         });
 
@@ -568,34 +671,60 @@ describe('RTC Manager', function () {
         });
 
         it('should execute EventManager.stop', function () {
-
-          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
-
           rtcManager.disconnectSession(optionsForDisconn);
 
-          expect(stopStub.calledBefore(doOperationSpy)).to.equal(true);
-
-          doOperationSpy.restore();
+          expect(stopStub.calledBefore(doOperationStub)).to.equal(true);
         });
 
         it('should call doOperation on the resourceManager with `deleteWebRTCSession`', function () {
-          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
-
           rtcManager.disconnectSession(optionsForDisconn);
 
-          expect(doOperationSpy.calledWith('deleteWebRTCSession')).to.equal(true);
-
-          doOperationSpy.restore();
+          expect(doOperationStub.calledWith('deleteWebRTCSession')).to.equal(true);
         });
 
-        describe('Success', function () {
+        describe('Callbacks for disconnectSession', function () {
 
-          it('should execute the onSessionDisconnected callback', function () {
-            rtcManager.disconnectSession(optionsForDisconn);
+          describe('success', function () {
 
-            expect(onSessionDisconnectedSpy.called).to.equal(true);
+            it('should execute the onSessionDisconnected callback', function (done) {
+              rtcManager.disconnectSession(optionsForDisconn);
+
+              setTimeout(function () {
+                try {
+                  expect(onSessionDisconnectedSpy.called).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+
+            });
+
           });
 
+          describe('error', function () {
+            it('should call onError callback with the error object', function (done) {
+
+              doOperationStub.restore();
+
+              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function(operationName, options) {
+                setTimeout(function () {
+                  options.error(error);
+                }, 0);
+              });
+
+              rtcManager.disconnectSession(optionsForDisconn);
+
+              setTimeout(function() {
+                try {
+                  expect(onErrorSpy.calledWith(error)).to.equal(true);
+                  done();
+                } catch(err) {
+                  done(err);
+                }
+              }, 100);
+            });
+          });
         });
       });
 
@@ -777,16 +906,14 @@ describe('RTC Manager', function () {
         });
 
         it('should call doOperation on the resourceManager with `endCall`', function () {
-          doOperationSpy = sinon.spy(resourceManagerStub, 'doOperation');
 
           rtcManager.disconnectCall({
             sessionInfo: {},
             callId: '1234'
           });
 
-          expect(doOperationSpy.calledWith('endCall')).to.equal(true);
+          expect(doOperationStub.calledWith('endCall')).to.equal(true);
 
-          doOperationSpy.restore();
         });
       });
 
@@ -1041,9 +1168,6 @@ describe('RTC Manager', function () {
 
       describe('rejectCall', function () {
 
-        var doOperationSpyreject;
-
-
         it('should exist', function () {
           expect(rtcManager.rejectCall).to.be.a('function');
         });
@@ -1100,7 +1224,6 @@ describe('RTC Manager', function () {
 
 
         it('should call doOperation on the resourceManager with `rejectCall`', function () {
-          doOperationSpyreject = sinon.spy(resourceManagerStub, 'doOperation', function () {});
 
           rtcManager.rejectCall({
             callId : '1234',
@@ -1110,13 +1233,12 @@ describe('RTC Manager', function () {
             onError : function () {}
           });
 
-          expect(doOperationSpyreject.calledWith('rejectCall')).to.equal(true);
-          expect(doOperationSpyreject.getCall(0).args[0]).to.equal('rejectCall');
-          expect(doOperationSpyreject.getCall(0).args[1].params.url[0]).to.equal('2345');
-          expect(doOperationSpyreject.getCall(0).args[1].params.url[1]).to.equal('1234');
-          expect(doOperationSpyreject.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer dsfgdsdf');
+          expect(doOperationStub.calledWith('rejectCall')).to.equal(true);
+          expect(doOperationStub.getCall(0).args[0]).to.equal('rejectCall');
+          expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal('2345');
+          expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal('1234');
+          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer dsfgdsdf');
 
-          doOperationSpyreject.restore();
         });
       });
 

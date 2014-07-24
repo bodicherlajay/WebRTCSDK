@@ -1635,7 +1635,7 @@ describe('Phone', function () {
 
         });
 
-        describe.only('resume', function () {
+        describe('resume', function () {
 
           it('should exist', function () {
             expect(phone.resume).to.be.a('function');
