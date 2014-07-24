@@ -1441,7 +1441,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('cancel', function () {
+      describe('[US248581] cancel', function () {
         it('should exist', function () {
           expect(phone.cancel).to.be.a('function');
         });
@@ -1455,6 +1455,49 @@ describe('Phone', function () {
           expect(callDisconnectStub.called).to.equal(true);
           callDisconnectStub.restore();
         });
+
+        describe.only('Error Handling', function () {
+
+          var publishStub,
+            callCancelStub;
+
+          beforeEach(function () {
+            session.currentCall = call;
+            call.setId('1234');
+            publishStub = sinon.stub(emitter, 'publish', function () {});
+
+            callCancelStub = sinon.stub(call, 'disconnect', function () {
+              throw error;
+            });
+
+          });
+
+          afterEach(function () {
+            publishStub.restore();
+            callCancelStub.restore();
+          });
+
+          it('[11000] should be published with `error` event if call has not been initiated', function () {
+            session.currentCall = null;
+            phone.cancel();
+            expect(ATT.errorDictionary.getSDKError('11000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('11000')
+            })).to.equal(true);
+          });
+
+          it('[11001] should be published with `error` event if there is an unknown exception during the operation', function () {
+            call.setId('1234');
+            session.currentCall = call;
+            phone.cancel();
+
+            expect(ATT.errorDictionary.getSDKError('11001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('11001')
+            })).to.equal(true);
+          });
+        });
+
 
       });
 
