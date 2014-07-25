@@ -19,6 +19,8 @@
       errorDictionary = ATT.errorDictionary,
       logger = logManager.addLoggerForModule('Phone');
 
+    logger.logInfo('Creating new instance of Phone');
+
     session.on('call-incoming', function (data) {
       /**
        * Call incoming event.
@@ -38,11 +40,22 @@
       emitter.publish('error', data);
     });
 
-    function publishError(error) {
-      logger.logError(error);
-      emitter.publish('error', {
-        error: error
-      });
+    function getError(errorNumber) {
+      return errorDictionary.getSDKError(errorNumber);
+    }
+
+    function publishError(errorNumber, data) {
+      var error = getError(errorNumber),
+        errorInfo = {};
+
+      errorInfo.error = error;
+
+      if (undefined !== data) {
+        errorInfo.data = data;
+      }
+
+      logger.logError(errorInfo);
+      emitter.publish('error', errorInfo);
     }
 
     function getSession() {
@@ -487,31 +500,32 @@
     function answer(options) {
 
       var call;
+      logger.logInfo('Answering ... ');
 
       try {
         if (undefined === options) {
-          publishError(errorDictionary.getSDKError(5004));
+          publishError(5004);
           return;
         }
 
         if (undefined === options.localMedia) {
-          publishError(errorDictionary.getSDKError(5001));
+          publishError(5001);
           return;
         }
 
         if (undefined === options.remoteMedia) {
-          publishError(errorDictionary.getSDKError(5001));
+          publishError(5001);
           return;
         }
 
         if (session.getId() === null) {
-          publishError(errorDictionary.getSDKError(5003));
+          publishError(5003);
           return;
         }
         call = session.currentCall;
 
         if (call === null) {
-          publishError(errorDictionary.getSDKError(5000));
+          publishError(5000);
           return;
         }
 
@@ -545,18 +559,13 @@
           session.deleteCurrentCall();
         });
         call.on('error', function (data) {
-          var eventData = {
-            data: data,
-            error: errorDictionary.getSDKError('5002')
-          };
-          logger.logError(data.error);
-          emitter.publish('error', eventData);
+          publishError(5002, data);
         });
 
         call.connect(options);
 
       } catch (err) {
-        publishError(errorDictionary.getSDKError(5002));
+        publishError(5002);
       }
 
     }
