@@ -493,6 +493,30 @@
       ErrorMessage: "Event Channel got shutdown unexpectedly",
       Cause: "Event Channel stopped. Please logout and login again.",
       Resolution: "Please login again"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "updateE911Id",
+      ErrorCode: "17000",
+      ErrorMessage: "e911Id parameter missing",
+      Cause: "Once or more required input parameter(s) are missing",
+      Resolution: "Please pass E911Id as a parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "updateE911Id",
+      ErrorCode: "17001",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "updateE911Id",
+      ErrorCode: "17002",
+      ErrorMessage: "Could not update E911 Id, E911 Id could be updated only for ongoing session",
+      Cause: "Precondition failed",
+      Resolution: "E911 Id can be updated only for ongoing session, Please login and then update E911 Id if necessary"
     }
   ];
 

@@ -1788,7 +1788,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('updateE911Id', function () {
+      describe('[US245682] updateE911Id', function () {
 
         var optionsUpdateE911Id,
           updateE911IdStub,
@@ -1805,6 +1805,8 @@ describe('Phone', function () {
 
           updateE911IdStub = sinon.stub(session, 'updateE911Id', function () {
           });
+
+          session.setId('12345');
 
           updateE911IdHandlerSpy = sinon.spy();
 
@@ -1846,6 +1848,59 @@ describe('Phone', function () {
               done(e);
             }
           }, 300);
+        });
+
+        describe('Error Handling', function () {
+
+          var publishStub;
+
+          beforeEach(function () {
+
+            publishStub = sinon.stub(emitter, 'publish', function () {});
+
+            updateE911IdStub.restore();
+
+            updateE911IdStub = sinon.stub(session, 'updateE911Id', function () {
+              throw error;
+            });
+
+          });
+
+          afterEach(function () {
+            publishStub.restore();
+            updateE911IdStub.restore();
+          });
+
+          it('[17000] should be published with `error` event if e911 parameter is missing', function () {
+            phone.updateE911Id();
+            expect(ATT.errorDictionary.getSDKError('17000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('17000')
+            })).to.equal(true);
+          });
+
+          it('[17001] should be published with `error` event if there is an unknown exception during the operation', function () {
+
+            session.setId('1234');
+
+            phone.updateE911Id({e911Id : '123454'});
+
+            expect(ATT.errorDictionary.getSDKError('17001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('17001')
+            })).to.equal(true);
+          });
+
+          it('[17002] should be published with `error` event if user not logged in', function () {
+            session.setId(null);
+
+            phone.updateE911Id({e911Id : '123454'});
+
+            expect(ATT.errorDictionary.getSDKError('17002')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('17002')
+            })).to.equal(true);
+          });
         });
       });
 

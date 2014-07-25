@@ -26,7 +26,7 @@
       id = null,
       token = null,
       calls = {},
-	  logger = logManager.getLoggerByName("Session");
+	    logger = logManager.getLoggerByName("Session");
 
     // instantiate event emitter
     emitter = factories.createEventEmitter();
@@ -166,7 +166,7 @@
     };
 
     this.connect = function connect(options) {
-	  var session = this;
+	     var session = this;
       try {
         if (undefined === options) {
           throw ATT.errorDictionary.getSDKError('2002');
@@ -179,7 +179,7 @@
 
           logger.logDebug('Session.connect');
 
-		  token = options.token;
+		      token = options.token;
           this.e911Id = options.e911Id;
 
           emitter.publish('connecting');
@@ -311,12 +311,7 @@
     };
 
     this.updateE911Id = function (options) {
-      if (undefined === options) {
-        throw new Error('options not defined');
-      }
-      if (undefined === options.e911Id) {
-        throw new Error('e911Id not defined');
-      }
+
       ATT.utils.extend(options, {
         sessionId: this.getId(),
         token: this.getToken(),

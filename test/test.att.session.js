@@ -744,11 +744,6 @@ describe('Session', function () {
         expect(session.updateE911Id).to.be.a('function');
       });
 
-      it('should throw Error when parameters passed are not correct ', function () {
-        expect(session.updateE911Id).to.throw('options not defined');
-        expect(session.updateE911Id.bind(session, {e911Id: '1234'})).to.not.throw('e911Id not defined');
-      });
-
       it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
         session.token = 'dsfgdsdf';
         session.updateE911Id({e911Id : '1234'});

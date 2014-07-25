@@ -39,6 +39,7 @@
     });
 
     function publishError(error) {
+      logger.logError(error);
       emitter.publish('error', {
         error: error
       });
@@ -250,7 +251,7 @@
    * @fires Phone#call-connected
    * @fires Phone#media-established
    * @fires Phone#call-held
-   * @fires Phone#call-resume
+   * @fires Phone#call-resumed
    * @fires Phone#call-disconnected
    * @fires Phone#call-error
 
@@ -385,7 +386,7 @@
             /**
              * Call on hold event.
              * @desc Successfully put the current call on hold.
-             * @event Phone#call-hold
+             * @event Phone#call-held
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
@@ -395,7 +396,7 @@
             /**
              * Call resumed event.
              * @desc Successfully resume a call that was on held.
-             * @event Phone#call-resume
+             * @event Phone#call-resumed
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
@@ -464,7 +465,7 @@
      * @fires Phone#call-connected
      * @fires Phone#media-established
      * @fires Phone#call-held
-     * @fires Phone#call-resume
+     * @fires Phone#call-resumed
      * @fires Phone#call-disconnected
      * @fires Phone#error
 
@@ -540,7 +541,7 @@
             data: data,
             error: errorDictionary.getSDKError('5002')
           };
-
+          logger.logError(data.error);
           emitter.publish('error', eventData);
         });
 
@@ -879,25 +880,54 @@
     }
 
     /**
-    * @summary
-    * Update the E911 current call.
-    * @memberOf Phone
-    * @instance
+     * @summary
+     * Update e911Id
+     * @desc
+     * **Error Codes**
+     *   - 17000 - e911 parameter is missing
+     *   - 17001 - Internal error occurred
+     *   - 17002 - User is not logged in
+     * @memberOf Phone
+     * @instance
 
-    * @fires Phone#call-error
+     * @fires Phone#address-updated
 
-    * @example
+     * @example
       var phone = ATT.rtc.Phone.getPhone();
       phone.updateE911Id({
         e911Id: e911AddressId
-      }); 
+      });
     */
     function updateE911Id(options) {
-      session.on('address-updated', function () {
-        emitter.publish('address-updated');
-      });
 
-      session.updateE911Id(options);
+      try {
+        if (undefined === options) {
+          throw ATT.errorDictionary.getSDKError('17000');
+        }
+
+        if (undefined === session || null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('17002');
+        }
+
+        if (undefined === options.e911Id || null === options.e911Id) {
+          throw ATT.errorDictionary.getSDKError('17000');
+        }
+
+        try {
+          session.on('address-updated', function () {
+            emitter.publish('address-updated');
+          });
+
+          session.updateE911Id(options);
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('17001');
+        }
+
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
     this.on = on.bind(this);
