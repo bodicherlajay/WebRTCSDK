@@ -1069,7 +1069,7 @@
     PossibleCauses: "Mandatory parameter is missing in the request.",
     PossibleResolution: "The paramter name is suggested in the error text. …message part conatins the missing parameter name.",
     APIError: "SVC0002: Invalid input value for Message part <part_name>",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 400,
     MessageId: "SVC0002"
   },
@@ -1081,7 +1081,7 @@
     PossibleCauses: "Invalid values are passed in the Request.",
     PossibleResolution: "Pass the valid values as suggested in the error response.",
     APIError: "SVC0003:Invalid input value for Message part <part_name>, valid values are <part_values>",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 400,
     MessageId: "SVC0003"
   },
@@ -1093,7 +1093,7 @@
     PossibleCauses: "Reserved for future use",
     PossibleResolution: "Reserved for future use",
     APIError: "SVC0004: No valid addresses provided in the Message part <part_name>",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 400,
     MessageId: "SVC0004"
   },
@@ -1105,7 +1105,7 @@
     PossibleCauses: "The address provided is unreachable.",
     PossibleResolution: "Correct the portion of address as per the Error text and retry.",
     APIError: "SVC0015: Address is not valid address for E911 routing.Reason",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 400,
     MessageId: "SVC0015"
   },
@@ -1117,7 +1117,7 @@
     PossibleCauses: "The address provided is not present in the System.",
     PossibleResolution: "Confirm the address by setting isAddressConfirmed to true and retry.",
     APIError: "SVC0016: Address Confirmation Required ",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 400,
     MessageId: "SVC0016"
   },
@@ -1129,7 +1129,7 @@
     PossibleCauses: "System is unavailable to process the request.",
     PossibleResolution: "Please try again later.",
     APIError: "SVC0017: NENA provider system is not?available.",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 400,
     MessageId: "SVC0017"
   },
@@ -1141,7 +1141,7 @@
     PossibleCauses: "System is available but could not process the request.",
     PossibleResolution: "Please contact system administrator.",
     APIError: "SVC0018: NENA provider system error",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 400,
     MessageId: "SVC0018"
   },
@@ -1153,7 +1153,7 @@
     PossibleCauses: "1. Access Token is incorrect or in valid.?2. Access token is not authorized for the WebRTC scope.",
     PossibleResolution: "Re-Authenticate and retreive the correct access token.",
     APIError: "POL0001:A policy error occurred. For example, rate…it error, authentication and authorization errors",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 401,
     MessageId: "POL0001"
   },
@@ -1165,7 +1165,7 @@
     PossibleCauses: "Access Token is incorrect or in valid.",
     PossibleResolution: "Re-Authenticate and retreive the correct access token for webRTC",
     APIError: "POL0002:Privacy verification failed for address <address> request is refused",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 403,
     MessageId: "POL0002"
   },
@@ -1177,7 +1177,7 @@
     PossibleCauses: "Reserved for future use",
     PossibleResolution: "Reserved for future use",
     APIError: "POL0003:Too many addresses specified in Message part",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 403,
     MessageId: "POL0003"
   },
@@ -1189,7 +1189,7 @@
     PossibleCauses: "User has not been provisioned for webRTC service",
     PossibleResolution: "End user needs to provide consent to get provisioned.",
     APIError: "POL1009:User has not been provisioned for %1",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 403,
     MessageId: "POL1009"
   },
@@ -1201,7 +1201,7 @@
     PossibleCauses: "System error occurred",
     PossibleResolution: "Use the explanation to find the reason for failure.",
     APIError: "SVC0001: A service error has occurred. Error code is <error_explanation>",
-    ResourceMethod: "POST e m e r g e n c y S e r v i c e s / v1 / e 9 1 1 L o c a t i o n",
+    ResourceMethod: "POST emergencyServices/v1/e911Location",
     HttpStatusCode: 400,
     MessageId: "SVC0001"
   },

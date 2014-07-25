@@ -47,7 +47,7 @@
       {
         userErrorCode: 'SDK-20000',    //5 digit error code
         type: errorType.SDK,
-        reasonText: 'configerror',       //High level reason text, invalid input, forbidden
+        reasonText: 'config error',       //High level reason text, invalid input, forbidden
         errorDescription: 'Fatal Error XHR Request failed', //Error Description
         moduleID: 'RTC'
       },
