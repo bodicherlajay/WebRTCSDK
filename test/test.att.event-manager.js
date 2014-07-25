@@ -352,10 +352,11 @@ describe('Event Manager', function () {
         setTimeout(function () {
           try {
             expect(publishSpy.calledWith('call-incoming')).to.equal(true);
+            expect(publishSpy.getCall(1).args[1].type).to.equal(event.type);
             expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
             expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
             expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
-            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal('abcd');
+            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal(event.sdp);
             done();
           } catch (e) {
             done(e);

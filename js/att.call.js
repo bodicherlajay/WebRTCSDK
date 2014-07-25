@@ -18,6 +18,9 @@
     if (undefined === options) {
       throw new Error('No input provided');
     }
+    if (undefined === options.breed) {
+      throw new Error('No breed provided');
+    }
     if (undefined === options.peer) {
       throw new Error('No peer provided');
     }
@@ -334,6 +337,7 @@
     }
 
     // Call attributes
+    this.breed = options.breed;
     if (undefined === options.id) {
       this.id = null;
     } else {

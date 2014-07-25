@@ -156,6 +156,7 @@ describe('Session', function () {
       });
 
       call = new ATT.rtc.Call({
+        breed: 'call',
         id: '12345',
         peer: '12345',
         type: 'abc',
@@ -163,6 +164,7 @@ describe('Session', function () {
       });
 
       secondCall = new ATT.rtc.Call({
+        breed: 'call',
         id: '98765',
         peer: '12452',
         type: 'abc',
@@ -785,6 +787,7 @@ describe('Session', function () {
 
       beforeEach(function () {
         callOpts = {
+          breed: 'call',
           peer: '12345',
           type: 'incoming',
           mediaType: 'video'

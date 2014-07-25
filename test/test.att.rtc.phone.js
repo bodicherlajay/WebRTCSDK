@@ -2016,12 +2016,13 @@ describe('Phone', function () {
 
             session = phone.getSession();
             session.setId('ZBC')
+
             call = phone.getSession().createCall({
+              breed: 'call',
               peer: '123',
               type: 'abc',
               mediaType: 'video'
             });
-
 
             // so that it will just register the event handlers
             connectStub = sinon.stub(call, 'connect', function () {
@@ -2081,6 +2082,7 @@ describe('Phone', function () {
             });
 
             call = new ATT.rtc.Call({
+              breed: 'call',
               type: 'abc',
               peer: '123',
               mediaType: 'video'
