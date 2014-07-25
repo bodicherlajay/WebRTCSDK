@@ -880,25 +880,54 @@
     }
 
     /**
-    * @summary
-    * Update the E911 current call.
-    * @memberOf Phone
-    * @instance
+     * @summary
+     * Update e911Id
+     * @desc
+     * **Error Codes**
+     *   - 17000 - e911 parameter is missing
+     *   - 17001 - Internal error occurred
+     *   - 17002 - User is not logged in
+     * @memberOf Phone
+     * @instance
 
-    * @fires Phone#call-error
+     * @fires Phone#address-updated
 
-    * @example
+     * @example
       var phone = ATT.rtc.Phone.getPhone();
       phone.updateE911Id({
         e911Id: e911AddressId
-      }); 
+      });
     */
     function updateE911Id(options) {
-      session.on('address-updated', function () {
-        emitter.publish('address-updated');
-      });
 
-      session.updateE911Id(options);
+      try {
+        if (undefined === options) {
+          throw ATT.errorDictionary.getSDKError('17000');
+        }
+
+        if (undefined === session || null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('17002');
+        }
+
+        if (undefined === options.e911Id || null === options.e911Id) {
+          throw ATT.errorDictionary.getSDKError('17000');
+        }
+
+        try {
+          session.on('address-updated', function () {
+            emitter.publish('address-updated');
+          });
+
+          session.updateE911Id(options);
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('17001');
+        }
+
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
     this.on = on.bind(this);

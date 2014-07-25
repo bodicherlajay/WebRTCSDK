@@ -311,12 +311,7 @@
     };
 
     this.updateE911Id = function (options) {
-      if (undefined === options) {
-        throw new Error('options not defined');
-      }
-      if (undefined === options.e911Id) {
-        throw new Error('e911Id not defined');
-      }
+
       ATT.utils.extend(options, {
         sessionId: this.getId(),
         token: this.getToken(),
