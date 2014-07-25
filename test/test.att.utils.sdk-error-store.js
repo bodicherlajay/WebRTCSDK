@@ -10,25 +10,18 @@ describe('SDK Error Store', function () {
 
   describe('SDKErrorStore.getAllErrors', function () {
 
-    var SDKErrorStore;
-    beforeEach(function () {
+    var SDKErrorStore,
+      errors;
+
+    before(function () {
       SDKErrorStore = ATT.utils.ErrorStore.SDKErrors;
+      errors = SDKErrorStore.getAllSDKErrors();
     });
 
-    it('should return an immutable array of error objects', function () {
-      var errors = SDKErrorStore.getAllErrors(),
-        oldValue;
-
-      expect(errors).to.be.an('Object');
-
-      // try to modify an error
-      oldValue = errors[15002].ErrorCode;
-
-      function changeValue() {
-        errors[15002].ErrorCode = 'new value';
-      }
-      //expect(changeValue).to.throw(/Cannot assign to read only property/);
-      //expect(errors[15002].ErrorCode).to.equal(oldValue);
+    it('should return an immutable array', function () {
+      expect(Object.isFrozen(errors)).to.equal(true);
     });
+
+    it('should return frozen error objects inside the array');
   });
 });
