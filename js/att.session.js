@@ -55,6 +55,14 @@
         });
       }
     });
+    rtcManager.on('call-disconnected', function (callInfo) {
+      emitter.publish('call-disconnected', {
+        from: callInfo.from,
+        mediaType: session.currentCall.mediaType,
+        codec: session.currentCall ? session.currentCall.codec : null,
+        timestamp: new Date()
+      });
+    });
 
     function on(event, handler) {
 

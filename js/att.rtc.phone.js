@@ -36,6 +36,22 @@
       emitter.publish('call-incoming', data);
     });
 
+    session.on('call-disconnected', function (data) {
+      /**
+       * Call disconnected event.
+       * @desc Indicates a call has been disconnected
+       *
+       * @event Phone#call-disconnected
+       * @type {object}
+       * @property {String} from - The ID of the caller.
+       * @property {String} mediaType - The type of call.
+       * @property {String} codec - The codec of the call
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('call-disconnected', data);
+      session.deleteCurrentCall();
+    });
+
     session.on('error', function (data) {
       emitter.publish('error', data);
     });
@@ -360,16 +376,6 @@
              * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('call-connecting', data);
-          });
-          call.on('canceled', function (data) {
-            /**
-             * Call canceled event.
-             * @desc Succesfully canceled the current call.
-             * @event Phone#call-canceled
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('call-canceled', data);
           });
           call.on('rejected', function (data) {
             /**
@@ -768,7 +774,7 @@
       var call = session.currentCall;
 
       try {
-        if (null === call || null === call.id) {
+        if (null === call) {
           throw ATT.errorDictionary.getSDKError('11000');
         }
         try {

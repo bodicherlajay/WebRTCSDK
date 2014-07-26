@@ -100,6 +100,10 @@ describe('Phone', function () {
         expect(onSpy.calledWith('call-incoming')).to.equal(true);
       });
 
+      it('should register for `call-disconnected` event on the session object', function() {
+        expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+      });
+
       it('should register for `error` event on session object', function () {
         expect(onSpy.calledWith('error')).to.equal(true);
       });
@@ -569,12 +573,6 @@ describe('Phone', function () {
           expect(onSpy.calledWith('connecting')).to.equal(true);
         });
 
-        it('should register for the `canceled` event on the call object', function () {
-          phone.dial(options);
-
-          expect(onSpy.calledWith('canceled')).to.equal(true);
-        });
-
         it('should register for the `connected` event on the call object', function () {
           phone.dial(options);
 
@@ -634,21 +632,6 @@ describe('Phone', function () {
             setTimeout(function () {
               try {
                 expect(callConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 200);
-          });
-
-          it('should trigger `call-canceled` with relevant data when call publishes `canceled` event', function (done) {
-            phone.dial(options);
-
-            emitterCall.publish('canceled', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(callCanceledHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -1916,6 +1899,7 @@ describe('Phone', function () {
           createEmitterStub,
           sessionConstructorStub,
           onCallIncomingHandlerSpy,
+          onCallDisconnectedHandlerSpy,
           onErrorHandlerSpy;
 
         beforeEach(function () {
@@ -1934,11 +1918,13 @@ describe('Phone', function () {
           });
 
           onCallIncomingHandlerSpy = sinon.spy();
+          onCallDisconnectedHandlerSpy = sinon.spy();
           onErrorHandlerSpy = sinon.spy();
 
           phone = new ATT.private.Phone();
 
           phone.on('call-incoming', onCallIncomingHandlerSpy);
+          phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
         });
@@ -1968,6 +1954,44 @@ describe('Phone', function () {
           });
         });
 
+        describe('call-disconnected', function () {
+          var eventData;
+
+          beforeEach(function () {
+            eventData = {
+              abc: 'abc'
+            };
+
+            emitterSession.publish('call-disconnected', eventData);
+          });
+          it('should trigger `call-disconnected` with relevant data on getting a `call-disconnected` from session', function (done) {
+
+            setTimeout(function () {
+              try {
+                expect(onCallDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+
+          it('should also execute session.deleteCurrentCall', function (done) {
+            var deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+
+            setTimeout(function () {
+              try {
+                expect(onCallDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+
+            deleteCurrentCallStub.restore();
+          });
+        });
+
         describe('error', function () {
 
           it('should publish `error` event with the error data on getting an `error` from session', function (done) {
@@ -1979,12 +2003,12 @@ describe('Phone', function () {
 
             setTimeout(function () {
               try {
-                expect(onErrorHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(onErrorHandlerSpy.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 100);
           });
         });
 

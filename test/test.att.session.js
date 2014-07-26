@@ -93,6 +93,10 @@ describe('Session', function () {
     it('should register for `call-incoming` event on RTCManager', function () {
       expect(rtcManagerOnSpy.calledWith('call-incoming')).to.equal(true);
     });
+
+    it('should register for `call-disconnected` event on RTCManager', function () {
+      expect(rtcManagerOnSpy.calledWith('call-disconnected')).to.equal(true);
+    });
   });
 
   describe('Methods', function () {
@@ -1176,6 +1180,76 @@ describe('Session', function () {
             expect(callIncomingHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(callIncomingHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(typeof callIncomingHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 300);
+      });
+    });
+
+    describe('call-disconnected', function () {
+
+      var rtcManager,
+        session,
+        call,
+        callInfo,
+        emitterEM,
+        createEventEmitterStub,
+        getRTCMgrStub,
+        callDisconnectedHandlerSpy,
+        callConstructorStub;
+
+      beforeEach(function () {
+        callInfo = {
+          id: '123',
+          from: '1234',
+          mediaType: 'video',
+          remoteSdp: 'abc'
+        };
+
+        emitterEM = ATT.private.factories.createEventEmitter();
+
+        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+          return emitterEM;
+        });
+
+        rtcManager = new ATT.private.RTCManager(optionsforRTCM);
+
+        getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+          return rtcManager;
+        });
+
+        createEventEmitterStub.restore();
+
+        session = new ATT.rtc.Session();
+
+        session.currentCall = {
+          mediaType: 'video',
+          codec: ['test']
+        };
+
+        callDisconnectedHandlerSpy = sinon.spy();
+
+        session.on('call-disconnected', callDisconnectedHandlerSpy);
+
+        emitterEM.publish('call-disconnected', callInfo);
+      });
+
+      afterEach(function () {
+        getRTCMgrStub.restore();
+      });
+
+      it('should trigger `call-disconnected` with data on getting `call-disconnected` from RTCMgr', function (done) {
+
+        setTimeout(function () {
+          try {
+            expect(callDisconnectedHandlerSpy.called).to.equal(true);
+            expect(callDisconnectedHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(callDisconnectedHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(callDisconnectedHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(callDisconnectedHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof callDisconnectedHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
           } catch (e) {
             done(e);

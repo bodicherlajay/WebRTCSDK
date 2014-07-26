@@ -85,7 +85,6 @@
     function on(event, handler) {
 
       if ('connecting' !== event &&
-          'canceled' !== event &&
           'rejected' !== event &&
           'connected' !== event &&
           'muted' !== event &&
