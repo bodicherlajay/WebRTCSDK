@@ -517,6 +517,38 @@
       ErrorMessage: "Could not update E911 Id, E911 Id could be updated only for ongoing session",
       Cause: "Precondition failed",
       Resolution: "E911 Id can be updated only for ongoing session, Please login and then update E911 Id if necessary"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "dialConference",
+      ErrorCode: "18000",
+      ErrorMessage: "TODO- options missing",
+      Cause: "TODO",
+      Resolution: "TODO"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "dialConference",
+      ErrorCode: "18001",
+      ErrorMessage: "TODO- localmedia missing",
+      Cause: "TODO",
+      Resolution: "TODO"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "dialConference",
+      ErrorCode: "18002",
+      ErrorMessage: "TODO- remotemedia missing",
+      Cause: "TODO",
+      Resolution: "TODO"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "dialConference",
+      ErrorCode: "18003",
+      ErrorMessage: "TODO- mediaType missing",
+      Cause: "TODO",
+      Resolution: "TODO"
     }
   ];
 
