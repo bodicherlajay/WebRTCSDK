@@ -386,7 +386,6 @@
           });
 
           call.on('connecting', function (data) {
-
             /**
              * Call connecting event.
              * @desc Indicates succesful creation of the call.
@@ -396,16 +395,6 @@
              */
             emitter.publish('call-connecting', data);
           });
-          call.on('canceled', function (data) {
-            /**
-             * Call canceled event.
-             * @desc Succesfully canceled the current call.
-             * @event Phone#call-canceled
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('call-canceled', data);
-          });
           call.on('rejected', function (data) {
             /**
              * Call rejected event.
@@ -414,8 +403,8 @@
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
-            session.deleteCurrentCall();
             emitter.publish('call-rejected', data);
+            session.deleteCurrentCall();
           });
           call.on('connected', function (data) {
             /**
