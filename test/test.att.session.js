@@ -1076,18 +1076,27 @@ describe('Session', function () {
 
       var rtcManager,
         session,
-        call,
         callInfo,
+        conferenceInfo,
         emitterEM,
         createEventEmitterStub,
         getRTCMgrStub,
-        createCallSpy,
-        callIncomingHandlerSpy,
+        createCallSpyStub,
         setRemoteSdpSpy,
-        callConstructorStub;
+        callIncomingHandlerSpy,
+        conferenceInviteHandlerSpy;
 
       beforeEach(function () {
         callInfo = {
+          type: 'call',
+          id: '123',
+          from: '1234',
+          mediaType: 'video',
+          remoteSdp: 'abc'
+        };
+
+        conferenceInfo = {
+          type: 'conference',
           id: '123',
           from: '1234',
           mediaType: 'video',
@@ -1112,66 +1121,75 @@ describe('Session', function () {
 
         callIncomingHandlerSpy = sinon.spy();
 
+        conferenceInviteHandlerSpy = sinon.spy();
+
         session.on('call-incoming', callIncomingHandlerSpy);
 
-        call = new ATT.rtc.Call({
+        session.on('conference-invite', conferenceInviteHandlerSpy);
+
+        createCallSpyStub = sinon.spy(session, 'createCall');
+      });
+
+      afterEach(function () {
+        getRTCMgrStub.restore();
+        createCallSpyStub.restore();
+      });
+
+      it('should execute session.createCall with breed as the type received in event data from event manager', function (done) {
+
+        emitterEM.publish('call-incoming', callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(createCallSpyStub.called).to.equal(true);
+            expect(createCallSpyStub.getCall(0).args[0].breed).to.equal(callInfo.type);
+            expect(createCallSpyStub.getCall(0).args[0].id).to.equal(callInfo.id);
+            expect(createCallSpyStub.getCall(0).args[0].peer).to.equal(callInfo.from);
+            expect(createCallSpyStub.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should execute call.setRemoteSdp with remoteSdp on the newly created call', function (done) {
+
+        var call = new ATT.rtc.Call({
           breed: 'call',
           peer: callInfo.from,
           type: ATT.CallTypes.INCOMING,
           mediaType: callInfo.mediaType
         });
 
-        callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+        createCallSpyStub.restore();
+
+        createCallSpyStub = sinon.stub(session, 'createCall', function () {
           return call;
         });
-
-        createCallSpy = sinon.spy(session, 'createCall');
 
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
 
         emitterEM.publish('call-incoming', callInfo);
-      });
 
-      afterEach(function () {
-        getRTCMgrStub.restore();
-        createCallSpy.restore();
-        setRemoteSdpSpy.restore();
-        callConstructorStub.restore();
-      });
-
-      it('should create a new call on getting call-incoming event from event manager', function (done) {
-        setTimeout(function () {
-          try {
-            expect(createCallSpy.called).to.equal(true);
-            expect(createCallSpy.getCall(0).args[0].id).to.equal(callInfo.id);
-            expect(createCallSpy.getCall(0).args[0].peer).to.equal(callInfo.from);
-            expect(createCallSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
-      });
-
-      it('should set the newly created call as the `currentCall`', function (done) {
-        setTimeout(function () {
-          expect(session.currentCall).to.equal(call);
-          done();
-        }, 100);
-      });
-
-      it('should execute call.setRemoteSdp with remoteSdp on the newly created call', function (done) {
         setTimeout(function () {
           try {
             expect(setRemoteSdpSpy.calledWith(callInfo.remoteSdp)).to.equal(true);
+            createCallSpyStub.restore();
+            setRemoteSdpSpy.restore();
             done();
           } catch (e) {
+            createCallSpyStub.restore();
+            setRemoteSdpSpy.restore();
             done(e);
           }
         }, 100);
       });
 
       it('should trigger `call-incoming` with relevant data on creating the new call', function (done) {
+
+        emitterEM.publish('call-incoming', callInfo);
+
         setTimeout(function () {
           try {
             expect(callIncomingHandlerSpy.called).to.equal(true);
@@ -1180,6 +1198,25 @@ describe('Session', function () {
             expect(callIncomingHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(callIncomingHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(typeof callIncomingHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 300);
+      });
+
+      it('should trigger `conference-invite` with relevant data on creating the new conference', function (done) {
+
+        emitterEM.publish('call-incoming', conferenceInfo);
+
+        setTimeout(function () {
+          try {
+            expect(conferenceInviteHandlerSpy.called).to.equal(true);
+            expect(conferenceInviteHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(conferenceInviteHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(conferenceInviteHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(conferenceInviteHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(typeof conferenceInviteHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
           } catch (e) {
             done(e);

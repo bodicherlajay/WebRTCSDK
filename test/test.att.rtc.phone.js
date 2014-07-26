@@ -100,6 +100,10 @@ describe('Phone', function () {
         expect(onSpy.calledWith('call-incoming')).to.equal(true);
       });
 
+      it('should register for `conference-invite` event on session object', function () {
+        expect(onSpy.calledWith('conference-invite')).to.equal(true);
+      });
+
       it('should register for `error` event on session object', function () {
         expect(onSpy.calledWith('error')).to.equal(true);
       });
@@ -1917,6 +1921,7 @@ describe('Phone', function () {
           createEmitterStub,
           sessionConstructorStub,
           onCallIncomingHandlerSpy,
+          onConferenceInviteHandlerSpy,
           onErrorHandlerSpy;
 
         beforeEach(function () {
@@ -1935,11 +1940,13 @@ describe('Phone', function () {
           });
 
           onCallIncomingHandlerSpy = sinon.spy();
+          onConferenceInviteHandlerSpy = sinon.spy();
           onErrorHandlerSpy = sinon.spy();
 
           phone = new ATT.private.Phone();
 
           phone.on('call-incoming', onCallIncomingHandlerSpy);
+          phone.on('conference-invite', onConferenceInviteHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
         });
@@ -1961,6 +1968,27 @@ describe('Phone', function () {
             setTimeout(function () {
               try {
                 expect(onCallIncomingHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+        });
+
+        describe('conference-invite', function () {
+
+          it('should trigger `conference-invite` with relevant data on getting a `conference-invite` from session', function (done) {
+
+            var eventData = {
+              abc: 'abc'
+            };
+
+            emitterSession.publish('conference-invite', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(onConferenceInviteHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);

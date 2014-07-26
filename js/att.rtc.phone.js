@@ -36,6 +36,21 @@
       emitter.publish('call-incoming', data);
     });
 
+    session.on('conference-invite', function (data) {
+      /**
+       * Conference Invite event.
+       * @desc Indicates a conference invite is received.
+       *
+       * @event Phone#conference-invite
+       * @type {object}
+       * @property {String} from - The ID of the caller.
+       * @property {String} mediaType - The type of call being received.
+       * @property {String} codec - The codec used by the incoming call.
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('conference-invite', data);
+    });
+
     session.on('error', function (data) {
       emitter.publish('error', data);
     });
@@ -79,6 +94,7 @@
           && 'dialing' !== event
           && 'answering' !== event
           && 'call-incoming' !== event
+          && 'conference-invite' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
           && 'call-disconnected' !== event

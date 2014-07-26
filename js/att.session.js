@@ -35,7 +35,9 @@
     rtcManager = ATT.private.rtcManager.getRTCManager();
 
     rtcManager.on('call-incoming', function (callInfo) {
-      var call = session.createCall({
+      var eventName,
+        call = session.createCall({
+        breed: callInfo.type,
         id: callInfo.id,
         peer: callInfo.from,
         type: ATT.CallTypes.INCOMING,
@@ -47,7 +49,13 @@
           call.setRemoteSdp(callInfo.remoteSdp);
         }
 
-        emitter.publish('call-incoming', {
+        if (call.breed === 'call') {
+          eventName = 'call-incoming';
+        } else {
+          eventName = 'conference-invite';
+        }
+
+        emitter.publish(eventName, {
           from: call.peer,
           mediaType: call.mediaType,
           codec: call.codec,
@@ -64,6 +72,7 @@
           'updating' !== event &&
           'needs-refresh' !== event &&
           'call-incoming' !== event &&
+          'conference-invite' !== event &&
           'call-disconnected' !== event &&
           'disconnecting' !== event &&
           'disconnected' !== event &&
