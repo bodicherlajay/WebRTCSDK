@@ -63,7 +63,11 @@
       var error = getError(errorNumber),
         errorInfo = {};
 
-      errorInfo.error = error;
+      if (undefined === error) {
+        errorInfo.error = 'TODO: Error not in dictionary';
+      } else {
+        errorInfo.error = error;
+      }
 
       if (undefined !== data) {
         errorInfo.data = data;
@@ -295,7 +299,7 @@
    * @example
     // Start video call with an ICMN User
     var phone = ATT.rtc.Phone.getPhone();
-    phone.dial({  
+    phone.dial({
       destination: '11231231234',
       mediaType: 'video',
       localMedia: document.getElementById('localVideo'),
@@ -988,6 +992,32 @@
       }
     }
 
+    function dialConference(options) {
+
+      if (undefined === options
+          || 0 === Object.keys(options).length) {
+        publishError('18000');
+        return;
+      }
+      if (undefined === options.localMedia) {
+        publishError('18001');
+        return;
+      }
+      if (undefined === options.remoteMedia) {
+        publishError('18002');
+        return;
+      }
+      if ((undefined === options.mediaType)
+          || ('audio' !== options.mediaType
+              && 'video' !== options.mediaType)) {
+        publishError('18003');
+        return;
+      }
+
+      options.breed = 'conference';
+      session.createCall(options);
+    }
+
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
@@ -1006,6 +1036,9 @@
     this.updateE911Id = updateE911Id.bind(this);
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
+
+    //Confernce Methods
+    this.dialConference = dialConference.bind(this);
   }
 
 
