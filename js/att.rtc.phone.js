@@ -585,6 +585,11 @@
       }
 
     }
+
+    function joinConference() {
+
+    }
+
     /**
     * @summary
     * Mute the current call.
@@ -989,6 +994,7 @@
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
     this.answer = answer.bind(this);
+    this.joinConference = joinConference;
     this.mute = mute.bind(this);
     this.unmute = unmute.bind(this);
     this.getMediaType = getMediaType.bind(this);

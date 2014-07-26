@@ -1157,6 +1157,13 @@ describe('Phone', function () {
         });
       });
 
+      describe('[272608] joinConference', function () {
+
+        it('should exists', function () {
+          expect(phone.joinConference).to.be.a('function');
+        });
+      });
+
       describe('[US198615] mute & unmute', function () {
 
         var onSpy,
