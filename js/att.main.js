@@ -36,34 +36,12 @@
     logger.logTrace('ATT doesn\'t have a method to create an error dictionary.');
     return;
   }
-  ATT.errorDictionary = ATT.utils.createErrorDictionary({
-    modules: {
-      APP_CONFIG: 'APP_CONFIG',
-      ERROR_DICT: 'ERROR_DICT',
-      DHS: 'DHS',
-      EVENT_CHANNEL: 'EVENT_CHANNEL',
-      PEER_CONNECTION: 'PEER_CONNECTION',
-      USER_MEDIA: 'USER_MEDIA',
-      RESOURCE_MGR: 'RESOURCE_MGR',
-      RTC_EVENT: 'RTC_EVENT',
-      SIGNALING: 'SIGNALING',
-      SDP_FILTER: 'SDP_FILTER',
-      CALL_MGR: 'CALL_MGR',
-      RTC: 'RTC',
-      GENERAL: 'GENERAL'
-    }
-  }, ATT.utils);
+  ATT.errorDictionary = ATT.utils.createErrorDictionary(ATT.utils.ErrorStore.SDKErrors.getAllSDKErrors(),ATT.utils.ErrorStore.APIErrors.getAllAPIErrors());
 
   if (undefined !== ATT.errorDictionary) {
     logger.logTrace("Error Dictionary created.");
   }
 
-  // Load all SDK errors in the dictionary
-  apiErrors = ATT.utils.ErrorStore.APIErrors.getAllAPIErrors();
-  // adds all the errors in the list to the Dictionary
-  for (idx = 0; idx < apiErrors.length; idx = idx + 1) {
-    ATT.errorDictionary.createError(apiErrors[idx]);
-  }
   logger.logTrace("SDK Errors loaded into the Dictionary.");
 
 }());

@@ -55,9 +55,9 @@
       };
       return error;
     }
-    // second key to lookup using operation name, http status code and message id
-    function addOpStatusMessageId(error) {
-      error.opStatusMsgId = function () {
+    // second key to lookup using method name, http status code and message id
+    function getAPIErrorByMethodStatusMsgId(error) {
+      error.getAPIErrorByMethodStatusMsgId = function () {
         var opStatusMsgId = error.JSMethod + error.HttpStatusCode + error.MessageId;
         return opStatusMsgId;
       };
@@ -68,44 +68,45 @@
     newError = utils.extend(newError, spec);
     newError = addFormatter(newError);// add `formatMethod`
     newError = addIdGetter(newError);
-    newError = addOpStatusMessageId(newError);
+    newError = getAPIErrorByMethodStatusMsgId(newError);
     return newError;
   }
 
-  function createErrorDictionary(spec, utils) {
-    var apiErrors = ATT.utils.ErrorStore.APIErrors.getAllAPIErrors(), // collection of all errors in this dictionary
-      sdkErrors = ATT.utils.ErrorStore.SDKErrors.getAllSDKErrors(),
-      newError = null;
+  function createErrorDictionary(sdkErrors, apiErrors) {
+    var utils = ATT.utils,
+      newError = null, idx = 0, apiErrorContainer = [], errorCount = apiErrors.length;
+
+    //Load the API Errors into dictionary
+    for (idx = 0; idx < errorCount; idx = idx + 1) {
+      // create the error
+      newError = createErrorWith(apiErrors[idx], utils);
+      // add it to the dictionary
+      apiErrorContainer[newError.getId()] = newError;
+      apiErrorContainer[newError.getAPIErrorByMethodStatusMsgId()] = newError;
+    }
 
     return { // return the error dictionary
       createError: function (spec) {
-        // create the error
-        newError = createErrorWith(spec, utils);
-        // add it to the dictionary
-        apiErrors[newError.getId()] = newError;
-        apiErrors[newError.opStatusMsgId()] = newError;
-        return newError;
+        return createErrorWith(spec,utils);
       },
       getSDKError: function (errorId) {
         return sdkErrors[errorId];
       },
       getError: function (errorId) {
-        return apiErrors[errorId];
+        return apiErrorContainer[errorId];
       },
       getAPIError: function (methodName, httpStatusCode, messageId) {
-        return createErrorWith(apiErrors[methodName + httpStatusCode + messageId],utils);
-      },
-      getMissingError: function (errSpec) {
-        return this.createError(errSpec);
-      },
-      getAPIExceptionError: function (errSpec) {
-        return this.createError(errSpec);
-      },
-      getDHSError: function (dhsErrSpec) {
-        return this.createError(dhsErrSpec);
+        var errObj = apiErrorContainer[methodName + httpStatusCode + messageId];
+        if (!errObj) {
+          errObj = apiErrorContainer["*" + httpStatusCode + messageId];
+          if (errObj) {
+            errObj.JSMethod = methodName;
+          }
+        }
+        return errObj;
       },
       getDefaultError: function (errorSpec) {
-        return this.createError(errorSpec);
+        return createErrorWith(errorSpec,utils);
       }
     };
   }
