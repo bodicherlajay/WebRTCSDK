@@ -37,6 +37,7 @@ describe('Call', function () {
     };
 
     optionsOutgoing = {
+      breed: 'call',
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.OUTGOING,
@@ -44,6 +45,7 @@ describe('Call', function () {
     };
 
     optionsIncoming = {
+      breed: 'call',
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.INCOMING,

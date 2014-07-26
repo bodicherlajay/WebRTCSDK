@@ -1115,6 +1115,7 @@ describe('Session', function () {
         session.on('call-incoming', callIncomingHandlerSpy);
 
         call = new ATT.rtc.Call({
+          breed: 'call',
           peer: callInfo.from,
           type: ATT.CallTypes.INCOMING,
           mediaType: callInfo.mediaType

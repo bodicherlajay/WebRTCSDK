@@ -141,6 +141,7 @@ describe('Phone', function () {
         });
 
         call = new ATT.rtc.Call({
+          breed: 'call',
           peer: '1234567',
           type: 'abc',
           mediaType: 'video'
