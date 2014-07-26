@@ -100,8 +100,12 @@ describe('Phone', function () {
         expect(onSpy.calledWith('call-incoming')).to.equal(true);
       });
 
-      it('should register for `call-disconnected` event on the session object', function() {
+	  it('should register for `call-disconnected` event on the session object', function() {
         expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+      });
+
+      it('should register for `conference-invite` event on session object', function () {
+        expect(onSpy.calledWith('conference-invite')).to.equal(true);
       });
 
       it('should register for `error` event on session object', function () {
@@ -145,6 +149,7 @@ describe('Phone', function () {
         });
 
         call = new ATT.rtc.Call({
+          breed: 'call',
           peer: '1234567',
           type: 'abc',
           mediaType: 'video'
@@ -1135,6 +1140,13 @@ describe('Phone', function () {
         });
       });
 
+      describe('[272608] joinConference', function () {
+
+        it('should exists', function () {
+          expect(phone.joinConference).to.be.a('function');
+        });
+      });
+
       describe('[US198615] mute & unmute', function () {
 
         var onSpy,
@@ -1899,7 +1911,8 @@ describe('Phone', function () {
           createEmitterStub,
           sessionConstructorStub,
           onCallIncomingHandlerSpy,
-          onCallDisconnectedHandlerSpy,
+		  onCallDisconnectedHandlerSpy,
+          onConferenceInviteHandlerSpy,
           onErrorHandlerSpy;
 
         beforeEach(function () {
@@ -1918,13 +1931,15 @@ describe('Phone', function () {
           });
 
           onCallIncomingHandlerSpy = sinon.spy();
-          onCallDisconnectedHandlerSpy = sinon.spy();
+		  onCallDisconnectedHandlerSpy = sinon.spy();
+          onConferenceInviteHandlerSpy = sinon.spy();
           onErrorHandlerSpy = sinon.spy();
 
           phone = new ATT.private.Phone();
 
           phone.on('call-incoming', onCallIncomingHandlerSpy);
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
+          phone.on('conference-invite', onConferenceInviteHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
         });
@@ -1953,7 +1968,7 @@ describe('Phone', function () {
             }, 300);
           });
         });
-
+		
         describe('call-disconnected', function () {
           var eventData;
 
@@ -1992,6 +2007,27 @@ describe('Phone', function () {
           });
         });
 
+        describe('conference-invite', function () {
+
+          it('should trigger `conference-invite` with relevant data on getting a `conference-invite` from session', function (done) {
+
+            var eventData = {
+              abc: 'abc'
+            };
+
+            emitterSession.publish('conference-invite', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(onConferenceInviteHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+        });
+
         describe('error', function () {
 
           it('should publish `error` event with the error data on getting an `error` from session', function (done) {
@@ -2003,12 +2039,12 @@ describe('Phone', function () {
 
             setTimeout(function () {
               try {
-                expect(onErrorHandlerSpy.called).to.equal(true);
+                expect(onErrorHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 300);
           });
         });
 
@@ -2040,12 +2076,13 @@ describe('Phone', function () {
 
             session = phone.getSession();
             session.setId('ZBC')
+
             call = phone.getSession().createCall({
+              breed: 'call',
               peer: '123',
               type: 'abc',
               mediaType: 'video'
             });
-
 
             // so that it will just register the event handlers
             connectStub = sinon.stub(call, 'connect', function () {
@@ -2105,6 +2142,7 @@ describe('Phone', function () {
             });
 
             call = new ATT.rtc.Call({
+              breed: 'call',
               type: 'abc',
               peer: '123',
               mediaType: 'video'

@@ -35,8 +35,7 @@
        */
       emitter.publish('call-incoming', data);
     });
-
-    session.on('call-disconnected', function (data) {
+	session.on('call-disconnected', function (data) {
       /**
        * Call disconnected event.
        * @desc Indicates a call has been disconnected
@@ -50,6 +49,21 @@
        */
       emitter.publish('call-disconnected', data);
       session.deleteCurrentCall();
+    });
+
+    session.on('conference-invite', function (data) {
+      /**
+       * Conference Invite event.
+       * @desc Indicates a conference invite is received.
+       *
+       * @event Phone#conference-invite
+       * @type {object}
+       * @property {String} from - The ID of the caller.
+       * @property {String} mediaType - The type of call being received.
+       * @property {String} codec - The codec used by the incoming call.
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('conference-invite', data);
     });
 
     session.on('error', function (data) {
@@ -95,6 +109,7 @@
           && 'dialing' !== event
           && 'answering' !== event
           && 'call-incoming' !== event
+          && 'conference-invite' !== event
           && 'call-connecting' !== event
           && 'call-disconnecting' !== event
           && 'call-disconnected' !== event
@@ -377,6 +392,16 @@
              */
             emitter.publish('call-connecting', data);
           });
+          call.on('canceled', function (data) {
+            /**
+             * Call canceled event.
+             * @desc Succesfully canceled the current call.
+             * @event Phone#call-canceled
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-canceled', data);
+          });
           call.on('rejected', function (data) {
             /**
              * Call rejected event.
@@ -575,6 +600,11 @@
       }
 
     }
+
+    function joinConference() {
+
+    }
+
     /**
     * @summary
     * Mute the current call.
@@ -979,6 +1009,7 @@
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
     this.answer = answer.bind(this);
+    this.joinConference = joinConference;
     this.mute = mute.bind(this);
     this.unmute = unmute.bind(this);
     this.getMediaType = getMediaType.bind(this);

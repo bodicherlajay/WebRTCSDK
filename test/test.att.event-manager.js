@@ -333,7 +333,6 @@ describe('Event Manager', function () {
         });
 
         event = {
-          type: 'calls',
           from: 'sip:1111@icmn.api.att.net',
           resourceURL: '/RTC/v1/sessions/ccccc/calls/1234',
           state: 'invitation-received',
@@ -345,17 +344,41 @@ describe('Event Manager', function () {
         codecStub.restore();
       });
 
-      it('should publish `call-incoming` with call information extracted from the event', function (done) {
+      it('should publish `call-incoming` with call information extracted from the calls event', function (done) {
+
+        event.type = 'calls';
 
         emitterEC.publish('api-event', event);
 
         setTimeout(function () {
           try {
             expect(publishSpy.calledWith('call-incoming')).to.equal(true);
+            expect(publishSpy.getCall(1).args[1].type).to.equal('call');
             expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
             expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
             expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
-            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal('abcd');
+            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal(event.sdp);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
+      });
+
+      it('should publish `call-incoming` with conference information extracted from the conferences event', function (done) {
+
+        event.type = 'conferences';
+
+        emitterEC.publish('api-event', event);
+
+        setTimeout(function () {
+          try {
+            expect(publishSpy.calledWith('call-incoming')).to.equal(true);
+            expect(publishSpy.getCall(1).args[1].type).to.equal('conference');
+            expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
+            expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
+            expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
+            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal(event.sdp);
             done();
           } catch (e) {
             done(e);

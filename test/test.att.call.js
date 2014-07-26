@@ -37,6 +37,7 @@ describe('Call', function () {
     };
 
     optionsOutgoing = {
+      breed: 'call',
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.OUTGOING,
@@ -44,6 +45,7 @@ describe('Call', function () {
     };
 
     optionsIncoming = {
+      breed: 'call',
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.INCOMING,
@@ -116,15 +118,21 @@ describe('Call', function () {
         return new ATT.rtc.Call(options);
       };
       expect(func).to.throw('No input provided');
-      expect(func.bind(null, {})).to.throw('No peer provided');
+      expect(func.bind(null, {})).to.throw('No breed provided');
       expect(func.bind(null, {
+        breed: 'call'
+      })).to.throw('No peer provided');
+      expect(func.bind(null, {
+        breed: 'call',
         peer: '1234'
       })).to.throw('No type provided');
       expect(func.bind(null, {
+        breed: 'call',
         peer: '1234',
         type: 'abc'
       })).to.throw('No mediaType provided');
       expect(func.bind(null, {
+        breed: 'call',
         peer: '1234',
         type: 'abc',
         mediaType: 'audio'
@@ -132,9 +140,8 @@ describe('Call', function () {
     });
 
     it('Should create a call object with the options passed in', function () {
-      var outgoingOptions, kall, kall2;
-
-      outgoingOptions = {
+      var outgoingOptions = {
+        breed: 'call',
         peer: '12345',
         mediaType: 'audio',
         type: ATT.CallTypes.OUTGOING,
@@ -142,23 +149,25 @@ describe('Call', function () {
         id: '1234'
       };
 
-      kall = new ATT.rtc.Call(outgoingOptions);
+      call = new ATT.rtc.Call(outgoingOptions);
 
-      expect(kall).to.be.an('object');
-      expect(kall.id).to.equal(outgoingOptions.id);
-      expect(kall.peer).to.equal(outgoingOptions.peer);
-      expect(kall.mediaType).to.equal(outgoingOptions.mediaType);
-      expect(kall.type).to.equal(outgoingOptions.type);
+      expect(call).to.be.an('object');
+      expect(call.breed).to.equal(outgoingOptions.breed);
+      expect(call.id).to.equal(outgoingOptions.id);
+      expect(call.peer).to.equal(outgoingOptions.peer);
+      expect(call.mediaType).to.equal(outgoingOptions.mediaType);
+      expect(call.type).to.equal(outgoingOptions.type);
 
       outgoingOptions.id = undefined;
 
-      kall2 = new ATT.rtc.Call(outgoingOptions);
+      call = new ATT.rtc.Call(outgoingOptions);
 
-      expect(kall2).to.be.an('object');
-      expect(kall2.id).to.equal(null);
-      expect(kall2.peer).to.equal(outgoingOptions.peer);
-      expect(kall2.mediaType).to.equal(outgoingOptions.mediaType);
-      expect(kall2.type).to.equal(outgoingOptions.type);
+      expect(call).to.be.an('object');
+      expect(call.id).to.equal(null);
+      expect(call.breed).to.equal(outgoingOptions.breed);
+      expect(call.peer).to.equal(outgoingOptions.peer);
+      expect(call.mediaType).to.equal(outgoingOptions.mediaType);
+      expect(call.type).to.equal(outgoingOptions.type);
     });
 
     it('should create an instance of event emitter', function () {
