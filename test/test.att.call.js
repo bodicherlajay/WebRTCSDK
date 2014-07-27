@@ -154,7 +154,7 @@ describe('Call', function () {
 
       kall = new ATT.rtc.Call(outgoingOptions);
 
-      expect(kall).to.be.an('object');
+      expect(kall instanceof ATT.rtc.Call).to.equal(true);
 	    expect(kall.breed()).to.equal(outgoingOptions.breed);
       expect(kall.id()).to.equal(outgoingOptions.id);
       expect(kall.peer()).to.equal(outgoingOptions.peer);
