@@ -64,6 +64,45 @@
       emitter.publish(state, createEventData.call(this));
     }
 
+    function onMediaModifications(modifications) {
+      rtcManager.setMediaModifications(modifications);
+      if (modifications.remoteSdp
+        && modifications.remoteSdp.indexOf('recvonly') !== -1) {
+        setState('held');
+        rtcManager.disableMediaStream();
+      }
+      if (modifications.remoteSdp
+        && remoteSdp
+        && remoteSdp.indexOf
+        && remoteSdp.indexOf('recvonly') !== -1
+        && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+        setState('resumed');
+        rtcManager.enableMediaStream();
+      }
+      setRemoteSdp(modifications.remoteSdp);
+    }
+
+    function onMediaModTerminations(modifications) {
+      if (modifications.remoteSdp) {
+        rtcManager.setRemoteDescription({
+          remoteSdp: modifications.remoteSdp,
+          type: 'answer'
+        });
+        if (modifications.reason === 'success'
+          && modifications.remoteSdp.indexOf('sendonly') !== -1
+          && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+          setState('held');
+          rtcManager.disableMediaStream();
+        }
+        if (modifications.reason === 'success'
+          && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+          setState('resumed');
+          rtcManager.enableMediaStream();
+        }
+        setRemoteSdp(modifications.remoteSdp);
+      }
+    }
+
     // ================
     // Public Methods
     // ================
@@ -141,44 +180,9 @@
           setState('media-established');
         });
 
-        rtcManager.on('media-modifications', function (modifications) {
-          rtcManager.setMediaModifications(modifications);
-          if (modifications.remoteSdp
-              && modifications.remoteSdp.indexOf('recvonly') !== -1) {
-            setState('held');
-            rtcManager.disableMediaStream();
-          }
-          if (modifications.remoteSdp
-              && remoteSdp
-              && remoteSdp.indexOf
-              && remoteSdp.indexOf('recvonly') !== -1
-              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-            setState('resumed');
-            rtcManager.enableMediaStream();
-          }
-          setRemoteSdp(modifications.remoteSdp);
-        });
+        rtcManager.on('media-modifications', onMediaModifications);
 
-        rtcManager.on('media-mod-terminations', function (modifications) {
-          if (modifications.remoteSdp) {
-            rtcManager.setRemoteDescription({
-              remoteSdp: modifications.remoteSdp,
-              type: 'answer'
-            });
-            if (modifications.reason === 'success'
-                && modifications.remoteSdp.indexOf('sendonly') !== -1
-                && modifications.remoteSdp.indexOf('sendrecv') === -1) {
-              setState('held');
-              rtcManager.disableMediaStream();
-            }
-            if (modifications.reason === 'success'
-                && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-              setState('resumed');
-              rtcManager.enableMediaStream();
-            }
-            setRemoteSdp(modifications.remoteSdp);
-          }
-        });
+        rtcManager.on('media-mod-terminations', onMediaModTerminations);
 
         rtcManager.on('call-connected', function (data) {
           if (data.remoteSdp) {
