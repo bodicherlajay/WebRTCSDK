@@ -306,9 +306,9 @@
             remoteSdp: options.remoteSdp,
             sessionInfo: options.sessionInfo,
             onPeerConnectionInitiated: function (callInfo) {
-              if (callInfo.xState
+              if (undefined !== callInfo.xState
                   && (callInfo.xState === 'invitation-sent'
-                  || callInfo.xState === 'accepted')) { // map connecting to IIP event types
+                      || callInfo.xState === 'accepted')) { // map connecting to IIP event types
                 callInfo.xState = 'connecting';
               }
 

@@ -509,6 +509,7 @@ describe('Phone', function () {
 
           options = {
             destination: '12345',
+            breed: 'call',
             mediaType: 'video',
             localMedia: localVideo,
             remoteMedia: remoteVideo
@@ -568,6 +569,12 @@ describe('Phone', function () {
           phone.dial(options);
 
           expect(createCallSpy.called).to.equal(true);
+          expect(createCallSpy.getCall(0).args[0].peer).to.be.a('string');
+          expect(createCallSpy.getCall(0).args[0].type).to.be.a('string');
+          expect(createCallSpy.getCall(0).args[0].breed).to.be.a('string');
+          expect(createCallSpy.getCall(0).args[0].mediaType).to.be.a('string');
+          expect(createCallSpy.getCall(0).args[0].localMedia).to.be.a('object');
+          expect(createCallSpy.getCall(0).args[0].localMedia).to.be.a('object');
 
           createCallSpy.restore();
         });
@@ -1389,7 +1396,7 @@ describe('Phone', function () {
         });
 
         it('should execute call.disconnect', function () {
-          call.id = '1234';
+          call.setId('1234');
 
           phone.hangup();
 
@@ -1462,7 +1469,7 @@ describe('Phone', function () {
 
         it('should execute call.disconnect', function () {
           var callDisconnectStub = sinon.stub(call, 'disconnect');
-          call.id = '123';
+          call.setId('123');
           session.currentCall = call;
           phone.cancel();
 
@@ -1531,6 +1538,7 @@ describe('Phone', function () {
 
           phone.on('call-disconnected', callRejectedSpy);
 
+          call.setId('123');
           session.currentCall = call;
         });
 

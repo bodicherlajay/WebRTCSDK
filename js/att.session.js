@@ -49,16 +49,16 @@
           call.setRemoteSdp(callInfo.remoteSdp);
         }
 
-        if (call.breed === 'call') {
+        if (call.breed() === 'call') {
           eventName = 'call-incoming';
         } else {
           eventName = 'conference-invite';
         }
 
         emitter.publish(eventName, {
-          from: call.peer,
-          mediaType: call.mediaType,
-          codec: call.codec,
+          from: call.peer(),
+          mediaType: call.mediaType(),
+          codec: call.codec(),
           timestamp: new Date()
         });
       }
@@ -66,8 +66,8 @@
     rtcManager.on('call-disconnected', function (callInfo) {
       emitter.publish('call-disconnected', {
         from: callInfo.from,
-        mediaType: session.currentCall.mediaType,
-        codec: session.currentCall ? session.currentCall.codec : null,
+        mediaType: session.currentCall.mediaType(),
+        codec: session.currentCall ? session.currentCall.codec() : null,
         timestamp: new Date()
       });
     });
@@ -319,7 +319,7 @@
       if (call === undefined) {
         throw new Error("Call not found");
       }
-      delete calls[call.id];
+      delete calls[call.id()];
       call = null;
 
       if (Object.keys(calls).length === 0) {

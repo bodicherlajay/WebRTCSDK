@@ -379,6 +379,7 @@
 
           var call = session.createCall({
             peer: options.destination,
+            breed: 'call',
             type: ATT.CallTypes.OUTGOING,
             mediaType: options.mediaType,
             localMedia: options.localMedia,
@@ -554,9 +555,9 @@
         }
 
         emitter.publish('answering', {
-          from: call.peer,
-          mediaType: call.mediaType,
-          codec: call.codec,
+          from: call.peer(),
+          mediaType: call.mediaType(),
+          codec: call.codec(),
           timestamp: new Date()
         });
 
@@ -728,7 +729,7 @@
     function getMediaType() {
       var call = session.currentCall;
 
-      return call ? call.mediaType : null;
+      return call ? call.mediaType() : null;
     }
 
     /**
@@ -756,7 +757,7 @@
 
         call = session.currentCall;
 
-        if (null === call || null === call.id) {
+        if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('6000');
         }
 
@@ -838,8 +839,9 @@
       try {
         var call = session.currentCall;
 
-        if (null === call || null === call.Id) {
-          throw ATT.errorDictionary.getSDKError('12000');
+        if (null === call || null === call.id()) {
+          publishError('12000')
+          return;
         }
         try {
           call.on('disconnected', function (data) {
@@ -882,7 +884,7 @@
       try {
         call = session.currentCall;
 
-        if (null === call || null === call.id) {
+        if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('7000');
         }
 
@@ -925,7 +927,7 @@
       try {
         call = session.currentCall;
 
-        if (null === call || null === call.id) {
+        if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('8000');
         }
 

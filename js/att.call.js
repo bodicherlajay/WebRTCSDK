@@ -6,7 +6,7 @@
 
   var factories = ATT.private.factories,
     logManager = ATT.logManager.getInstance(),
-    logger = logManager.addLoggerForModule('Call');
+    sdpFilter = ATT.sdpFilter.getInstance();
 
   /**
   * Call Prototype
@@ -15,59 +15,44 @@
   */
   function Call(options) {
 
-    if (undefined === options) {
-      throw new Error('No input provided');
-    }
-    if (undefined === options.breed) {
-      throw new Error('No breed provided');
-    }
-    if (undefined === options.peer) {
-      throw new Error('No peer provided');
-    }
-    if (undefined === options.type) {
-      throw new Error('No type provided');
-    }
-    if (undefined === options.mediaType) {
-      throw new Error('No mediaType provided');
-    }
-
+    // ===================
     // private properties
+    // ===================
     var that = this,
-      state = 'created',
+      id,
+      peer,
+      mediaType,
+      type,
+      breed,
+      sessionInfo,
+      localMedia,
+      remoteMedia,
+      localSdp = null,
+      remoteSdp = null,
+      state = null,
+      codec = null,
+      logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
 
+    // ================
+    // Private methods
+    // ================
     function createEventData() {
       var data = {
         timestamp: new Date(),
-        mediaType: this.mediaType
+        mediaType: mediaType
       };
 
-      if (this.codec) {
-        data.codec = this.codec;
+      if (codec) {
+        data.codec = codec;
       }
-      if (this.type === ATT.CallTypes.OUTGOING) {
-        data.to = this.peer;
-      } else if (this.type === ATT.CallTypes.INCOMING) {
-        data.from = this.peer;
+      if (type === ATT.CallTypes.OUTGOING) {
+        data.to = peer;
+      } else if (type === ATT.CallTypes.INCOMING) {
+        data.from = peer;
       }
       return data;
-    }
-
-    /**
-     *
-     * Set the CallId
-     * @param {String} callId The callId
-     * @param <opt> {Object} data Event data
-     */
-    function setId(callId) {
-      this.id  = callId;
-
-      if (this.id === null) {
-        this.setState('disconnected');
-      } else {
-        this.setState('connecting');
-      }
     }
 
     function getState() {
@@ -76,13 +61,31 @@
 
     function setState(newState) {
       state = newState;
-
       emitter.publish(state, createEventData.call(this));
     }
 
-    function setRemoteSdp(remoteSdp) {
-      this.remoteSdp = remoteSdp;
-      this.codec = ATT.sdpFilter.getInstance().getCodecfromSDP(remoteSdp);
+    // ================
+    // Public Methods
+    // ================
+    /**
+     *
+     * Set the CallId
+     * @param {String} callId The callId
+     * @param <opt> {Object} data Event data
+     */
+    function setId(callId) {
+      id  = callId;
+
+      if (id === null) {
+        setState('disconnected');
+      } else {
+        setState('connecting');
+      }
+    }
+
+    function setRemoteSdp(sdp) {
+      remoteSdp = sdp;
+      codec = sdpFilter.getCodecfromSDP(sdp);
     }
 
     function on(event, handler) {
@@ -107,10 +110,10 @@
 
 
     function onCallDisconnected(data) {
-      that.id = null;
+      id = null;
 
       if (undefined !== data && 'Call rejected' === data.reason) {
-        that.setState('rejected');
+        setState('rejected');
       } else {
         emitter.publish('disconnected', data);
       }
@@ -125,36 +128,35 @@
     */
     function connect(config) {
       try {
-        var call = this;
 
         if (undefined !== config.localMedia) {
-          call.localMedia = config.localMedia;
+          localMedia = config.localMedia;
         }
 
         if (undefined !== config.remoteMedia) {
-          call.remoteMedia = config.remoteMedia;
+          remoteMedia = config.remoteMedia;
         }
 
-        call.remoteMedia.addEventListener('playing', function () {
-          call.setState('media-established');
+        remoteMedia.addEventListener('playing', function () {
+          setState('media-established');
         });
 
         rtcManager.on('media-modifications', function (modifications) {
           rtcManager.setMediaModifications(modifications);
           if (modifications.remoteSdp
               && modifications.remoteSdp.indexOf('recvonly') !== -1) {
-            call.setState('held');
+            setState('held');
             rtcManager.disableMediaStream();
           }
           if (modifications.remoteSdp
-              && call.remoteSdp
-              && call.remoteSdp.indexOf
-              && call.remoteSdp.indexOf('recvonly') !== -1
+              && remoteSdp
+              && remoteSdp.indexOf
+              && remoteSdp.indexOf('recvonly') !== -1
               && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-            call.setState('resumed');
+            setState('resumed');
             rtcManager.enableMediaStream();
           }
-          call.setRemoteSdp(modifications.remoteSdp);
+          setRemoteSdp(modifications.remoteSdp);
         });
 
         rtcManager.on('media-mod-terminations', function (modifications) {
@@ -166,15 +168,15 @@
             if (modifications.reason === 'success'
                 && modifications.remoteSdp.indexOf('sendonly') !== -1
                 && modifications.remoteSdp.indexOf('sendrecv') === -1) {
-              call.setState('held');
+              setState('held');
               rtcManager.disableMediaStream();
             }
             if (modifications.reason === 'success'
                 && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-              call.setState('resumed');
+              setState('resumed');
               rtcManager.enableMediaStream();
             }
-            call.setRemoteSdp(modifications.remoteSdp);
+            setRemoteSdp(modifications.remoteSdp);
           }
         });
 
@@ -184,32 +186,32 @@
               remoteSdp: data.remoteSdp,
               type: 'answer'
             });
-            call.setRemoteSdp(data.remoteSdp);
+            setRemoteSdp(data.remoteSdp);
           }
 
-          call.setState('connected');
+          setState('connected');
 
           rtcManager.playStream('remote');
         });
 
         rtcManager.connectCall({
-          peer: call.peer,
-          callId: call.id,
-          type: call.type,
-          mediaType: call.mediaType,
-          localMedia: config.localMedia || call.localMedia,
-          remoteMedia: config.remoteMedia || call.remoteMedia,
-          remoteSdp: call.remoteSdp,
-          sessionInfo: call.sessionInfo,
+          localMedia: localMedia,
+          remoteMedia: remoteMedia,
+          peer: peer,
+          callId: id,
+          type: type,
+          mediaType: mediaType,
+          remoteSdp: remoteSdp,
+          sessionInfo: sessionInfo,
           onCallConnecting: function (callInfo) {
             try {
-              if (call.type === ATT.CallTypes.OUTGOING) {
-                call.setId(callInfo.callId);
+              if (type === ATT.CallTypes.OUTGOING) {
+                setId(callInfo.callId);
               }
-              if (call.type === ATT.CallTypes.INCOMING) {
-                call.setState(callInfo.xState);
+              if (type === ATT.CallTypes.INCOMING) {
+                setState(callInfo.xState);
               }
-              call.localSdp = callInfo.localSdp;
+              localSdp = callInfo.localSdp;
             } catch (err) {
               emitter.publish('error', {
                 error: err
@@ -237,14 +239,14 @@
 
     function disconnect() {
 
-      this.setState('disconnecting');
+      setState('disconnecting');
 
-      if (null === this.id) {
+      if (null === id) {
         logger.logInfo('Canceling call ...');
         rtcManager.cancelCall({
           success: function () {
             logger.logInfo('Call canceled succesfully');
-            that.setState('disconnected');
+            setState('disconnected');
             rtcManager.resetPeerConnection();
           },
           onError : function (error) {
@@ -254,9 +256,9 @@
       } else {
         logger.logInfo('Disconnecting call');
         rtcManager.disconnectCall({
-          sessionInfo: this.sessionInfo,
-          callId: this.id,
-          onError: function(error) {
+          sessionInfo: sessionInfo,
+          callId: id,
+          onError: function (error) {
             emitter.publish('error', {
               error: error
             });
@@ -266,11 +268,10 @@
     }
 
     function mute() {
-      var call = this;
 
       rtcManager.muteCall({
         onSuccess: function () {
-          call.setState('muted');
+          setState('muted');
         },
         onError : function (error) {
           emitter.publish('error', error);
@@ -279,11 +280,10 @@
     }
 
     function unmute() {
-      var call = this;
 
       rtcManager.unmuteCall({
         onSuccess: function () {
-          call.setState('unmuted');
+          setState('unmuted');
         },
         onError : function (error) {
           emitter.publish('error', error);
@@ -292,13 +292,12 @@
     }
 
     function hold() {
-      var call = this;
 
       rtcManager.holdCall({
-        onSuccess: function (localSdp) {
-          call.localSdp = localSdp;
+        onSuccess: function (sdp) {
+          localSdp = sdp;
         },
-        callId: call.id,
+        callId: id,
         onError : function (error) {
           emitter.publish('error', error);
         }
@@ -306,13 +305,12 @@
     }
 
     function resume() {
-      var call = this;
 
       rtcManager.resumeCall({
-        onSuccess: function (localSdp) {
-          call.localSdp = localSdp;
+        onSuccess: function (sdp) {
+          localSdp = sdp;
         },
-        callId: call.id,
+        callId: id,
         onError : function (error) {
           emitter.publish('error', error);
         }
@@ -320,11 +318,11 @@
     }
 
     function reject() {
-      var call = this;
+
       rtcManager.rejectCall({
-        sessionId : call.sessionInfo.sessionId,
-        callId : call.id,
-        token : call.sessionInfo.token,
+        sessionId : sessionInfo.sessionId,
+        callId : id,
+        token : sessionInfo.token,
         onSuccess : function () {
           rtcManager.off('call-disconnected', onCallDisconnected);
         },
@@ -335,41 +333,92 @@
 
     }
 
-    // Call attributes
-    this.breed = options.breed;
-    if (undefined === options.id) {
-      this.id = null;
-    } else {
-      this.id = options.id;
+    if (undefined === options
+        || 0 === Object.keys(options).length) {
+      throw new Error('No input provided');
     }
-    this.peer = options.peer;
-    this.mediaType = options.mediaType;
-    this.type = options.type;
-    this.sessionInfo = options.sessionInfo;
-    this.localSdp = null;
-    this.remoteSdp = null;
-    this.localMedia = options.localMedia;
-    this.remoteMedia = options.remoteMedia;
-    this.state = null;
-    this.codec = null;
+    if (undefined === options.breed) {
+      throw new Error('No breed provided');
+    }
+    if (undefined === options.peer) {
+      throw new Error('No peer provided');
+    }
+    if (undefined === options.type) {
+      throw new Error('No type provided');
+    }
+    if (undefined === options.mediaType) {
+      throw new Error('No mediaType provided');
+    }
 
-    // Call methods
-    this.on = on.bind(this);
-    this.connect = connect.bind(this);
-    this.disconnect = disconnect.bind(this);
-    this.getState = getState;
-    this.setState = setState;
-    this.setId = setId.bind(this);
-    this.setRemoteSdp = setRemoteSdp.bind(this);
-    this.mute = mute.bind(this);
-    this.unmute = unmute.bind(this);
-    this.hold = hold.bind(this);
-    this.resume = resume.bind(this);
-    this.reject = reject.bind(this);
+    // Call attributes
+    breed = options.breed;
 
+    if (undefined === options.id) {
+      id = null;
+    } else {
+      id = options.id;
+    }
+
+    state = 'created';
+    peer = options.peer;
+    mediaType = options.mediaType;
+    type = options.type;
+    sessionInfo = options.sessionInfo;
+    localMedia = options.localMedia;
+    remoteMedia = options.remoteMedia;
 
     rtcManager.on('call-disconnected', onCallDisconnected);
 
+    // ===================
+    // public interface
+    // ===================
+    return {
+      peer: function () {
+        return peer;
+      },
+      codec: function () {
+        return codec;
+      },
+      mediaType: function () {
+        return mediaType;
+      },
+      type: function (){
+        return type;
+      },
+      breed: function () {
+        return breed;
+      },
+      sessionInfo: function () {
+        return sessionInfo;
+      },
+      id: function () {
+        return id;
+      },
+      localSdp: function () {
+        return localSdp;
+      },
+      localMedia: function () {
+        return localMedia;
+      },
+      remoteMedia: function () {
+        return remoteMedia;
+      },
+      remoteSdp: function () {
+        return remoteSdp;
+      },
+      setRemoteSdp : setRemoteSdp,
+      getState : getState,
+      setState : setState,
+      setId : setId,
+      on : on,
+      connect : connect,
+      disconnect : disconnect,
+      mute : mute,
+      unmute : unmute,
+      hold : hold,
+      resume : resume,
+      reject : reject
+    };
   }
 
   if (undefined === ATT.rtc) {
