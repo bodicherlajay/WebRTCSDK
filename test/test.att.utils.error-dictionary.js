@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, errorDictionary, describe, it, expect, afterEach: true, beforeEach: true*/
 
-describe('ErrorDictionaryModule', function () {
+describe.only('ErrorDictionaryModule', function () {
   "use strict";
   var backupAtt;
   beforeEach(function () {
@@ -100,6 +100,7 @@ describe('ErrorDictionaryModule', function () {
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj, apiErrorObj;
         apiErrorObj = ATT.errorDictionary.getAPIError("login",400,"SVC0001");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
         errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","RTC");
         expect(errorObj.ErrorCode).to.equal(apiErrorObj.ErrorCode);
         expect(errorObj.APIError).to.equal("SVC0001:Error occurred,Variables=");
@@ -124,6 +125,7 @@ describe('ErrorDictionaryModule', function () {
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj, apiErrorObj;
         apiErrorObj = ATT.errorDictionary.getAPIError("login",401,"POL0001");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
         errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","RTC");
         expect(errorObj.ErrorCode).to.equal(apiErrorObj.ErrorCode);
         expect(errorObj.APIError).to.equal("POL0001:Error occurred,Variables=");
@@ -146,6 +148,7 @@ describe('ErrorDictionaryModule', function () {
           getResponseStatus: function() { return 401;},
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj;
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
         errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","RTC");
         expect(errorObj.ErrorCode).to.equal("RTC-UNKNOWN");
         expect(errorObj.APIError).to.equal(":Error occurred,Variables=undefined");
@@ -162,6 +165,7 @@ describe('ErrorDictionaryModule', function () {
           getResponseStatus: function() { return 500;},
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj;
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
         errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","RTC");
         expect(errorObj.ErrorCode).to.equal(500);
         expect(errorObj.APIError).to.equal(JSON.stringify(errorResponse.getJson()));
@@ -178,7 +182,8 @@ describe('ErrorDictionaryModule', function () {
           getResourceURL: function() { return "GET /RTC/v1/Sessions"},
           responseText: "dhs response"
         }, errorObj;
-        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc.dhs","login","DHS");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","DHS");
         expect(errorObj.ErrorCode).to.equal("DHS-UNKNOWN");
         expect(errorObj.APIError).to.equal(errorResponse.responseText);
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
@@ -194,7 +199,8 @@ describe('ErrorDictionaryModule', function () {
           getResourceURL: function() { return "GET /RTC/v1/Sessions"},
           responseText: "dhs response"
         }, errorObj;
-        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc.dhs","login","DHS");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse)
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","DHS");
         expect(errorObj.ErrorCode).to.equal(500);
         expect(errorObj.APIError).to.equal(JSON.stringify(errorResponse.getJson()));
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
@@ -217,7 +223,8 @@ describe('ErrorDictionaryModule', function () {
           getResponseStatus: function() { return 401;},
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj;
-        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc.dhs","login","DHS");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse)
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","DHS");
         expect(errorObj.ErrorCode).to.equal("DHS-UNKNOWN");
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
         expect(errorObj.ErrorMessage).to.have.string('login failed');

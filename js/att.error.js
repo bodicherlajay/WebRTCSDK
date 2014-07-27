@@ -8,7 +8,7 @@
 
   var module = {},
     init,
-    publish,
+    parseAPIErrorResponse,
     createAPIErrorCode,
     logMgr = ATT.logManager.getInstance(),
     logger;
@@ -18,7 +18,7 @@
   init = function () {
     logger.logDebug('Initializing error module');
 
-    module.publish = publish;
+    module.parseAPIErrorResponse = parseAPIErrorResponse;
     module.createAPIErrorCode = createAPIErrorCode;
     // add to the global namespace
     app.Error = module;
@@ -40,7 +40,7 @@
         logger.logError(error);
       } else {
         error = {
-          APIError:response.responseText,
+          APIError:response.responseText
         };
         logger.logError(response);
         logger.logError(error);
@@ -80,7 +80,7 @@
   createAPIErrorCode = function(response, jsObject, methodName, moduleId) {
     logger.logTrace('raw error', response);
 
-    var apiError, errorResponse = parseAPIErrorResponse(response);
+    var apiError, errorResponse = response.errorDetail;
     methodName = methodName || 'GeneralOperation';
     moduleId = moduleId || 'RTC';
 
