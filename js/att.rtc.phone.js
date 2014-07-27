@@ -931,7 +931,7 @@
           throw ATT.errorDictionary.getSDKError('8000');
         }
 
-        if ('hold' !== call.getState()) {
+        if ('held' !== call.getState()) {
           throw ATT.errorDictionary.getSDKError('8001');
         }
 
@@ -1043,7 +1043,7 @@
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
 
-    //Confernce Methods
+    //Conference Methods
     this.dialConference = dialConference.bind(this);
   }
 

@@ -626,7 +626,7 @@ describe('Call', function () {
         });
       });
 
-      describe('Diconnect Call [call.id !== null]', function () {
+      describe('Disconnect Call [call.id !== null]', function () {
         it('should call rtcManager.disconnectCall', function () {
           var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
           // for this test we need that call to have a valid ID, otherwise

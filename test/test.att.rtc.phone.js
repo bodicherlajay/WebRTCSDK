@@ -1712,7 +1712,7 @@ describe('Phone', function () {
           });
 
           it('should execute call.resume', function () {
-            call.setState('hold');
+            call.setState('held');
             phone.resume();
 
             expect(callResumeStub.called).to.equal(true);
@@ -1731,6 +1731,8 @@ describe('Phone', function () {
               callResumeStub = sinon.stub(call, 'resume', function () {
                 throw error;
               });
+
+              call.setState('held');
             });
 
             afterEach(function () {
@@ -1763,7 +1765,7 @@ describe('Phone', function () {
 
             it('[8002] should be published with `error` event if there is an unknown exception during the operation', function () {
 
-              call.setState('hold');
+              call.setState('held');
 
               phone.resume();
 
