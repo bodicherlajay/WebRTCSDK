@@ -815,6 +815,7 @@ describe('Session', function () {
       it('should return the newly created call object', function () {
         call = session.createCall(callOpts);
         expect(call instanceof ATT.rtc.Call).to.equal(true);
+        expect(call.breed()).to.equal('call');
       });
 
       it('should set the currentCall as the newly created call', function () {
@@ -831,9 +832,10 @@ describe('Session', function () {
       });
 
       it('Should add a call to the session', function () {
+
         session.addCall(call);
 
-        expect(session.getCall(call.id)).to.equal(call);
+        expect(session.getCall(call.id())).to.equal(call);
       });
 
     });
@@ -849,7 +851,7 @@ describe('Session', function () {
       });
 
       it('Should return a call by id', function () {
-        expect(session.getCall(call.id)).to.equal(call);
+        expect(session.getCall(call.id())).to.equal(call);
       });
 
       it('Should return undefined if the call doesn\'t exist', function () {
@@ -899,7 +901,7 @@ describe('Session', function () {
       });
 
       it('Should delete the call from the session', function () {
-        var callId = call.id;
+        var callId = call.id();
         session.deleteCall(callId);
         expect(session.getCall(callId)).to.equal(undefined);
       });
@@ -909,7 +911,7 @@ describe('Session', function () {
 
         session.on('allcallsterminated', onAllCallsTerminatedSpy);
 
-        session.deleteCall(call.id);
+        session.deleteCall(call.id());
 
         setTimeout(function () {
           try {
@@ -1092,7 +1094,7 @@ describe('Session', function () {
 
       beforeEach(function () {
         callInfo = {
-          type: 'call',
+          breed: 'call',
           id: '123',
           from: '1234',
           mediaType: 'video',
@@ -1100,7 +1102,7 @@ describe('Session', function () {
         };
 
         conferenceInfo = {
-          type: 'conference',
+          breed: 'conference',
           id: '123',
           from: '1234',
           mediaType: 'video',
@@ -1146,7 +1148,7 @@ describe('Session', function () {
         setTimeout(function () {
           try {
             expect(createCallSpyStub.called).to.equal(true);
-            expect(createCallSpyStub.getCall(0).args[0].breed).to.equal(callInfo.type);
+            expect(createCallSpyStub.getCall(0).args[0].breed).to.equal(callInfo.breed);
             expect(createCallSpyStub.getCall(0).args[0].id).to.equal(callInfo.id);
             expect(createCallSpyStub.getCall(0).args[0].peer).to.equal(callInfo.from);
             expect(createCallSpyStub.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
@@ -1233,13 +1235,11 @@ describe('Session', function () {
 
       var rtcManager,
         session,
-        call,
         callInfo,
         emitterEM,
         createEventEmitterStub,
         getRTCMgrStub,
-        callDisconnectedHandlerSpy,
-        callConstructorStub;
+        callDisconnectedHandlerSpy;
 
       beforeEach(function () {
         callInfo = {
@@ -1265,14 +1265,19 @@ describe('Session', function () {
 
         session = new ATT.rtc.Session();
 
-        session.currentCall = {
-          mediaType: 'video',
-          codec: ['test']
-        };
+        session.currentCall = new ATT.rtc.Call({
+          breed: 'call',
+          peer: '1234',
+          type: 'abc',
+          mediaType: 'audio'
+        });
 
         callDisconnectedHandlerSpy = sinon.spy();
 
         session.on('call-disconnected', callDisconnectedHandlerSpy);
+        session.on('error', function (data) {
+          console.error(JSON.stringify(data));
+        })
 
         emitterEM.publish('call-disconnected', callInfo);
       });

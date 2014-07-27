@@ -30,7 +30,7 @@
       localSdp = null,
       remoteSdp = null,
       state = null,
-      codec = null,
+      codec = [],
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
@@ -44,7 +44,7 @@
         mediaType: mediaType
       };
 
-      if (codec) {
+      if (undefined !== codec) {
         data.codec = codec;
       }
       if (type === ATT.CallTypes.OUTGOING) {
@@ -376,53 +376,52 @@
     // ===================
     // public interface
     // ===================
-    return {
-      peer: function () {
+
+    this.peer = function () {
         return peer;
-      },
-      codec: function () {
+      };
+    this.codec = function () {
         return codec;
-      },
-      mediaType: function () {
+      };
+    this.mediaType = function () {
         return mediaType;
-      },
-      type: function (){
+      };
+    this.type = function (){
         return type;
-      },
-      breed: function () {
+      };
+    this.breed = function () {
         return breed;
-      },
-      sessionInfo: function () {
+      };
+    this.sessionInfo = function () {
         return sessionInfo;
-      },
-      id: function () {
+      };
+    this.id = function () {
         return id;
-      },
-      localSdp: function () {
+      };
+    this.localSdp = function () {
         return localSdp;
-      },
-      localMedia: function () {
+      };
+    this.localMedia = function () {
         return localMedia;
-      },
-      remoteMedia: function () {
+      };
+    this.remoteMedia = function () {
         return remoteMedia;
-      },
-      remoteSdp: function () {
+      };
+    this.remoteSdp = function () {
         return remoteSdp;
-      },
-      setRemoteSdp : setRemoteSdp,
-      getState : getState,
-      setState : setState,
-      setId : setId,
-      on : on,
-      connect : connect,
-      disconnect : disconnect,
-      mute : mute,
-      unmute : unmute,
-      hold : hold,
-      resume : resume,
-      reject : reject
-    };
+      };
+    this.setRemoteSdp  = setRemoteSdp;
+    this.getState = getState;
+    this.setState = setState;
+    this.setId = setId;
+    this.on = on;
+    this.connect = connect;
+    this.disconnect = disconnect;
+    this.mute = mute;
+    this.unmute = unmute;
+    this.hold = hold;
+    this.resume = resume;
+    this.reject = reject;
   }
 
   if (undefined === ATT.rtc) {
