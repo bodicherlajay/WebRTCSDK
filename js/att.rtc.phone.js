@@ -302,7 +302,6 @@
    
    * @fires Phone#dialing
    * @fires Phone#call-connecting
-   * @fires Phone#call-canceled
    * @fires Phone#call-rejected
    * @fires Phone#call-connected
    * @fires Phone#media-established
@@ -506,7 +505,6 @@
      * @param {HTMLElement} options.remoteVideo
 
      * @fires Phone#call-connecting
-     * @fires Phone#call-canceled
      * @fires Phone#call-rejected
      * @fires Phone#call-connected
      * @fires Phone#media-established
@@ -785,11 +783,15 @@
      *
      *  **Error Code**
      *
-     *    - 11000 -Cancel failed-Call has not been initiated
+     *    - 11000 -Cancel failed - Call has not been initiated
      *    - 11001 - Internal error occurred
      *
      * @memberOf Phone
      * @instance
+     *
+     * @fires Phone#call-canceled
+     * @fires Phone#call-error
+     *
      * @example
      * var phone = ATT.rtc.Phone.getPhone();
      * phone.cancel();
@@ -802,7 +804,14 @@
           throw ATT.errorDictionary.getSDKError('11000');
         }
         try {
-
+          if (null === call.id()) {
+            emitter.publish('call-canceled', {
+              to: call.peer(),
+              mediaType: call.mediaType(),
+              timestamp: new Date()
+            });
+            session.deleteCurrentCall();
+          }
           call.disconnect();
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('11001');

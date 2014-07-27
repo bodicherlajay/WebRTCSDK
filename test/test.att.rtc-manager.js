@@ -872,6 +872,18 @@ describe('RTC Manager', function () {
       });
 
       describe('cancelCall', function () {
+        var cancelSdpOfferStub;
+
+        beforeEach(function () {
+          cancelSdpOfferStub = sinon.stub(peerConnSvc, 'cancelSdpOffer', function (success) {
+            success();
+          });
+        });
+
+        afterEach(function () {
+          cancelSdpOfferStub.restore();
+        });
+
         it('should exist', function () {
           expect(rtcManager.cancelCall).to.be.a('function');
         });
@@ -883,20 +895,48 @@ describe('RTC Manager', function () {
             test: 'test'
           })).to.throw('No `success` callback passed');
           expect(rtcManager.cancelCall.bind(rtcManager, {
+            success: function () {},
+            callId: null
+          })).to.throw('No `sessionInfo` passed');
+          expect(rtcManager.cancelCall.bind(rtcManager, {
+            success: function () {},
+            sessionInfo: {}
+          })).to.throw('No `callId` passed');
+          expect(rtcManager.cancelCall.bind(rtcManager, {
             success: function () { return; }
           })).to.not.throw('No `options.success` callback passed');
         });
 
-        it('should call peerConnSvc.cancelSdpOffer with a success callback', function () {
-          var cancelSdpOfferStub = sinon.stub(peerConnSvc, 'cancelSdpOffer'),
-            onSuccessSpy = sinon.spy();
+        it('should call peerConnSvc.cancelSdpOffer if [null === options.callId', function () {
 
-          rtcManager.cancelCall({ success: onSuccessSpy });
+          rtcManager.cancelCall({
+            sessionInfo: {},
+            callId: '12345',
+            success: function () {}
+          });
+
+          expect(cancelSdpOfferStub.called).to.equal(false);
+
+          rtcManager.cancelCall({
+            sessionInfo: {},
+            callId: null,
+            success: function () {}
+          });
+
+          expect(cancelSdpOfferStub.called).to.equal(true);
+        });
+
+        it('should call peerConnSvc.cancelSdpOffer with a success callback', function () {
+          var onSuccessSpy = sinon.spy();
+
+          rtcManager.cancelCall({
+            sessionInfo: {},
+            callId: null,
+            success: onSuccessSpy
+          });
 
           expect(cancelSdpOfferStub.called).to.equal(true);
           expect(cancelSdpOfferStub.getCall(0).args[0]).to.be.a('function');
-
-          cancelSdpOfferStub.restore();
         });
 
         describe('Success on `cancelSdpOffer`', function () {
@@ -904,22 +944,27 @@ describe('RTC Manager', function () {
             onSuccessSpy;
 
           beforeEach(function () {
-            cancelSdpOfferStub = sinon.stub(peerConnSvc, 'cancelSdpOffer', function (success) {
-              success();
-            });
             onSuccessSpy = sinon.spy();
 
             rtcManager.cancelCall({
+              sessionInfo: {},
+              callId: null,
               success: onSuccessSpy
             });
-          });
-          afterEach(function () {
-            cancelSdpOfferStub.restore();
           });
 
           it('should execute `success` callback', function () {
             expect(onSuccessSpy.called).to.equal(true);
           });
+        });
+
+        it('should call resourceManager.doOperation if [null !== options.callId', function () {
+          rtcManager.cancelCall({
+            sessionInfo: {},
+            callId: '123456789',
+            success: function () {}
+          });
+          expect(doOperationStub.calledWith('cancelCall')).to.equal(true);
         });
       });
 

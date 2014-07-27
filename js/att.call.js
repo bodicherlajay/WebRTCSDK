@@ -245,19 +245,20 @@
 
       setState('disconnecting');
 
-      if (null === id) {
+      if (null === remoteSdp) {
         logger.logInfo('Canceling call ...');
         rtcManager.cancelCall({
+          sessionInfo: sessionInfo,
+          callId: id,
           success: function () {
-            logger.logInfo('Call canceled succesfully');
-            setState('disconnected');
+            logger.logInfo('Call canceled successfully');
             rtcManager.resetPeerConnection();
           },
           onError : function (error) {
             emitter.publish('error', error);
           }
         });
-      } else {
+      } else if (null !== id && null !== remoteSdp) {
         logger.logInfo('Disconnecting call');
         rtcManager.disconnectCall({
           sessionInfo: sessionInfo,

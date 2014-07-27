@@ -1463,14 +1463,43 @@ describe('Phone', function () {
       });
 
       describe('[US248581] cancel', function () {
+
+        beforeEach(function () {
+          session.currentCall = call;
+        });
+
         it('should exist', function () {
           expect(phone.cancel).to.be.a('function');
+        });
+
+        it('should publish `call-canceled` immediately if [null == call.id]', function () {
+          call.setId(null);
+          var publishStub = sinon.stub(emitter, 'publish', function () {});
+
+          phone.cancel();
+
+          expect(publishStub.calledWith('call-canceled')).to.equal(true);
+          expect(publishStub.getCall(0).args[1].to).to.equal(call.peer());
+          expect(publishStub.getCall(0).args[1].mediaType).to.equal(call.mediaType());
+          expect(typeof publishStub.getCall(0).args[1].timestamp).to.equal('object');
+
+          publishStub.restore();
+        });
+
+        it('should follow up by calling session.deleteCurrentCall after publishing `call-canceled`', function () {
+          var deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+          call.setId(null);
+
+          phone.cancel();
+
+          expect(deleteCurrentCallStub.called).to.equal(true);
+
+          deleteCurrentCallStub.restore();
         });
 
         it('should execute call.disconnect', function () {
           var callDisconnectStub = sinon.stub(call, 'disconnect');
           call.setId('123');
-          session.currentCall = call;
           phone.cancel();
 
           expect(callDisconnectStub.called).to.equal(true);

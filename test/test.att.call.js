@@ -583,14 +583,15 @@ describe('Call', function () {
         expect(outgoingCall.getState()).to.equal('disconnecting');
       });
 
-      describe('Cancel Call [call.id === null]', function () {
-        it('should call `rtcManager.cancelCall` if the call Id is null', function () {
+      describe('Cancel Call [call.remoteSdp === null]', function () {
+        it('should call `rtcManager.cancelCall` if the remoteSdp is null', function () {
           var cancelCallStub = sinon.stub(rtcMgr, 'cancelCall');
 
           outgoingCall.disconnect();
 
           expect(cancelCallStub.called).to.equal(true);
           expect(cancelCallStub.getCall(0).args[0].success).to.be.a('function');
+          expect(cancelCallStub.getCall(0).args[0].sessionInfo).to.be.an('object');
 
           cancelCallStub.restore();
         });
@@ -610,12 +611,6 @@ describe('Call', function () {
             cancelCallStub.restore();
           });
 
-          it('should call `setState` with `disconnected`', function () {
-            outgoingCall.disconnect();
-
-            expect(outgoingCall.getState()).to.equal('disconnected');
-          });
-
           it('should call `rtcManager.resetPeerConnection`', function () {
             var resetStub = sinon.spy(rtcMgr, 'resetPeerConnection');
 
@@ -626,12 +621,13 @@ describe('Call', function () {
         });
       });
 
-      describe('Disconnect Call [call.id !== null]', function () {
+      describe('Disconnect Call [call.remoteSdp !== null]', function () {
         it('should call rtcManager.disconnectCall', function () {
           var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
-          // for this test we need that call to have a valid ID, otherwise
+          // for this test we need that call to have a valid remoteSdp, otherwise
           // it will call `rtcManager.cancellCall`
-          outgoingCall.setId('123');
+          outgoingCall.setRemoteSdp('abcdefg');
+          outgoingCall.setId('1234');
           outgoingCall.disconnect();
 
           expect(disconnectCallStub.called).to.equal(true);
