@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT:true, errorDictionary, describe, it, expect, afterEach: true, beforeEach: true*/
 
-describe.only('ErrorDictionaryModule', function () {
+describe('ErrorDictionaryModule', function () {
   "use strict";
   var backupAtt;
   beforeEach(function () {
