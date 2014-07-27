@@ -306,9 +306,9 @@
             remoteSdp: options.remoteSdp,
             sessionInfo: options.sessionInfo,
             onPeerConnectionInitiated: function (callInfo) {
-              if (callInfo.xState
+              if (undefined !== callInfo.xState
                   && (callInfo.xState === 'invitation-sent'
-                  || callInfo.xState === 'accepted')) { // map connecting to IIP event types
+                      || callInfo.xState === 'accepted')) { // map connecting to IIP event types
                 callInfo.xState = 'connecting';
               }
 
@@ -382,9 +382,41 @@
         throw new Error('No `success` callback passed');
       }
 
-      peerConnSvc.cancelSdpOffer(function () {
-        options.success();
-      });
+      if (undefined === options.sessionInfo) {
+        throw new Error('No `sessionInfo` passed');
+      }
+
+      if (undefined === options.callId) {
+        throw new Error('No `callId` passed');
+      }
+
+      // Its not ringing on the other end yet
+      if (null === options.callId) {
+        peerConnSvc.cancelSdpOffer(function () {
+          options.success();
+        });
+
+      // Its probably ringing on the other end
+      } else if (options.callId['length'] > 0) {
+        resourceManager.doOperation('cancelCall', {
+          params: {
+            url: [
+              options.sessionInfo.sessionId,
+              options.callId
+            ],
+            headers: {
+              'Authorization': 'Bearer ' + options.sessionInfo.token
+            }
+          },
+          success: function () {
+            logger.logInfo('CancelCall Request success');
+          },
+          error: function (error) {
+            logger.logError(error);
+            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'cancel', 'RTC'));
+          }
+        });
+      }
     }
 
     function playStream() {
@@ -541,11 +573,11 @@
           }
         },
         success: function () {
-          logger.logInfo('EndCall Request success');
+          logger.logInfo('RejectCall Request success');
         },
         error: function (error) {
           logger.logError(error);
-          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","reject","RTC"));
+          options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'reject', 'RTC'));
         }
       });
     }

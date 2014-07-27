@@ -37,7 +37,7 @@
     rtcManager.on('call-incoming', function (callInfo) {
       var eventName,
         call = session.createCall({
-        breed: callInfo.type,
+        breed: callInfo.breed,
         id: callInfo.id,
         peer: callInfo.from,
         type: ATT.CallTypes.INCOMING,
@@ -49,16 +49,16 @@
           call.setRemoteSdp(callInfo.remoteSdp);
         }
 
-        if (call.breed === 'call') {
+        if (call.breed() === 'call') {
           eventName = 'call-incoming';
         } else {
           eventName = 'conference-invite';
         }
 
         emitter.publish(eventName, {
-          from: call.peer,
-          mediaType: call.mediaType,
-          codec: call.codec,
+          from: call.peer(),
+          mediaType: call.mediaType(),
+          codec: call.codec(),
           timestamp: new Date()
         });
       }
@@ -66,8 +66,8 @@
     rtcManager.on('call-disconnected', function (callInfo) {
       emitter.publish('call-disconnected', {
         from: callInfo.from,
-        mediaType: session.currentCall.mediaType,
-        codec: session.currentCall ? session.currentCall.codec : null,
+        mediaType: session.currentCall.mediaType(),
+        codec: session.currentCall.codec(),
         timestamp: new Date()
       });
     });
@@ -300,8 +300,8 @@
       }
     };
 
-    this.addCall = function (callObj) {
-      calls[callObj.id] = callObj;
+    this.addCall = function (call) {
+      calls[call.id()] = call;
     };
 
     this.getCall = function (callId) {
@@ -315,14 +315,14 @@
     };
 
     this.deleteCall =   function deleteCall(callId) {
-      var call = this.getCall(callId);
-      if (call === undefined) {
+
+      if (calls[callId] === undefined) {
         throw new Error("Call not found");
       }
-      delete calls[call.id];
-      call = null;
 
-      if (Object.keys(calls).length === 0) {
+      delete calls[callId];
+
+      if (0 === Object.keys(calls).length) {
         emitter.publish('allcallsterminated');
       }
     };

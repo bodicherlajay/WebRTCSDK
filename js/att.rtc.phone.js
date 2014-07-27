@@ -302,7 +302,6 @@
    
    * @fires Phone#dialing
    * @fires Phone#call-connecting
-   * @fires Phone#call-canceled
    * @fires Phone#call-rejected
    * @fires Phone#call-connected
    * @fires Phone#media-established
@@ -379,6 +378,7 @@
 
           var call = session.createCall({
             peer: options.destination,
+            breed: 'call',
             type: ATT.CallTypes.OUTGOING,
             mediaType: options.mediaType,
             localMedia: options.localMedia,
@@ -386,7 +386,6 @@
           });
 
           call.on('connecting', function (data) {
-
             /**
              * Call connecting event.
              * @desc Indicates succesful creation of the call.
@@ -396,16 +395,6 @@
              */
             emitter.publish('call-connecting', data);
           });
-          call.on('canceled', function (data) {
-            /**
-             * Call canceled event.
-             * @desc Succesfully canceled the current call.
-             * @event Phone#call-canceled
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('call-canceled', data);
-          });
           call.on('rejected', function (data) {
             /**
              * Call rejected event.
@@ -414,8 +403,8 @@
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
-            session.deleteCurrentCall();
             emitter.publish('call-rejected', data);
+            session.deleteCurrentCall();
           });
           call.on('connected', function (data) {
             /**
@@ -516,7 +505,6 @@
      * @param {HTMLElement} options.remoteVideo
 
      * @fires Phone#call-connecting
-     * @fires Phone#call-canceled
      * @fires Phone#call-rejected
      * @fires Phone#call-connected
      * @fires Phone#media-established
@@ -565,9 +553,9 @@
         }
 
         emitter.publish('answering', {
-          from: call.peer,
-          mediaType: call.mediaType,
-          codec: call.codec,
+          from: call.peer(),
+          mediaType: call.mediaType(),
+          codec: call.codec(),
           timestamp: new Date()
         });
 
@@ -739,7 +727,7 @@
     function getMediaType() {
       var call = session.currentCall;
 
-      return call ? call.mediaType : null;
+      return call ? call.mediaType() : null;
     }
 
     /**
@@ -767,7 +755,7 @@
 
         call = session.currentCall;
 
-        if (null === call || null === call.id) {
+        if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('6000');
         }
 
@@ -795,11 +783,15 @@
      *
      *  **Error Code**
      *
-     *    - 11000 -Cancel failed-Call has not been initiated
+     *    - 11000 -Cancel failed - Call has not been initiated
      *    - 11001 - Internal error occurred
      *
      * @memberOf Phone
      * @instance
+     *
+     * @fires Phone#call-canceled
+     * @fires Phone#call-error
+     *
      * @example
      * var phone = ATT.rtc.Phone.getPhone();
      * phone.cancel();
@@ -812,7 +804,14 @@
           throw ATT.errorDictionary.getSDKError('11000');
         }
         try {
-
+          if (null === call.id()) {
+            emitter.publish('call-canceled', {
+              to: call.peer(),
+              mediaType: call.mediaType(),
+              timestamp: new Date()
+            });
+            session.deleteCurrentCall();
+          }
           call.disconnect();
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('11001');
@@ -849,8 +848,9 @@
       try {
         var call = session.currentCall;
 
-        if (null === call || null === call.Id) {
-          throw ATT.errorDictionary.getSDKError('12000');
+        if (null === call || null === call.id()) {
+          publishError('12000')
+          return;
         }
         try {
           call.on('disconnected', function (data) {
@@ -893,7 +893,7 @@
       try {
         call = session.currentCall;
 
-        if (null === call || null === call.id) {
+        if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('7000');
         }
 
@@ -936,11 +936,11 @@
       try {
         call = session.currentCall;
 
-        if (null === call || null === call.id) {
+        if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('8000');
         }
 
-        if ('hold' !== call.getState()) {
+        if ('held' !== call.getState()) {
           throw ATT.errorDictionary.getSDKError('8001');
         }
 
@@ -1052,7 +1052,7 @@
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
 
-    //Confernce Methods
+    //Conference Methods
     this.dialConference = dialConference.bind(this);
   }
 

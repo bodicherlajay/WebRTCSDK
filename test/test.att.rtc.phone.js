@@ -509,6 +509,7 @@ describe('Phone', function () {
 
           options = {
             destination: '12345',
+            breed: 'call',
             mediaType: 'video',
             localMedia: localVideo,
             remoteMedia: remoteVideo
@@ -568,6 +569,12 @@ describe('Phone', function () {
           phone.dial(options);
 
           expect(createCallSpy.called).to.equal(true);
+          expect(createCallSpy.getCall(0).args[0].peer).to.be.a('string');
+          expect(createCallSpy.getCall(0).args[0].type).to.be.a('string');
+          expect(createCallSpy.getCall(0).args[0].breed).to.be.a('string');
+          expect(createCallSpy.getCall(0).args[0].mediaType).to.be.a('string');
+          expect(createCallSpy.getCall(0).args[0].localMedia).to.be.a('object');
+          expect(createCallSpy.getCall(0).args[0].localMedia).to.be.a('object');
 
           createCallSpy.restore();
         });
@@ -1389,7 +1396,7 @@ describe('Phone', function () {
         });
 
         it('should execute call.disconnect', function () {
-          call.id = '1234';
+          call.setId('1234');
 
           phone.hangup();
 
@@ -1456,14 +1463,43 @@ describe('Phone', function () {
       });
 
       describe('[US248581] cancel', function () {
+
+        beforeEach(function () {
+          session.currentCall = call;
+        });
+
         it('should exist', function () {
           expect(phone.cancel).to.be.a('function');
         });
 
+        it('should publish `call-canceled` immediately if [null == call.id]', function () {
+          call.setId(null);
+          var publishStub = sinon.stub(emitter, 'publish', function () {});
+
+          phone.cancel();
+
+          expect(publishStub.calledWith('call-canceled')).to.equal(true);
+          expect(publishStub.getCall(0).args[1].to).to.equal(call.peer());
+          expect(publishStub.getCall(0).args[1].mediaType).to.equal(call.mediaType());
+          expect(typeof publishStub.getCall(0).args[1].timestamp).to.equal('object');
+
+          publishStub.restore();
+        });
+
+        it('should follow up by calling session.deleteCurrentCall after publishing `call-canceled`', function () {
+          var deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+          call.setId(null);
+
+          phone.cancel();
+
+          expect(deleteCurrentCallStub.called).to.equal(true);
+
+          deleteCurrentCallStub.restore();
+        });
+
         it('should execute call.disconnect', function () {
           var callDisconnectStub = sinon.stub(call, 'disconnect');
-          call.id = '123';
-          session.currentCall = call;
+          call.setId('123');
           phone.cancel();
 
           expect(callDisconnectStub.called).to.equal(true);
@@ -1531,6 +1567,7 @@ describe('Phone', function () {
 
           phone.on('call-disconnected', callRejectedSpy);
 
+          call.setId('123');
           session.currentCall = call;
         });
 
@@ -1704,7 +1741,7 @@ describe('Phone', function () {
           });
 
           it('should execute call.resume', function () {
-            call.setState('hold');
+            call.setState('held');
             phone.resume();
 
             expect(callResumeStub.called).to.equal(true);
@@ -1723,6 +1760,8 @@ describe('Phone', function () {
               callResumeStub = sinon.stub(call, 'resume', function () {
                 throw error;
               });
+
+              call.setState('held');
             });
 
             afterEach(function () {
@@ -1755,7 +1794,7 @@ describe('Phone', function () {
 
             it('[8002] should be published with `error` event if there is an unknown exception during the operation', function () {
 
-              call.setState('hold');
+              call.setState('held');
 
               phone.resume();
 
