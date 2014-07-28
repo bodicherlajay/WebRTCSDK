@@ -1008,6 +1008,7 @@
     }
 
     function dialConference(options) {
+      var conference;
 
       if (undefined === options
           || 0 === Object.keys(options).length) {
@@ -1030,7 +1031,9 @@
       }
 
       options.breed = 'conference';
-      session.createCall(options);
+      conference = session.createCall(options);
+
+      conference.connect();
     }
 
     this.on = on.bind(this);
