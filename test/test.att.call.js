@@ -32,6 +32,7 @@ describe('Call', function () {
     localVideo = document.createElement('video');
 
     connectOptions = {
+      breed: 'call',
       localMedia: localVideo,
       remoteMedia: remoteVideo
     };
@@ -317,8 +318,9 @@ describe('Call', function () {
         addEventListenerStub.restore();
       });
 
-      it('should execute RTCManager.connectCall for outgoing calls', function () {
+      it('should execute RTCManager.connectCall with breed for outgoing calls', function () {
         outgoingCall.connect(connectOptions);
+
         expect(connectCallStub.called).to.equal(true);
       });
 
@@ -326,6 +328,7 @@ describe('Call', function () {
         incomingCall.connect(connectOptions);
 
         expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
+        expect(connectCallStub.getCall(0).args[0].breed).to.not.be.an('undefined');
       });
 
       describe('Callbacks on connectCall', function () {

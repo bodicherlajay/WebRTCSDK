@@ -290,7 +290,6 @@
         throw new Error('Callback `onError` not defined.');
       }
 
-
       userMediaSvc.getUserMedia({
         mediaType: options.mediaType,
         localMedia: options.localMedia,
@@ -298,6 +297,7 @@
         onUserMedia: function (userMedia) {
 
           peerConnSvc.initiatePeerConnection({
+            breed: options.breed,
             peer: options.peer,
             callId: options.callId,
             type: options.type,

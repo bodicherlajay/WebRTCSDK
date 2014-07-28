@@ -1158,6 +1158,7 @@ describe('Phone', function () {
 
         var options,
           conferenceJoiningSpy,
+          getUserMediaStub,
           onSpy,
           connectStub;
 
@@ -1165,7 +1166,8 @@ describe('Phone', function () {
 
           options = {
             localMedia: localVideo,
-            remoteMedia: remoteVideo
+            remoteMedia: remoteVideo,
+            mediaType: 'video'
           };
 
           createEventEmitterStub.restore();
@@ -1191,6 +1193,8 @@ describe('Phone', function () {
 
           onSpy = sinon.spy(conference, 'on');
 
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function () {});
+
           conferenceJoiningSpy = sinon.spy();
 
           connectStub = sinon.stub(conference, 'connect', function() {});
@@ -1201,6 +1205,7 @@ describe('Phone', function () {
         });
 
         afterEach(function () {
+          getUserMediaStub.restore();
           onSpy.restore();
           connectStub.restore();
         });
@@ -1211,7 +1216,7 @@ describe('Phone', function () {
 
         it('should publish `conference-joining` immediately with relevant data', function (done) {
 
-          phone.joinConference();
+          phone.joinConference(options);
 
           setTimeout(function () {
             try {
@@ -1228,17 +1233,73 @@ describe('Phone', function () {
           }, 100);
         });
 
-
         it('should register for `connecting` event from call', function () {
-          phone.joinConference();
+          phone.joinConference(options);
 
           expect(onSpy.calledWith('connecting')).to.equal(true);
         });
 
-        it('should execute Call.connect with optional params localMedia & remoteMedia', function () {
+        it('should execute userMedia.getUserMedia with correct input params', function () {
           phone.joinConference(options);
 
-          expect(connectStub.calledWith(options)).to.equal(true);
+          expect(getUserMediaStub.called).to.equal(true);
+          expect(getUserMediaStub.getCall(0).args[0]).to.be.an('object');
+          expect(getUserMediaStub.getCall(0).args[0].localMedia).to.be.an('object');
+          expect(getUserMediaStub.getCall(0).args[0].remoteMedia).to.be.an('object');
+          expect(getUserMediaStub.getCall(0).args[0].mediaType).to.be.an('string');
+          expect(getUserMediaStub.getCall(0).args[0].onUserMedia).to.be.a('function');
+          expect(getUserMediaStub.getCall(0).args[0].onMediaEstablished).to.be.a('function');
+          expect(getUserMediaStub.getCall(0).args[0].onUserMediaError).to.be.a('function');
+        });
+
+        describe('getUserMedia Callbacks', function () {
+
+          describe('onUserMedia', function () {
+
+            var onUserMediaSpy,
+              media;
+
+            beforeEach(function() {
+              media = {
+                localStream: {
+                  stream: 'stream'
+                },
+                mediaConstraints: {
+                  audio: 'true',
+                  video: 'true'
+                }
+              };
+
+              getUserMediaStub.restore();
+
+              getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+                onUserMediaSpy = sinon.spy(options, 'onUserMedia');
+                setTimeout(function () {
+                  options.onUserMedia(media);
+                }, 0);
+              });
+
+            });
+
+            afterEach(function () {
+              onUserMediaSpy.restore();
+            });
+
+            it('should execute Call.connect with local media stream', function (done) {
+              phone.joinConference(options);
+
+              setTimeout(function () {
+                try {
+                  expect(connectStub.calledAfter(onUserMediaSpy)).to.equal(true);
+                  expect(connectStub.calledWith(media)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100)
+            });
+
+          });
         });
 
         describe('joinConference events', function () {

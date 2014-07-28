@@ -199,6 +199,7 @@
         });
 
         rtcManager.connectCall({
+          breed: breed,
           localMedia: localMedia,
           remoteMedia: remoteMedia,
           peer: peer,

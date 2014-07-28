@@ -761,6 +761,7 @@ describe('RTC Manager', function () {
           onErrorSpy = sinon.spy();
 
           options = {
+            breed: 'call',
             peer: '123',
             mediaType: 'xyz',
             onCallConnecting: onCallConnectingSpy,
@@ -849,8 +850,9 @@ describe('RTC Manager', function () {
 
           describe('onUserMedia', function () {
 
-            it('should invoke initiatePeerConnection', function () {
+            it('should invoke peerConnSvc.initiatePeerConnection with call breed', function () {
               expect(initPeerConnectionStub.called).to.equal(true);
+              expect(initPeerConnectionStub.getCall(0).args[0].breed).to.not.be.an('undefined');
             });
 
             describe('initiatePeerConnection success', function () {
