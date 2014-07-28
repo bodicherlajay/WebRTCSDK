@@ -345,7 +345,7 @@
     if (undefined === options.breed) {
       throw new Error('No breed provided');
     }
-    if (undefined === options.peer) {
+    if (options.breed === "call" && undefined === options.peer) {
       throw new Error('No peer provided');
     }
     if (undefined === options.type) {

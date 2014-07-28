@@ -109,24 +109,26 @@
     */
     function on(event, handler) {
       if ('session-ready' !== event
-          && 'session-disconnected' !== event
-          && 'dialing' !== event
-          && 'answering' !== event
-          && 'call-incoming' !== event
-          && 'conference-invite' !== event
-          && 'call-connecting' !== event
-          && 'call-disconnecting' !== event
-          && 'call-disconnected' !== event
-          && 'call-canceled' !== event
-          && 'call-rejected' !== event
-          && 'call-connected' !== event
-          && 'call-muted' !== event
-          && 'call-unmuted' !== event
-          && 'call-held' !== event
-          && 'call-resumed' !== event
-          && 'address-updated' !== event
-          && 'media-established' !== event
-          && 'error' !== event) {
+        && 'session-disconnected' !== event
+        && 'dialing' !== event
+        && 'answering' !== event
+        && 'conference-joining' !== event
+        && 'call-incoming' !== event
+        && 'conference-invite' !== event
+        && 'call-connecting' !== event
+        && 'conference-connecting' !== event
+        && 'call-disconnecting' !== event
+        && 'call-disconnected' !== event
+        && 'call-canceled' !== event
+        && 'call-rejected' !== event
+        && 'call-connected' !== event
+        && 'call-muted' !== event
+        && 'call-unmuted' !== event
+        && 'call-held' !== event
+        && 'call-resumed' !== event
+        && 'address-updated' !== event
+        && 'media-established' !== event
+        && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -593,8 +595,21 @@
 
     }
 
-    function joinConference() {
+    function joinConference(options) {
+      var conference = session.currentCall;
 
+      emitter.publish('conference-joining', {
+        from: conference.peer(),
+        mediaType: conference.mediaType(),
+        codec: conference.codec(),
+        timestamp: new Date()
+      });
+
+      conference.on('connecting', function(data) {
+        emitter.publish('conference-connecting', data);
+      });
+
+      conference.connect(options);
     }
 
     /**
@@ -1008,6 +1023,7 @@
     }
 
     function dialConference(options) {
+      var conference;
 
       if (undefined === options
           || 0 === Object.keys(options).length) {
@@ -1030,7 +1046,9 @@
       }
 
       options.breed = 'conference';
-      session.createCall(options);
+      conference = session.createCall(options);
+
+      conference.connect();
     }
 
     function addParticipant(options) {

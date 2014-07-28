@@ -13,6 +13,7 @@ describe('Phone', function () {
 
   beforeEach(function () {
     restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
+
     localVideo = document.createElement('video');
     remoteVideo = document.createElement('video');
 
@@ -121,9 +122,11 @@ describe('Phone', function () {
       var phone,
         session,
         call,
+        conference,
         emitter,
         emitterSession,
         emitterCall,
+        emitterConference,
         createEventEmitterStub,
         callConstructorStub,
         sessionConstructorStub,
@@ -134,7 +137,9 @@ describe('Phone', function () {
 
       beforeEach(function () {
 
-        eventData = { abc: 'abc' };
+        eventData = {
+          abc: 'abc'
+        };
 
         error = {
           ErrorMessage: 'Test Error'
@@ -1222,8 +1227,120 @@ describe('Phone', function () {
 
       describe('[US272608] joinConference', function () {
 
+        var options,
+          conferenceJoiningSpy,
+          onSpy,
+          connectStub;
+
+        beforeEach(function () {
+
+          options = {
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
+          };
+
+          createEventEmitterStub.restore();
+
+          emitterConference = ATT.private.factories.createEventEmitter();
+
+          createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+            return emitterConference;
+          });
+
+          callConstructorStub.restore();
+
+          conference = new ATT.rtc.Call({
+            breed: 'conference',
+            peer: '1234567',
+            type: 'abc',
+            mediaType: 'video'
+          });
+
+          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+            return conference;
+          });
+
+          onSpy = sinon.spy(conference, 'on');
+
+          conferenceJoiningSpy = sinon.spy();
+
+          connectStub = sinon.stub(conference, 'connect', function() {});
+
+          phone.on('conference-joining', conferenceJoiningSpy);
+
+          session.currentCall = conference;
+        });
+
+        afterEach(function () {
+          onSpy.restore();
+          connectStub.restore();
+        });
+
         it('should exists', function () {
           expect(phone.joinConference).to.be.a('function');
+        });
+
+        it('should publish `conference-joining` immediately with relevant data', function (done) {
+
+          phone.joinConference();
+
+          setTimeout(function () {
+            try {
+              expect(conferenceJoiningSpy.called).to.equal(true);
+              expect(conferenceJoiningSpy.getCall(0).args[0]).to.be.an('object');
+              expect(conferenceJoiningSpy.getCall(0).args[0].from).to.be.a('string');
+              expect(conferenceJoiningSpy.getCall(0).args[0].mediaType).to.be.a('string');
+              expect(conferenceJoiningSpy.getCall(0).args[0].codec).to.be.an('array');
+              expect(typeof conferenceJoiningSpy.getCall(0).args[0].timestamp).to.equal('object');
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+
+
+        it('should register for `connecting` event from call', function () {
+          phone.joinConference();
+
+          expect(onSpy.calledWith('connecting')).to.equal(true);
+        });
+
+        it('should execute Call.connect with optional params localMedia & remoteMedia', function () {
+          phone.joinConference(options);
+
+          expect(connectStub.calledWith(options)).to.equal(true);
+        });
+
+        describe('joinConference events', function () {
+
+          var onConfConnectingHandlerSpy;
+
+          beforeEach(function () {
+            onConfConnectingHandlerSpy = sinon.spy();
+
+            phone.on('conference-connecting', onConfConnectingHandlerSpy);
+
+            phone.joinConference(options);
+          });
+
+          describe('connecting', function () {
+
+            it('should publish `conference-connecting` with event data on getting a connecting event from call', function (done) {
+              emitterConference.publish('connecting', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(onConfConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 100);
+            });
+
+          });
+
         });
       });
 
@@ -2023,7 +2140,7 @@ describe('Phone', function () {
           createEmitterStub,
           sessionConstructorStub,
           onCallIncomingHandlerSpy,
-		  onCallDisconnectedHandlerSpy,
+		      onCallDisconnectedHandlerSpy,
           onConferenceInviteHandlerSpy,
           onErrorHandlerSpy;
 
@@ -2043,7 +2160,7 @@ describe('Phone', function () {
           });
 
           onCallIncomingHandlerSpy = sinon.spy();
-		  onCallDisconnectedHandlerSpy = sinon.spy();
+		      onCallDisconnectedHandlerSpy = sinon.spy();
           onConferenceInviteHandlerSpy = sinon.spy();
           onErrorHandlerSpy = sinon.spy();
 
