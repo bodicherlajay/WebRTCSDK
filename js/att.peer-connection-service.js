@@ -370,11 +370,11 @@
           }
           // Need to figure out why Chrome throws this event though it works
           //todo get the sdk error
-          onPeerConnectionError('Set Remote Description Fail: ' + err);
+          //onPeerConnectionError('Set Remote Description Fail: ' + err);
         });
       } catch (err) {
-        console.log(err);
         // Need to figure out why Chrome throws this event though it works
+        //todo get the sdk error
         //onPeerConnectionError('Set Remote Description Fail: ' + err);
       }
     },
