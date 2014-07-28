@@ -17,7 +17,6 @@ describe('Phone [Conference]', function () {
       Phone = ATT.private.Phone;
       Call = ATT.rtc.Call;
       Session = ATT.rtc.Session;
-      phone = ATT.rtc.Phone.getPhone();
     });
 
     afterEach(function () {
@@ -25,11 +24,38 @@ describe('Phone [Conference]', function () {
     });
 
     describe('dialConference', function () {
-      var onErrorSpy;
+      var onErrorSpy,
+        session,
+        sessionStub,
+        conference,
+        createCallStub;
 
       beforeEach(function () {
         onErrorSpy = sinon.spy();
+
+        session = new Session();
+        sessionStub = sinon.stub(ATT.rtc, 'Session', function () {
+          return session;
+        });
+
+        phone = ATT.rtc.Phone.getPhone();
         phone.on('error', onErrorSpy);
+
+        conference = new Call({
+          breed: 'conference',
+          mediaType: 'audio',
+          type: ATT.CallTypes.OUTGOING,
+          sessionInfo : {sessionId : '12345', token : '123'}
+        });
+
+        createCallStub = sinon.stub(session, 'createCall', function () {
+          return conference;
+        });
+      });
+
+      afterEach(function () {
+        createCallStub.restore();
+        sessionStub.restore();
       });
 
       it('should exist', function () {
@@ -98,19 +124,10 @@ describe('Phone [Conference]', function () {
       });
 
       it('should execute `session.createCall`', function () {
-        var createCallStub,
-          session,
-          sessionStub,
-          phone2;
-        session = new Session();
+        var phone2;
 
-        sessionStub = sinon.stub(ATT.rtc, 'Session', function () {
-          return session;
-        });
         phone2 = new Phone();
-        sessionStub.restore();
 
-        createCallStub = sinon.stub(session, 'createCall');
         phone2.dialConference({
           localMedia : {},
           remoteMedia : {},
@@ -122,7 +139,31 @@ describe('Phone [Conference]', function () {
         expect(createCallStub.getCall(0).args[0].remoteMedia).to.be.an('object');
         expect(createCallStub.getCall(0).args[0].mediaType).to.be.an('string');
         expect(createCallStub.getCall(0).args[0].breed).to.be.an('string');
-        createCallStub.restore();
+
+      });
+
+      it('should execute `conference.connect`', function () {
+
+        var connectStub,
+          phone3;
+
+        phone3 = new Phone();
+        phone3.on('error', function (error) {
+          console.log(error);
+        });
+
+        connectStub = sinon.stub(conference, 'connect');
+
+        phone3.dialConference({
+          localMedia : {},
+          remoteMedia : {},
+          mediaType: 'video'
+        });
+
+        expect(connectStub.called).to.equal(true);
+
+        connectStub.restore();
+
       });
 
     });
