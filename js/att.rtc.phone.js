@@ -1062,13 +1062,33 @@
       conference.connect();
     }
 
+    function addParticipant(options) {
+
+      if (null === session.getId()) {
+        publishError('19000');
+        return;
+      }
+
+      var call = session.currentCall;
+
+      if (null !== call && 'call' === call.breed()) {
+        publishError('19001');
+        return;
+      }
+
+      if (undefined === options || undefined === options.participant) {
+        publishError('19002');
+      }
+
+    }
+
+    // Call methods
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
     this.answer = answer.bind(this);
-    this.joinConference = joinConference;
     this.mute = mute.bind(this);
     this.unmute = unmute.bind(this);
     this.getMediaType = getMediaType.bind(this);
@@ -1081,8 +1101,10 @@
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
 
-    //Conference Methods
+    // Conference methods
     this.dialConference = dialConference.bind(this);
+    this.joinConference = joinConference.bind(this);
+    this.addParticipant = addParticipant.bind(this);
   }
 
 

@@ -847,6 +847,77 @@ describe('Phone', function () {
         });
       });
 
+      describe('[US225737] addParticipant', function () {
+
+        var publishStub;
+          //addParticipantStub;
+
+        beforeEach(function () {
+          publishStub = sinon.stub(emitter, 'publish');
+          //addParticipantStub = sinon.stub(call, 'addParticipant');
+        });
+
+        afterEach(function () {
+          publishStub.restore();
+          //addParticipantStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.addParticipant).to.be.a('function');
+        });
+
+        xit('should execute call.addParticipant', function () {
+          //expect(addParticipantStub.called).to.equal(true);
+        });
+
+        describe('Error Handling', function(){
+          it('[19000] should be thrown if the user is not logged in', function() {
+            session.setId(null);
+            phone.addParticipant();
+
+            expect(ATT.errorDictionary.getSDKError('19000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('19000')
+            })).to.equal(true);
+          });
+          it('[19001] should be thrown if the call breed is not `conference`', function() {
+
+            session.setId('12344');
+
+            session.currentCall = {
+              breed: function () {
+                return 'call'
+              }
+            };
+
+            phone.addParticipant();
+
+            expect(ATT.errorDictionary.getSDKError('19001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('19001')
+            })).to.equal(true);
+          });
+
+          it('[19002] should be thrown if parameter `participant` is not passed in', function () {
+
+            session.setId('12344');
+
+            session.currentCall = {
+              breed: function () {
+                return 'conference'
+              }
+            };
+
+            phone.addParticipant();
+
+            expect(ATT.errorDictionary.getSDKError('19002')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('19002')
+            })).to.equal(true);
+          });
+        });
+      });
+
       describe('[US198535] answer', function () {
 
         var options,
@@ -1154,7 +1225,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('[272608] joinConference', function () {
+      describe('[US272608] joinConference', function () {
 
         var options,
           conferenceJoiningSpy,
