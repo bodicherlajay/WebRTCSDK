@@ -16,9 +16,11 @@ describe('Event Channel', function () {
     httpConfig,
     factories,
     eventChannel,
-    xhr;
+    xhr,
+    restClientStub;
 
   beforeEach(function () {
+    restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
     factories = ATT.private.factories;
     xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
@@ -62,6 +64,7 @@ describe('Event Channel', function () {
 
   afterEach(function () {
     xhr.restore();
+    restClientStub.restore();
   });
 
 

@@ -6,16 +6,22 @@ describe('Phone [Conference]', function () {
   'use strict';
   var Call,
     Session,
-    Phone;
+    Phone,
+    restClientStub;
 
   describe('Conference Methods', function () {
     var phone;
 
     beforeEach(function () {
+      restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
       Phone = ATT.private.Phone;
       Call = ATT.rtc.Call;
       Session = ATT.rtc.Session;
       phone = ATT.rtc.Phone.getPhone();
+    });
+
+    afterEach(function () {
+      restClientStub.restore();
     });
 
     describe('dialConference', function () {

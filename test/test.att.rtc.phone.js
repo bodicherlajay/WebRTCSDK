@@ -8,10 +8,11 @@ describe('Phone', function () {
   var getRTCManagerStub,
     factories,
     localVideo,
-    remoteVideo;
+    remoteVideo,
+    restClientStub;
 
   beforeEach(function () {
-
+    restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
     localVideo = document.createElement('video');
     remoteVideo = document.createElement('video');
 
@@ -29,6 +30,7 @@ describe('Phone', function () {
 
   afterEach(function () {
     getRTCManagerStub.restore();
+    restClientStub.restore();
   });
 
   describe('Singleton', function () {
@@ -1171,7 +1173,7 @@ describe('Phone', function () {
 
           callUnmuteStub = sinon.stub(call, 'unmute', function () {
           });
- 
+
           callMutedHandlerSpy = sinon.spy();
           callUnmutedHandlerSpy = sinon.spy();
 
@@ -2007,7 +2009,7 @@ describe('Phone', function () {
             }, 300);
           });
         });
-		
+
         describe('call-disconnected', function () {
           var eventData;
 
