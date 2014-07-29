@@ -98,6 +98,7 @@ describe('Call [Conference]', function () {
         expect(addParticipantStub.getCall(0).args[0].sessionInfo).to.be.an('object');
         expect(addParticipantStub.getCall(0).args[0].participant).to.equal('12345');
         expect(addParticipantStub.getCall(0).args[0].confId).to.equal(conference.id());
+        expect(addParticipantStub.getCall(0).args[0].onParticipantPending).to.be.a('function');
         expect(addParticipantStub.getCall(0).args[0].onError).to.be.a('function');
       });
 

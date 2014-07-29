@@ -36,7 +36,7 @@
        */
       emitter.publish('call-incoming', data);
     });
-	session.on('call-disconnected', function (data) {
+	  session.on('call-disconnected', function (data) {
       /**
        * Call disconnected event.
        * @desc Indicates a call has been disconnected
@@ -588,6 +588,7 @@
           publishError(5002, data);
         });
 
+
         call.connect(options);
 
       } catch (err) {
@@ -1109,6 +1110,19 @@
         }
 
         try {
+
+          conference.on('participant-pending', function (data) {
+            /**
+             * Participant pending event.
+             * @desc
+             *
+             * @event Phone#participant-pending
+             * @type {object}
+             * @property {Date} timestamp - Event fire time
+             * @property {String} participant - participantId
+             */
+            //emitter.publish('participant-pending', data);
+          });
           conference.addParticipant(participant);
         } catch (err) {
           throw ATT.errorDictionary.getSDKError(19003);

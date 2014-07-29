@@ -346,6 +346,11 @@
         throw new Error('No `confId` passed');
       }
 
+      if (undefined === options.onParticipantPending
+        || typeof options.onParticipantPending !== 'function') {
+        throw new Error('No `onParticipantPending` callback passed');
+      }
+
       resourceManager.doOperation('addParticipant', {
         params: {
           url: [
@@ -357,8 +362,9 @@
             'Authorization': 'Bearer ' + options.sessionInfo.token
           }
         },
-        success: function () {
+        success: function (response) {
           logger.logInfo('addParticipant Request success');
+          options.onParticipantPending(response);
         },
         error: function (error) {
           logger.logError(error);
