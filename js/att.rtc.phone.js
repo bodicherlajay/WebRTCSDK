@@ -17,6 +17,7 @@
     var emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
+      userMediaSvc = ATT.UserMediaService,
       logger = logManager.addLoggerForModule('Phone');
 
     logger.logInfo('Creating new instance of Phone');
@@ -609,7 +610,18 @@
         emitter.publish('conference-connecting', data);
       });
 
-      conference.connect(options);
+      userMediaSvc.getUserMedia({
+        localMedia: options.localMedia,
+        remoteMedia: options.remoteMedia,
+        mediaType: options.mediaType,
+        onUserMedia: function (media) {
+          conference.addStream(media.localStream);
+          conference.connect(media);
+        },
+        onMediaEstablished: function () {},
+        onUserMediaError: function () {}
+      });
+
     }
 
     /**
