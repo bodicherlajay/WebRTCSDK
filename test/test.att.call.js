@@ -110,7 +110,10 @@ describe('Call', function () {
       return rtcMgr;
     });
 
-    peerConnection = factories.createPeerConnection();
+    peerConnection = factories.createPeerConnection({
+      onPCReady: function () {},
+      onError: function () {}
+    });
 
     createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
       return peerConnection;
@@ -216,6 +219,8 @@ describe('Call', function () {
       call1 = new ATT.rtc.Call(optionsOutgoing);
 
       expect(createPeerConnectionStub.called).to.equal(true);
+      expect(createPeerConnectionStub.getCall(0).args[0].onPCReady).to.be.a('function');
+      expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
     });
 
     it('should register for `call-disconnected` event on `RTCManager`', function () {

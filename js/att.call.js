@@ -34,7 +34,10 @@
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager(),
-      peerConnection = factories.createPeerConnection();
+      peerConnection = factories.createPeerConnection({
+        onPCReady: function () { },
+        onError: function () { }
+      });
 
     // ================
     // Private methods

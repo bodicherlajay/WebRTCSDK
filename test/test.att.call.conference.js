@@ -3,13 +3,20 @@
 
 describe('Call [Conference]', function () {
   "use strict";
+
+  var Call,
+    createPeerConnectionStub;
+
+  beforeEach(function () {
+    Call = ATT.rtc.Call;
+    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
+  });
+
+  afterEach(function () {
+    createPeerConnectionStub.restore();
+  });
+
   describe('Constructor', function () {
-
-    var Call;
-
-    beforeEach(function () {
-      Call = ATT.rtc.Call;
-    });
 
     it('should create conference Call object with valid parameters ', function () {
       var options,
@@ -21,6 +28,7 @@ describe('Call [Conference]', function () {
         type: ATT.CallTypes.OUTGOING,
         sessionInfo : {sessionId : '12345', token : '123'}
       };
+
       conference = new Call(options);
 
       expect(conference instanceof Call).to.equal(true);
@@ -30,8 +38,7 @@ describe('Call [Conference]', function () {
 
   describe('Methods', function () {
 
-    var Call,
-      options,
+    var options,
       conference,
       addParticipantStub,
       rtcMgr,
@@ -40,8 +47,7 @@ describe('Call [Conference]', function () {
       resourceManager,
       apiConfig,
       factories,
-      call,
-      outgoingOptions;
+      call;
 
     beforeEach(function () {
 

@@ -9,6 +9,7 @@ describe('Phone', function () {
     factories,
     localVideo,
     remoteVideo,
+    createPeerConnectionStub,
     restClientStub;
 
   beforeEach(function () {
@@ -27,11 +28,13 @@ describe('Phone', function () {
         stopUserMedia: function () { return; }
       };
     });
+    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
   });
 
   afterEach(function () {
     getRTCManagerStub.restore();
     restClientStub.restore();
+    createPeerConnectionStub.restore();
   });
 
   describe('Singleton', function () {

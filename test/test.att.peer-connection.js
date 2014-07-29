@@ -99,7 +99,7 @@ describe('PeerConnection', function () {
 
       it('should call `onError` if there\'s an error while parsing the SDP');
 
-      it.only('should call `onError` if cannot set the localDescription', function () {
+      it('should call `onError` if cannot set the localDescription', function () {
         var setLocalDescriptionStub;
 
         setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function () {

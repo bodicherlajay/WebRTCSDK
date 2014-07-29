@@ -11,6 +11,7 @@ describe('Session', function () {
     resourceManager,
     doOperationStub,
     createResourceManagerStub,
+    createPeerConnectionStub,
     restClientStub;
 
   beforeEach(function () {
@@ -43,12 +44,15 @@ describe('Session', function () {
       peerConnSvc: ATT.PeerConnectionService
     };
 
+    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
+
   });
 
   afterEach(function () {
     createResourceManagerStub.restore();
     doOperationStub.restore();
     restClientStub.restore();
+    createPeerConnectionStub.restore();
   });
 
   it('Should have a public constructor under ATT.rtc', function () {

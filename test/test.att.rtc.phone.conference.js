@@ -7,6 +7,7 @@ describe('Phone [Conference]', function () {
   var Call,
     Session,
     Phone,
+    createPeerConnectionStub,
     restClientStub;
 
   describe('Conference Methods', function () {
@@ -17,10 +18,12 @@ describe('Phone [Conference]', function () {
       Phone = ATT.private.Phone;
       Call = ATT.rtc.Call;
       Session = ATT.rtc.Session;
+      createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
     });
 
     afterEach(function () {
       restClientStub.restore();
+      createPeerConnectionStub.restore();
     });
 
     describe('dialConference', function () {
