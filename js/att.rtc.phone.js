@@ -1034,7 +1034,7 @@
       }
     }
 
-    function dialConference(options) {
+    function startConference(options) {
       var conference;
 
       if (undefined === options
@@ -1063,7 +1063,27 @@
       conference.connect();
     }
 
+    /**
+     * @summary
+     * Add participant
+     * @desc
+     * **Error Codes**
+     *   - 19000 - User is not logged in
+     *   - 19001 - Conference not initiated
+     *   - 19002 - Participant parameter missing
+     *   - 19003 - Internal error occurred
+     * @memberOf Phone
+     * @instance
+
+     * @fires Phone#
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.addParticipant('4250000001');
+     */
     function addParticipant(participant) {
+      var conference;
+
       try {
 
         if (null === session.getId()) {
@@ -1071,7 +1091,7 @@
           return;
         }
 
-        var conference = session.currentCall;
+        conference = session.currentCall;
 
         if (null === conference) {
           publishError(19001);
@@ -1124,7 +1144,7 @@
     // ===================
     // Conference interface
     // ===================
-    this.dialConference = dialConference.bind(this);
+    this.startConference = startConference.bind(this);
     this.joinConference = joinConference.bind(this);
     this.addParticipant = addParticipant.bind(this);
   }
