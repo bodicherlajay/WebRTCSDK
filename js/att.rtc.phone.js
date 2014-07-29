@@ -1065,6 +1065,7 @@
 
     function addParticipant(participant) {
       try {
+
         if (null === session.getId()) {
           publishError(19000);
           return;
@@ -1072,19 +1073,25 @@
 
         var conference = session.currentCall;
 
-        if (null !== conference && 'call' === conference.breed()) {
-          publishError('19001');
+        if (null === conference) {
+          publishError(19001);
+          return;
+        }
+
+        if ('conference' !== conference.breed()) {
+          publishError(19001);
           return;
         }
 
         if (undefined === participant) {
-          publishError('19002');
+          publishError(19002);
+          return;
         }
 
         try {
           conference.addParticipant(participant);
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('19003');
+          throw ATT.errorDictionary.getSDKError(19003);
         }
       } catch (err) {
         emitter.publish('error', {

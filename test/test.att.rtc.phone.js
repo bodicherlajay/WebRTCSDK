@@ -864,7 +864,8 @@ describe('Phone', function () {
             breed: 'conference',
             peer: '1234567',
             type: 'abc',
-            mediaType: 'video'
+            mediaType: 'video',
+            id: '1234'
           });
 
           addParticipantStub = sinon.stub(conference, 'addParticipant');
@@ -904,7 +905,7 @@ describe('Phone', function () {
             })).to.equal(true);
           });
 
-          it('[19001] should be thrown if the call breed is not `conference`', function() {
+          it('[19001] should be thrown if conference has not been started', function() {
 
             session.setId('12344');
 
