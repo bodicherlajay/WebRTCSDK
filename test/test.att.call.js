@@ -20,6 +20,7 @@ describe('Call', function () {
     createEventEmitterStub,
     createEventManagerStub,
     getRTCManagerStub,
+    rtcpcStub,
     createPeerConnectionStub,
     remoteSdp,
     resourceManager,
@@ -30,6 +31,7 @@ describe('Call', function () {
     connectOptsConf;
 
   before(function () {
+
     apiConfig = ATT.private.config.api;
     factories = ATT.private.factories;
 
@@ -123,10 +125,8 @@ describe('Call', function () {
       return rtcMgr;
     });
 
-    peerConnection = factories.createPeerConnection({
-      onPCReady: function () {},
-      onError: function () {}
-    });
+    rtcpcStub = sinon.stub(window, 'RTCPeerConnection');
+    peerConnection = factories.createPeerConnection();
 
     createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
       return peerConnection;
@@ -134,6 +134,7 @@ describe('Call', function () {
   });
 
   afterEach(function () {
+    rtcpcStub.restore();
     createResourceManagerStub.restore();
     doOperationStub.restore();
     createEventEmitterStub.restore();
@@ -232,8 +233,6 @@ describe('Call', function () {
       call1 = new ATT.rtc.Call(optionsOutgoing);
 
       expect(createPeerConnectionStub.called).to.equal(true);
-      expect(createPeerConnectionStub.getCall(0).args[0].onPCReady).to.be.a('function');
-      expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
     });
 
     it('should register for `call-disconnected` event on `RTCManager`', function () {
