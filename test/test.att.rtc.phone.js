@@ -854,7 +854,8 @@ describe('Phone', function () {
 
         var publishStub,
           addParticipantStub,
-          conference;
+          conference,
+          onSpy;
 
         beforeEach(function () {
 
@@ -868,6 +869,8 @@ describe('Phone', function () {
             id: '1234'
           });
 
+          onSpy = sinon.spy(conference, 'on');
+
           addParticipantStub = sinon.stub(conference, 'addParticipant');
           publishStub = sinon.stub(emitter, 'publish');
 
@@ -878,10 +881,18 @@ describe('Phone', function () {
         afterEach(function () {
           publishStub.restore();
           addParticipantStub.restore();
+          onSpy.restore();
         });
 
         it('should exist', function () {
           expect(phone.addParticipant).to.be.a('function');
+        });
+
+        it('should register for `participant-pending` event on the conference object', function () {
+          session.setId('123456');
+          phone.addParticipant('1234');
+          expect(onSpy.calledOnce).to.equal(true);
+          expect(onSpy.calledWith('participant-pending')).to.equal(true);
         });
 
         it('should execute call.addParticipant', function () {

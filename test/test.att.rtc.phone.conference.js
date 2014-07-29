@@ -26,7 +26,7 @@ describe('Phone [Conference]', function () {
       createPeerConnectionStub.restore();
     });
 
-    describe('dialConference', function () {
+    describe('startConference', function () {
       var onErrorSpy,
         session,
         sessionStub,
@@ -62,11 +62,11 @@ describe('Phone [Conference]', function () {
       });
 
       it('should exist', function () {
-        expect(phone.dialConference).to.be.a('function');
+        expect(phone.startConference).to.be.a('function');
       });
 
       it('[18000] should publish error when the parameters are missing ', function (done) {
-        phone.dialConference();
+        phone.startConference();
 
         setTimeout(function () {
           expect(onErrorSpy.called).to.equal(true);
@@ -77,7 +77,7 @@ describe('Phone [Conference]', function () {
 
       it('[18000] should publish error when the parameters are invalid ', function (done) {
 
-        phone.dialConference({});
+        phone.startConference({});
 
         setTimeout(function () {
           expect(onErrorSpy.called).to.equal(true);
@@ -88,7 +88,7 @@ describe('Phone [Conference]', function () {
 
       it('[18001] should publish error when no `localMedia` is passed ', function (done) {
 
-        phone.dialConference({
+        phone.startConference({
           abc: {}
         });
 
@@ -101,7 +101,7 @@ describe('Phone [Conference]', function () {
 
       it('[18002] should publish error when no `remoteMedia` is Invalid ', function (done) {
 
-        phone.dialConference({
+        phone.startConference({
           localMedia: {}
         });
 
@@ -114,7 +114,7 @@ describe('Phone [Conference]', function () {
 
       it('[18003] should publish error when `Media Type` is invalid  ', function (done) {
 
-        phone.dialConference({
+        phone.startConference({
           localMedia : {},
           remoteMedia : {}
         });
@@ -131,7 +131,7 @@ describe('Phone [Conference]', function () {
 
         phone2 = new Phone();
 
-        phone2.dialConference({
+        phone2.startConference({
           localMedia : {},
           remoteMedia : {},
           mediaType : 'video'
@@ -157,7 +157,7 @@ describe('Phone [Conference]', function () {
 
         connectStub = sinon.stub(conference, 'connect');
 
-        phone3.dialConference({
+        phone3.startConference({
           localMedia : {},
           remoteMedia : {},
           mediaType: 'video'

@@ -36,7 +36,7 @@
        */
       emitter.publish('call-incoming', data);
     });
-	session.on('call-disconnected', function (data) {
+	  session.on('call-disconnected', function (data) {
       /**
        * Call disconnected event.
        * @desc Indicates a call has been disconnected
@@ -588,6 +588,7 @@
           publishError(5002, data);
         });
 
+
         call.connect(options);
 
       } catch (err) {
@@ -1034,7 +1035,7 @@
       }
     }
 
-    function dialConference(options) {
+    function startConference(options) {
       var conference;
 
       if (undefined === options
@@ -1063,7 +1064,27 @@
       conference.connect();
     }
 
+    /**
+     * @summary
+     * Add participant
+     * @desc
+     * **Error Codes**
+     *   - 19000 - User is not logged in
+     *   - 19001 - Conference not initiated
+     *   - 19002 - Participant parameter missing
+     *   - 19003 - Internal error occurred
+     * @memberOf Phone
+     * @instance
+
+     * @fires Phone#
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.addParticipant('4250000001');
+     */
     function addParticipant(participant) {
+      var conference;
+
       try {
 
         if (null === session.getId()) {
@@ -1071,7 +1092,7 @@
           return;
         }
 
-        var conference = session.currentCall;
+        conference = session.currentCall;
 
         if (null === conference) {
           publishError(19001);
@@ -1089,6 +1110,19 @@
         }
 
         try {
+
+          conference.on('participant-pending', function (data) {
+            /**
+             * Participant pending event.
+             * @desc
+             *
+             * @event Phone#participant-pending
+             * @type {object}
+             * @property {Date} timestamp - Event fire time
+             * @property {String} participant - participantId
+             */
+            //emitter.publish('participant-pending', data);
+          });
           conference.addParticipant(participant);
         } catch (err) {
           throw ATT.errorDictionary.getSDKError(19003);
@@ -1124,7 +1158,7 @@
     // ===================
     // Conference interface
     // ===================
-    this.dialConference = dialConference.bind(this);
+    this.startConference = startConference.bind(this);
     this.joinConference = joinConference.bind(this);
     this.addParticipant = addParticipant.bind(this);
   }

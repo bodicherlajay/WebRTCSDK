@@ -147,6 +147,7 @@
 
       if ('connecting' !== event &&
           'rejected' !== event &&
+          'participant-pending' !== event &&
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
@@ -266,6 +267,7 @@
         sessionInfo: sessionInfo,
         participant: participant,
         confId: id,
+        onParticipantPending : function () {},
         onError: function (error) {
           emitter.publish('error', {
             error: error

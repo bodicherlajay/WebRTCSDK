@@ -882,9 +882,40 @@ describe('RTC Manager', function () {
           rtcManager.addParticipant({
             sessionInfo: {},
             confId: '123',
+            onParticipantPending: function () {},
             participant: '12345'
           });
           expect(doOperationStub.called).to.equal(true);
+        });
+
+        describe('Success on doOperation', function () {
+          var onParticipantPendingSpy,
+            response;
+
+          it('should call `options.onParticipantPending`', function () {
+            onParticipantPendingSpy = sinon.spy();
+            response = {
+              getResponseHeader: function (foo) {
+                return 'bar';
+              }
+            };
+
+            doOperationStub.restore();
+
+            doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function(operationName, options) {
+              options.success(response);
+            });
+
+            rtcManager.addParticipant({
+              sessionInfo: {},
+              confId: '123',
+              onParticipantPending: onParticipantPendingSpy,
+              participant: '12345'
+            });
+
+            expect(onParticipantPendingSpy.called).to.equal(true);
+            expect(onParticipantPendingSpy.calledWith(response)).to.equal(true);
+          });
         });
 
         describe('Error Handling', function () {
@@ -900,8 +931,14 @@ describe('RTC Manager', function () {
             })).to.throw('No `confId` passed');
             expect(rtcManager.addParticipant.bind(rtcManager, {
               sessionInfo: {},
+              participant: '12345',
+              confId: '1234'
+            })).to.throw('No `onParticipantPending` callback passed');
+            expect(rtcManager.addParticipant.bind(rtcManager, {
+              sessionInfo: {},
               confId: '123',
-              participant: '12345'
+              participant: '12345',
+              onParticipantPending: function () {}
             })).to.not.throw(Error);
           });
         });
