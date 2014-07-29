@@ -3,48 +3,54 @@
 (function () {
   'use strict';
 
-  function createPeerConnection(options) {
+  function createPeerConnection() {
 
-    var pc;
+    var pc,
+      sdpFilter;
 
     function addStream() {
 
     }
 
-    function setRemoteDescription() {
-
+    function setRemoteDescription(sdp) {
+      pc.setRemoteDescription(sdp);
     }
 
     function setLocalDescription(sdp) {
+      pc.setLocalDescription(sdp);
 
     }
 
-    if (undefined === options) {
-      throw new Error('Invalid options.');
+    function createAnswer() {
+
     }
-    if ('function' !== typeof options.onPCReady) {
-      throw new Error('Invalid `onPCReady` callback.');
-    }
-    if ('function' !== typeof options.onError) {
-      throw new Error('Invalid `onError` callback.');
-    }
+
+//    sdpFilter = ATT.sdpFilter.getInstance();
 
     try {
       pc = new RTCPeerConnection();
-      pc.onicecandidate = function () {
-
-        options.onError(new Error('Could not set local description.'));
-      }
-
-      options.onPCReady();
     } catch (error) {
-      options.onError(new Error('Failed to create PeerConnection.'));
+      throw new Error('Failed to create PeerConnection.');
     }
+
+    pc.onicecandidate = function () {
+//      try {
+//        sdpFilter.processChromeSDPOffer(pc.localDescription);
+//      } catch (err) {
+////        options.onError(new Error('Could not process Chrome offer SDP.'));
+//      }
+//
+//      options.onICETricklingComplete();
+//      options.onError(new Error('Could not set local description.'));
+    };
 
     return {
       addStream: addStream,
       setLocalDescription: setLocalDescription,
-      setRemoteDescription: setRemoteDescription
+      setRemoteDescription: setRemoteDescription,
+      createAnswer: createAnswer,
+      onICETricklingComplete: null,
+      onError : null
     };
   }
 

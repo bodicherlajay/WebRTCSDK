@@ -4,148 +4,200 @@
 describe('PeerConnection', function () {
   'use strict';
 
-  var factories, onPCReadySpy, options, onErrorSpy;
+  var factories,
+    onICETricklingCompleteSpy,
+    onErrorSpy,
+    sdpFilter,
+    rtcPC,
+    rtcpcStub;
 
   beforeEach(function () {
-    onPCReadySpy = sinon.spy();
+    rtcPC = {
+      setLocalDescription: function () { return; },
+      onicecandidate: null,
+      localDescription : '12X3',
+      setRemoteDescription : function () { return; }
+    };
+
+    sdpFilter = ATT.sdpFilter.getInstance();
+    onICETricklingCompleteSpy = sinon.spy();
     onErrorSpy = sinon.spy();
     factories = ATT.private.factories;
-    options = {
-      onPCReady: onPCReadySpy,
-      onError : onErrorSpy
-    };
+
   });
+
 
   it('should export ATT.private.factories.createPeerConnection', function () {
     expect(factories.createPeerConnection).to.be.a('function');
   });
 
   describe('Constructor', function () {
-    it('should throw an error if parameters are invalid', function () {
-      expect(factories.createPeerConnection.bind(factories, undefined)).to.throw('Invalid options.');
-      expect(factories.createPeerConnection.bind(factories, {})).to.throw('Invalid `onPCReady` callback.');
-      expect(factories.createPeerConnection.bind(factories, {
-        onPCReady: function () {
-          return;
-        }
-      })).to.throw('Invalid `onError` callback.');
+
+    it('should throw an error if it fails to create RTCPeerConnection ', function () {
+      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+        throw new Error('Failed to create PeerConnection.');
+      });
+
+      expect(factories.createPeerConnection).to.throw('Failed to create PeerConnection.');
+
+      rtcpcStub.restore();
     });
 
-    it('should create a PeerConnection instance', function () {
-      expect(factories.createPeerConnection(options)).to.be.a('object');
+    it('should create a private RTCPeerConnection instance', function () {
+      var peerConnection;
+
+      rtcpcStub = sinon.stub(window, 'RTCPeerConnection');
+      peerConnection = factories.createPeerConnection();
+
+      expect(peerConnection).to.be.a('object');
+      expect(peerConnection.onICETricklingComplete).to.equal(null);
+      expect(peerConnection.onError).to.equal(null);
+
+      rtcpcStub.restore();
     });
 
-    it('it should add the localStream');
-    it('it should setup the `onaddstream` callback');
-
-    describe('ICE Trickling setup', function () {
-
-      var rtcpcStub,
-        peerConnection;
-
-      describe('onPCReady', function () {
-        beforeEach(function () {
-          rtcpcStub = sinon.stub(window, 'RTCPeerConnection');
-          peerConnection = factories.createPeerConnection(options);
-        });
-
-        afterEach(function () {
-          rtcpcStub.restore();
-        });
-
-        it('should call `onPCReady` callback', function () {
-          expect(onPCReadySpy.called).to.equal(true);
-        });
+    it('should set `pc.onicecandidate`', function () {
+      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+        return rtcPC;
       });
-      describe('onError ', function () {
 
-        beforeEach(function () {
-          rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-            throw new Error('Failed to create PeerConnection.');
-          });
-          peerConnection = factories.createPeerConnection(options);
-        });
+      expect(rtcPC.onicecandidate).to.equal(null);
 
-        afterEach(function () {
-          rtcpcStub.restore();
-        });
+      factories.createPeerConnection();
 
-        it('should call the `onError` Callback if it fails to create Peer connection ', function () {
-          expect(onErrorSpy.called).to.equal(true);
-        });
+      expect(rtcPC.onicecandidate).to.be.a('function');
+      rtcpcStub.restore();
+    });
 
+    it('should add a localstrem to peer connection');
+
+    it('should set the pc.onaddstream');
+  });
+
+  describe('Methods', function () {
+    var peerConnection;
+
+    beforeEach(function () {
+      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+        return rtcPC;
+      });
+      peerConnection = factories.createPeerConnection();
+    });
+
+    afterEach(function () {
+      rtcpcStub.restore();
+    });
+
+    describe('addStream', function () {
+
+      it('should exist', function () {
+        expect(peerConnection.addStream).to.be.a('function');
+      });
+
+    });
+
+    describe('setLocalDescription', function () {
+
+      it('exist', function () {
+        expect(peerConnection.setLocalDescription).to.be.a('function');
+      });
+
+      it('should set the private RTCPeerConnection\'s local description', function () {
+        var sdp = '123',
+          rtcPCLocalDescriptionSpy;
+
+        rtcPCLocalDescriptionSpy = sinon.spy(rtcPC, 'setLocalDescription');
+        peerConnection.setLocalDescription(sdp);
+
+        expect(rtcPCLocalDescriptionSpy.calledWith(sdp)).to.equal(true);
+
+        rtcPCLocalDescriptionSpy.restore();
       });
     });
 
-    describe('`onicecandidate` event', function () {
-      var rtcPC,
-        rtcpcStub,
-        peerConnection;
-
-      beforeEach(function () {
-        rtcPC = {
-          setLocalDescription: function () { return; },
-          onicecandidate: function () { return; }
-        };
-
-        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-          return rtcPC;
-        });
+    describe('setRemoteDescription', function () {
+      it('exist', function () {
+        expect(peerConnection.setRemoteDescription).to.be.a('function');
       });
 
-      afterEach(function () {
-        rtcpcStub.restore();
+      it('should set the remote description for thr private peerconnection', function () {
+        var setRemoteDescriptionSpy, sdp = '123';
+        setRemoteDescriptionSpy = sinon.spy(rtcPC, 'setRemoteDescription');
+        peerConnection.setRemoteDescription(sdp);
+
+        expect(setRemoteDescriptionSpy.calledWith(sdp)).to.equal(true);
+
+        setRemoteDescriptionSpy.restore();
       });
+    });
 
-      it('should call `onError` if there\'s an error while parsing the SDP');
-
-      it('should call `onError` if cannot set the localDescription', function () {
-        var setLocalDescriptionStub;
-
-        setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function () {
-          throw new Error('Could not set local description.');
-        });
-
-        peerConnection = factories.createPeerConnection(options);
-        // start trickling
-        rtcPC.onicecandidate();
-
-        expect(onErrorSpy.called).to.equal(true);
-        expect(onErrorSpy.calledWith(new Error('Could not set local description.'))).to.equal(true);
-
-        setLocalDescriptionStub.restore();
+    describe('createAnswer', function () {
+      it('should exist', function () {
+        expect(peerConnection.createAnswer).to.be.a('function');
       });
     });
 
   });
 
-  describe('Methods', function () {
-    var peerConnection;
+  xdescribe('`onicecandidate` event', function () {
+    var rtcpcStub,
+      peerConnection,
+      onicecandidateSpy,
+      processChromeSDPOfferStub;
+
     beforeEach(function () {
-      peerConnection = factories.createPeerConnection(options);
+
+      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+        return rtcPC;
+      });
+
+      peerConnection = factories.createPeerConnection();
+      // start trickling
+      onicecandidateSpy = sinon.spy(rtcPC, 'onicecandidate');
+
     });
-    describe('setLocalDescription', function () {
-      it('exist', function () {
-        expect(peerConnection.setLocalDescription).to.be.a('function');
-      });
 
-      describe('callbacks', function () {
-        describe('onPCReady', function () {
-
-        });
-
-        describe('onRemoteStreamAdded', function () {
-
-        });
-        describe('onError', function () {
-
-        });
-      });
+    afterEach(function () {
+      rtcpcStub.restore();
+      onicecandidateSpy.restore();
     });
-    describe('setRemoteDescription', function () {
-      it('exist', function () {
-        expect(peerConnection.setRemoteDescription).to.be.a('function');
+
+
+    it('should call `onError` if there\'s an error while parsing the SDP', function () {
+
+      processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer', function () {
+        // throw new Error('');
       });
+      rtcPC.onicecandidate();
+      expect(onErrorSpy.calledWith(new Error('Could not process Chrome offer SDP.'))).to.equal(true);
+
+      processChromeSDPOfferStub.restore();
+    });
+
+    it('should call `onError` if cannot set the localDescription', function () {
+      rtcPC.onicecandidate();
+      expect(onErrorSpy.called).to.equal(true);
+      expect(onErrorSpy.calledWith(new Error('Could not set local description.'))).to.equal(true);
+
+    });
+
+    it('it should call `processChromeSdpOffer` with the local `sdp`', function () {
+      processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer');
+      rtcPC.onicecandidate();
+      expect(processChromeSDPOfferStub.calledWith(rtcPC.localDescription)).to.equal(true);
+
+      processChromeSDPOfferStub.restore();
+    });
+
+    it('should call `onICETricklingComplete` callback', function () {
+      rtcPC.onicecandidate();
+      expect(onICETricklingCompleteSpy.calledAfter(onicecandidateSpy)).to.equal(true);
+    });
+
+    xit('should call `setLocalDescription` with the current sdp', function () {
+      var setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription');
+      expect(setLocalDescriptionStub.called).to.equal(true);
+      setLocalDescriptionStub.restore();
     });
   });
 });
