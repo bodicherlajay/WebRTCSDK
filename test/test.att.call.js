@@ -42,7 +42,8 @@ describe('Call', function () {
     };
 
     connectOptsConf = {
-      localSdp: 'abc'
+      localSdp: 'abc',
+      mediaType: 'video'
     };
 
     optionsOutgoing = {
@@ -572,7 +573,10 @@ describe('Call', function () {
 
           incomingConf.connect(connectOptsConf);
 
-          expect(setRemoteDescriptionStub.calledWith(optionsIncomingConf.remoteSdp)).to.equal(true);
+          expect(setRemoteDescriptionStub.called).to.equal(true);
+          expect(setRemoteDescriptionStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncomingConf.remoteSdp);
+          expect(setRemoteDescriptionStub.getCall(0).args[0].onSuccess).to.be.a('function');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].onError).to.be.a('function');
         });
 
         it('should not call peerConnection.setRemoteDescription for outgoing conference', function() {
@@ -581,17 +585,80 @@ describe('Call', function () {
           expect(setRemoteDescriptionStub.called).to.equal(false);
         });
 
-        it('should call peerConnection.setLocalDescription with localSdp', function() {
-          incomingConf.connect(connectOptsConf);
+        describe('setRemoteDescription onSuccess callback', function () {
 
-          expect(setLocalDescriptionStub.calledWith(connectOptsConf.localSdp)).to.equal(true);
+          var createAnswerStub,
+            onSuccessSpy;
+
+          beforeEach(function () {
+            createAnswerStub = sinon.stub(peerConnection, 'createAnswer', function () {});
+
+            setRemoteDescriptionStub.restore();
+
+            setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription', function (options) {
+              onSuccessSpy = sinon.spy(options, 'onSuccess');
+              setTimeout(function () {
+                options.onSuccess();
+              }, 0);
+            });
+          });
+
+          afterEach(function () {
+            createAnswerStub.restore();
+            onSuccessSpy.restore();
+          });
+
+          it('should execute peerConnection.createAnswer with mediaType', function (done) {
+            incomingConf.connect(connectOptsConf);
+
+            setTimeout(function () {
+              try {
+                expect(createAnswerStub.called).to.equal(true);
+                expect(createAnswerStub.getCall(0).args[0]).to.be.an('object');
+                expect(createAnswerStub.getCall(0).args[0].mediaType).to.equal(connectOptsConf.mediaType);
+                expect(createAnswerStub.getCall(0).args[0].onSuccess).to.be.a('function');
+                expect(createAnswerStub.getCall(0).args[0].onError).to.be.a('function');
+                expect(createAnswerStub.calledAfter(onSuccessSpy)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+
+          });
+
+          describe('createAnswer onSuccess callback', function () {
+
+            beforeEach(function () {
+              onSuccessSpy.restore();
+              createAnswerStub.restore();
+
+              createAnswerStub = sinon.stub(peerConnection, 'createAnswer', function (options) {
+                onSuccessSpy = sinon.spy(options, 'onSuccess');
+                setTimeout(function () {
+                  options.onSuccess();
+                }, 0);
+              });
+            });
+
+            it('should call peerConnection.setLocalDescription with localSdp', function (done) {
+              incomingConf.connect(connectOptsConf);
+
+              setTimeout(function () {
+                try {
+                  expect(setLocalDescriptionStub.calledWith(connectOptsConf.localSdp)).to.equal(true);
+                  expect(setLocalDescriptionStub.calledAfter(onSuccessSpy)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
+
+          });
+
         });
 
-        it('should not execute peerConnection.setLocalDescription for breed `call`', function () {
-          incomingCall.connect();
-
-          expect(setLocalDescriptionStub.called).to.equal(false);
-        });
       });
     });
 
@@ -1550,6 +1617,15 @@ describe('Call', function () {
 
     });
 
+  });
+
+  describe('PeerConnection Callbacks', function () {
+
+    describe('onPCReady', function () {
+      xit('should execute RTCManager.connectConference', function () {
+        //expect(connectConfSpy.calledWith()).to.equal(true);
+      });
+    });
   });
 
 });

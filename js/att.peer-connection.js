@@ -19,6 +19,10 @@
 
     }
 
+    function createAnswer() {
+
+    }
+
     if (undefined === options) {
       throw new Error('Invalid options.');
     }
@@ -44,7 +48,8 @@
     return {
       addStream: addStream,
       setLocalDescription: setLocalDescription,
-      setRemoteDescription: setRemoteDescription
+      setRemoteDescription: setRemoteDescription,
+      createAnswer: createAnswer
     };
   }
 

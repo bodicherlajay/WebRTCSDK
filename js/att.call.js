@@ -34,10 +34,11 @@
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager(),
-      peerConnection = factories.createPeerConnection({
-        onPCReady: function () { },
-        onError: function () { }
-      });
+      peerConnection = factories.createPeerConnection();
+
+    peerConnection.onPCReady = function () {};
+
+    peerConnection.onError = function () { };
 
     // ================
     // Private methods
@@ -250,9 +251,26 @@
 
         if ('conference' === this.breed()) {
           if (ATT.CallTypes.INCOMING === this.type()) {
-            peerConnection.setRemoteDescription(this.remoteSdp());
+
+            peerConnection.setRemoteDescription({
+              remoteSdp: this.remoteSdp(),
+              onSuccess: function () {
+
+                peerConnection.createAnswer({
+                  mediaType: connectOpts.mediaType,
+                  onSuccess: function () {
+                    peerConnection.setLocalDescription(connectOpts.localSdp);
+                  },
+                  onError: function () {
+                  }
+                });
+
+              },
+              onError: function () {
+              }
+            });
+
           }
-          peerConnection.setLocalDescription(connectOpts.localSdp);
         }
 
       } catch (err) {
