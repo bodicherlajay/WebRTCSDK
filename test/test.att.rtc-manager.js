@@ -892,15 +892,19 @@ describe('RTC Manager', function () {
           var onParticipantPendingSpy,
             response;
 
-          it('should call `options.onParticipantPending`', function () {
+          beforeEach(function () {
+            doOperationStub.restore();
             onParticipantPendingSpy = sinon.spy();
+          });
+
+          it('should call `options.onParticipantPending` if response.getResponseHeader() === `add-pending`', function () {
+
+            // ==== Positive case
             response = {
-              getResponseHeader: function (foo) {
-                return 'bar';
+              getResponseHeader: function (name) {
+                return 'add-pending';
               }
             };
-
-            doOperationStub.restore();
 
             doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function(operationName, options) {
               options.success(response);
@@ -914,7 +918,31 @@ describe('RTC Manager', function () {
             });
 
             expect(onParticipantPendingSpy.called).to.equal(true);
-            expect(onParticipantPendingSpy.calledWith(response)).to.equal(true);
+
+            doOperationStub.restore();
+
+            // ==== Negative case
+            response = {
+              getResponseHeader: function (name) {
+                return 'add-not-pending';
+              }
+            };
+
+            doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function(operationName, options) {
+              options.success(response);
+            });
+
+            rtcManager.addParticipant({
+              sessionInfo: {},
+              confId: '123',
+              onParticipantPending: onParticipantPendingSpy,
+              participant: '12345'
+            });
+
+            // calledOnce, meaning only the positive case trigger a call
+            expect(onParticipantPendingSpy.calledOnce).to.equal(true);
+
+            doOperationStub.restore();
           });
         });
 

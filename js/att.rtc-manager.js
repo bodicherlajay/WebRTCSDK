@@ -364,7 +364,10 @@
         },
         success: function (response) {
           logger.logInfo('addParticipant Request success');
-          options.onParticipantPending(response);
+
+          if ('add-pending' === response.getResponseHeader('x-state')) {
+            options.onParticipantPending();
+          }
         },
         error: function (error) {
           logger.logError(error);
