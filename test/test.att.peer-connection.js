@@ -4,10 +4,16 @@
 describe('PeerConnection', function () {
   'use strict';
 
-  var factories;
+  var factories, onPCReadySpy, options, onErrorSpy;
 
   beforeEach(function () {
+    onPCReadySpy = sinon.spy();
+    onErrorSpy = sinon.spy();
     factories = ATT.private.factories;
+    options = {
+      onPCReady: onPCReadySpy,
+      onError : onErrorSpy
+    };
   });
 
   it('should export ATT.private.factories.createPeerConnection', function () {
@@ -15,15 +21,68 @@ describe('PeerConnection', function () {
   });
 
   describe('Constructor', function () {
-    it('should create a PeerConnection instance', function () {
-      expect(factories.createPeerConnection()).to.be.a('object');
+    it('should throw an error if parameters are invalid', function () {
+      expect(factories.createPeerConnection.bind(factories, undefined)).to.throw('Invalid options.');
+      expect(factories.createPeerConnection.bind(factories, {})).to.throw('Invalid `onPCReady` callback.');
+      expect(factories.createPeerConnection.bind(factories, {
+        onPCReady: function () {
+          return;
+        }
+      })).to.throw('Invalid `onError` callback.');
     });
+
+    it('should create a PeerConnection instance', function () {
+      expect(factories.createPeerConnection(options)).to.be.a('object');
+    });
+
+    it('it should add the localStream');
+    it('it should setup the `onaddstream` callback');
+
+    describe('ICE Trickling setup', function () {
+
+      var rtcpcStub,
+        peerConnection;
+
+      describe('onPCReady', function () {
+        beforeEach(function () {
+          rtcpcStub = sinon.stub(window, 'RTCPeerConnection');
+          peerConnection = factories.createPeerConnection(options);
+        });
+
+        afterEach(function () {
+          rtcpcStub.restore();
+        });
+
+        it('should call `onPCReady` callback', function () {
+          expect(onPCReadySpy.called).to.equal(true);
+        });
+      });
+      describe('onError ', function () {
+
+        beforeEach(function () {
+          rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+            throw new Error('Failed to create PeerConnection.');
+          });
+          peerConnection = factories.createPeerConnection(options);
+        });
+
+        afterEach(function () {
+          rtcpcStub.restore();
+        });
+
+        it('should call the `onError` Callback if it fails to create Peer connection ', function () {
+          expect(onErrorSpy.called).to.equal(true);
+        });
+
+      });
+    });
+
   });
 
   describe('Methods', function () {
     var peerConnection;
     beforeEach(function () {
-      peerConnection = factories.createPeerConnection();
+      peerConnection = factories.createPeerConnection(options);
     });
     describe('setLocalDescription', function () {
       it('exist', function () {
