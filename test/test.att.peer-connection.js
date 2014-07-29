@@ -77,6 +77,46 @@ describe('PeerConnection', function () {
       });
     });
 
+    describe('`onicecandidate` event', function () {
+      var rtcPC,
+        rtcpcStub,
+        peerConnection;
+
+      beforeEach(function () {
+        rtcPC = {
+          setLocalDescription: function () { return; },
+          onicecandidate: function () { return; }
+        };
+
+        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+          return rtcPC;
+        });
+      });
+
+      afterEach(function () {
+        rtcpcStub.restore();
+      });
+
+      it('should call `onError` if there\'s an error while parsing the SDP');
+
+      it.only('should call `onError` if cannot set the localDescription', function () {
+        var setLocalDescriptionStub;
+
+        setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function () {
+          throw new Error('Could not set local description.');
+        });
+
+        peerConnection = factories.createPeerConnection(options);
+        // start trickling
+        rtcPC.onicecandidate();
+
+        expect(onErrorSpy.called).to.equal(true);
+        expect(onErrorSpy.calledWith(new Error('Could not set local description.'))).to.equal(true);
+
+        setLocalDescriptionStub.restore();
+      });
+    });
+
   });
 
   describe('Methods', function () {

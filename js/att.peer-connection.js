@@ -31,6 +31,10 @@
 
     try {
       pc = new RTCPeerConnection();
+      pc.onicecandidate = function () {
+
+        options.onError(new Error('Could not set local description.'));
+      }
 
       options.onPCReady();
     } catch (error) {
