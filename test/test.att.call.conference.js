@@ -5,15 +5,18 @@ describe('Call [Conference]', function () {
   "use strict";
 
   var Call,
-    createPeerConnectionStub;
+    createPeerConnectionStub,
+    restClientStub;
 
   beforeEach(function () {
+    restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
     Call = ATT.rtc.Call;
     createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
   });
 
   afterEach(function () {
     createPeerConnectionStub.restore();
+    restClientStub.restore();
   });
 
   describe('Constructor', function () {
