@@ -96,8 +96,16 @@ describe('APIConfig', function () {
       expect(currentConfiguration.modifyCall).to.be.an('object');
       expect(currentConfiguration.modifyCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/param1/calls/param2');
       expect(currentConfiguration.modifyCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
-      expect(currentConfiguration.modifyCall.formatters.headers['x-calls-action']('action')).to.equal('action');
       expect(currentConfiguration.modifyCall.headers).to.be.an('object');
+    });
+
+    it('should have a valid method addParticipant method', function () {
+      var params = ['sessionId', 'confId', 'participantId'];
+      expect(currentConfiguration.addParticipant.method).to.equal('put');
+      expect(currentConfiguration.addParticipant).to.be.an('object');
+      expect(currentConfiguration.addParticipant.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/confId/participants/participantId');
+      expect(currentConfiguration.addParticipant.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
+      expect(currentConfiguration.addParticipant.headers).to.be.an('object');
     });
 
     it('should have a valid method acceptModifications method and returns Authorization and url', function () {

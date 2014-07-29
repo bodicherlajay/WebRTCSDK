@@ -8,8 +8,7 @@
 
   var module = {},
     init,
-    create,
-    publish,
+    parseAPIErrorResponse,
     createAPIErrorCode,
     logMgr = ATT.logManager.getInstance(),
     logger;
@@ -19,198 +18,110 @@
   init = function () {
     logger.logDebug('Initializing error module');
 
-    module.create = create;
-    module.publish = publish;
+    module.parseAPIErrorResponse = parseAPIErrorResponse;
     module.createAPIErrorCode = createAPIErrorCode;
     // add to the global namespace
     app.Error = module;
   };
 
-  function parseAPIErrorResponse(err, moduleId, methodName) {
-    var errObj = err.getJson(), error, apiError;
+  function parseAPIErrorResponse(response) {
+    var errObj = response.getJson(), error = {}, apiError;
     if (!errObj.RequestError) {
-      if (err.getResponseStatus() >= 500) {
-        if (err.getJson() !== "") {
-          apiError = JSON.stringify(err.getJson());
+      if (response.getResponseStatus() >= 500) {
+        if (response.getJson() !== "") {
+          apiError = JSON.stringify(response.getJson());
         } else {
-          apiError = err.responseText;
+          apiError = response.responseText;
         }
-        error = ATT.errorDictionary.getAPIError("*", err.getResponseStatus(), "");
+        error = ATT.errorDictionary.getAPIError("*", response.getResponseStatus(), "");
         error.APIError =  apiError;
-        error.ResourceMethod = err.getResourceURL();
-        if (moduleId == "DHS") error.ErrorCode ="DHS-0001";
         logger.logError("Service Unavailable");
-        logger.logError(err);
+        logger.logError(response);
+        logger.logError(error);
+      } else {
+        error = {
+          APIError:response.responseText
+        };
+        logger.logError(response);
         logger.logError(error);
       }
+      error.ResourceMethod = response.getResourceURL();
+      error.HttpStatusCode = response.getResponseStatus();
       return error;
     }
     if (errObj.RequestError.ServiceException) { // API Service Exceptions
-      error = ATT.errorDictionary.getAPIError(methodName,
-        err.getResponseStatus(), errObj.RequestError.ServiceException.MessageId);
-      if (error === undefined) {
-        logger.logError("Error code not found in dictionary for key:" + methodName + err.getResponseStatus() +
-          errObj.RequestError.ServiceException.MessageId);
-      } else {
-        error.APIError = errObj.RequestError.ServiceException.MessageId + ":" + errObj.RequestError.ServiceException.Text + ",Variables=" +
-          errObj.RequestError.ServiceException.Variables;
+      error = {
+        APIError:errObj.RequestError.ServiceException.MessageId + ":" + errObj.RequestError.ServiceException.Text + ",Variables=" +
+          errObj.RequestError.ServiceException.Variables,
+        MessageId:errObj.RequestError.ServiceException.MessageId
       }
     } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
-      error = ATT.errorDictionary.getAPIError(methodName,
-        err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
-      if (error === undefined) {
-        logger.logError("Error code not found in dictionary for key:" + methodName +
-          err.getResponseStatus(), errObj.RequestError.PolicyException.MessageId);
-      } else {
-        error.APIError = errObj.RequestError.PolicyException.MessageId + ":" + errObj.RequestError.PolicyException.Text + ",Variables=" + errObj.RequestError.PolicyException.Variables;
+      error = {
+        APIError:errObj.RequestError.PolicyException.MessageId + ":" + errObj.RequestError.PolicyException.Text + ",Variables=" + errObj.RequestError.PolicyException.Variables,
+        MessageId:errObj.RequestError.PolicyException.MessageId
       }
     } else if (errObj.RequestError.Exception) { // API Exceptions
       error = {
-        JSObject:moduleId,        //JS Object
-        JSMethod:methodName,       //JS Method
-        ErrorCode: err.getResponseStatus(),         //Error code
-        ErrorMessage: 'Error occurred',         //Error Message
-        PossibleCauses: 'Please look into APIError message',       //Possible Causes
-        PossibleResolution: 'Please look into APIError message',   //Possible Resolution
-        APIError: errObj.RequestError.Exception.Text,          //API Error response
-        ResourceMethod: err.getResourceURL(),       //Resource URI
-        HttpStatusCode:err.getResponseStatus(),     //HTTP Status Code
-        MessageId:''           //Message ID
+        APIError: errObj.RequestError.Exception.MessageId || "" + ":" + errObj.RequestError.Exception.Text + ",Variables=" + errObj.RequestError.Exception.Variables || "",
+        MessageId: errObj.RequestError.Exception.MessageId
       }
-      error = ATT.errorDictionary.getAPIExceptionError(error);
     }
+    error.ResourceMethod = response.getResourceURL();
+    error.HttpStatusCode = response.getResponseStatus();
 
-    if (!error) {
-      logger.logError("Unable to parse API Error response is empty or not found in error dictionary," + err + ":" + moduleId + ":" + methodName);
-    } else {
-      error.ResourceMethod = err.getResourceURL();
+    if (!error.APIError) {
+      error.APIError = response.responseText;
+      error.MessageId = "";
+      logger.logError("Unable to parse API Error response is empty" + response + ":" + moduleId + ":" + methodName);
     }
     return error;
   }
 
-  createAPIErrorCode = function(err, jsObject, methodName, moduleId) {
-    logger.logTrace('raw error', err);
+  createAPIErrorCode = function(response, jsObject, methodName, moduleId) {
+    logger.logTrace('raw error', response);
 
-    var apiError;
+    var apiError, errorResponse = response.errorDetail;
     methodName = methodName || 'GeneralOperation';
     moduleId = moduleId || 'RTC';
 
-    if (err.errorDetail.HttpStatusCode !== 0) {
+    if (errorResponse.HttpStatusCode !== 0) {
       apiError = ATT.errorDictionary.getAPIError(methodName,
-        err.errorDetail.HttpStatusCode, err.errorDetail.MessageId);
+        errorResponse.HttpStatusCode, errorResponse.MessageId);
+      if (apiError !== undefined) {
+        apiError.APIError = errorResponse.APIError;
+        apiError.HttpStatusCode = errorResponse.HttpStatusCode;
+        apiError.MessageId = errorResponse.MessageId;
+        apiError.ResourceMethod = errorResponse.ResourceMethod;
+      }
     } else
     {
       //Network connectivity related errors will not have valid http status code
-      apiError = err.errorDetail;
+      apiError = errorResponse;
     }
 
-    if (!apiError.ErrorCode) { // Unknown errors
+    if (!apiError) { // Unknown errors
       logger.logError("Error not found in Error dictionary ");
-      logger.logError(err);
+      logger.logError(response);
       apiError = ATT.errorDictionary.getDefaultError({
         JSObject: jsObject,
-        ErrorCode: moduleId + "-00001",
+        ErrorCode: moduleId + "-UNKNOWN",
         JSMethod: methodName,
-        HttpStatusCode: err.getResponseStatus(),
-        ErrorMessage: 'Operation ' + methodName + ' failed',
-        APIError:  err.responseText,
+        HttpStatusCode: response.getResponseStatus(),
+        ErrorMessage: methodName + ' failed',
+        APIError:  errorResponse.APIError || response.responseText,
         PossibleCauses:"Please look into APIError",
         PossibleResolution:"Please look into APIError",
-        MessageId:"",
-        ResourceMethod: err.getResourceURL()
+        MessageId: errorResponse.MessageId || "",
+        ResourceMethod: errorResponse.ResourceMethod || response.getResourceURL()
       });
       logger.logError("Generating Missing error response:" + apiError);
     }
     apiError.JSObject = jsObject;
     apiError.JSMethod = methodName;
     apiError.ModuleId = moduleId;
+    apiError.ErrorMessage = methodName + " failed - " + apiError.ErrorMessage;
     return apiError;
   }
-
-  create = function (err, methodName, moduleId ) {
-    logger.logDebug('error.create');
-    logger.logTrace('raw error', err);
-
-    var error, errorResponse = " failed due to unknown reason, Please look into Console for details";
-    methodName = methodName || 'GeneralOperation';
-    moduleId = moduleId || 'RTC';
-
-    if (err.getJson) { // Errors from Network/API
-      if (moduleId !== 'DHS') {
-        error = parseAPIErrorResponse(err,moduleId,methodName);
-      } else if (moduleId === 'DHS') {
-        if (err.getJson() != "") {
-          error = parseAPIErrorResponse(err,moduleId,methodName);
-          error.ErrorCode= "DHS-0001";
-        } else {
-          error = ATT.errorDictionary.getDHSError({ // DHS thrown errors
-            JSObject: moduleId,
-            ErrorCode: "DHS-0001",
-            JSMethod: methodName,
-            HttpStatusCode: err.getResponseStatus(),
-            ErorMessage:"DHS error occurred",
-            PossibleCauses: "",
-            PossibleResolution: "",
-            APIError: err.responseText,
-            ResourceMethod: err.getResourceURL()
-          });
-        }
-      } else {
-          error = ATT.errorDictionary.getDefaultError({ // Unknown API network errors
-            JSObject: moduleId,
-            ErrorCode: "UNKNOWN-0000",
-            JSMethod: methodName,
-            HttpStatusCode: err.getResponseStatus(),
-            ErrorMessage: 'Operation ' + methodName + ' failed',
-            APIError: methodName + err.getJson() ||errorResponse,
-            PossibleCauses:"",
-            PossibleResolution:"",
-            ResourceMethod: err.getResourceURL()
-          });
-        if (moduleId == "DHS") error.ErrorCode ="DHS-0001";
-      }
-    }
-    if (!error.ErrorCode) { // Unknown errors
-      error = ATT.errorDictionary.getMissingError({
-        JSObject: "ATT.RTC",
-        ErrorCode: "UNKNOWN-00001",
-        JSMethod: methodName,
-        HttpStatusCode: err.getResponseStatus(),
-        ErrorMessage: 'Operation ' + methodName + ' failed',
-        APIError:  methodName + err.getJson() ||errorResponse,
-        PossibleCauses:"",
-        PossibleResolution:"",
-        MessageId:"",
-        ResourceMethod: err.getResourceURL()
-      });
-      if (moduleId == "DHS") error.ErrorCode ="DHS-0001";
-      logger.logError("Generating Missing error response:" + error);
-    }
-    return error;
-  };
-  //todo remove this method - used by DHS only
-  publish = function (error, operation, handler) {
-    logger.logDebug('error.publish');
-
-    logger.logTrace('The error object is: ', error);
-
-    if (typeof handler === 'function') {
-      return handler(error);
-    }
-
-    // var session = ATT.RTCManager.getSession(),
-    //   sessionId = session.getSessionId();
-
-    // logger.logTrace('Publishing the error as an event');
-
-    // // publish the UI callback event for call fail state
-    // ATT.event.publish(sessionId + '.responseEvent', {
-    //   state: ATT.CallStatus.ERROR,
-    //   error: error
-    // });
-
-    logger.logWarning('Unable to publish error to UI');
-  };
 
   init();
 }(ATT || {}));

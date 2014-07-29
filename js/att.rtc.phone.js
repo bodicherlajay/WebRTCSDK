@@ -17,6 +17,7 @@
     var emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
+      userMediaSvc = ATT.UserMediaService,
       logger = logManager.addLoggerForModule('Phone');
 
     logger.logInfo('Creating new instance of Phone');
@@ -109,24 +110,26 @@
     */
     function on(event, handler) {
       if ('session-ready' !== event
-          && 'session-disconnected' !== event
-          && 'dialing' !== event
-          && 'answering' !== event
-          && 'call-incoming' !== event
-          && 'conference-invite' !== event
-          && 'call-connecting' !== event
-          && 'call-disconnecting' !== event
-          && 'call-disconnected' !== event
-          && 'call-canceled' !== event
-          && 'call-rejected' !== event
-          && 'call-connected' !== event
-          && 'call-muted' !== event
-          && 'call-unmuted' !== event
-          && 'call-held' !== event
-          && 'call-resumed' !== event
-          && 'address-updated' !== event
-          && 'media-established' !== event
-          && 'error' !== event) {
+        && 'session-disconnected' !== event
+        && 'dialing' !== event
+        && 'answering' !== event
+        && 'conference-joining' !== event
+        && 'call-incoming' !== event
+        && 'conference-invite' !== event
+        && 'call-connecting' !== event
+        && 'conference-connecting' !== event
+        && 'call-disconnecting' !== event
+        && 'call-disconnected' !== event
+        && 'call-canceled' !== event
+        && 'call-rejected' !== event
+        && 'call-connected' !== event
+        && 'call-muted' !== event
+        && 'call-unmuted' !== event
+        && 'call-held' !== event
+        && 'call-resumed' !== event
+        && 'address-updated' !== event
+        && 'media-established' !== event
+        && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -593,7 +596,31 @@
 
     }
 
-    function joinConference() {
+    function joinConference(options) {
+      var conference = session.currentCall;
+
+      emitter.publish('conference-joining', {
+        from: conference.peer(),
+        mediaType: conference.mediaType(),
+        codec: conference.codec(),
+        timestamp: new Date()
+      });
+
+      conference.on('connecting', function(data) {
+        emitter.publish('conference-connecting', data);
+      });
+
+      userMediaSvc.getUserMedia({
+        localMedia: options.localMedia,
+        remoteMedia: options.remoteMedia,
+        mediaType: options.mediaType,
+        onUserMedia: function (media) {
+          conference.addStream(media.localStream);
+          conference.connect(media);
+        },
+        onMediaEstablished: function () {},
+        onUserMediaError: function () {}
+      });
 
     }
 
@@ -1036,13 +1063,45 @@
       conference.connect();
     }
 
+    function addParticipant(participant) {
+      try {
+        if (null === session.getId()) {
+          publishError(19000);
+          return;
+        }
+
+        var conference = session.currentCall;
+
+        if (null !== conference && 'call' === conference.breed()) {
+          publishError('19001');
+          return;
+        }
+
+        if (undefined === participant) {
+          publishError('19002');
+        }
+
+        try {
+          conference.addParticipant(participant);
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('19003');
+        }
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
+    // ===================
+    // Call interface
+    // ===================
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
     this.logout = logout.bind(this);
     this.dial = dial.bind(this);
     this.answer = answer.bind(this);
-    this.joinConference = joinConference;
     this.mute = mute.bind(this);
     this.unmute = unmute.bind(this);
     this.getMediaType = getMediaType.bind(this);
@@ -1055,8 +1114,12 @@
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
 
-    //Conference Methods
+    // ===================
+    // Conference interface
+    // ===================
     this.dialConference = dialConference.bind(this);
+    this.joinConference = joinConference.bind(this);
+    this.addParticipant = addParticipant.bind(this);
   }
 
 

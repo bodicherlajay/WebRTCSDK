@@ -17,17 +17,6 @@ describe('ErrorDictionaryModule', function () {
   describe('Error Dictionary Object', function () {
     var errorDictionary,
       dictionarySpec,
-      errorSpec;
-
-    beforeEach(function () {
-      dictionarySpec = {
-        modules: {
-          M1: 'Module1',
-          M2: 'Module2',
-          M3: 'Module3',
-          RTC: 'RTC Module'
-        }
-      };
       errorSpec = {
         JSObject: "ATT.rtc",
         JSMethod: "login",
@@ -40,8 +29,10 @@ describe('ErrorDictionaryModule', function () {
         HttpStatusCode: 400,
         MessageId:"SVC0001"
       };
+
+    beforeEach(function () {
       // Initialize the dictionary
-      errorDictionary = ATT.utils.createErrorDictionary(dictionarySpec, ATT.utils);
+      errorDictionary = ATT.errorDictionary;
     });
 
     it('should return valid Error Dictionary', function () {
@@ -76,7 +67,7 @@ describe('ErrorDictionaryModule', function () {
         expect(err.Resolution).to.equal('Please login again');
       });
 
-      it('should return API error object', function () {
+      it('should return API error object for login method', function () {
         var err = errorDictionary.getAPIError('login',400,"SVC0001");
         expect(err.JSObject).to.equal('ATT.rtc');
         expect(err.JSMethod).to.equal('login');
@@ -84,20 +75,12 @@ describe('ErrorDictionaryModule', function () {
         expect(err.MessageId).to.equal("SVC0001");
       });
 
-      it('should return APIException error', function() {
-        var error = {
-          JSObject:"",        //JS Object
-          JSMethod:"",       //JS Method
-          ErrorCode: '600',         //Error code
-          ErrorMessage: '',         //Error Message
-          PossibleCauses: 'Please look into APIError message',       //Possible Causes
-          PossibleResolution: 'Please look into APIError message',   //Possible Resolution
-          APIError: "",          //API Error response
-          ResourceMethod: '',       //Resource URI
-          HttpStatusCode:500,     //HTTP Status Code
-          MessageId:''           //Message ID
-        }
-        error = ATT.errorDictionary.getAPIExceptionError(error);
+      it('should return API error object for login method when method name passed as `*`', function () {
+        var err = errorDictionary.getAPIError('*',400,"SVC0001");
+        expect(err.JSObject).to.equal('ATT.rtc');
+        expect(err.JSMethod).to.equal('login');
+        expect(err.HttpStatusCode).to.equal(400);
+        expect(err.MessageId).to.equal("SVC0001");
       });
 
       it ('should return APIError object given API Service Exception Error response', function() {
@@ -117,10 +100,12 @@ describe('ErrorDictionaryModule', function () {
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj, apiErrorObj;
         apiErrorObj = ATT.errorDictionary.getAPIError("login",400,"SVC0001");
-        errorObj = ATT.Error.create(errorResponse,"login","RTC");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","RTC");
         expect(errorObj.ErrorCode).to.equal(apiErrorObj.ErrorCode);
         expect(errorObj.APIError).to.equal("SVC0001:Error occurred,Variables=");
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
+        expect(errorObj.ErrorMessage).to.have.string('login failed');
       });
 
       it ('should return APIError object given API Policy Exception Error response', function() {
@@ -140,10 +125,12 @@ describe('ErrorDictionaryModule', function () {
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj, apiErrorObj;
         apiErrorObj = ATT.errorDictionary.getAPIError("login",401,"POL0001");
-        errorObj = ATT.Error.create(errorResponse,"login","RTC");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","RTC");
         expect(errorObj.ErrorCode).to.equal(apiErrorObj.ErrorCode);
         expect(errorObj.APIError).to.equal("POL0001:Error occurred,Variables=");
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
+        expect(errorObj.ErrorMessage).to.have.string('login failed');
       });
 
       it ('should return APIError object given API Exception Error response', function() {
@@ -152,7 +139,8 @@ describe('ErrorDictionaryModule', function () {
             return {
               RequestError: {
                 Exception: {
-                  Text:"Error occurred"
+                  Text:"Error occurred",
+                  MessageId:""
                 }
               }
             };
@@ -160,11 +148,13 @@ describe('ErrorDictionaryModule', function () {
           getResponseStatus: function() { return 401;},
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj;
-        errorObj = ATT.Error.create(errorResponse,"login","RTC");
-        expect(errorObj.ErrorCode).to.equal(401);
-        expect(errorObj.APIError).to.equal("Error occurred");
-        expect(errorObj.PossibleCauses).to.equal("Please look into APIError message");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","RTC");
+        expect(errorObj.ErrorCode).to.equal("RTC-UNKNOWN");
+        expect(errorObj.APIError).to.equal(":Error occurred,Variables=undefined");
+        expect(errorObj.PossibleCauses).to.equal("Please look into APIError");
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
+        expect(errorObj.ErrorMessage).to.have.string('login failed');
       });
 
       it ('should return APIError object given 500 error code no error response in payload', function() {
@@ -175,10 +165,12 @@ describe('ErrorDictionaryModule', function () {
           getResponseStatus: function() { return 500;},
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj;
-        errorObj = ATT.Error.create(errorResponse,"login","RTC");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","RTC");
         expect(errorObj.ErrorCode).to.equal(500);
         expect(errorObj.APIError).to.equal(JSON.stringify(errorResponse.getJson()));
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
+        expect(errorObj.ErrorMessage).to.have.string('login failed');
       });
 
       it ('should return APIError object for DHS Module when there is no JSON response', function() {
@@ -190,10 +182,12 @@ describe('ErrorDictionaryModule', function () {
           getResourceURL: function() { return "GET /RTC/v1/Sessions"},
           responseText: "dhs response"
         }, errorObj;
-        errorObj = ATT.Error.create(errorResponse,"login","DHS");
-        expect(errorObj.ErrorCode).to.equal("DHS-0001");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse);
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","DHS");
+        expect(errorObj.ErrorCode).to.equal("DHS-UNKNOWN");
         expect(errorObj.APIError).to.equal(errorResponse.responseText);
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
+        expect(errorObj.ErrorMessage).to.have.string('login failed');
       });
 
       it ('should return APIError object for DHS Module when JSON response is present', function() {
@@ -205,10 +199,12 @@ describe('ErrorDictionaryModule', function () {
           getResourceURL: function() { return "GET /RTC/v1/Sessions"},
           responseText: "dhs response"
         }, errorObj;
-        errorObj = ATT.Error.create(errorResponse,"login","DHS");
-        expect(errorObj.ErrorCode).to.equal("DHS-0001");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse)
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","DHS");
+        expect(errorObj.ErrorCode).to.equal(500);
         expect(errorObj.APIError).to.equal(JSON.stringify(errorResponse.getJson()));
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
+        expect(errorObj.ErrorMessage).to.have.string('login failed');
       });
 
       it ('should return APIError object given API Error object not found in dictionary', function() {
@@ -227,10 +223,11 @@ describe('ErrorDictionaryModule', function () {
           getResponseStatus: function() { return 401;},
           getResourceURL: function() { return "GET /RTC/v1/Sessions"}
         }, errorObj;
-        errorObj = ATT.Error.create(errorResponse,"login","RTC");
-        console.log(errorObj);
-        expect(errorObj.ErrorCode).to.equal("UNKNOWN-00001");
+        errorResponse.errorDetail = ATT.Error.parseAPIErrorResponse(errorResponse)
+        errorObj = ATT.Error.createAPIErrorCode(errorResponse,"ATT.rtc","login","DHS");
+        expect(errorObj.ErrorCode).to.equal("DHS-UNKNOWN");
         expect(errorObj.ResourceMethod).to.equal(errorResponse.getResourceURL());
+        expect(errorObj.ErrorMessage).to.have.string('login failed');
       });
 
     });

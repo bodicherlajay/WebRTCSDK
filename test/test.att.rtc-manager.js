@@ -761,6 +761,7 @@ describe('RTC Manager', function () {
           onErrorSpy = sinon.spy();
 
           options = {
+            breed: 'call',
             peer: '123',
             mediaType: 'xyz',
             onCallConnecting: onCallConnectingSpy,
@@ -849,8 +850,9 @@ describe('RTC Manager', function () {
 
           describe('onUserMedia', function () {
 
-            it('should invoke initiatePeerConnection', function () {
+            it('should invoke peerConnSvc.initiatePeerConnection with call breed', function () {
               expect(initPeerConnectionStub.called).to.equal(true);
+              expect(initPeerConnectionStub.getCall(0).args[0].breed).to.not.be.an('undefined');
             });
 
             describe('initiatePeerConnection success', function () {
@@ -869,6 +871,40 @@ describe('RTC Manager', function () {
 
         });
 
+      });
+
+      describe('addParticipant', function () {
+        it('should exist', function () {
+          expect(rtcManager.addParticipant).to.be.a('function');
+        });
+
+        it('should call resourceManager.doOperation', function () {
+          rtcManager.addParticipant({
+            sessionInfo: {},
+            confId: '123',
+            participant: '12345'
+          });
+          expect(doOperationStub.called).to.equal(true);
+        });
+
+        describe('Error Handling', function () {
+          it('should throw an error if invalid `options` are passed', function () {
+            expect(rtcManager.addParticipant.bind(rtcManager)).to.throw('No `options` passed');
+            expect(rtcManager.addParticipant.bind(rtcManager, {
+              confId: {},
+              participant: '12345'
+            })).to.throw('No `sessionInfo` passed');
+            expect(rtcManager.addParticipant.bind(rtcManager, {
+              sessionInfo: {},
+              participant: '12345'
+            })).to.throw('No `confId` passed');
+            expect(rtcManager.addParticipant.bind(rtcManager, {
+              sessionInfo: {},
+              confId: '123',
+              participant: '12345'
+            })).to.not.throw(Error);
+          });
+        });
       });
 
       describe('cancelCall', function () {
