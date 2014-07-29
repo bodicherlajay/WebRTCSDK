@@ -615,6 +615,7 @@
         remoteMedia: options.remoteMedia,
         mediaType: options.mediaType,
         onUserMedia: function (media) {
+          conference.addStream(media.localStream);
           conference.connect(media);
         },
         onMediaEstablished: function () {},

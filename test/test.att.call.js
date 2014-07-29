@@ -10,13 +10,16 @@ describe('Call', function () {
     connectOptions,
     optionsOutgoing,
     optionsIncoming,
+    optionsIncomingConf,
     optionsforRTCM,
     emitterEM,
     eventManager,
     rtcMgr,
-    getRTCManagerStub,
+    peerConnection,
     createEventEmitterStub,
     createEventManagerStub,
+    getRTCManagerStub,
+    createPeerConnectionStub,
     remoteSdp,
     resourceManager,
     doOperationStub,
@@ -54,6 +57,14 @@ describe('Call', function () {
       sessionInfo : {sessionId : '12345'}
     };
 
+    optionsIncomingConf = {
+      breed: 'conference',
+      peer: '12345',
+      mediaType: 'video',
+      type: ATT.CallTypes.INCOMING,
+      remoteSdp: 'abc'
+    };
+
     optionsforRTCM = {
       resourceManager: resourceManager,
       userMediaSvc: ATT.UserMediaService,
@@ -65,21 +76,23 @@ describe('Call', function () {
 
   beforeEach(function () {
     resourceManager = factories.createResourceManager(apiConfig);
+
     doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) { // never hit the network
       console.log(name);
       options.success();
     });
+
     createResourceManagerStub = sinon.stub(factories, 'createResourceManager', function () {
       return resourceManager;
     });
 
-    emitterEM = ATT.private.factories.createEventEmitter();
+    emitterEM = factories.createEventEmitter();
 
-    createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
       return emitterEM;
     });
 
-    eventManager = ATT.private.factories.createEventManager({
+    eventManager = factories.createEventManager({
       resourceManager: resourceManager,
       channelConfig: {
         endpoint: '/events',
@@ -87,7 +100,7 @@ describe('Call', function () {
       }
     });
 
-    createEventManagerStub = sinon.stub(ATT.private.factories, 'createEventManager', function () {
+    createEventManagerStub = sinon.stub(factories, 'createEventManager', function () {
       return eventManager;
     });
 
@@ -97,6 +110,11 @@ describe('Call', function () {
       return rtcMgr;
     });
 
+    peerConnection = factories.createPeerConnection();
+
+    createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
+      return peerConnection;
+    });
   });
 
   afterEach(function () {
@@ -105,6 +123,7 @@ describe('Call', function () {
     createEventEmitterStub.restore();
     createEventManagerStub.restore();
     getRTCManagerStub.restore();
+    createPeerConnectionStub.restore();
   });
 
   it('Should have a public constructor under ATT.rtc', function () {
@@ -113,8 +132,17 @@ describe('Call', function () {
 
   describe('Constructor', function () {
 
-    var kall,
-      kall2;
+    var call1,
+      call2,
+      onSpy;
+
+    beforeEach(function () {
+      onSpy = sinon.stub(rtcMgr, 'on');
+    });
+
+    afterEach(function () {
+      onSpy.restore();
+    });
 
     it('Should throw an error if invalid options', function () {
       var func = function (options) {
@@ -153,25 +181,25 @@ describe('Call', function () {
         id: '1234'
       };
 
-      kall = new ATT.rtc.Call(outgoingOptions);
+      call1 = new ATT.rtc.Call(outgoingOptions);
 
-      expect(kall instanceof ATT.rtc.Call).to.equal(true);
-	    expect(kall.breed()).to.equal(outgoingOptions.breed);
-      expect(kall.id()).to.equal(outgoingOptions.id);
-      expect(kall.peer()).to.equal(outgoingOptions.peer);
-      expect(kall.mediaType()).to.equal(outgoingOptions.mediaType);
-      expect(kall.type()).to.equal(outgoingOptions.type);
+      expect(call1 instanceof ATT.rtc.Call).to.equal(true);
+	    expect(call1.breed()).to.equal(outgoingOptions.breed);
+      expect(call1.id()).to.equal(outgoingOptions.id);
+      expect(call1.peer()).to.equal(outgoingOptions.peer);
+      expect(call1.mediaType()).to.equal(outgoingOptions.mediaType);
+      expect(call1.type()).to.equal(outgoingOptions.type);
 
       outgoingOptions.id = undefined;
 
-      kall2 = new ATT.rtc.Call(outgoingOptions);
+      call2 = new ATT.rtc.Call(outgoingOptions);
 
-      expect(kall2).to.be.an('object');
-      expect(kall2.id()).to.equal(null);
-	    expect(kall2.breed()).to.equal(outgoingOptions.breed);
-      expect(kall2.peer()).to.equal(outgoingOptions.peer);
-      expect(kall2.mediaType()).to.equal(outgoingOptions.mediaType);
-      expect(kall2.type()).to.equal(outgoingOptions.type);
+      expect(call2).to.be.an('object');
+      expect(call2.id()).to.equal(null);
+	    expect(call2.breed()).to.equal(outgoingOptions.breed);
+      expect(call2.peer()).to.equal(outgoingOptions.peer);
+      expect(call2.mediaType()).to.equal(outgoingOptions.mediaType);
+      expect(call2.type()).to.equal(outgoingOptions.type);
     });
 
     it('should create an instance of event emitter', function () {
@@ -179,15 +207,19 @@ describe('Call', function () {
     });
 
     it('should get an instance of RTCManager', function () {
-      kall = new ATT.rtc.Call(optionsOutgoing);
+      call1 = new ATT.rtc.Call(optionsOutgoing);
 
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
+    it('should create an instance of the peer connection', function () {
+      call1 = new ATT.rtc.Call(optionsOutgoing);
+
+      expect(createPeerConnectionStub.called).to.equal(true);
+    });
+
     it('should register for `call-disconnected` event on `RTCManager`', function () {
-      var onSpy;
-      onSpy = sinon.stub(rtcMgr, 'on');
-      kall = new ATT.rtc.Call(optionsOutgoing);
+      call1 = new ATT.rtc.Call(optionsOutgoing);
 
       expect(onSpy.calledWith('call-disconnected')).to.equal(true);
     });
@@ -198,6 +230,7 @@ describe('Call', function () {
 
     var outgoingCall,
       incomingCall,
+      incomingConf,
       onConnectingSpy,
       onConnectedSpy,
       onMutedSpy,
@@ -217,6 +250,8 @@ describe('Call', function () {
 
       outgoingCall = new ATT.rtc.Call(optionsOutgoing);
       incomingCall = new ATT.rtc.Call(optionsIncoming);
+
+      incomingConf = new ATT.rtc.Call(optionsIncomingConf);
 
       incomingCall.setRemoteSdp(optionsIncoming.remoteSdp);
 
@@ -259,6 +294,29 @@ describe('Call', function () {
 
         unsubscribeSpy.restore();
         subscribeSpy.restore();
+      });
+    });
+
+    describe('addStream', function () {
+
+      var addStreamStub;
+
+      beforeEach(function () {
+        addStreamStub = sinon.stub(peerConnection, 'addStream', function () {});
+      });
+
+      afterEach(function () {
+        addStreamStub.restore();
+      });
+
+      it('should exist', function () {
+        expect(incomingConf.addStream).to.be.a('function');
+      });
+
+      it('should execute peerConnection.addStream', function () {
+        incomingConf.addStream();
+
+        expect(addStreamStub.called).to.equal(true);
       });
     });
 

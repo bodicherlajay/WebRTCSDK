@@ -5,6 +5,10 @@
 
   function createPeerConnection() {
 
+    function addStream() {
+
+    }
+
     function setRemoteDescription() {
 
     }
@@ -14,6 +18,7 @@
     }
 
     return {
+      addStream: addStream,
       setLocalDescription: setLocalDescription,
       setRemoteDescription: setRemoteDescription
     };

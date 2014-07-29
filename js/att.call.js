@@ -33,7 +33,8 @@
       codec = [],
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
-      rtcManager = ATT.private.rtcManager.getRTCManager();
+      rtcManager = ATT.private.rtcManager.getRTCManager(),
+      peerConnection = factories.createPeerConnection();
 
     // ================
     // Private methods
@@ -160,6 +161,11 @@
       rtcManager.resetPeerConnection();
 
     }
+
+    function addStream() {
+      peerConnection.addStream();
+    }
+
     /*
      * Connect the Call
      * Connects the call based on callType(Incoming|Outgoing)
@@ -417,6 +423,7 @@
     this.setState = setState;
     this.setId = setId;
     this.on = on;
+    this.addStream = addStream;
     this.connect = connect;
     this.disconnect = disconnect;
     this.mute = mute;

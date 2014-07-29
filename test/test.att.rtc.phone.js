@@ -1230,8 +1230,7 @@ describe('Phone', function () {
         var options,
           conferenceJoiningSpy,
           getUserMediaStub,
-          onSpy,
-          connectStub;
+          onSpy;
 
         beforeEach(function () {
 
@@ -1268,8 +1267,6 @@ describe('Phone', function () {
 
           conferenceJoiningSpy = sinon.spy();
 
-          connectStub = sinon.stub(conference, 'connect', function() {});
-
           phone.on('conference-joining', conferenceJoiningSpy);
 
           session.currentCall = conference;
@@ -1278,7 +1275,6 @@ describe('Phone', function () {
         afterEach(function () {
           getUserMediaStub.restore();
           onSpy.restore();
-          connectStub.restore();
         });
 
         it('should exists', function () {
@@ -1327,7 +1323,9 @@ describe('Phone', function () {
 
           describe('onUserMedia', function () {
 
-            var onUserMediaSpy,
+            var addStreamStub,
+              connectStub,
+              onUserMediaSpy,
               media;
 
             beforeEach(function() {
@@ -1341,6 +1339,9 @@ describe('Phone', function () {
                 }
               };
 
+              connectStub = sinon.stub(conference, 'connect', function() {});
+              addStreamStub = sinon.stub(conference, 'addStream', function () {});
+
               getUserMediaStub.restore();
 
               getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
@@ -1353,7 +1354,24 @@ describe('Phone', function () {
             });
 
             afterEach(function () {
+              addStreamStub.restore();
+              connectStub.restore();
               onUserMediaSpy.restore();
+            });
+
+            it('should execute Call.addStream with local stream', function (done) {
+              phone.joinConference(options);
+
+              setTimeout(function () {
+                try {
+                  expect(addStreamStub.calledAfter(onUserMediaSpy)).to.equal(true);
+                  expect(addStreamStub.calledBefore(connectStub)).to.equal(true);
+                  expect(addStreamStub.calledWith(media.localStream)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
             });
 
             it('should execute Call.connect with local media stream', function (done) {
@@ -1367,7 +1385,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100)
+              }, 100);
             });
 
           });
