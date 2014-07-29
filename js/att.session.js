@@ -37,12 +37,12 @@
     rtcManager.on('call-incoming', function (callInfo) {
       var eventName,
         call = session.createCall({
-        breed: callInfo.breed,
-        id: callInfo.id,
-        peer: callInfo.from,
-        type: ATT.CallTypes.INCOMING,
-        mediaType: callInfo.mediaType
-      });
+          breed: callInfo.breed,
+          id: callInfo.id,
+          peer: callInfo.from,
+          type: ATT.CallTypes.INCOMING,
+          mediaType: callInfo.mediaType
+        });
 
       if (undefined !== call) {
         if (callInfo.remoteSdp) {

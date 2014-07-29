@@ -10,9 +10,12 @@ describe('Session', function () {
     optionsforRTCM,
     resourceManager,
     doOperationStub,
-    createResourceManagerStub;
+    createResourceManagerStub,
+    createPeerConnectionStub,
+    restClientStub;
 
   beforeEach(function () {
+    restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
     factories = ATT.private.factories;
     apiConfig = ATT.private.config.api;
 
@@ -41,11 +44,15 @@ describe('Session', function () {
       peerConnSvc: ATT.PeerConnectionService
     };
 
+    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
+
   });
 
   afterEach(function () {
     createResourceManagerStub.restore();
     doOperationStub.restore();
+    restClientStub.restore();
+    createPeerConnectionStub.restore();
   });
 
   it('Should have a public constructor under ATT.rtc', function () {
@@ -59,7 +66,7 @@ describe('Session', function () {
       rtcManagerOnSpy,
       getRTCManagerStub;
 
-    before(function () {
+    beforeEach(function () {
       createEventEmitterSpy = sinon.spy(ATT.private.factories, 'createEventEmitter');
       rtcManager = {
         on: function () {}
@@ -71,7 +78,7 @@ describe('Session', function () {
       session = new ATT.rtc.Session();
     });
 
-    after(function () {
+    afterEach(function () {
       createEventEmitterSpy.restore();
       getRTCManagerStub.restore();
       rtcManagerOnSpy.restore();

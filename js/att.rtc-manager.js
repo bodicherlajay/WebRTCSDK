@@ -290,7 +290,6 @@
         throw new Error('Callback `onError` not defined.');
       }
 
-
       userMediaSvc.getUserMedia({
         mediaType: options.mediaType,
         localMedia: options.localMedia,
@@ -298,6 +297,7 @@
         onUserMedia: function (userMedia) {
 
           peerConnSvc.initiatePeerConnection({
+            breed: options.breed,
             peer: options.peer,
             callId: options.callId,
             type: options.type,
@@ -330,8 +330,41 @@
           options.onError(error);
         }
       });
+    }
 
+    function addParticipant (options) {
 
+      if (undefined === options) {
+        throw new Error('No `options` passed');
+      }
+
+      if (undefined === options.sessionInfo) {
+        throw new Error('No `sessionInfo` passed');
+      }
+
+      if (undefined === options.confId) {
+        throw new Error('No `confId` passed');
+      }
+
+      resourceManager.doOperation('addParticipant', {
+        params: {
+          url: [
+            options.sessionInfo.sessionId,
+            options.confId,
+            options.participant
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + options.sessionInfo.token
+          }
+        },
+        success: function () {
+          logger.logInfo('addParticipant Request success');
+        },
+        error: function (error) {
+          logger.logError(error);
+          options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'addParticipant', 'RTC'));
+        }
+      });
     }
 
     function disconnectCall (options) {
@@ -588,6 +621,7 @@
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);
+    this.addParticipant = addParticipant.bind(this);
     this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);
     this.cancelCall = cancelCall.bind(this);

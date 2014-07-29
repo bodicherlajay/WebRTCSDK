@@ -33,7 +33,11 @@
       codec = [],
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
-      rtcManager = ATT.private.rtcManager.getRTCManager();
+      rtcManager = ATT.private.rtcManager.getRTCManager(),
+      peerConnection = factories.createPeerConnection({
+        onPCReady: function () { },
+        onError: function () { }
+      });
 
     // ================
     // Private methods
@@ -160,6 +164,11 @@
       rtcManager.resetPeerConnection();
 
     }
+
+    function addStream() {
+      peerConnection.addStream();
+    }
+
     /*
      * Connect the Call
      * Connects the call based on callType(Incoming|Outgoing)
@@ -199,6 +208,7 @@
         });
 
         rtcManager.connectCall({
+          breed: breed,
           localMedia: localMedia,
           remoteMedia: remoteMedia,
           peer: peer,
@@ -239,6 +249,19 @@
           error: err
         });
       }
+    }
+
+    function addParticipant(participant) {
+      rtcManager.addParticipant({
+        sessionInfo: sessionInfo,
+        participant: participant,
+        confId: id,
+        onError: function (error) {
+          emitter.publish('error', {
+            error: error
+          });
+        }
+      });
     }
 
     function disconnect() {
@@ -345,7 +368,7 @@
     if (undefined === options.breed) {
       throw new Error('No breed provided');
     }
-    if (undefined === options.peer) {
+    if (options.breed === "call" && undefined === options.peer) {
       throw new Error('No peer provided');
     }
     if (undefined === options.type) {
@@ -416,8 +439,10 @@
     this.setState = setState;
     this.setId = setId;
     this.on = on;
+    this.addStream = addStream;
     this.connect = connect;
     this.disconnect = disconnect;
+    this.addParticipant = addParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

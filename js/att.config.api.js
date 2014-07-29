@@ -290,6 +290,25 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         /**
+         * Add Participant via RTCEndpoint
+         * @memberof ATT.APIConfigs
+         */
+        addParticipant: {
+          method: 'put',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/conferences/'
+                + params[1] + '/participants/' + params[2];
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
+        },
+        /**
         * Accept Modifications via RTCEndpoint
         * @memberof ATT.APIConfigs
         */

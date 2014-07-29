@@ -549,6 +549,38 @@
       ErrorMessage: "TODO- mediaType missing",
       Cause: "TODO",
       Resolution: "TODO"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipant",
+      ErrorCode: "19000",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking addParticipant"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipant",
+      ErrorCode: "19001",
+      ErrorMessage: "Conference is not initiated before invoking addParticipant",
+      Cause: "Invalid operation",
+      Resolution: "Please initiate conference first before invoking addParticipant"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipant",
+      ErrorCode: "19002",
+      ErrorMessage: "participant parameter missing",
+      Cause: "One or more required input parameter(s) are missing",
+      Resolution: "Please provide participant parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipant",
+      ErrorCode: "19003",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
     }
   ];
 
