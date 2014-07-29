@@ -36,7 +36,9 @@
       rtcManager = ATT.private.rtcManager.getRTCManager(),
       peerConnection = factories.createPeerConnection();
 
-    peerConnection.onPCReady = function () {};
+    peerConnection.onICETricklingComplete = function () {
+      rtcManager.connectConference(this.localSdp());
+    };
 
     peerConnection.onError = function () { };
 

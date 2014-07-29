@@ -873,6 +873,12 @@ describe('RTC Manager', function () {
 
       });
 
+      describe('connectConference', function () {
+        it('should exist', function () {
+          expect(rtcManager.connectConference).to.be.a('function');
+        });
+      });
+
       describe('addParticipant', function () {
         it('should exist', function () {
           expect(rtcManager.addParticipant).to.be.a('function');

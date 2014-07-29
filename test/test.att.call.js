@@ -229,16 +229,49 @@ describe('Call', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
+    it('should register for `call-disconnected` event on `RTCManager`', function () {
+      call1 = new ATT.rtc.Call(optionsOutgoing);
+
+      expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+    });
+
     it('should create an instance of the peer connection', function () {
       call1 = new ATT.rtc.Call(optionsOutgoing);
 
       expect(createPeerConnectionStub.called).to.equal(true);
     });
 
-    it('should register for `call-disconnected` event on `RTCManager`', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
+    describe.only('PeerConnection Callbacks', function () {
 
-      expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+      it('should set the callbacks on the newly created peerConnection object', function () {
+        call1 = new ATT.rtc.Call(optionsOutgoing);
+
+        expect(peerConnection.onICETricklingComplete).to.be.a('function');
+        expect(peerConnection.onError).to.be.a('function');
+      });
+
+      describe('onICETricklingComplete', function () {
+
+        var connectConfStub;
+
+        beforeEach(function () {
+          connectConfStub = sinon.stub(rtcMgr, 'connectConference', function () {});
+        });
+
+        afterEach(function () {
+          connectConfStub.restore();
+        });
+
+        it('should execute RTCManager.connectConference', function () {
+          expect(connectConfStub.calledWith(connectOptsConf.localSdp)).to.equal(true);
+        });
+      });
+
+      describe('onError', function () {
+
+        it('should publish `error`');
+
+      });
     });
 
   });
@@ -1616,15 +1649,6 @@ describe('Call', function () {
 
     });
 
-  });
-
-  describe('PeerConnection Callbacks', function () {
-
-    describe('onPCReady', function () {
-      xit('should execute RTCManager.connectConference', function () {
-        //expect(connectConfSpy.calledWith()).to.equal(true);
-      });
-    });
   });
 
 });
