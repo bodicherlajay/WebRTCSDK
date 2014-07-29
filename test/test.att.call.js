@@ -11,6 +11,7 @@ describe('Call', function () {
     optionsOutgoing,
     optionsIncoming,
     optionsIncomingConf,
+    optionsOutgoingConf,
     optionsforRTCM,
     emitterEM,
     eventManager,
@@ -25,7 +26,8 @@ describe('Call', function () {
     doOperationStub,
     createResourceManagerStub,
     localVideo,
-    remoteVideo;
+    remoteVideo,
+    connectOptsConf;
 
   before(function () {
     apiConfig = ATT.private.config.api;
@@ -35,9 +37,12 @@ describe('Call', function () {
     localVideo = document.createElement('video');
 
     connectOptions = {
-      breed: 'call',
       localMedia: localVideo,
       remoteMedia: remoteVideo
+    };
+
+    connectOptsConf = {
+      localSdp: 'abc'
     };
 
     optionsOutgoing = {
@@ -63,6 +68,13 @@ describe('Call', function () {
       mediaType: 'video',
       type: ATT.CallTypes.INCOMING,
       remoteSdp: 'abc'
+    };
+
+    optionsOutgoingConf = {
+      breed: 'conference',
+      peer: '12345',
+      mediaType: 'video',
+      type: ATT.CallTypes.OUTGOING
     };
 
     optionsforRTCM = {
@@ -236,6 +248,7 @@ describe('Call', function () {
     var outgoingCall,
       incomingCall,
       incomingConf,
+      outgoingConf,
       onConnectingSpy,
       onConnectedSpy,
       onMutedSpy,
@@ -256,6 +269,7 @@ describe('Call', function () {
       outgoingCall = new ATT.rtc.Call(optionsOutgoing);
       incomingCall = new ATT.rtc.Call(optionsIncoming);
 
+      outgoingConf = new ATT.rtc.Call(optionsOutgoingConf);
       incomingConf = new ATT.rtc.Call(optionsIncomingConf);
 
       incomingCall.setRemoteSdp(optionsIncoming.remoteSdp);
@@ -381,95 +395,151 @@ describe('Call', function () {
         addEventListenerStub.restore();
       });
 
-      it('should execute RTCManager.connectCall with breed for outgoing calls', function () {
-        outgoingCall.connect(connectOptions);
+      describe('Call', function () {
 
-        expect(connectCallStub.called).to.equal(true);
-      });
+        it('should execute RTCManager.connectCall for outgoing calls', function () {
+          outgoingCall.connect(connectOptions);
 
-      it('should execute RTCManager.connectCall with `remoteSdp` for incoming calls', function () {
-        incomingCall.connect(connectOptions);
-
-        expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
-        expect(connectCallStub.getCall(0).args[0].breed).to.not.be.an('undefined');
-      });
-
-      describe('Callbacks on connectCall', function () {
-
-        describe('onCallConnecting', function () {
-          var callInfo = {
-            callId: '1234',
-            localSdp: 'mysdp',
-            xState: 'connecting'
-          };
-
-          beforeEach(function () {
-            connectCallStub.restore();
-
-            connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
-              options.onCallConnecting(callInfo);
-            });
-          });
-
-          afterEach(function () {
-            connectCallStub.restore();
-          });
-
-          it('should set the Id for outgoing calls', function () {
-            outgoingCall.connect(connectOptions);
-
-            expect(outgoingCall.id()).to.equal(callInfo.callId);
-          });
-
-          it('should set the state for incoming calls', function () {
-            incomingCall.connect(connectOptions);
-
-            expect(incomingCall.getState()).to.equal('connecting');
-          });
-
-          it('should set the newly created LocalSdp on the call', function () {
-            outgoingCall.connect(connectOptions);
-
-            expect(outgoingCall.localSdp()).to.equal(callInfo.localSdp);
-          });
-
-          it('Should publish `error` with error data if there is an error in operation', function (done) {
-
-            var error = new Error('Uncaught Error'),
-                addEventListenerStub = sinon.stub(connectOptions.remoteMedia, 'addEventListener', function () {
-              throw error;
-            });
-
-            outgoingCall.connect();
-
-            setTimeout(function () {
-              expect(onErrorHandlerSpy.calledWith({
-                error: error
-              })).to.equal(true);
-              addEventListenerStub.restore();
-              done();
-            }, 100);
-
-          });
+          expect(connectCallStub.called).to.equal(true);
         });
 
-        describe('onError', function () {
+        it('should execute RTCManager.connectCall with `remoteSdp` for incoming calls', function () {
+          incomingCall.connect(connectOptions);
 
-          beforeEach(function () {
-            connectCallStub.restore();
+          expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
+        });
 
-            connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
+        it('should not execute RTCManager.connectCall for breed `conference`', function() {
+          incomingConf.connect(connectOptions);
+
+          expect(connectCallStub.called).to.equal(false);
+        });
+
+        describe('Callbacks on connectCall', function () {
+
+          describe('onCallConnecting', function () {
+            var callInfo = {
+              callId: '1234',
+              localSdp: 'mysdp',
+              xState: 'connecting'
+            };
+
+            beforeEach(function () {
+              connectCallStub.restore();
+
+              connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
+                setTimeout(function () {
+                  options.onCallConnecting(callInfo);
+                }, 0);
+              });
+            });
+
+            afterEach(function () {
+              connectCallStub.restore();
+            });
+
+            it('should set the Id for outgoing calls', function (done) {
+              outgoingCall.connect(connectOptions);
+
               setTimeout(function () {
-                options.onError(error);
-              }, 0);
+                try {
+                  expect(outgoingCall.id()).to.equal(callInfo.callId);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
+
+            it('should set the state for incoming calls', function (done) {
+              incomingCall.connect(connectOptions);
+
+              setTimeout(function () {
+                try {
+                  expect(incomingCall.getState()).to.equal('connecting');
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
+
+            it('should set the newly created LocalSdp on the call', function (done) {
+              outgoingCall.connect(connectOptions);
+
+              setTimeout(function () {
+                try {
+                  expect(outgoingCall.localSdp()).to.equal(callInfo.localSdp);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
+
+            it('Should publish `error` with error data if there is an error in operation', function (done) {
+              var setIdStub = sinon.stub(outgoingCall, 'setId', function () {
+                throw error;
+              });
+
+              outgoingCall.connect(connectOptions);
+
+              setTimeout(function () {
+                try {
+                  expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                } finally {
+                  setIdStub.restore();
+                }
+              }, 100);
+
             });
           });
 
-          afterEach(function () {
-            connectCallStub.restore();
+          describe('onError', function () {
+
+            beforeEach(function () {
+              connectCallStub.restore();
+
+              connectCallStub = sinon.stub(rtcMgr, 'connectCall', function (options) {
+                setTimeout(function () {
+                  options.onError(error);
+                }, 0);
+              });
+            });
+
+            afterEach(function () {
+              connectCallStub.restore();
+            });
+
+            it('Should publish `error` with error data', function (done) {
+
+              outgoingCall.connect(connectOptions);
+
+              setTimeout(function () {
+                try {
+                  expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+
+            });
           });
 
-          it('Should publish `error` with error data', function (done) {
+        });
+
+        describe('Error Handling', function () {
+
+          it('should publish `error` with error data if there is an error in any operation', function (done) {
+            connectCallStub.restore();
+
+            connectCallStub = sinon.stub(rtcMgr, 'connectCall', function () {
+              throw error;
+            });
 
             outgoingCall.connect(connectOptions);
 
@@ -477,29 +547,51 @@ describe('Call', function () {
               expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
               done();
             }, 100);
-
           });
-        });
 
+        });
       });
 
-      describe('Error Handling', function () {
+      describe('Conference', function () {
 
-        it('should publish `error` with error data if there is an error in any operation', function (done) {
-          connectCallStub.restore();
+        var setRemoteDescriptionStub,
+          setLocalDescriptionStub;
 
-          connectCallStub = sinon.stub(rtcMgr, 'connectCall', function () {
-            throw error;
-          });
-
-          outgoingCall.connect(connectOptions);
-
-          setTimeout(function () {
-            expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-            done();
-          }, 100);
+        beforeEach(function() {
+          setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription', function () {});
+          setLocalDescriptionStub = sinon.stub(peerConnection, 'setLocalDescription', function() {});
         });
 
+        afterEach(function() {
+          setRemoteDescriptionStub.restore();
+          setLocalDescriptionStub.restore();
+        });
+
+        it('should call peerConnection.setRemoteDescription with remoteSdp for incoming conference', function () {
+          incomingConf.setRemoteSdp(optionsIncomingConf.remoteSdp);
+
+          incomingConf.connect(connectOptsConf);
+
+          expect(setRemoteDescriptionStub.calledWith(optionsIncomingConf.remoteSdp)).to.equal(true);
+        });
+
+        it('should not call peerConnection.setRemoteDescription for outgoing conference', function() {
+          outgoingConf.connect(connectOptsConf);
+
+          expect(setRemoteDescriptionStub.called).to.equal(false);
+        });
+
+        it('should call peerConnection.setLocalDescription with localSdp', function() {
+          incomingConf.connect(connectOptsConf);
+
+          expect(setLocalDescriptionStub.calledWith(connectOptsConf.localSdp)).to.equal(true);
+        });
+
+        it('should not execute peerConnection.setLocalDescription for breed `call`', function () {
+          incomingCall.connect();
+
+          expect(setLocalDescriptionStub.called).to.equal(false);
+        });
       });
     });
 

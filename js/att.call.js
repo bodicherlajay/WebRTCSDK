@@ -18,7 +18,7 @@
     // ===================
     // private properties
     // ===================
-    var that = this,
+    var thisCall = this,
       id,
       peer,
       mediaType,
@@ -107,6 +107,18 @@
       }
     }
 
+    function onCallDisconnected(data) {
+      id = null;
+
+      if (undefined !== data && 'Call rejected' === data.reason) {
+        setState('rejected');
+      } else {
+        emitter.publish('disconnected', data);
+      }
+      rtcManager.off('call-disconnected', onCallDisconnected);
+      rtcManager.resetPeerConnection();
+    }
+
     // ================
     // Public Methods
     // ================
@@ -151,20 +163,6 @@
       emitter.subscribe(event, handler, this);
     }
 
-
-    function onCallDisconnected(data) {
-      id = null;
-
-      if (undefined !== data && 'Call rejected' === data.reason) {
-        setState('rejected');
-      } else {
-        emitter.publish('disconnected', data);
-      }
-      rtcManager.off('call-disconnected', onCallDisconnected);
-      rtcManager.resetPeerConnection();
-
-    }
-
     function addStream() {
       peerConnection.addStream();
     }
@@ -174,20 +172,24 @@
      * Connects the call based on callType(Incoming|Outgoing)
      * @param {Object} The call config
     */
-    function connect(config) {
+    function connect(connectOpts) {
       try {
 
-        if (undefined !== config.localMedia) {
-          localMedia = config.localMedia;
+        if (undefined !== connectOpts) {
+          if (undefined !== connectOpts.localMedia) {
+            localMedia = connectOpts.localMedia;
+          }
+
+          if (undefined !== connectOpts.remoteMedia) {
+            remoteMedia = connectOpts.remoteMedia;
+          }
         }
 
-        if (undefined !== config.remoteMedia) {
-          remoteMedia = config.remoteMedia;
+        if (undefined !== remoteMedia) {
+          remoteMedia.addEventListener('playing', function () {
+            thisCall.setState('media-established');
+          });
         }
-
-        remoteMedia.addEventListener('playing', function () {
-          setState('media-established');
-        });
 
         rtcManager.on('media-modifications', onMediaModifications);
 
@@ -199,50 +201,58 @@
               remoteSdp: data.remoteSdp,
               type: 'answer'
             });
-            setRemoteSdp(data.remoteSdp);
+            thisCall.setRemoteSdp(data.remoteSdp);
           }
 
-          setState('connected');
+          thisCall.setState('connected');
 
           rtcManager.playStream('remote');
         });
 
-        rtcManager.connectCall({
-          breed: breed,
-          localMedia: localMedia,
-          remoteMedia: remoteMedia,
-          peer: peer,
-          callId: id,
-          type: type,
-          mediaType: mediaType,
-          remoteSdp: remoteSdp,
-          sessionInfo: sessionInfo,
-          onCallConnecting: function (callInfo) {
-            try {
-              if (type === ATT.CallTypes.OUTGOING) {
-                setId(callInfo.callId);
+        if ('call' === this.breed()) {
+          rtcManager.connectCall({
+            localMedia: localMedia,
+            remoteMedia: remoteMedia,
+            peer: peer,
+            callId: id,
+            type: type,
+            mediaType: mediaType,
+            remoteSdp: remoteSdp,
+            sessionInfo: sessionInfo,
+            onCallConnecting: function (callInfo) {
+              try {
+                if (type === ATT.CallTypes.OUTGOING) {
+                  thisCall.setId(callInfo.callId);
+                }
+                if (type === ATT.CallTypes.INCOMING) {
+                  thisCall.setState(callInfo.xState);
+                }
+                localSdp = callInfo.localSdp;
+              } catch (err) {
+                emitter.publish('error', {
+                  error: err
+                });
               }
-              if (type === ATT.CallTypes.INCOMING) {
-                setState(callInfo.xState);
-              }
-              localSdp = callInfo.localSdp;
-            } catch (err) {
+            },
+            onError: function (error) {
               emitter.publish('error', {
-                error: err
+                error: error
+              });
+            },
+            onUserMediaError: function (error) {
+              emitter.publish('error', {
+                error: error
               });
             }
-          },
-          onError: function (error) {
-            emitter.publish('error', {
-              error: error
-            });
-          },
-          onUserMediaError: function (error) {
-            emitter.publish('error', {
-              error: error
-            });
+          });
+        }
+
+        if ('conference' === this.breed()) {
+          if (ATT.CallTypes.INCOMING === this.type()) {
+            peerConnection.setRemoteDescription(this.remoteSdp());
           }
-        });
+          peerConnection.setLocalDescription(connectOpts.localSdp);
+        }
 
       } catch (err) {
         emitter.publish('error', {
@@ -378,6 +388,8 @@
       throw new Error('No mediaType provided');
     }
 
+    rtcManager.on('call-disconnected', onCallDisconnected);
+
     // Call attributes
     breed = options.breed;
 
@@ -395,45 +407,42 @@
     localMedia = options.localMedia;
     remoteMedia = options.remoteMedia;
 
-    rtcManager.on('call-disconnected', onCallDisconnected);
-
     // ===================
     // public interface
     // ===================
-
     this.peer = function () {
-        return peer;
-      };
+      return peer;
+    };
     this.codec = function () {
-        return codec;
-      };
+      return codec;
+    };
     this.mediaType = function () {
-        return mediaType;
-      };
+      return mediaType;
+    };
     this.type = function (){
-        return type;
-      };
+      return type;
+    };
     this.breed = function () {
-        return breed;
-      };
+      return breed;
+    };
     this.sessionInfo = function () {
-        return sessionInfo;
-      };
+      return sessionInfo;
+    };
     this.id = function () {
-        return id;
-      };
+      return id;
+    };
     this.localSdp = function () {
-        return localSdp;
-      };
+      return localSdp;
+    };
     this.localMedia = function () {
-        return localMedia;
-      };
+      return localMedia;
+    };
     this.remoteMedia = function () {
-        return remoteMedia;
-      };
+      return remoteMedia;
+    };
     this.remoteSdp = function () {
-        return remoteSdp;
-      };
+      return remoteSdp;
+    };
     this.setRemoteSdp  = setRemoteSdp;
     this.getState = getState;
     this.setState = setState;
