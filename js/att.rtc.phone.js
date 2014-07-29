@@ -1051,27 +1051,39 @@
       conference.connect();
     }
 
-    function addParticipant(options) {
+    function addParticipant(participant) {
+      try {
+        if (null === session.getId()) {
+          publishError(19000);
+          return;
+        }
 
-      if (null === session.getId()) {
-        publishError('19000');
-        return;
+        var conference = session.currentCall;
+
+        if (null !== conference && 'call' === conference.breed()) {
+          publishError('19001');
+          return;
+        }
+
+        if (undefined === participant) {
+          publishError('19002');
+        }
+
+        try {
+          conference.addParticipant(participant);
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError('19003');
+        }
+      } catch (err) {
+        emitter.publish('error', {
+          error: err
+        });
       }
-
-      var call = session.currentCall;
-
-      if (null !== call && 'call' === call.breed()) {
-        publishError('19001');
-        return;
-      }
-
-      if (undefined === options || undefined === options.participant) {
-        publishError('19002');
-      }
-
     }
 
-    // Call methods
+    // ===================
+    // Call interface
+    // ===================
     this.on = on.bind(this);
     this.getSession = getSession.bind(this);
     this.login = login.bind(this);
@@ -1090,7 +1102,9 @@
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
 
-    // Conference methods
+    // ===================
+    // Conference interface
+    // ===================
     this.dialConference = dialConference.bind(this);
     this.joinConference = joinConference.bind(this);
     this.addParticipant = addParticipant.bind(this);

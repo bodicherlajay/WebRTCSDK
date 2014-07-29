@@ -241,6 +241,19 @@
       }
     }
 
+    function addParticipant(participant) {
+      rtcManager.addParticipant({
+        sessionInfo: sessionInfo,
+        participant: participant,
+        confId: id,
+        onError: function (error) {
+          emitter.publish('error', {
+            error: error
+          });
+        }
+      });
+    }
+
     function disconnect() {
 
       setState('disconnecting');
@@ -418,6 +431,7 @@
     this.on = on;
     this.connect = connect;
     this.disconnect = disconnect;
+    this.addParticipant = addParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

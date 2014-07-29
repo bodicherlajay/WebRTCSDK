@@ -849,28 +849,48 @@ describe('Phone', function () {
 
       describe('[US225737] addParticipant', function () {
 
-        var publishStub;
-          //addParticipantStub;
+        var publishStub,
+          addParticipantStub,
+          conference;
 
         beforeEach(function () {
+
+          callConstructorStub.restore();
+
+          conference = new ATT.rtc.Call({
+            breed: 'conference',
+            peer: '1234567',
+            type: 'abc',
+            mediaType: 'video'
+          });
+
+          addParticipantStub = sinon.stub(conference, 'addParticipant');
           publishStub = sinon.stub(emitter, 'publish');
-          //addParticipantStub = sinon.stub(call, 'addParticipant');
+
+          session.currentCall = conference;
+
         });
 
         afterEach(function () {
           publishStub.restore();
-          //addParticipantStub.restore();
+          addParticipantStub.restore();
         });
 
         it('should exist', function () {
           expect(phone.addParticipant).to.be.a('function');
         });
 
-        xit('should execute call.addParticipant', function () {
-          //expect(addParticipantStub.called).to.equal(true);
+        it('should execute call.addParticipant', function () {
+
+          session.setId('1234567');
+
+          phone.addParticipant('1234');
+          expect(addParticipantStub.called).to.equal(true);
+          expect(addParticipantStub.getCall(0).args[0]).to.equal('1234');
         });
 
-        describe('Error Handling', function(){
+        describe('Error Handling', function() {
+
           it('[19000] should be thrown if the user is not logged in', function() {
             session.setId(null);
             phone.addParticipant();
@@ -880,17 +900,16 @@ describe('Phone', function () {
               error: ATT.errorDictionary.getSDKError('19000')
             })).to.equal(true);
           });
+
           it('[19001] should be thrown if the call breed is not `conference`', function() {
 
             session.setId('12344');
 
-            session.currentCall = {
-              breed: function () {
-                return 'call'
-              }
+            conference.breed = function () {
+              return 'call'
             };
 
-            phone.addParticipant();
+            phone.addParticipant('1234');
 
             expect(ATT.errorDictionary.getSDKError('19001')).to.be.an('object');
             expect(publishStub.calledWith('error', {
@@ -902,18 +921,29 @@ describe('Phone', function () {
 
             session.setId('12344');
 
-            session.currentCall = {
-              breed: function () {
-                return 'conference'
-              }
-            };
-
             phone.addParticipant();
 
             expect(ATT.errorDictionary.getSDKError('19002')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('19002')
             })).to.equal(true);
+          });
+
+          it('[19003] should be thrown if internal error occurred', function () {
+            addParticipantStub.restore();
+            addParticipantStub = sinon.stub(conference, 'addParticipant', function() {
+              throw error;
+            });
+
+            session.setId('12344');
+            phone.addParticipant('12345');
+
+            expect(ATT.errorDictionary.getSDKError('19003')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('19003')
+            })).to.equal(true);
+
+            addParticipantStub.restore();
           });
         });
       });

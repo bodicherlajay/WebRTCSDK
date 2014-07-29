@@ -573,6 +573,14 @@
       ErrorMessage: "participant parameter missing",
       Cause: "One or more required input parameter(s) are missing",
       Resolution: "Please provide participant parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipant",
+      ErrorCode: "19003",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
     }
   ];
 
