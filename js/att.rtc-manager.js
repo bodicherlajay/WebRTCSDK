@@ -368,9 +368,11 @@
         },
         success: function (response) {
           logger.logInfo('addParticipant Request success');
+          var modId;
 
           if ('add-pending' === response.getResponseHeader('x-state')) {
-            options.onParticipantPending();
+            modId = response.getResponseHeader('x-modId');
+            options.onParticipantPending(modId);
           }
         },
         error: function (error) {

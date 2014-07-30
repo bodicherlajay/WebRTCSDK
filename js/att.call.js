@@ -281,10 +281,11 @@
       }
     }
 
-    function setParticipant (participantId, status) {
-      thisCall.participants()[participantId] = {
-        id: participantId,
-        status: status
+    function setParticipant (participant, status, modId) {
+      thisCall.participants()[participant] = {
+        participant: participant,
+        status: status,
+        id: modId
       }
     }
 
@@ -293,8 +294,8 @@
         sessionInfo: sessionInfo,
         participant: participant,
         confId: id,
-        onParticipantPending: function () {
-          thisCall.setParticipant(participant, 'invitee');
+        onParticipantPending: function (modId) {
+          thisCall.setParticipant(participant, 'invitee', modId);
           thisCall.setState('participant-pending');
         },
         onError: function (error) {

@@ -908,7 +908,12 @@ describe('RTC Manager', function () {
             // ==== Positive case
             response = {
               getResponseHeader: function (name) {
-                return 'add-pending';
+                switch(name) {
+                  case 'x-state':
+                    return 'add-pending';
+                  case 'x-modId':
+                    return 'abc123';
+                }
               }
             };
 
@@ -923,7 +928,7 @@ describe('RTC Manager', function () {
               participant: '12345'
             });
 
-            expect(onParticipantPendingSpy.called).to.equal(true);
+            expect(onParticipantPendingSpy.calledWith('abc123')).to.equal(true);
 
             doOperationStub.restore();
 

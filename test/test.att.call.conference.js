@@ -57,7 +57,8 @@ describe('Call [Conference]', function () {
       emitter,
       createEEStub,
       publishStub,
-      setStateStub;
+      setStateStub,
+      modId;
 
     beforeEach(function () {
 
@@ -86,6 +87,8 @@ describe('Call [Conference]', function () {
         id: '1234'
       };
 
+      modId = 'abc123';
+
       emitter = ATT.private.factories.createEventEmitter();
 
       createEEStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
@@ -95,7 +98,7 @@ describe('Call [Conference]', function () {
       publishStub = sinon.stub(emitter, 'publish');
 
       addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function (options) {
-        options.onParticipantPending();
+        options.onParticipantPending(modId);
       });
 
       conference = new ATT.rtc.Call(options);
@@ -131,7 +134,7 @@ describe('Call [Conference]', function () {
 
           conference.addParticipant('4250001');
 
-          expect(setParticipantStub.calledWith('4250001', 'invitee')).to.equal(true);
+          expect(setParticipantStub.calledWith('4250001', 'invitee', modId)).to.equal(true);
         });
 
         it('should publish `participant-pending` when rtcMgr invokes `onParticipantPending` callback', function () {
@@ -186,12 +189,14 @@ describe('Call [Conference]', function () {
       it('should add the new participant to the list', function () {
         var participants;
 
-        conference.setParticipant('123', 'invitee');
-        conference.setParticipant('321', 'participant');
+        conference.setParticipant('raman@raman.com', 'invitee', 'abc123');
+        conference.setParticipant('4250000001', 'accepted', 'cba123');
+        conference.setParticipant('toyin@toyin.com', 'accepted', 'efg456');
 
         participants = conference.participants();
-        expect(participants[123].status).equal('invitee');
-        expect(participants[321].id).equal('321');
+        expect(participants['raman@raman.com'].status).equal('invitee');
+        expect(participants['4250000001'].participant).equal('4250000001');
+        expect(participants['toyin@toyin.com'].id).equal('efg456');
       });
     });
   });
