@@ -10,7 +10,8 @@
       localDescription,
       sdpFilter = ATT.sdpFilter.getInstance(),
       onSuccess,
-      onError;
+      onError,
+      mediaConstraint;
 
     function setRemoteDescription(sdp) {
       pc.setRemoteDescription(sdp);
@@ -23,12 +24,22 @@
       throw new Error('No `stream` passed.');
     }
 
-    if ('function' !== typeof options.onSuccess ) {
+    if (undefined === options.mediaType) {
+      throw new Error('No `mediaType` passed.');
+    }
+
+
+    mediaConstraint =  {
+      'OfferToReceiveAudio': true,
+      'OfferToReceiveVideo': (options.mediaType === 'video')
+    };
+
+    if ('function' !== typeof options.onSuccess) {
       throw new Error('No `onSuccess` callback passed.');
     }
     onSuccess = options.onSuccess;
 
-    if ('function' !== typeof options.onError ) {
+    if ('function' !== typeof options.onError) {
       throw new Error('No `onError` callback passed.');
     }
     onError = options.onError;
@@ -52,10 +63,10 @@
         var fixedSDP = sdpFilter.processChromeSDPOffer(description);
         pc.setLocalDescription(fixedSDP, function () {
           onSuccess(fixedSDP);
-        }, onError);
+        }, onError, {});
       }, function () {
         //should be an error
-      });
+      }, { mandatory: mediaConstraint});
     } else {
       pc.createAnswer(function (description) {
         var fixedSDP = sdpFilter.processChromeSDPOffer(description);
@@ -64,7 +75,7 @@
         }, onError);
       }, function () {
         return;
-      });
+      },{ mandatory: mediaConstraint});
     }
 
     peerConnection = {

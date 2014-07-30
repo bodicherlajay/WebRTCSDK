@@ -17,11 +17,13 @@ describe('PeerConnection', function () {
 
     createOptionsOutgoing = {
       stream : {},
+      mediaType: 'video',
       onSuccess : function () {},
       onError : function () {}
     };
     createOptionsIncoming = {
       stream : {},
+      mediaType: 'video',
       remoteSDP : '123',
       onSuccess : function () {},
       onError : function () {}
@@ -64,13 +66,19 @@ describe('PeerConnection', function () {
         })).to.throw('No `stream` passed.');
         expect(factories.createPeerConnection.bind(factories, {
           stream: {}
+        })).to.throw('No `mediaType` passed.');
+        expect(factories.createPeerConnection.bind(factories, {
+          stream: {},
+          mediaType: 'video'
         })).to.throw('No `onSuccess` callback passed.');
         expect(factories.createPeerConnection.bind(factories, {
           stream: {},
+          mediaType: 'video',
           onSuccess: function () {}
         })).to.throw('No `onError` callback passed.');
         expect(factories.createPeerConnection.bind(factories, {
           stream: {},
+          mediaType: 'video',
           onSuccess :  function () {},
           onError : function () {}
         })).to.not.throw(Error);
@@ -106,9 +114,6 @@ describe('PeerConnection', function () {
         peerConnection = factories.createPeerConnection(createOptionsOutgoing);
 
         expect(peerConnection).to.be.a('object');
-       // TODO : Need ot check if the new callbacks have been assigned
-//        expect(peerConnection.onSuccess).to.equal(createOptions.onSuccess);
-//        expect(peerConnection.onError).to.equal(createOptions.onError);
 
       });
 
@@ -138,13 +143,22 @@ describe('PeerConnection', function () {
       });
 
       describe('pc.createOffer', function () {
-        it('should call `pc.createOffer` if we dont have a remote SDP', function () {
-          var createOfferStub = sinon.stub(rtcPC, 'createOffer');
+        it('should call `pc.createOffer` if we don\'t have a remote SDP', function () {
+          var createOfferStub = sinon.stub(rtcPC, 'createOffer'),
+            expectedConstraints = {};
+
+          createOptionsOutgoing.mediaType = 'video';
+
+          expectedConstraints.audio = true;
+          expectedConstraints.video = (createOptionsOutgoing.mediaType === 'video');
 
           factories.createPeerConnection(createOptionsOutgoing);
+
           expect(createOfferStub.called).to.equal(true);
           expect(createOfferStub.getCall(0).args[0]).to.be.a('function');
           expect(createOfferStub.getCall(0).args[1]).to.be.a('function');
+          expect(createOfferStub.getCall(0).args[2].mandatory.OfferToReceiveAudio).to.equal(expectedConstraints.audio);
+          expect(createOfferStub.getCall(0).args[2].mandatory.OfferToReceiveVideo).to.equal(expectedConstraints.video);
 
 
           createOfferStub.restore();
@@ -249,13 +263,22 @@ describe('PeerConnection', function () {
 
       describe('pc.createAnswer', function () {
         it('should call `pc.createAnswer` if we have a remoteSdp', function () {
-          var createAnswerStub = sinon.stub(rtcPC, 'createAnswer');
+          var createAnswerStub = sinon.stub(rtcPC, 'createAnswer'),
+            expectedConstraints = {};
+
+          createOptionsIncoming.mediaType = 'video';
+
+          expectedConstraints.audio = true;
+          expectedConstraints.video = (createOptionsIncoming.mediaType === 'video');
 
           factories.createPeerConnection(createOptionsIncoming);
 
           expect(createAnswerStub.called).to.equal(true);
           expect(createAnswerStub.getCall(0).args[0]).to.be.a('function');
           expect(createAnswerStub.getCall(0).args[1]).to.be.a('function');
+          expect(createAnswerStub.getCall(0).args[2].mandatory.OfferToReceiveAudio).to.equal(expectedConstraints.audio);
+          expect(createAnswerStub.getCall(0).args[2].mandatory.OfferToReceiveVideo).to.equal(expectedConstraints.video);
+
 
           createAnswerStub.restore();
         });
