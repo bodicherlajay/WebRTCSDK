@@ -37,7 +37,19 @@
       peerConnection = factories.createPeerConnection();
 
     peerConnection.onICETricklingComplete = function () {
-      rtcManager.connectConference(thisCall.localSdp());
+      rtcManager.connectConference({
+        localSdp: thisCall.localSdp(),
+        onConferenceConnecting: function () {
+          emitter.publish('connecting', {
+            from: thisCall.peer(),
+            mediaType: thisCall.mediaType(),
+            codec: thisCall.codec(),
+            timestamp: new Date()
+          });
+        },
+        onError: function () {
+        }
+      });
     };
 
     peerConnection.onError = function () { };

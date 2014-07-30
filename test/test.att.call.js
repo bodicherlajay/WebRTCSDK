@@ -252,10 +252,17 @@ describe('Call', function () {
 
       describe('onICETricklingComplete', function () {
 
-        var connectConfStub,
+        var localSdp,
+          connectConfStub,
           conference;
 
         beforeEach(function () {
+          localSdp = 'localSdp';
+
+          conference = new ATT.rtc.Call(optionsIncomingConf);
+
+          conference.setLocalSdp(localSdp);
+
           connectConfStub = sinon.stub(rtcMgr, 'connectConference', function () {});
         });
 
@@ -264,13 +271,60 @@ describe('Call', function () {
         });
 
         it('should execute RTCManager.connectConference', function () {
-          var localSdp = 'localSdp';
-          conference = new ATT.rtc.Call(optionsIncomingConf);
-          conference.setLocalSdp(localSdp);
-
           peerConnection.onICETricklingComplete();
 
-          expect(connectConfStub.calledWith(localSdp)).to.equal(true);
+          expect(connectConfStub.called).to.equal(true);
+          expect(connectConfStub.getCall(0).args[0]).to.be.an('object');
+          expect(connectConfStub.getCall(0).args[0].localSdp).to.equal(localSdp);
+          expect(connectConfStub.getCall(0).args[0].onConferenceConnecting).to.be.a('function');
+          expect(connectConfStub.getCall(0).args[0].onError).to.be.a('function');
+        });
+
+        describe('connectConference callbacks', function () {
+
+          var onConnectingHandlerSpy;
+
+          beforeEach(function () {
+            onConnectingHandlerSpy = sinon.spy();
+
+            conference.on('connecting', onConnectingHandlerSpy);
+          });
+
+          describe('onConferenceConnecting', function () {
+
+            beforeEach(function () {
+              connectConfStub.restore();
+
+              connectConfStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
+                setTimeout(function () {
+                  options.onConferenceConnecting();
+                }, 0);
+              })
+            });
+
+            it('should publish connecting with relevant data', function (done) {
+              peerConnection.onICETricklingComplete();
+
+              setTimeout(function () {
+                try {
+                  expect(onConnectingHandlerSpy.called).to.equal(true);
+                  expect(onConnectingHandlerSpy.getCall(0).args[0]).to.be.an('object');
+                  expect(onConnectingHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+                  expect(onConnectingHandlerSpy.getCall(0).args[0].codec).to.be.an('array');
+                  expect(onConnectingHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+                  expect(onConnectingHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
+          });
+
+          describe('onError', function () {
+
+            it('should publish `error`');
+          });
         });
       });
 
@@ -1075,7 +1129,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].to
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1097,7 +1151,7 @@ describe('Call', function () {
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1119,7 +1173,7 @@ describe('Call', function () {
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1139,7 +1193,7 @@ describe('Call', function () {
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1161,7 +1215,7 @@ describe('Call', function () {
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1183,7 +1237,7 @@ describe('Call', function () {
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1203,7 +1257,7 @@ describe('Call', function () {
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1225,7 +1279,7 @@ describe('Call', function () {
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1247,7 +1301,7 @@ describe('Call', function () {
               || onEventHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof onEventHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           }, 100);
         });
@@ -1649,8 +1703,6 @@ describe('Call', function () {
         });
 
         setTimeout(function () {
-          console.log(rejectedSpy.callCount);
-          console.log(JSON.stringify(rejectedSpy.getCall(0).args[0]));
           expect(rejectedSpy.calledOnce).to.equal(true);
           done();
         }, 100);
