@@ -1107,8 +1107,17 @@ describe('Phone', function () {
 
           phone.addParticipant('1234');
 
-          expect(onSpy.calledOnce).to.equal(true);
+          expect(onSpy.called).to.equal(true);
           expect(onSpy.calledWith('participant-pending')).to.equal(true);
+        });
+
+        it('should register for `error` event on the conference object', function () {
+          session.setId('123456');
+
+          phone.addParticipant('1234');
+
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.calledWith('error')).to.equal(true);
         });
 
         describe('addParticipant events', function () {
@@ -1119,7 +1128,7 @@ describe('Phone', function () {
 
           describe('participant-pending', function () {
 
-            it('should publish `participant-pending` with event data on getting a connecting event from call', function (done) {
+            it('should publish `participant-pending` with event data on getting a `participant-pending`', function (done) {
               emitterConference.publish('participant-pending', eventData);
 
               setTimeout(function() {
@@ -1133,9 +1142,25 @@ describe('Phone', function () {
                 }
               }, 200);
             });
-
           });
 
+          describe('error', function () {
+
+            it('should publish `error` with event data on getting an `error` from conf', function (done) {
+              emitterConference.publish('error', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledOnce).to.equal(true);
+                  expect(publishStub.calledWith('error')).to.equal(true);
+                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 200);
+            });
+          });
         });
 
         it('should execute call.addParticipant', function () {

@@ -144,7 +144,37 @@ describe('Call [Conference]', function () {
         });
       });
 
-      describe('Error handling', function () { });
+      describe('Error on rtcManager.addParticipant', function () {
+        var error;
+
+        beforeEach(function () {
+          addParticipantStub.restore();
+
+          error = {
+            message: 'error'
+          };
+
+          addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function (options) {
+            options.onError(error);
+          });
+        });
+
+
+        it('should publish `error` when rtcMgr invokes `onError` callback', function (done) {
+
+          conference.addParticipant('12345');
+
+          setTimeout(function () {
+            try {
+              expect(publishStub.calledOnce).to.equal(true);
+              expect(publishStub.calledWith('error', error)).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+      });
     });
 
     describe('setParticipant', function () {
