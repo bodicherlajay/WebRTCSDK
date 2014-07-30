@@ -433,6 +433,7 @@ describe('Event Manager', function () {
 
           setTimeout(function () {
             expect(publishSpy.calledWith('media-mod-terminations', {
+              type: 'calls',
               remoteSdp: 'abcdefg',
               modificationId: '12345',
               reason: 'success'
