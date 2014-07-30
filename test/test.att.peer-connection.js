@@ -40,97 +40,115 @@ describe('PeerConnection', function () {
 
   describe('Constructor', function () {
 
-    it('should throw an error if `options` are invalid', function () {
+    describe('Error: Invalid parameters', function () {
+      it('should throw an error if `options` are invalid', function () {
 
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-        return rtcPC;
+        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+          return rtcPC;
+        });
+
+        expect(factories.createPeerConnection).to.throw('No options passed.');
+        expect(factories.createPeerConnection.bind(factories, {})).to.throw('No options passed.');
+        expect(factories.createPeerConnection.bind(factories, {
+          test: 'ABC'
+        })).to.throw('No `stream` passed.');
+        expect(factories.createPeerConnection.bind(factories, {
+          stream: {}
+        })).to.not.throw(Error);
+
+        rtcpcStub.restore();
       });
 
-      expect(factories.createPeerConnection).to.throw('No options passed.');
-      expect(factories.createPeerConnection.bind(factories, {})).to.throw('No options passed.');
-      expect(factories.createPeerConnection.bind(factories, {
-        test: 'ABC'
-      })).to.throw('No `stream` passed.');
-      expect(factories.createPeerConnection.bind(factories, {
-        stream: {}
-      })).to.not.throw(Error);
+      it('should throw an error if it fails to create RTCPeerConnection ', function () {
+        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+          throw new Error('Failed to create PeerConnection.');
+        });
 
-      rtcpcStub.restore();
+        expect(factories.createPeerConnection.bind(factories, createOptions)).to.throw('Failed to create PeerConnection.');
+
+        rtcpcStub.restore();
+      });
     });
 
-    it('should throw an error if it fails to create RTCPeerConnection ', function () {
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-        throw new Error('Failed to create PeerConnection.');
+    describe('Constructor: Valid parameters', function () {
+      it('should create a private RTCPeerConnection instance', function () {
+        var peerConnection;
+
+        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+          return rtcPC;
+        });
+        peerConnection = factories.createPeerConnection(createOptions);
+
+        expect(peerConnection).to.be.a('object');
+        expect(peerConnection.onICETricklingComplete).to.equal(null);
+        expect(peerConnection.onError).to.equal(null);
+
+        rtcpcStub.restore();
       });
 
-      expect(factories.createPeerConnection.bind(factories, createOptions)).to.throw('Failed to create PeerConnection.');
+      it('should set `pc.onicecandidate`', function () {
+        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+          return rtcPC;
+        });
 
-      rtcpcStub.restore();
-    });
+        expect(rtcPC.onicecandidate).to.equal(null);
 
-    it('should create a private RTCPeerConnection instance', function () {
-      var peerConnection;
+        factories.createPeerConnection(createOptions);
 
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-        return rtcPC;
-      });
-      peerConnection = factories.createPeerConnection(createOptions);
-
-      expect(peerConnection).to.be.a('object');
-      expect(peerConnection.onICETricklingComplete).to.equal(null);
-      expect(peerConnection.onError).to.equal(null);
-
-      rtcpcStub.restore();
-    });
-
-    it('should set `pc.onicecandidate`', function () {
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-        return rtcPC;
+        expect(rtcPC.onicecandidate).to.be.a('function');
+        rtcpcStub.restore();
       });
 
-      expect(rtcPC.onicecandidate).to.equal(null);
+      it('should add a localStream to peer connection', function () {
 
-      factories.createPeerConnection(createOptions);
+        var onAddStreamStub, stream = '1245';
+        onAddStreamStub = sinon.stub(rtcPC, 'addStream');
+        rtcPC.localStream = stream;
+        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+          return rtcPC;
+        });
+        createOptions.stream = stream;
 
-      expect(rtcPC.onicecandidate).to.be.a('function');
-      rtcpcStub.restore();
-    });
+        factories.createPeerConnection(createOptions);
 
-    it('should add a localStream to peer connection', function () {
+        expect(onAddStreamStub.calledWith(stream)).to.equal(true);
 
-      var onAddStreamStub, stream = '1245';
-      onAddStreamStub = sinon.stub(rtcPC, 'addStream');
-      rtcPC.localStream = stream;
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-        return rtcPC;
-      });
-      createOptions.stream = stream;
-
-      factories.createPeerConnection(createOptions);
-
-      expect(onAddStreamStub.calledWith(stream)).to.equal(true);
-
-      onAddStreamStub.restore();
-      rtcpcStub.restore();
-    });
-
-    it('should set the pc.onaddstream', function () {
-
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-        return rtcPC;
+        onAddStreamStub.restore();
+        rtcpcStub.restore();
       });
 
-      expect(rtcPC.onaddstream).to.equal(null);
+      it('should set the pc.onaddstream', function () {
 
-      factories.createPeerConnection(createOptions);
+        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+          return rtcPC;
+        });
 
-      expect(rtcPC.onaddstream).to.be.a('function');
+        expect(rtcPC.onaddstream).to.equal(null);
 
-      rtcpcStub.restore();
+        factories.createPeerConnection(createOptions);
+
+        expect(rtcPC.onaddstream).to.be.a('function');
+
+        rtcpcStub.restore();
+      });
+
+      it('should call `pc.createOffer`');
+
+      describe('createOffer', function () {
+        describe('Success', function () {
+          it('should call `pc.setLocalDescription`');
+        });
+
+        describe('Error', function () {
+          it('should throw an error');
+        });
+      });
     });
   });
 
-  describe('Methods', function () {
+  // TODO: I think these methods are not needed,
+  // sync tomorrow with everybody
+  describe.skip('Methods', function () {
     var peerConnection;
 
     beforeEach(function () {
