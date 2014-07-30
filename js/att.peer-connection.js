@@ -3,13 +3,16 @@
 (function () {
   'use strict';
 
-  function createPeerConnection() {
+  function createPeerConnection(options) {
 
-    var pc,
-      sdpFilter;
+    var peerConnection,
+      pc,
+      localDescription,
+      localStream;
 
     function addStream() {
-
+//      localStream = stream;
+//      pc.addStream(localStream);
     }
 
     function setRemoteDescription(sdp) {
@@ -17,15 +20,21 @@
     }
 
     function setLocalDescription(sdp) {
+      localDescription = sdp;
       pc.setLocalDescription(sdp);
 
     }
-
     function createAnswer() {
 
     }
 
-//    sdpFilter = ATT.sdpFilter.getInstance();
+    if (undefined === options || Object.keys(options).length === 0) {
+      throw new Error('No options passed.');
+    }
+    if (undefined === options.stream) {
+      throw new Error('No `stream` passed.');
+    }
+    localStream = options.stream;
 
     try {
       pc = new RTCPeerConnection();
@@ -34,24 +43,36 @@
     }
 
     pc.onicecandidate = function () {
-//      try {
-//        sdpFilter.processChromeSDPOffer(pc.localDescription);
-//      } catch (err) {
-////        options.onError(new Error('Could not process Chrome offer SDP.'));
-//      }
-//
-//      options.onICETricklingComplete();
-//      options.onError(new Error('Could not set local description.'));
+      try {
+        pc.setLocalDescription(localDescription);
+      } catch (err) {
+        throw new Error('Could not set local description.');
+      }
+      if (undefined !== peerConnection
+          && 'function' === typeof peerConnection.onICETricklingComplete) {
+        peerConnection.onICETricklingComplete();
+      }
+
     };
 
-    return {
+    pc.addStream(localStream);
+    pc.onaddstream = function (event) {
+      if ('function' === typeof peerConnection.onRemoteStream) {
+        peerConnection.onRemoteStream(event.remoteStream);
+      }
+    }
+
+    peerConnection = {
       addStream: addStream,
+      onRemoteStream: null,
       setLocalDescription: setLocalDescription,
       setRemoteDescription: setRemoteDescription,
       createAnswer: createAnswer,
       onICETricklingComplete: null,
       onError : null
     };
+
+    return peerConnection;
   }
 
   if (undefined === ATT.private.factories) {
