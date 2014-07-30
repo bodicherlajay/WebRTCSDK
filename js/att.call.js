@@ -258,18 +258,31 @@
           if (ATT.CallTypes.INCOMING === this.type()) {
 
             factories.createPeerConnection({
+
               mediaType: thisCall.mediaType(),
               localStream: thisCall.localStream(),
               remoteSdp: thisCall.remoteSdp(),
               onSuccess: function (localSdp) {
+
                 thisCall.setLocalSdp(localSdp);
+
                 rtcManager.connectConference({
                   localSdp: thisCall.localSdp(),
-                  onSuccess: function () {},
-                  onError: function () {}
+                  onSuccess: function (state) {
+                    thisCall.setState('connecting');
+                  },
+                  onError: function (error) {
+                    emitter.publish('error', {
+                      error: error
+                    });
+                  }
                 });
               },
-              onError: function () {}
+              onError: function (error) {
+                emitter.publish('error', {
+                  error: error
+                });
+              }
             });
           }
         }

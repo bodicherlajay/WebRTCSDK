@@ -332,8 +332,22 @@
       });
     }
 
-    function connectConference() {
+    function connectConference(options) {
+      var config = {
+        data: {
+          conferenceModifications: {
+            sdp: options.localSdp
+          }
+        },
+        success: function () {
+          options.onSuccess('connecting');
+        },
+        error: function (error) {
+          options.onError(error);
+        }
+      };
 
+      resourceManager.doOperation('acceptConference', config);
     }
 
     function addParticipant(options) {
@@ -629,10 +643,6 @@
         }
       });
     }
-
-    function connectConference() {
-    }
-
 
     this.on = on.bind(this);
     this.off = off.bind(this);

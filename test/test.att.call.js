@@ -631,11 +631,100 @@ describe('Call', function () {
               }, 100);
 
             });
+
+            describe('RTCManager.connectConference callbacks', function () {
+
+              describe('onSuccess', function () {
+
+                var setStateStub;
+
+                beforeEach(function () {
+                  connectConferenceStub.restore();
+
+                  connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
+                    setTimeout(function () {
+                      options.onSuccess('connecting');
+                    }, 0);
+                  });
+
+                  setStateStub = sinon.stub(incomingConf, 'setState', function () {});
+                });
+
+                afterEach(function () {
+                  setStateStub.restore();
+                });
+
+                it('should set the `state` that is returned by `onSuccess`', function (done) {
+                  incomingConf.connect();
+
+                  setTimeout(function () {
+                    try {
+                      expect(setStateStub.calledWith('connecting')).to.equal(true);
+                      done();
+                    } catch (e) {
+                      done(e);
+                    }
+                  }, 100);
+
+                });
+              });
+
+              describe('onError', function () {
+
+                beforeEach(function () {
+                  connectConferenceStub.restore();
+
+                  connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
+                    setTimeout(function () {
+                      options.onError(error);
+                    }, 0);
+                  })
+                });
+
+                it('should publish an error with error data', function (done) {
+                  incomingConf.connect();
+
+                  setTimeout(function () {
+                    try {
+                      expect(onErrorHandlerSpy.calledWith({
+                        error: error
+                      })).to.equal(true);
+                      done();
+                    } catch (e) {
+                      done(e);
+                    }
+                  }, 100);
+                })
+              });
+            });
           });
 
           describe('onError', function () {
 
-            it('should publish `error`');
+            beforeEach(function () {
+              createPeerConnectionStub.restore();
+
+              createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
+                setTimeout(function () {
+                  options.onError(error);
+                });
+              })
+            });
+
+            it('should publish `error` with error data', function (done) {
+              incomingConf.connect();
+
+              setTimeout(function () {
+                try {
+                  expect(onErrorHandlerSpy.calledWith({
+                    error: error
+                  })).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
           });
         });
 

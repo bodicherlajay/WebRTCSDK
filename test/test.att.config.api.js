@@ -84,22 +84,31 @@ describe('APIConfig', function () {
 
     it('should have a valid method answerCall method and returns Authorization and url', function () {
       var params = ["param1", "param2"];
-      expect(currentConfiguration.answerCall.method).to.equal('put');
       expect(currentConfiguration.answerCall).to.be.an('object');
+      expect(currentConfiguration.answerCall.method).to.equal('put');
       expect(currentConfiguration.answerCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/param1/calls/param2');
       expect(currentConfiguration.answerCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
     });
 
     it('should have a valid method modifyCall method and returns Authorization and url', function () {
       var  params = ["param1", "param2"];
-      expect(currentConfiguration.modifyCall.method).to.equal('put');
       expect(currentConfiguration.modifyCall).to.be.an('object');
+      expect(currentConfiguration.modifyCall.method).to.equal('put');
       expect(currentConfiguration.modifyCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/param1/calls/param2');
       expect(currentConfiguration.modifyCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
       expect(currentConfiguration.modifyCall.headers).to.be.an('object');
     });
 
-    it('should have a valid method addParticipant method', function () {
+    it('should have a valid method acceptConference', function () {
+      var params = ['sessionId', 'confId'];
+      expect(currentConfiguration.acceptConference).to.be.an('object');
+      expect(currentConfiguration.acceptConference.method).to.equal('put');
+      expect(currentConfiguration.acceptConference.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/confId');
+      expect(currentConfiguration.acceptConference.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
+      expect(currentConfiguration.acceptConference.headers).to.be.an('object');
+    });
+
+    it('should have a valid method addParticipant', function () {
       var params = ['sessionId', 'confId', 'participantId'];
       expect(currentConfiguration.addParticipant.method).to.equal('put');
       expect(currentConfiguration.addParticipant).to.be.an('object');

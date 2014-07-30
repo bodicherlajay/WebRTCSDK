@@ -14,11 +14,14 @@ describe('RTC Manager', function () {
     sessionInfo,
     emitter,
     createEventEmitterStub,
-    timeout;
+    timeout,
+    localSdp;
 
   before(function () {
     factories = ATT.private.factories;
+
     timeout = 1234;// time in seconds
+
     sessionInfo = {
       sessionId : '123',
       timeout: timeout * 1000 // milliseconds
@@ -27,6 +30,8 @@ describe('RTC Manager', function () {
     error = {
       error: 'Test Error'
     };
+
+    localSdp = 'localSdp';
 
     createWebRTCSessionResponse = {
       getResponseHeader : function (name) {
@@ -157,7 +162,7 @@ describe('RTC Manager', function () {
 
         doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (operationName, options) {
           setTimeout(function () {
-            options.success(createWebRTCSessionResponse);
+            options.success();
           }, 0);
         });
 
@@ -233,6 +238,13 @@ describe('RTC Manager', function () {
             onError: onErrorSpy
           };
 
+          doOperationStub.restore();
+
+          doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (operationName, options) {
+            setTimeout(function () {
+              options.success(createWebRTCSessionResponse);
+            }, 0);
+          });
         });
 
         it('should exist', function () {
@@ -645,14 +657,6 @@ describe('RTC Manager', function () {
             onError: onErrorSpy
           };
 
-          doOperationStub.restore();
-
-          doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function(operationName, options){
-            setTimeout(function () {
-              options.success();
-            }, 0);
-          });
-
         });
 
         it('should exist', function () {
@@ -874,8 +878,84 @@ describe('RTC Manager', function () {
       });
 
       describe('connectConference', function () {
+
+        var connectConfOpts,
+          onSuccessSpy,
+          onErrorSpy;
+
+        beforeEach(function () {
+          onSuccessSpy = sinon.spy();
+          onErrorSpy = sinon.spy();
+
+          connectConfOpts = {
+            localSdp: localSdp,
+            onSuccess: onSuccessSpy,
+            onError: onErrorSpy
+          };
+
+        });
+
         it('should exist', function () {
           expect(rtcManager.connectConference).to.be.a('function');
+        });
+
+        it('should execute `resourceManager.doOperation` with required params', function () {
+
+          rtcManager.connectConference(connectConfOpts);
+
+          expect(doOperationStub.called).to.equal(true);
+          expect(doOperationStub.getCall(0).args[0]).to.equal('acceptConference');
+          expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].data).eql({
+            conferenceModifications: {
+              sdp: localSdp
+            }
+          });
+          expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
+          expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
+        });
+
+        describe('doOperations Callbacks', function () {
+
+          describe('success', function () {
+
+            it('should trigger `onSuccess` callback of `connectConference` with `connecting` state', function (done) {
+              rtcManager.connectConference(connectConfOpts);
+
+              setTimeout(function() {
+                try {
+                  expect(onSuccessSpy.calledWith('connecting')).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 100);
+            });
+          });
+
+          describe('error', function () {
+
+            it('should publish `error` with error data', function (done) {
+              doOperationStub.restore();
+
+              doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function (operationName, options) {
+                setTimeout(function () {
+                  options.error(error);
+                }, 0);
+              });
+
+              rtcManager.connectConference(connectConfOpts);
+
+              setTimeout(function () {
+                try {
+                  expect(onErrorSpy.called).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
+          });
         });
       });
 
