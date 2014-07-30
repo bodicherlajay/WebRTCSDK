@@ -5,26 +5,38 @@ describe('PeerConnection', function () {
   'use strict';
 
   var factories,
-    onICETricklingCompleteSpy,
+    onSuccessSpy,
     onErrorSpy,
     sdpFilter,
     rtcPC,
     rtcpcStub,
-    createOptions;
+    createOptionsOutgoing,
+    createOptionsIncoming;
 
   beforeEach(function () {
 
-    createOptions = {
-      stream : {}
+    createOptionsOutgoing = {
+      stream : {},
+      mediaType: 'video',
+      onSuccess : function () {},
+      onError : function () {}
+    };
+    createOptionsIncoming = {
+      stream : {},
+      mediaType: 'video',
+      remoteSDP : '123',
+      onSuccess : function () {},
+      onError : function () {}
     };
 
     rtcPC = {
       setLocalDescription: function () { return; },
-      onicecandidate: null,
       localDescription : '12X3',
       setRemoteDescription : function () { return; },
       addStream : function () {return; },
-      onaddstream : null
+      onaddstream : null,
+      createOffer : function () {return; },
+      createAnswer : function () {return;}
     };
 
     sdpFilter = ATT.sdpFilter.getInstance();
@@ -54,6 +66,21 @@ describe('PeerConnection', function () {
         })).to.throw('No `stream` passed.');
         expect(factories.createPeerConnection.bind(factories, {
           stream: {}
+        })).to.throw('No `mediaType` passed.');
+        expect(factories.createPeerConnection.bind(factories, {
+          stream: {},
+          mediaType: 'video'
+        })).to.throw('No `onSuccess` callback passed.');
+        expect(factories.createPeerConnection.bind(factories, {
+          stream: {},
+          mediaType: 'video',
+          onSuccess: function () {}
+        })).to.throw('No `onError` callback passed.');
+        expect(factories.createPeerConnection.bind(factories, {
+          stream: {},
+          mediaType: 'video',
+          onSuccess :  function () {},
+          onError : function () {}
         })).to.not.throw(Error);
 
         rtcpcStub.restore();
@@ -64,221 +91,296 @@ describe('PeerConnection', function () {
           throw new Error('Failed to create PeerConnection.');
         });
 
-        expect(factories.createPeerConnection.bind(factories, createOptions)).to.throw('Failed to create PeerConnection.');
+        expect(factories.createPeerConnection.bind(factories, createOptionsOutgoing)).to.throw('Failed to create PeerConnection.');
 
         rtcpcStub.restore();
       });
     });
 
     describe('Constructor: Valid parameters', function () {
+
+      beforeEach(function () {
+        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+          return rtcPC;
+        });
+      });
+
+      afterEach(function () {
+        rtcpcStub.restore();
+      });
       it('should create a private RTCPeerConnection instance', function () {
         var peerConnection;
 
-        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-          return rtcPC;
-        });
-        peerConnection = factories.createPeerConnection(createOptions);
+        peerConnection = factories.createPeerConnection(createOptionsOutgoing);
 
         expect(peerConnection).to.be.a('object');
-        expect(peerConnection.onICETricklingComplete).to.equal(null);
-        expect(peerConnection.onError).to.equal(null);
 
-        rtcpcStub.restore();
-      });
-
-      it('should set `pc.onicecandidate`', function () {
-        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-          return rtcPC;
-        });
-
-        expect(rtcPC.onicecandidate).to.equal(null);
-
-        factories.createPeerConnection(createOptions);
-
-        expect(rtcPC.onicecandidate).to.be.a('function');
-        rtcpcStub.restore();
       });
 
       it('should add a localStream to peer connection', function () {
 
         var onAddStreamStub, stream = '1245';
-        onAddStreamStub = sinon.stub(rtcPC, 'addStream');
-        rtcPC.localStream = stream;
-        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-          return rtcPC;
-        });
-        createOptions.stream = stream;
 
-        factories.createPeerConnection(createOptions);
+        rtcPC.localStream = stream;
+        onAddStreamStub = sinon.stub(rtcPC, 'addStream');
+
+        createOptionsOutgoing.stream = stream;
+
+        factories.createPeerConnection(createOptionsOutgoing);
 
         expect(onAddStreamStub.calledWith(stream)).to.equal(true);
 
         onAddStreamStub.restore();
-        rtcpcStub.restore();
       });
 
       it('should set the pc.onaddstream', function () {
 
-        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-          return rtcPC;
-        });
-
         expect(rtcPC.onaddstream).to.equal(null);
 
-        factories.createPeerConnection(createOptions);
+        factories.createPeerConnection(createOptionsOutgoing);
 
         expect(rtcPC.onaddstream).to.be.a('function');
-
-        rtcpcStub.restore();
       });
 
-      it('should call `pc.createOffer`');
+      describe('pc.createOffer', function () {
+        it('should call `pc.createOffer` if we don\'t have a remote SDP', function () {
+          var createOfferStub = sinon.stub(rtcPC, 'createOffer'),
+            expectedConstraints = {};
 
-      describe('createOffer', function () {
-        describe('Success', function () {
-          it('should call `pc.setLocalDescription`');
+          createOptionsOutgoing.mediaType = 'video';
+
+          expectedConstraints.audio = true;
+          expectedConstraints.video = (createOptionsOutgoing.mediaType === 'video');
+
+          factories.createPeerConnection(createOptionsOutgoing);
+
+          expect(createOfferStub.called).to.equal(true);
+          expect(createOfferStub.getCall(0).args[0]).to.be.a('function');
+          expect(createOfferStub.getCall(0).args[1]).to.be.a('function');
+          expect(createOfferStub.getCall(0).args[2].mandatory.OfferToReceiveAudio).to.equal(expectedConstraints.audio);
+          expect(createOfferStub.getCall(0).args[2].mandatory.OfferToReceiveVideo).to.equal(expectedConstraints.video);
+
+
+          createOfferStub.restore();
         });
 
-        describe('Error', function () {
+        describe('pc.createOffer: Success', function () {
+          var sdp,
+            fixedSDP,
+            createOfferStub,
+            processChromeSDPOfferStub,
+            peerConnection;
+
+          beforeEach(function () {
+            sdp = '123123';
+            fixedSDP = 'FIXED';
+
+            processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer', function () {
+              return fixedSDP;
+            });
+
+            createOfferStub = sinon.stub(rtcPC, 'createOffer', function (success) {
+              success(sdp);
+            });
+
+          });
+          afterEach(function () {
+            processChromeSDPOfferStub.restore();
+            createOfferStub.restore();
+          });
+
+          it('should call `sdpFilter.processChromeSDPOffer` with the offer\'s SDP', function () {
+
+            factories.createPeerConnection(createOptionsOutgoing);
+
+            expect(processChromeSDPOfferStub.called).to.equal(true);
+            expect(processChromeSDPOfferStub.calledWith(sdp)).to.equal(true);
+
+          });
+          it('should call `pc.setLocalDescription`', function () {
+            var  setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription');
+
+            factories.createPeerConnection(createOptionsOutgoing);
+
+            expect(setLocalDescriptionStub.calledWith(fixedSDP)).to.equal(true);
+            expect(setLocalDescriptionStub.getCall(0).args[1]).to.be.a('function');
+            expect(setLocalDescriptionStub.getCall(0).args[2]).to.be.a('function');
+
+            setLocalDescriptionStub.restore();
+          });
+
+          describe('pc.setLocalDescription: Success', function () {
+            var  setLocalDescriptionStub;
+
+            beforeEach(function () {
+              setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function (desc, success) {
+                console.log(desc);
+                success();
+              });
+            });
+            afterEach(function () {
+              setLocalDescriptionStub.restore();
+            });
+
+            it('should execute `onSuccess` with the local SDP', function () {
+              onSuccessSpy = sinon.spy(createOptionsOutgoing, 'onSuccess');
+
+              factories.createPeerConnection(createOptionsOutgoing);
+
+              expect(onSuccessSpy.called).to.equal(true);
+              expect(onSuccessSpy.calledWith(fixedSDP)).to.equal(true);
+
+              onSuccessSpy.restore();
+            });
+          });
+          describe('pc.setLocalDesciription: Error', function () {
+            var  setLocalDescriptionStub;
+
+            beforeEach(function () {
+              setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function (desc, success, error) {
+                error();
+              });
+            });
+            afterEach(function () {
+              setLocalDescriptionStub.restore();
+            });
+            it('should call `onError` when setLocalDescription fails', function () {
+              onErrorSpy = sinon.spy(createOptionsOutgoing, 'onError');
+
+              peerConnection = factories.createPeerConnection(createOptionsOutgoing);
+
+              expect(onErrorSpy.called).to.equal(true);
+
+              onErrorSpy.restore();
+            });
+          });
+        });
+
+        describe('pc.createOffer: Error', function () {
           it('should throw an error');
         });
       });
-    });
-  });
 
-  // TODO: I think these methods are not needed,
-  // sync tomorrow with everybody
-  describe.skip('Methods', function () {
-    var peerConnection;
+      describe('pc.createAnswer', function () {
+        it('should call `pc.createAnswer` if we have a remoteSdp', function () {
+          var createAnswerStub = sinon.stub(rtcPC, 'createAnswer'),
+            expectedConstraints = {};
 
-    beforeEach(function () {
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-        return rtcPC;
-      });
-      peerConnection = factories.createPeerConnection(createOptions);
-    });
+          createOptionsIncoming.mediaType = 'video';
 
-    afterEach(function () {
-      rtcpcStub.restore();
-    });
+          expectedConstraints.audio = true;
+          expectedConstraints.video = (createOptionsIncoming.mediaType === 'video');
 
-    describe('addStream', function () {
+          factories.createPeerConnection(createOptionsIncoming);
 
-      it('should exist', function () {
-        expect(peerConnection.addStream).to.be.a('function');
-      });
-
-    });
-
-    describe('setLocalDescription', function () {
-
-      it('exist', function () {
-        expect(peerConnection.setLocalDescription).to.be.a('function');
-      });
-
-      it('should set the private RTCPeerConnection\'s local description', function () {
-        var sdp = '123',
-          rtcPCLocalDescriptionSpy;
-
-        rtcPCLocalDescriptionSpy = sinon.spy(rtcPC, 'setLocalDescription');
-        peerConnection.setLocalDescription(sdp);
-
-        expect(rtcPCLocalDescriptionSpy.calledWith(sdp)).to.equal(true);
-
-        rtcPCLocalDescriptionSpy.restore();
-      });
-    });
-
-    describe('setRemoteDescription', function () {
-      it('exist', function () {
-        expect(peerConnection.setRemoteDescription).to.be.a('function');
-      });
-
-      it('should set the remote description for thr private peerconnection', function () {
-        var setRemoteDescriptionSpy, sdp = '123';
-        setRemoteDescriptionSpy = sinon.spy(rtcPC, 'setRemoteDescription');
-        peerConnection.setRemoteDescription(sdp);
-
-        expect(setRemoteDescriptionSpy.calledWith(sdp)).to.equal(true);
-
-        setRemoteDescriptionSpy.restore();
-      });
-    });
-
-    describe('addStream', function () {
-      it('should exist', function () {
-        expect(peerConnection.addStream).to.be.a('function');
-      });
-    });
-	  describe('createAnswer', function () {
-      it('should exist', function () {
-        expect(peerConnection.createAnswer).to.be.a('function');
-      });
-    });
-  });
+          expect(createAnswerStub.called).to.equal(true);
+          expect(createAnswerStub.getCall(0).args[0]).to.be.a('function');
+          expect(createAnswerStub.getCall(0).args[1]).to.be.a('function');
+          expect(createAnswerStub.getCall(0).args[2].mandatory.OfferToReceiveAudio).to.equal(expectedConstraints.audio);
+          expect(createAnswerStub.getCall(0).args[2].mandatory.OfferToReceiveVideo).to.equal(expectedConstraints.video);
 
 
-  describe('`onicecandidate` event', function () {
-    var rtcpcStub,
-      peerConnection,
-      onicecandidateSpy,
-      setLocalDescriptionStub;
+          createAnswerStub.restore();
+        });
 
-    beforeEach(function () {
+        describe('pc.createAnswer: Success', function () {
+          var createAnswerStub,
+            localSDP,
+            fixedSDP,
+            processChromeSDPOfferStub;
 
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
-        return rtcPC;
-      });
+          beforeEach(function () {
+            localSDP = 'localSdp';
+            fixedSDP = 'FIXED';
 
-      peerConnection = factories.createPeerConnection(createOptions);
-      onicecandidateSpy = sinon.spy(rtcPC, 'onicecandidate');
+            processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer', function () {
+              return fixedSDP;
+            });
 
+            createAnswerStub = sinon.stub(rtcPC, 'createAnswer', function (success) {
+              success(localSDP);
+            });
+          });
 
-    });
+          afterEach(function () {
+            createAnswerStub.restore();
+            processChromeSDPOfferStub.restore();
+          });
 
-    afterEach(function () {
-      rtcpcStub.restore();
-      onicecandidateSpy.restore();
+          it('should call `sdpFilter.processChromeSDPOffer` with the answer\'s SDP', function () {
 
-    });
+            factories.createPeerConnection(createOptionsIncoming);
 
-    it('should call `setLocalDescription` for it\'s private RTCPeerConnection with the current sdp', function () {
-      var sdp = '123';
-      setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription');
-      peerConnection.setLocalDescription(sdp);
+            expect(processChromeSDPOfferStub.called).to.equal(true);
+            expect(processChromeSDPOfferStub.calledWith(localSDP)).to.equal(true);
 
-      rtcPC.onicecandidate();
+          });
 
-      expect(setLocalDescriptionStub.called).to.equal(true);
-      expect(setLocalDescriptionStub.calledWith(sdp)).to.equal(true);
-      setLocalDescriptionStub.restore();
-    });
+          it('should set the localDescription using the fixed SDP', function () {
+            var setLocalDescriptionStub;
 
-    it('should call `onICETricklingComplete`', function () {
-      setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription');
-      peerConnection.onICETricklingComplete = function () { return; };
-      onICETricklingCompleteSpy = sinon.spy(peerConnection, 'onICETricklingComplete');
+            setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription');
+            factories.createPeerConnection(createOptionsIncoming);
 
-      rtcPC.onicecandidate();
+            expect(setLocalDescriptionStub.called).to.equal(true);
+            expect(setLocalDescriptionStub.calledWith(fixedSDP)).to.equal(true);
+            expect(setLocalDescriptionStub.getCall(0).args[1]).to.be.a('function');
+            expect(setLocalDescriptionStub.getCall(0).args[2]).to.be.a('function');
 
-      expect(onICETricklingCompleteSpy.called).to.equal(true);
-      expect(onICETricklingCompleteSpy.calledAfter(onicecandidateSpy)).to.equal(true);
-      expect(onICETricklingCompleteSpy.calledAfter(setLocalDescriptionStub)).to.equal(true);
+            setLocalDescriptionStub.restore();
+          });
 
-      setLocalDescriptionStub.restore();
-    });
+          describe('pc.setLocalDescription: Success', function () {
+            var  setLocalDescriptionStub;
 
-    it('should throw and error if cannot set the localDescription', function () {
-      setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function () {
-        throw new Error('Could not set local description.');
+            beforeEach(function () {
+              setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function (desc, success) {
+                console.log(desc);
+                success();
+              });
+            });
+            afterEach(function () {
+              setLocalDescriptionStub.restore();
+            });
+
+            it('should execute `onSuccess` with the Fixed  SDP', function () {
+              onSuccessSpy = sinon.spy(createOptionsIncoming, 'onSuccess');
+
+              factories.createPeerConnection(createOptionsIncoming);
+
+              expect(onSuccessSpy.called).to.equal(true);
+              expect(onSuccessSpy.calledWith(fixedSDP)).to.equal(true);
+
+              onSuccessSpy.restore();
+            });
+          });
+          describe('pc.setLocalDesciription: Error', function () {
+            var  setLocalDescriptionStub;
+
+            beforeEach(function () {
+              setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function (desc, success, error) {
+                error();
+              });
+            });
+            afterEach(function () {
+              setLocalDescriptionStub.restore();
+            });
+            it('should call `onError` when setLocalDescription fails', function () {
+              onErrorSpy = sinon.spy(createOptionsIncoming, 'onError');
+
+              factories.createPeerConnection(createOptionsIncoming);
+
+              expect(onErrorSpy.called).to.equal(true);
+
+              onErrorSpy.restore();
+            });
+          });
+        });
+        describe('pc.createAnswer: Error', function () {
       });
 
-      expect(rtcPC.onicecandidate).to.throw('Could not set local description.');
-     // expect(onErrorSpy.calledWith(new Error('Could not set local description.'))).to.equal(true);
-
-      setLocalDescriptionStub.restore();
+      });
     });
-
   });
 
   describe('`onaddstream` event', function () {
@@ -294,7 +396,7 @@ describe('PeerConnection', function () {
           return rtcPC;
         });
 
-        peerConnection = factories.createPeerConnection(createOptions);
+        peerConnection = factories.createPeerConnection(createOptionsOutgoing);
 
         event = {remoteStream : '123'};
 
