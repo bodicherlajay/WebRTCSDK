@@ -24,6 +24,7 @@
       mediaType,
       type,
       breed,
+      participants = {},
       sessionInfo,
       localMedia,
       remoteMedia,
@@ -299,6 +300,10 @@
       });
     }
 
+    function setParticipant () {
+
+    }
+
     function disconnect() {
 
       setState('disconnecting');
@@ -450,6 +455,9 @@
     this.breed = function () {
       return breed;
     };
+    this.participants = function () {
+      return participants;
+    };
     this.sessionInfo = function () {
       return sessionInfo;
     };
@@ -468,6 +476,7 @@
     this.remoteSdp = function () {
       return remoteSdp;
     };
+
     this.setLocalSdp = setLocalSdp;
     this.setRemoteSdp  = setRemoteSdp;
     this.getState = getState;
@@ -478,6 +487,7 @@
     this.connect = connect;
     this.disconnect = disconnect;
     this.addParticipant = addParticipant;
+    this.setParticipant = setParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;
