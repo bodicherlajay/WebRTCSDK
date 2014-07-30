@@ -1001,13 +1001,13 @@ describe('Phone', function () {
               }, 100);
             });
 
-            it('should execute Call.connect with local media stream', function (done) {
+            it('should execute Call.connect', function (done) {
               phone.joinConference(options);
 
               setTimeout(function () {
                 try {
                   expect(connectStub.calledAfter(onUserMediaSpy)).to.equal(true);
-                  expect(connectStub.calledWith(media)).to.equal(true);
+                  expect(connectStub.called).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
