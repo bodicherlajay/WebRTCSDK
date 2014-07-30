@@ -28,7 +28,9 @@ describe('Phone', function () {
         stopUserMedia: function () { return; }
       };
     });
-    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
+    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
+      return {};
+    });
   });
 
   afterEach(function () {

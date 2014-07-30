@@ -18,7 +18,9 @@ describe('Phone [Conference]', function () {
       Phone = ATT.private.Phone;
       Call = ATT.rtc.Call;
       Session = ATT.rtc.Session;
-      createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
+      createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
+        return {};
+      });
     });
 
     afterEach(function () {

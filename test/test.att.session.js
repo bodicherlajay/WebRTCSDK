@@ -44,7 +44,9 @@ describe('Session', function () {
       peerConnSvc: ATT.PeerConnectionService
     };
 
-    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
+    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
+      return {};
+    });
 
   });
 

@@ -37,7 +37,7 @@
       peerConnection = factories.createPeerConnection();
 
     peerConnection.onICETricklingComplete = function () {
-      rtcManager.connectConference(this.localSdp());
+      rtcManager.connectConference(thisCall.localSdp());
     };
 
     peerConnection.onError = function () { };
@@ -139,6 +139,10 @@
       } else {
         setState('connecting');
       }
+    }
+
+    function setLocalSdp(sdp) {
+      localSdp = sdp;
     }
 
     function setRemoteSdp(sdp) {
@@ -465,6 +469,7 @@
     this.remoteSdp = function () {
       return remoteSdp;
     };
+    this.setLocalSdp = setLocalSdp;
     this.setRemoteSdp  = setRemoteSdp;
     this.getState = getState;
     this.setState = setState;

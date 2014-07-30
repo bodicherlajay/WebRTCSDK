@@ -241,7 +241,7 @@ describe('Call', function () {
       expect(createPeerConnectionStub.called).to.equal(true);
     });
 
-    describe.only('PeerConnection Callbacks', function () {
+    describe('PeerConnection Callbacks', function () {
 
       it('should set the callbacks on the newly created peerConnection object', function () {
         call1 = new ATT.rtc.Call(optionsOutgoing);
@@ -252,7 +252,8 @@ describe('Call', function () {
 
       describe('onICETricklingComplete', function () {
 
-        var connectConfStub;
+        var connectConfStub,
+          conference;
 
         beforeEach(function () {
           connectConfStub = sinon.stub(rtcMgr, 'connectConference', function () {});
@@ -263,7 +264,13 @@ describe('Call', function () {
         });
 
         it('should execute RTCManager.connectConference', function () {
-          expect(connectConfStub.calledWith(connectOptsConf.localSdp)).to.equal(true);
+          var localSdp = 'localSdp';
+          conference = new ATT.rtc.Call(optionsIncomingConf);
+          conference.setLocalSdp(localSdp);
+
+          peerConnection.onICETricklingComplete();
+
+          expect(connectConfStub.calledWith(localSdp)).to.equal(true);
         });
       });
 
@@ -1285,6 +1292,22 @@ describe('Call', function () {
 
         expect(outgoingCall.getState()).to.equal('disconnected');
       });
+    });
+
+    describe('setLocalSdp', function () {
+
+      it('should exist', function () {
+        expect(outgoingConf.setLocalSdp).to.be.a('function');
+      });
+
+      it('should set the local description', function () {
+        var localSdp = 'localSdp';
+
+        outgoingConf.setLocalSdp(localSdp);
+
+        expect(outgoingConf.localSdp()).to.equal(localSdp);
+      });
+
     });
 
     describe('setRemoteSdp', function () {

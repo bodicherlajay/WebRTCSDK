@@ -11,7 +11,9 @@ describe('Call [Conference]', function () {
   beforeEach(function () {
     restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
     Call = ATT.rtc.Call;
-    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
+    createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
+      return {};
+    });
   });
 
   afterEach(function () {
