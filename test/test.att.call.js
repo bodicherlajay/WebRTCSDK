@@ -40,7 +40,8 @@ describe('Call', function () {
       localDescription : '12X3',
       setRemoteDescription : function () { return; },
       addStream : function () {return; },
-      onaddstream : null
+      onaddstream : function () {return;},
+      createOffer : function () {return }
     };
 
     apiConfig = ATT.private.config.api;
@@ -141,7 +142,10 @@ describe('Call', function () {
       return rtcPC;
     });
     peerConnection = factories.createPeerConnection({
-      stream : {}
+      stream : {},
+      mediaType : 'video',
+      onSuccess : function () {},
+      onError : function () {}
     });
 
     createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
@@ -1500,7 +1504,9 @@ describe('Call', function () {
 
       var modificationsHold,
         modificationsResume,
+        modificationsForInviteAccepted,
         setRemoteDescriptionStub,
+        updateParticipantStub,
         disableMediaStreamStub,
         enableMediaStreamStub;
 
@@ -1515,11 +1521,17 @@ describe('Call', function () {
           modificationId: '12345',
           reason: 'success'
         };
+        modificationsForInviteAccepted = {
+          type: 'conferences',
+          modificationId: 'abc321',
+          reason: 'success'
+        };
 
         setRemoteDescriptionStub = sinon.stub(rtcMgr, 'setRemoteDescription');
 
         disableMediaStreamStub = sinon.stub(rtcMgr, 'disableMediaStream');
         enableMediaStreamStub = sinon.stub(rtcMgr, 'enableMediaStream');
+        updateParticipantStub = sinon.stub(call, 'updateParticipant');
 
         emitterEM.publish('media-mod-terminations', modificationsHold);
 
@@ -1541,7 +1553,7 @@ describe('Call', function () {
         expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('answer');
       });
 
-      describe('Hold', function () {
+      describe('hold', function () {
         beforeEach(function (done) {
           emitterEM.publish('media-mod-terminations', modificationsHold);
 
@@ -1556,7 +1568,7 @@ describe('Call', function () {
         });
       });
 
-      describe('Resume', function () {
+      describe('resume', function () {
 
         beforeEach(function (done) {
           emitterEM.publish('media-mod-terminations', modificationsResume);
@@ -1570,6 +1582,20 @@ describe('Call', function () {
         it('should execute setState with `resumed` state if the new remoteSdp contains `sendrecv`', function () {
           expect(call.getState()).to.equal('resumed');
           expect(enableMediaStreamStub.called).to.equal(true);
+        });
+      });
+
+      describe('invite-accepted', function () {
+        beforeEach(function (done) {
+          emitterEM.publish('media-mod-terminations', modificationsForInviteAccepted);
+
+          setTimeout(function () {
+            done();
+          }, 100);
+        });
+
+        it('should call updateParticipant', function () {
+          expect(updateParticipantStub.calledWith('abc321', 'accepted')).to.equal(true);
         });
       });
 

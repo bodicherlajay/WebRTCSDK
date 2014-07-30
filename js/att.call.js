@@ -107,6 +107,12 @@
         }
         setRemoteSdp(modifications.remoteSdp);
       }
+
+      if (undefined !== modifications.type && 'conferences' === modifications.type) {
+        if (undefined !== modifications.modificationId && 'success' === modifications.reason) {
+          thisCall.updateParticipant(modifications.modificationId, 'accepted');
+        }
+      }
     }
 
     function onCallDisconnected(data) {
@@ -294,11 +300,11 @@
       }
     }
 
-    function setParticipant (participant, status, modId) {
-      thisCall.participants()[participant] = {
+    function setParticipant (participant, status, id) {
+      thisCall.participants()[id] = {
         participant: participant,
         status: status,
-        id: modId
+        id: id
       }
     }
 
@@ -315,6 +321,12 @@
           emitter.publish('error', error);
         }
       });
+    }
+
+    function updateParticipant(id, status) {
+      if (undefined !== thisCall.participants()[id]) {
+        this.participants()[id]['status'] = status;
+      }
     }
 
     function disconnect() {
@@ -504,6 +516,7 @@
     this.disconnect = disconnect;
     this.addParticipant = addParticipant;
     this.setParticipant = setParticipant;
+    this.updateParticipant = updateParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

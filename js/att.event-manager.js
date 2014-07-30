@@ -63,6 +63,7 @@
         break;
       case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
         emitter.publish('media-mod-terminations', {
+          type: event.type,
           remoteSdp: event.sdp,
           modificationId: event.modId,
           reason: event.reason

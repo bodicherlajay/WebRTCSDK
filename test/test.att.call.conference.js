@@ -194,9 +194,27 @@ describe('Call [Conference]', function () {
         conference.setParticipant('toyin@toyin.com', 'accepted', 'efg456');
 
         participants = conference.participants();
-        expect(participants['raman@raman.com'].status).equal('invitee');
-        expect(participants['4250000001'].participant).equal('4250000001');
-        expect(participants['toyin@toyin.com'].id).equal('efg456');
+        expect(participants['abc123'].status).equal('invitee');
+        expect(participants['cba123'].participant).equal('4250000001');
+        expect(participants['efg456'].id).equal('efg456');
+      });
+    });
+
+    describe('updateParticipant', function () {
+      it('should exist', function () {
+        expect(conference.updateParticipant).to.be.a('function');
+      });
+
+      it('should update the status of that specific participant', function () {
+        var participants;
+
+        conference.setParticipant('raman@raman.com', 'invitee', 'abc123');
+        conference.setParticipant('4250000001', 'invitee', 'cba123');
+        conference.updateParticipant('abc123', 'accepted');
+
+        participants = conference.participants();
+        expect(participants['abc123'].status).equal('accepted');
+        expect(participants['cba123'].status).equal('invitee');
       });
     });
   });

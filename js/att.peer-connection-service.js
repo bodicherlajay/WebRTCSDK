@@ -298,7 +298,7 @@
       logger.logInfo('Adding local stream to peer connection');
       try {
         pc.addStream(this.localStream);
-      } catch (e) {
+      } catch (e) {sendAcreat
         //todo get the sdk error
         onPeerConnectionError('Failed to add local stream. Exception: ' + e.message);
       }
