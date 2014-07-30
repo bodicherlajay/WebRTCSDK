@@ -1129,7 +1129,7 @@
              *
              * @event Phone#call-error
              * @type {object}
-             * @property {Date} timestamp - Event fire time.
+             * @property {Object} error - error detail
              */
             emitter.publish('error', data);
           });
