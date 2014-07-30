@@ -30,30 +30,12 @@
       remoteMedia,
       localSdp = null,
       remoteSdp = null,
+      localStream = null,
       state = null,
       codec = [],
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
-      rtcManager = ATT.private.rtcManager.getRTCManager(),
-      peerConnection = factories.createPeerConnection();
-
-      peerConnection.onICETricklingComplete = function () {
-      rtcManager.connectConference({
-        localSdp: thisCall.localSdp(),
-        onConferenceConnecting: function () {
-          emitter.publish('connecting', {
-            from: thisCall.peer(),
-            mediaType: thisCall.mediaType(),
-            codec: thisCall.codec(),
-            timestamp: new Date()
-          });
-        },
-        onError: function () {
-        }
-      });
-    };
-
-      peerConnection.onError = function () { };
+      rtcManager = ATT.private.rtcManager.getRTCManager();
 
     // ================
     // Private methods
@@ -188,8 +170,8 @@
       emitter.subscribe(event, handler, this);
     }
 
-    function addStream() {
-      peerConnection.addStream();
+    function addStream(stream) {
+      localStream = stream;
     }
 
     /*
@@ -275,24 +257,20 @@
         if ('conference' === this.breed()) {
           if (ATT.CallTypes.INCOMING === this.type()) {
 
-            peerConnection.setRemoteDescription({
-              remoteSdp: this.remoteSdp(),
-              onSuccess: function () {
-
-                peerConnection.createAnswer({
-                  mediaType: connectOpts.mediaType,
-                  onSuccess: function () {
-                    peerConnection.setLocalDescription(connectOpts.localSdp);
-                  },
-                  onError: function () {
-                  }
+            factories.createPeerConnection({
+              mediaType: thisCall.mediaType(),
+              localStream: thisCall.localStream(),
+              remoteSdp: thisCall.remoteSdp(),
+              onSuccess: function (localSdp) {
+                thisCall.setLocalSdp(localSdp);
+                rtcManager.connectConference({
+                  localSdp: thisCall.localSdp(),
+                  onSuccess: function () {},
+                  onError: function () {}
                 });
-
               },
-              onError: function () {
-              }
+              onError: function () {}
             });
-
           }
         }
 
@@ -494,6 +472,9 @@
     };
     this.remoteSdp = function () {
       return remoteSdp;
+    };
+    this.localStream = function () {
+      return localStream;
     };
 
     this.setLocalSdp = setLocalSdp;
