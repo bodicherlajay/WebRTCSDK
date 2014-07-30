@@ -56,6 +56,15 @@
       }, function () {
         //should be an error
       });
+    } else {
+      pc.createAnswer(function (description) {
+        var fixedSDP = sdpFilter.processChromeSDPOffer(description);
+        pc.setLocalDescription(fixedSDP, function () {
+          onSuccess(fixedSDP);
+        }, onError);
+      }, function () {
+        return;
+      });
     }
 
     peerConnection = {
