@@ -192,7 +192,7 @@ describe('PeerConnection', function () {
         expect(peerConnection.addStream).to.be.a('function');
       });
     });
-	describe('createAnswer', function () {
+	  describe('createAnswer', function () {
       it('should exist', function () {
         expect(peerConnection.createAnswer).to.be.a('function');
       });

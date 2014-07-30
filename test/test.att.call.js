@@ -28,9 +28,19 @@ describe('Call', function () {
     createResourceManagerStub,
     localVideo,
     remoteVideo,
-    connectOptsConf;
+    connectOptsConf,
+    rtcPC;
 
   before(function () {
+
+    rtcPC = {
+      setLocalDescription: function () { return; },
+      onicecandidate: null,
+      localDescription : '12X3',
+      setRemoteDescription : function () { return; },
+      addStream : function () {return; },
+      onaddstream : null
+    };
 
     apiConfig = ATT.private.config.api;
     factories = ATT.private.factories;
@@ -125,8 +135,12 @@ describe('Call', function () {
       return rtcMgr;
     });
 
-    rtcpcStub = sinon.stub(window, 'RTCPeerConnection');
-    peerConnection = factories.createPeerConnection();
+    rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+      return rtcPC;
+    });
+    peerConnection = factories.createPeerConnection({
+      stream : {}
+    });
 
     createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
       return peerConnection;
