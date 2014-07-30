@@ -23,38 +23,6 @@ describe('Call [Conference]', function () {
 
   describe('Constructor', function () {
 
-    var Call, rtcMgr, getRTCManagerStub,
-      optionsforRTCM, resourceManager, factories, apiConfig, createResourceManagerStub;
-
-    beforeEach(function () {
-      Call = ATT.rtc.Call;
-      apiConfig = ATT.private.config.api;
-      factories = ATT.private.factories;
-
-      resourceManager = factories.createResourceManager(apiConfig);
-
-      createResourceManagerStub = sinon.stub(factories, 'createResourceManager', function () {
-        return resourceManager;
-      });
-
-
-      optionsforRTCM = {
-        resourceManager: resourceManager,
-        userMediaSvc: ATT.UserMediaService,
-        peerConnSvc: ATT.PeerConnectionService
-      };
-
-      rtcMgr = new ATT.private.RTCManager(optionsforRTCM);
-
-      getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
-        return rtcMgr;
-      });
-    });
-
-    afterEach(function () {
-      getRTCManagerStub.restore();
-      createResourceManagerStub.restore();
-    });
     it('should create conference Call object with valid parameters ', function () {
       var options,
         conference;
@@ -71,11 +39,6 @@ describe('Call [Conference]', function () {
       expect(conference instanceof Call).to.equal(true);
       expect(conference.breed()).to.equal('conference');
       expect(conference.participants).to.be.a('function');
-    });
-    it.skip('should call `rtcManager.connectConference` ', function () {
-      var connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function () {});
-      expect(connectConferenceStub.called).to.equal(true);
-      connectConferenceStub.restore();
     });
   });
 
@@ -161,6 +124,16 @@ describe('Call [Conference]', function () {
       });
 
       describe('Success on rtcManager.addParticipant', function () {
+        var setParticipantStub;
+
+        it('should call `setParticipant`', function () {
+          setParticipantStub = sinon.stub(conference, 'setParticipant');
+
+          conference.addParticipant('4250001');
+
+          expect(setParticipantStub.calledWith('4250001', 'invitee')).to.equal(true);
+        });
+
         it('should publish `participant-pending` when rtcMgr invokes `onParticipantPending` callback', function () {
           setStateStub = sinon.stub(conference, 'setState');
 
@@ -175,8 +148,20 @@ describe('Call [Conference]', function () {
     });
 
     describe('setParticipant', function () {
+
       it('should exist', function () {
         expect(conference.setParticipant).to.be.a('function');
+      });
+
+      it('should add the new participant to the list', function () {
+        var participants;
+
+        conference.setParticipant('123', 'invitee');
+        conference.setParticipant('321', 'participant');
+
+        participants = conference.participants();
+        expect(participants[123].status).equal('invitee');
+        expect(participants[321].id).equal('321');
       });
     });
   });

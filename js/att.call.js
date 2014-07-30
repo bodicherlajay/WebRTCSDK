@@ -37,7 +37,7 @@
       rtcManager = ATT.private.rtcManager.getRTCManager(),
       peerConnection = factories.createPeerConnection();
 
-    peerConnection.onICETricklingComplete = function () {
+      peerConnection.onICETricklingComplete = function () {
       rtcManager.connectConference({
         localSdp: thisCall.localSdp(),
         onConferenceConnecting: function () {
@@ -53,7 +53,7 @@
       });
     };
 
-    peerConnection.onError = function () { };
+      peerConnection.onError = function () { };
 
     // ================
     // Private methods
@@ -71,6 +71,9 @@
         data.to = peer;
       } else if (type === ATT.CallTypes.INCOMING) {
         data.from = peer;
+      }
+      if (Object.keys(participants).length > 0) {
+        data.participants = participants;
       }
 
       return data;
@@ -300,20 +303,24 @@
       }
     }
 
+    function setParticipant (participantId, status) {
+      thisCall.participants()[participantId] = {
+        id: participantId,
+        status: status
+      }
+    }
+
     function addParticipant(participant) {
       rtcManager.addParticipant({
         sessionInfo: sessionInfo,
         participant: participant,
         confId: id,
         onParticipantPending: function () {
+          thisCall.setParticipant(participant, 'invitee');
           thisCall.setState('participant-pending');
         },
         onError: function (error) { }
       });
-    }
-
-    function setParticipant () {
-
     }
 
     function disconnect() {
