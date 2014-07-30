@@ -293,13 +293,9 @@
         participant: participant,
         confId: id,
         onParticipantPending: function () {
-          that.setState('participant-pending');
+          thisCall.setState('participant-pending');
         },
-        onError: function (error) {
-//          emitter.publish('error', {
-//            error: error
-//          });
-        }
+        onError: function (error) { }
       });
     }
 
