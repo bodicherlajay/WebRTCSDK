@@ -38,6 +38,7 @@ describe('Call [Conference]', function () {
 
       expect(conference instanceof Call).to.equal(true);
       expect(conference.breed()).to.equal('conference');
+      expect(conference.participants).to.be.a('function');
     });
   });
 
@@ -134,6 +135,12 @@ describe('Call [Conference]', function () {
       });
 
       describe('Error handling', function () { });
+    });
+
+    describe('setParticipant', function () {
+      it('should exist', function () {
+        expect(conference.setParticipant).to.be.a('function');
+      });
     });
   });
 });

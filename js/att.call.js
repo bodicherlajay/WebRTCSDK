@@ -24,6 +24,7 @@
       mediaType,
       type,
       breed,
+      participants = {},
       sessionInfo,
       localMedia,
       remoteMedia,
@@ -305,14 +306,14 @@
         participant: participant,
         confId: id,
         onParticipantPending: function () {
-          that.setState('participant-pending');
+          thisCall.setState('participant-pending');
         },
-        onError: function (error) {
-//          emitter.publish('error', {
-//            error: error
-//          });
-        }
+        onError: function (error) { }
       });
+    }
+
+    function setParticipant () {
+
     }
 
     function disconnect() {
@@ -466,6 +467,9 @@
     this.breed = function () {
       return breed;
     };
+    this.participants = function () {
+      return participants;
+    };
     this.sessionInfo = function () {
       return sessionInfo;
     };
@@ -484,6 +488,7 @@
     this.remoteSdp = function () {
       return remoteSdp;
     };
+
     this.setLocalSdp = setLocalSdp;
     this.setRemoteSdp  = setRemoteSdp;
     this.getState = getState;
@@ -494,6 +499,7 @@
     this.connect = connect;
     this.disconnect = disconnect;
     this.addParticipant = addParticipant;
+    this.setParticipant = setParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;
