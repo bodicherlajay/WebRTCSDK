@@ -589,7 +589,6 @@
           publishError(5002, data);
         });
 
-
         call.connect(options);
 
       } catch (err) {
@@ -1122,6 +1121,17 @@
              * @property {String} participant - participantId
              */
             emitter.publish('participant-pending', data);
+          });
+          conference.on('error', function (data) {
+            /**
+             * Call Error event.
+             * @desc Indicates an error condition during a call's flow
+             *
+             * @event Phone#call-error
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('error', data);
           });
           conference.addParticipant(participant);
         } catch (err) {

@@ -319,7 +319,9 @@
           thisCall.setParticipant(participant, 'invitee');
           thisCall.setState('participant-pending');
         },
-        onError: function (error) { }
+        onError: function (error) {
+          emitter.publish('error', error);
+        }
       });
     }
 

@@ -952,7 +952,45 @@ describe('RTC Manager', function () {
           });
         });
 
-        describe('Error Handling', function () {
+        describe('Error on doOperation', function () {
+          var onErrorSpy,
+            error,
+            createAPIErrorCodeStub;
+
+          beforeEach(function () {
+            doOperationStub.restore();
+            onErrorSpy = sinon.spy();
+          });
+
+          it('should call `options.onError` if rtcManager returns an error', function () {
+            error = {
+              message: 'error',
+              HttpStatusCode: '400'
+            };
+
+            createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
+              return error;
+            });
+
+            doOperationStub = sinon.stub(resourceManagerStub, 'doOperation', function(operationName, options) {
+              options.error(error);
+            });
+
+            rtcManager.addParticipant({
+              sessionInfo: {},
+              confId: '123',
+              onParticipantPending: function () { },
+              onError: onErrorSpy,
+              participant: '12345'
+            });
+
+            expect(onErrorSpy.calledWith(error)).to.equal(true);
+
+            doOperationStub.restore();
+          });
+        });
+
+        describe('Invalid parameters', function () {
           it('should throw an error if invalid `options` are passed', function () {
             expect(rtcManager.addParticipant.bind(rtcManager)).to.throw('No `options` passed');
             expect(rtcManager.addParticipant.bind(rtcManager, {
