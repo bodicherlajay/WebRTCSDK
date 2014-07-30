@@ -5,47 +5,74 @@
 
   function createPeerConnection(options) {
 
-    var pc;
+    var peerConnection,
+      pc,
+      localDescription,
+      localStream;
 
     function addStream() {
-
+//      localStream = stream;
+//      pc.addStream(localStream);
     }
 
-    function setRemoteDescription() {
-
+    function setRemoteDescription(sdp) {
+      pc.setRemoteDescription(sdp);
     }
 
     function setLocalDescription(sdp) {
+      localDescription = sdp;
+      pc.setLocalDescription(sdp);
+
+    }
+    function createAnswer() {
 
     }
 
-    if (undefined === options) {
-      throw new Error('Invalid options.');
+    if (undefined === options || Object.keys(options).length === 0) {
+      throw new Error('No options passed.');
     }
-    if ('function' !== typeof options.onPCReady) {
-      throw new Error('Invalid `onPCReady` callback.');
+    if (undefined === options.stream) {
+      throw new Error('No `stream` passed.');
     }
-    if ('function' !== typeof options.onError) {
-      throw new Error('Invalid `onError` callback.');
-    }
+    localStream = options.stream;
 
     try {
       pc = new RTCPeerConnection();
-      pc.onicecandidate = function () {
-
-        options.onError(new Error('Could not set local description.'));
-      }
-
-      options.onPCReady();
     } catch (error) {
-      options.onError(new Error('Failed to create PeerConnection.'));
+      throw new Error('Failed to create PeerConnection.');
     }
 
-    return {
-      addStream: addStream,
-      setLocalDescription: setLocalDescription,
-      setRemoteDescription: setRemoteDescription
+    pc.onicecandidate = function () {
+      try {
+        pc.setLocalDescription(localDescription);
+      } catch (err) {
+        throw new Error('Could not set local description.');
+      }
+      if (undefined !== peerConnection
+          && 'function' === typeof peerConnection.onICETricklingComplete) {
+        peerConnection.onICETricklingComplete();
+      }
+
     };
+
+    pc.addStream(localStream);
+    pc.onaddstream = function (event) {
+      if ('function' === typeof peerConnection.onRemoteStream) {
+        peerConnection.onRemoteStream(event.remoteStream);
+      }
+    }
+
+    peerConnection = {
+      addStream: addStream,
+      onRemoteStream: null,
+      setLocalDescription: setLocalDescription,
+      setRemoteDescription: setRemoteDescription,
+      createAnswer: createAnswer,
+      onICETricklingComplete: null,
+      onError : null
+    };
+
+    return peerConnection;
   }
 
   if (undefined === ATT.private.factories) {

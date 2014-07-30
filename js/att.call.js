@@ -18,12 +18,13 @@
     // ===================
     // private properties
     // ===================
-    var that = this,
+    var thisCall = this,
       id,
       peer,
       mediaType,
       type,
       breed,
+      participants = {},
       sessionInfo,
       localMedia,
       remoteMedia,
@@ -34,10 +35,25 @@
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager(),
-      peerConnection = factories.createPeerConnection({
-        onPCReady: function () { },
-        onError: function () { }
+      peerConnection = factories.createPeerConnection();
+
+    peerConnection.onICETricklingComplete = function () {
+      rtcManager.connectConference({
+        localSdp: thisCall.localSdp(),
+        onConferenceConnecting: function () {
+          emitter.publish('connecting', {
+            from: thisCall.peer(),
+            mediaType: thisCall.mediaType(),
+            codec: thisCall.codec(),
+            timestamp: new Date()
+          });
+        },
+        onError: function () {
+        }
       });
+    };
+
+    peerConnection.onError = function () { };
 
     // ================
     // Private methods
@@ -56,6 +72,7 @@
       } else if (type === ATT.CallTypes.INCOMING) {
         data.from = peer;
       }
+
       return data;
     }
 
@@ -107,6 +124,18 @@
       }
     }
 
+    function onCallDisconnected(data) {
+      id = null;
+
+      if (undefined !== data && 'Call rejected' === data.reason) {
+        setState('rejected');
+      } else {
+        emitter.publish('disconnected', data);
+      }
+      rtcManager.off('call-disconnected', onCallDisconnected);
+      rtcManager.resetPeerConnection();
+    }
+
     // ================
     // Public Methods
     // ================
@@ -126,6 +155,10 @@
       }
     }
 
+    function setLocalSdp(sdp) {
+      localSdp = sdp;
+    }
+
     function setRemoteSdp(sdp) {
       remoteSdp = sdp;
       codec = sdpFilter.getCodecfromSDP(sdp);
@@ -135,6 +168,7 @@
 
       if ('connecting' !== event &&
           'rejected' !== event &&
+          'participant-pending' !== event &&
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
@@ -151,20 +185,6 @@
       emitter.subscribe(event, handler, this);
     }
 
-
-    function onCallDisconnected(data) {
-      id = null;
-
-      if (undefined !== data && 'Call rejected' === data.reason) {
-        setState('rejected');
-      } else {
-        emitter.publish('disconnected', data);
-      }
-      rtcManager.off('call-disconnected', onCallDisconnected);
-      rtcManager.resetPeerConnection();
-
-    }
-
     function addStream() {
       peerConnection.addStream();
     }
@@ -174,20 +194,24 @@
      * Connects the call based on callType(Incoming|Outgoing)
      * @param {Object} The call config
     */
-    function connect(config) {
+    function connect(connectOpts) {
       try {
 
-        if (undefined !== config.localMedia) {
-          localMedia = config.localMedia;
+        if (undefined !== connectOpts) {
+          if (undefined !== connectOpts.localMedia) {
+            localMedia = connectOpts.localMedia;
+          }
+
+          if (undefined !== connectOpts.remoteMedia) {
+            remoteMedia = connectOpts.remoteMedia;
+          }
         }
 
-        if (undefined !== config.remoteMedia) {
-          remoteMedia = config.remoteMedia;
+        if (undefined !== remoteMedia) {
+          remoteMedia.addEventListener('playing', function () {
+            thisCall.setState('media-established');
+          });
         }
-
-        remoteMedia.addEventListener('playing', function () {
-          setState('media-established');
-        });
 
         rtcManager.on('media-modifications', onMediaModifications);
 
@@ -199,50 +223,75 @@
               remoteSdp: data.remoteSdp,
               type: 'answer'
             });
-            setRemoteSdp(data.remoteSdp);
+            thisCall.setRemoteSdp(data.remoteSdp);
           }
 
-          setState('connected');
+          thisCall.setState('connected');
 
           rtcManager.playStream('remote');
         });
 
-        rtcManager.connectCall({
-          breed: breed,
-          localMedia: localMedia,
-          remoteMedia: remoteMedia,
-          peer: peer,
-          callId: id,
-          type: type,
-          mediaType: mediaType,
-          remoteSdp: remoteSdp,
-          sessionInfo: sessionInfo,
-          onCallConnecting: function (callInfo) {
-            try {
-              if (type === ATT.CallTypes.OUTGOING) {
-                setId(callInfo.callId);
+        if ('call' === this.breed()) {
+          rtcManager.connectCall({
+            localMedia: localMedia,
+            remoteMedia: remoteMedia,
+            peer: peer,
+            callId: id,
+            type: type,
+            mediaType: mediaType,
+            remoteSdp: remoteSdp,
+            sessionInfo: sessionInfo,
+            onCallConnecting: function (callInfo) {
+              try {
+                if (type === ATT.CallTypes.OUTGOING) {
+                  thisCall.setId(callInfo.callId);
+                }
+                if (type === ATT.CallTypes.INCOMING) {
+                  thisCall.setState(callInfo.xState);
+                }
+                localSdp = callInfo.localSdp;
+              } catch (err) {
+                emitter.publish('error', {
+                  error: err
+                });
               }
-              if (type === ATT.CallTypes.INCOMING) {
-                setState(callInfo.xState);
-              }
-              localSdp = callInfo.localSdp;
-            } catch (err) {
+            },
+            onError: function (error) {
               emitter.publish('error', {
-                error: err
+                error: error
+              });
+            },
+            onUserMediaError: function (error) {
+              emitter.publish('error', {
+                error: error
               });
             }
-          },
-          onError: function (error) {
-            emitter.publish('error', {
-              error: error
+          });
+        }
+
+        if ('conference' === this.breed()) {
+          if (ATT.CallTypes.INCOMING === this.type()) {
+
+            peerConnection.setRemoteDescription({
+              remoteSdp: this.remoteSdp(),
+              onSuccess: function () {
+
+                peerConnection.createAnswer({
+                  mediaType: connectOpts.mediaType,
+                  onSuccess: function () {
+                    peerConnection.setLocalDescription(connectOpts.localSdp);
+                  },
+                  onError: function () {
+                  }
+                });
+
+              },
+              onError: function () {
+              }
             });
-          },
-          onUserMediaError: function (error) {
-            emitter.publish('error', {
-              error: error
-            });
+
           }
-        });
+        }
 
       } catch (err) {
         emitter.publish('error', {
@@ -256,12 +305,15 @@
         sessionInfo: sessionInfo,
         participant: participant,
         confId: id,
-        onError: function (error) {
-          emitter.publish('error', {
-            error: error
-          });
-        }
+        onParticipantPending: function () {
+          thisCall.setState('participant-pending');
+        },
+        onError: function (error) { }
       });
+    }
+
+    function setParticipant () {
+
     }
 
     function disconnect() {
@@ -378,6 +430,8 @@
       throw new Error('No mediaType provided');
     }
 
+    rtcManager.on('call-disconnected', onCallDisconnected);
+
     // Call attributes
     breed = options.breed;
 
@@ -395,45 +449,47 @@
     localMedia = options.localMedia;
     remoteMedia = options.remoteMedia;
 
-    rtcManager.on('call-disconnected', onCallDisconnected);
-
     // ===================
     // public interface
     // ===================
-
     this.peer = function () {
-        return peer;
-      };
+      return peer;
+    };
     this.codec = function () {
-        return codec;
-      };
+      return codec;
+    };
     this.mediaType = function () {
-        return mediaType;
-      };
+      return mediaType;
+    };
     this.type = function (){
-        return type;
-      };
+      return type;
+    };
     this.breed = function () {
-        return breed;
-      };
+      return breed;
+    };
+    this.participants = function () {
+      return participants;
+    };
     this.sessionInfo = function () {
-        return sessionInfo;
-      };
+      return sessionInfo;
+    };
     this.id = function () {
-        return id;
-      };
+      return id;
+    };
     this.localSdp = function () {
-        return localSdp;
-      };
+      return localSdp;
+    };
     this.localMedia = function () {
-        return localMedia;
-      };
+      return localMedia;
+    };
     this.remoteMedia = function () {
-        return remoteMedia;
-      };
+      return remoteMedia;
+    };
     this.remoteSdp = function () {
-        return remoteSdp;
-      };
+      return remoteSdp;
+    };
+
+    this.setLocalSdp = setLocalSdp;
     this.setRemoteSdp  = setRemoteSdp;
     this.getState = getState;
     this.setState = setState;
@@ -443,6 +499,7 @@
     this.connect = connect;
     this.disconnect = disconnect;
     this.addParticipant = addParticipant;
+    this.setParticipant = setParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

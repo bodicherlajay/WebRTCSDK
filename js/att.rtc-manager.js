@@ -332,7 +332,11 @@
       });
     }
 
-    function addParticipant (options) {
+    function connectConference() {
+
+    }
+
+    function addParticipant(options) {
 
       if (undefined === options) {
         throw new Error('No `options` passed');
@@ -346,6 +350,11 @@
         throw new Error('No `confId` passed');
       }
 
+      if (undefined === options.onParticipantPending
+        || typeof options.onParticipantPending !== 'function') {
+        throw new Error('No `onParticipantPending` callback passed');
+      }
+
       resourceManager.doOperation('addParticipant', {
         params: {
           url: [
@@ -357,8 +366,12 @@
             'Authorization': 'Bearer ' + options.sessionInfo.token
           }
         },
-        success: function () {
+        success: function (response) {
           logger.logInfo('addParticipant Request success');
+
+          if ('add-pending' === response.getResponseHeader('x-state')) {
+            options.onParticipantPending();
+          }
         },
         error: function (error) {
           logger.logError(error);
@@ -624,6 +637,7 @@
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);
+    this.connectConference = connectConference;
     this.addParticipant = addParticipant.bind(this);
     this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);

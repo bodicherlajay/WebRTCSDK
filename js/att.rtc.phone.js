@@ -36,7 +36,7 @@
        */
       emitter.publish('call-incoming', data);
     });
-	session.on('call-disconnected', function (data) {
+	  session.on('call-disconnected', function (data) {
       /**
        * Call disconnected event.
        * @desc Indicates a call has been disconnected
@@ -118,6 +118,7 @@
         && 'conference-invite' !== event
         && 'call-connecting' !== event
         && 'conference-connecting' !== event
+        && 'participant-pending' !== event
         && 'call-disconnecting' !== event
         && 'call-disconnected' !== event
         && 'call-canceled' !== event
@@ -588,6 +589,7 @@
           publishError(5002, data);
         });
 
+
         call.connect(options);
 
       } catch (err) {
@@ -1034,7 +1036,7 @@
       }
     }
 
-    function dialConference(options) {
+    function startConference(options) {
       var conference;
 
       if (undefined === options
@@ -1063,28 +1065,67 @@
       conference.connect();
     }
 
+    /**
+     * @summary
+     * Add participant
+     * @desc
+     * **Error Codes**
+     *   - 19000 - User is not logged in
+     *   - 19001 - Conference not initiated
+     *   - 19002 - Participant parameter missing
+     *   - 19003 - Internal error occurred
+     * @memberOf Phone
+     * @instance
+
+     * @fires Phone#participant-pending
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.addParticipant('4250000001');
+     */
     function addParticipant(participant) {
+      var conference;
+
       try {
+
         if (null === session.getId()) {
           publishError(19000);
           return;
         }
 
-        var conference = session.currentCall;
+        conference = session.currentCall;
 
-        if (null !== conference && 'call' === conference.breed()) {
-          publishError('19001');
+        if (null === conference) {
+          publishError(19001);
+          return;
+        }
+
+        if ('conference' !== conference.breed()) {
+          publishError(19001);
           return;
         }
 
         if (undefined === participant) {
-          publishError('19002');
+          publishError(19002);
+          return;
         }
 
         try {
+          conference.on('participant-pending', function (data) {
+            /**
+             * Participant pending event.
+             * @desc
+             *
+             * @event Phone#participant-pending
+             * @type {object}
+             * @property {Date} timestamp - Event fire time
+             * @property {String} participant - participantId
+             */
+            emitter.publish('participant-pending', data);
+          });
           conference.addParticipant(participant);
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('19003');
+          throw ATT.errorDictionary.getSDKError(19003);
         }
       } catch (err) {
         emitter.publish('error', {
@@ -1117,7 +1158,7 @@
     // ===================
     // Conference interface
     // ===================
-    this.dialConference = dialConference.bind(this);
+    this.startConference = startConference.bind(this);
     this.joinConference = joinConference.bind(this);
     this.addParticipant = addParticipant.bind(this);
   }
