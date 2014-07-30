@@ -40,7 +40,8 @@ describe('Call', function () {
       localDescription : '12X3',
       setRemoteDescription : function () { return; },
       addStream : function () {return; },
-      onaddstream : null
+      onaddstream : function () {return;},
+      createOffer : function () {return }
     };
 
     apiConfig = ATT.private.config.api;
@@ -141,7 +142,9 @@ describe('Call', function () {
       return rtcPC;
     });
     peerConnection = factories.createPeerConnection({
-      stream : {}
+      stream : {},
+      onSuccess : function () {},
+      onError : function () {}
     });
 
     createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {

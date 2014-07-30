@@ -8,24 +8,12 @@
     var peerConnection,
       pc,
       localDescription,
-      localStream;
-
-    function addStream() {
-//      localStream = stream;
-//      pc.addStream(localStream);
-    }
+      sdpFilter = ATT.sdpFilter.getInstance(),
+      onSuccess,
+      onError;
 
     function setRemoteDescription(sdp) {
       pc.setRemoteDescription(sdp);
-    }
-
-    function setLocalDescription(sdp) {
-      localDescription = sdp;
-      pc.setLocalDescription(sdp);
-
-    }
-    function createAnswer() {
-
     }
 
     if (undefined === options || Object.keys(options).length === 0) {
@@ -34,7 +22,16 @@
     if (undefined === options.stream) {
       throw new Error('No `stream` passed.');
     }
-    localStream = options.stream;
+
+    if ('function' !== typeof options.onSuccess ) {
+      throw new Error('No `onSuccess` callback passed.');
+    }
+    onSuccess = options.onSuccess;
+
+    if ('function' !== typeof options.onError ) {
+      throw new Error('No `onError` callback passed.');
+    }
+    onError = options.onError;
 
     try {
       pc = new RTCPeerConnection();
@@ -42,34 +39,27 @@
       throw new Error('Failed to create PeerConnection.');
     }
 
-    pc.onicecandidate = function () {
-      try {
-        pc.setLocalDescription(localDescription);
-      } catch (err) {
-        throw new Error('Could not set local description.');
-      }
-      if (undefined !== peerConnection
-          && 'function' === typeof peerConnection.onICETricklingComplete) {
-        peerConnection.onICETricklingComplete();
-      }
-
-    };
-
-    pc.addStream(localStream);
+    pc.addStream(options.stream);
     pc.onaddstream = function (event) {
       if ('function' === typeof peerConnection.onRemoteStream) {
         peerConnection.onRemoteStream(event.remoteStream);
       }
+    };
+
+    if (undefined === options.remoteSDP) {
+      pc.createOffer(function (description) {
+        //description is the new SDP Which needs to processed
+        var fixedSDP = sdpFilter.processChromeSDPOffer(description);
+        pc.setLocalDescription(fixedSDP, function () {
+          onSuccess(fixedSDP);
+        }, onError);
+      }, function () {
+        //should be an error
+      });
     }
 
     peerConnection = {
-      addStream: addStream,
-      onRemoteStream: null,
-      setLocalDescription: setLocalDescription,
-      setRemoteDescription: setRemoteDescription,
-      createAnswer: createAnswer,
-      onICETricklingComplete: null,
-      onError : null
+      onRemoteStream: null
     };
 
     return peerConnection;
