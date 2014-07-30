@@ -52,7 +52,11 @@ describe('Call [Conference]', function () {
       resourceManager,
       apiConfig,
       factories,
-      call;
+      call,
+      emitter,
+      createEEStub,
+      publishStub,
+      setStateStub;
 
     beforeEach(function () {
 
@@ -72,8 +76,6 @@ describe('Call [Conference]', function () {
         return rtcMgr;
       });
 
-      addParticipantStub = sinon.stub(rtcMgr, 'addParticipant');
-
       options = {
         breed: 'conference',
         peer: '12345',
@@ -83,12 +85,25 @@ describe('Call [Conference]', function () {
         id: '1234'
       };
 
+      emitter = ATT.private.factories.createEventEmitter();
+
+      createEEStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+        return emitter;
+      });
+
+      publishStub = sinon.stub(emitter, 'publish');
+
+      addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function (options) {
+        options.onParticipantPending();
+      });
+
       conference = new ATT.rtc.Call(options);
     });
 
     afterEach(function () {
       addParticipantStub.restore();
       getRTCManagerStub.restore();
+      createEEStub.restore();
     });
 
     describe('addParticipant', function () {
@@ -105,6 +120,17 @@ describe('Call [Conference]', function () {
         expect(addParticipantStub.getCall(0).args[0].confId).to.equal(conference.id());
         expect(addParticipantStub.getCall(0).args[0].onParticipantPending).to.be.a('function');
         expect(addParticipantStub.getCall(0).args[0].onError).to.be.a('function');
+      });
+
+      describe('Success on rtcManager.addParticipant', function () {
+        it('should publish `participant-pending` when rtcMgr invokes `onParticipantPending` callback', function () {
+          setStateStub = sinon.stub(conference, 'setState');
+
+          conference.addParticipant('12345');
+
+          expect(setStateStub.calledOnce).to.equal(true);
+          expect(setStateStub.calledWith('participant-pending')).to.equal(true);
+        });
       });
 
       describe('Error handling', function () { });

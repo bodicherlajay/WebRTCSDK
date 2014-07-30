@@ -118,6 +118,7 @@
         && 'conference-invite' !== event
         && 'call-connecting' !== event
         && 'conference-connecting' !== event
+        && 'participant-pending' !== event
         && 'call-disconnecting' !== event
         && 'call-disconnected' !== event
         && 'call-canceled' !== event
@@ -1076,7 +1077,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#
+     * @fires Phone#participant-pending
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
@@ -1110,7 +1111,6 @@
         }
 
         try {
-
           conference.on('participant-pending', function (data) {
             /**
              * Participant pending event.
@@ -1121,7 +1121,7 @@
              * @property {Date} timestamp - Event fire time
              * @property {String} participant - participantId
              */
-            //emitter.publish('participant-pending', data);
+            emitter.publish('participant-pending', data);
           });
           conference.addParticipant(participant);
         } catch (err) {

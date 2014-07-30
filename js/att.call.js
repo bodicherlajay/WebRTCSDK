@@ -59,6 +59,7 @@
       } else if (type === ATT.CallTypes.INCOMING) {
         data.from = peer;
       }
+
       return data;
     }
 
@@ -291,11 +292,13 @@
         sessionInfo: sessionInfo,
         participant: participant,
         confId: id,
-        onParticipantPending : function () {},
+        onParticipantPending: function () {
+          that.setState('participant-pending');
+        },
         onError: function (error) {
-          emitter.publish('error', {
-            error: error
-          });
+//          emitter.publish('error', {
+//            error: error
+//          });
         }
       });
     }

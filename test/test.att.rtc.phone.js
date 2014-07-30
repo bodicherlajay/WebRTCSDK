@@ -852,14 +852,222 @@ describe('Phone', function () {
         });
       });
 
+      describe('[US272608] joinConference', function () {
+
+        var options,
+          conferenceJoiningSpy,
+          getUserMediaStub,
+          onSpy;
+
+        beforeEach(function () {
+
+          options = {
+            localMedia: localVideo,
+            remoteMedia: remoteVideo,
+            mediaType: 'video'
+          };
+
+          createEventEmitterStub.restore();
+
+          emitterConference = ATT.private.factories.createEventEmitter();
+
+          createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+            return emitterConference;
+          });
+
+          callConstructorStub.restore();
+
+          conference = new ATT.rtc.Call({
+            breed: 'conference',
+            peer: '1234567',
+            type: 'abc',
+            mediaType: 'video'
+          });
+
+          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+            return conference;
+          });
+
+          onSpy = sinon.spy(conference, 'on');
+
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function () {});
+
+          conferenceJoiningSpy = sinon.spy();
+
+          phone.on('conference-joining', conferenceJoiningSpy);
+
+          session.currentCall = conference;
+        });
+
+        afterEach(function () {
+          getUserMediaStub.restore();
+          onSpy.restore();
+        });
+
+        it('should exists', function () {
+          expect(phone.joinConference).to.be.a('function');
+        });
+
+        it('should publish `conference-joining` immediately with relevant data', function (done) {
+
+          phone.joinConference(options);
+
+          setTimeout(function () {
+            try {
+              expect(conferenceJoiningSpy.called).to.equal(true);
+              expect(conferenceJoiningSpy.getCall(0).args[0]).to.be.an('object');
+              expect(conferenceJoiningSpy.getCall(0).args[0].from).to.be.a('string');
+              expect(conferenceJoiningSpy.getCall(0).args[0].mediaType).to.be.a('string');
+              expect(conferenceJoiningSpy.getCall(0).args[0].codec).to.be.an('array');
+              expect(typeof conferenceJoiningSpy.getCall(0).args[0].timestamp).to.equal('object');
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+        });
+
+        it('should register for `connecting` event from call', function () {
+          phone.joinConference(options);
+
+          expect(onSpy.calledWith('connecting')).to.equal(true);
+        });
+
+        it('should execute userMedia.getUserMedia with correct input params', function () {
+          phone.joinConference(options);
+
+          expect(getUserMediaStub.called).to.equal(true);
+          expect(getUserMediaStub.getCall(0).args[0]).to.be.an('object');
+          expect(getUserMediaStub.getCall(0).args[0].localMedia).to.be.an('object');
+          expect(getUserMediaStub.getCall(0).args[0].remoteMedia).to.be.an('object');
+          expect(getUserMediaStub.getCall(0).args[0].mediaType).to.be.an('string');
+          expect(getUserMediaStub.getCall(0).args[0].onUserMedia).to.be.a('function');
+          expect(getUserMediaStub.getCall(0).args[0].onMediaEstablished).to.be.a('function');
+          expect(getUserMediaStub.getCall(0).args[0].onUserMediaError).to.be.a('function');
+        });
+
+        describe('getUserMedia Callbacks', function () {
+
+          describe('onUserMedia', function () {
+
+            var addStreamStub,
+              connectStub,
+              onUserMediaSpy,
+              media;
+
+            beforeEach(function() {
+              media = {
+                localStream: {
+                  stream: 'stream'
+                },
+                mediaConstraints: {
+                  audio: 'true',
+                  video: 'true'
+                }
+              };
+
+              connectStub = sinon.stub(conference, 'connect', function() {});
+              addStreamStub = sinon.stub(conference, 'addStream', function () {});
+
+              getUserMediaStub.restore();
+
+              getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+                onUserMediaSpy = sinon.spy(options, 'onUserMedia');
+                setTimeout(function () {
+                  options.onUserMedia(media);
+                }, 0);
+              });
+
+            });
+
+            afterEach(function () {
+              addStreamStub.restore();
+              connectStub.restore();
+              onUserMediaSpy.restore();
+            });
+
+            it('should execute Call.addStream with local stream', function (done) {
+              phone.joinConference(options);
+
+              setTimeout(function () {
+                try {
+                  expect(addStreamStub.calledAfter(onUserMediaSpy)).to.equal(true);
+                  expect(addStreamStub.calledBefore(connectStub)).to.equal(true);
+                  expect(addStreamStub.calledWith(media.localStream)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
+
+            it('should execute Call.connect with local media stream', function (done) {
+              phone.joinConference(options);
+
+              setTimeout(function () {
+                try {
+                  expect(connectStub.calledAfter(onUserMediaSpy)).to.equal(true);
+                  expect(connectStub.calledWith(media)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+            });
+
+          });
+        });
+
+        describe('joinConference events', function () {
+
+          var onConfConnectingHandlerSpy;
+
+          beforeEach(function () {
+            onConfConnectingHandlerSpy = sinon.spy();
+
+            phone.on('conference-connecting', onConfConnectingHandlerSpy);
+
+            phone.joinConference(options);
+          });
+
+          describe('connecting', function () {
+
+            it('should publish `conference-connecting` with event data on getting a connecting event from call', function (done) {
+              emitterConference.publish('connecting', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(onConfConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 100);
+            });
+
+          });
+
+        });
+      });
+
       describe('[US225737] addParticipant', function () {
 
         var publishStub,
           addParticipantStub,
           conference,
-          onSpy;
+          onSpy,
+          emitterConference,
+          onParticipantPendingSpy;
 
         beforeEach(function () {
+
+          createEventEmitterStub.restore();
+
+          emitterConference = ATT.private.factories.createEventEmitter();
+
+          createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+            return emitterConference;
+          });
 
           callConstructorStub.restore();
 
@@ -872,12 +1080,16 @@ describe('Phone', function () {
           });
 
           onSpy = sinon.spy(conference, 'on');
+          onParticipantPendingSpy = sinon.spy();
 
           addParticipantStub = sinon.stub(conference, 'addParticipant');
           publishStub = sinon.stub(emitter, 'publish');
 
-          session.currentCall = conference;
+          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+            return conference;
+          });
 
+          session.currentCall = conference;
         });
 
         afterEach(function () {
@@ -892,13 +1104,41 @@ describe('Phone', function () {
 
         it('should register for `participant-pending` event on the conference object', function () {
           session.setId('123456');
+
           phone.addParticipant('1234');
+
           expect(onSpy.calledOnce).to.equal(true);
           expect(onSpy.calledWith('participant-pending')).to.equal(true);
         });
 
-        it('should execute call.addParticipant', function () {
+        describe('addParticipant events', function () {
+          beforeEach(function () {
+            session.setId('12345');
+            phone.addParticipant('1234');
+          });
 
+          describe('participant-pending', function () {
+
+            it('should publish `participant-pending` with event data on getting a connecting event from call', function (done) {
+              emitterConference.publish('participant-pending', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledOnce).to.equal(true);
+                  expect(publishStub.calledWith('participant-pending')).to.equal(true);
+                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 200);
+            });
+
+          });
+
+        });
+
+        it('should execute call.addParticipant', function () {
           session.setId('1234567');
 
           phone.addParticipant('1234');
@@ -1266,204 +1506,6 @@ describe('Phone', function () {
                 done(e);
               }
             }, 200);
-
-          });
-
-        });
-      });
-
-      describe('[US272608] joinConference', function () {
-
-        var options,
-          conferenceJoiningSpy,
-          getUserMediaStub,
-          onSpy;
-
-        beforeEach(function () {
-
-          options = {
-            localMedia: localVideo,
-            remoteMedia: remoteVideo,
-            mediaType: 'video'
-          };
-
-          createEventEmitterStub.restore();
-
-          emitterConference = ATT.private.factories.createEventEmitter();
-
-          createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-            return emitterConference;
-          });
-
-          callConstructorStub.restore();
-
-          conference = new ATT.rtc.Call({
-            breed: 'conference',
-            peer: '1234567',
-            type: 'abc',
-            mediaType: 'video'
-          });
-
-          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
-            return conference;
-          });
-
-          onSpy = sinon.spy(conference, 'on');
-
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function () {});
-
-          conferenceJoiningSpy = sinon.spy();
-
-          phone.on('conference-joining', conferenceJoiningSpy);
-
-          session.currentCall = conference;
-        });
-
-        afterEach(function () {
-          getUserMediaStub.restore();
-          onSpy.restore();
-        });
-
-        it('should exists', function () {
-          expect(phone.joinConference).to.be.a('function');
-        });
-
-        it('should publish `conference-joining` immediately with relevant data', function (done) {
-
-          phone.joinConference(options);
-
-          setTimeout(function () {
-            try {
-              expect(conferenceJoiningSpy.called).to.equal(true);
-              expect(conferenceJoiningSpy.getCall(0).args[0]).to.be.an('object');
-              expect(conferenceJoiningSpy.getCall(0).args[0].from).to.be.a('string');
-              expect(conferenceJoiningSpy.getCall(0).args[0].mediaType).to.be.a('string');
-              expect(conferenceJoiningSpy.getCall(0).args[0].codec).to.be.an('array');
-              expect(typeof conferenceJoiningSpy.getCall(0).args[0].timestamp).to.equal('object');
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 100);
-        });
-
-        it('should register for `connecting` event from call', function () {
-          phone.joinConference(options);
-
-          expect(onSpy.calledWith('connecting')).to.equal(true);
-        });
-
-        it('should execute userMedia.getUserMedia with correct input params', function () {
-          phone.joinConference(options);
-
-          expect(getUserMediaStub.called).to.equal(true);
-          expect(getUserMediaStub.getCall(0).args[0]).to.be.an('object');
-          expect(getUserMediaStub.getCall(0).args[0].localMedia).to.be.an('object');
-          expect(getUserMediaStub.getCall(0).args[0].remoteMedia).to.be.an('object');
-          expect(getUserMediaStub.getCall(0).args[0].mediaType).to.be.an('string');
-          expect(getUserMediaStub.getCall(0).args[0].onUserMedia).to.be.a('function');
-          expect(getUserMediaStub.getCall(0).args[0].onMediaEstablished).to.be.a('function');
-          expect(getUserMediaStub.getCall(0).args[0].onUserMediaError).to.be.a('function');
-        });
-
-        describe('getUserMedia Callbacks', function () {
-
-          describe('onUserMedia', function () {
-
-            var addStreamStub,
-              connectStub,
-              onUserMediaSpy,
-              media;
-
-            beforeEach(function() {
-              media = {
-                localStream: {
-                  stream: 'stream'
-                },
-                mediaConstraints: {
-                  audio: 'true',
-                  video: 'true'
-                }
-              };
-
-              connectStub = sinon.stub(conference, 'connect', function() {});
-              addStreamStub = sinon.stub(conference, 'addStream', function () {});
-
-              getUserMediaStub.restore();
-
-              getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
-                onUserMediaSpy = sinon.spy(options, 'onUserMedia');
-                setTimeout(function () {
-                  options.onUserMedia(media);
-                }, 0);
-              });
-
-            });
-
-            afterEach(function () {
-              addStreamStub.restore();
-              connectStub.restore();
-              onUserMediaSpy.restore();
-            });
-
-            it('should execute Call.addStream with local stream', function (done) {
-              phone.joinConference(options);
-
-              setTimeout(function () {
-                try {
-                  expect(addStreamStub.calledAfter(onUserMediaSpy)).to.equal(true);
-                  expect(addStreamStub.calledBefore(connectStub)).to.equal(true);
-                  expect(addStreamStub.calledWith(media.localStream)).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 100);
-            });
-
-            it('should execute Call.connect with local media stream', function (done) {
-              phone.joinConference(options);
-
-              setTimeout(function () {
-                try {
-                  expect(connectStub.calledAfter(onUserMediaSpy)).to.equal(true);
-                  expect(connectStub.calledWith(media)).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 100);
-            });
-
-          });
-        });
-
-        describe('joinConference events', function () {
-
-          var onConfConnectingHandlerSpy;
-
-          beforeEach(function () {
-            onConfConnectingHandlerSpy = sinon.spy();
-
-            phone.on('conference-connecting', onConfConnectingHandlerSpy);
-
-            phone.joinConference(options);
-          });
-
-          describe('connecting', function () {
-
-            it('should publish `conference-connecting` with event data on getting a connecting event from call', function (done) {
-              emitterConference.publish('connecting', eventData);
-
-              setTimeout(function() {
-                try {
-                  expect(onConfConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
-                  done();
-                } catch(e) {
-                  done(e);
-                }
-              }, 100);
-            });
 
           });
 
