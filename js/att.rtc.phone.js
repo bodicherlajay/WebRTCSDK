@@ -1122,26 +1122,7 @@
              */
             emitter.publish('participant-pending', data);
           });
-          conference.on('invite-accepted', function (data) {
-            /**
-             * Invite accepted event.
-             * @desc
-             *
-             * @event Phone#invite-accepted
-             * @type {object}
-             */
-            emitter.publish('invite-accepted', data);
-          });
-          conference.on('invite-rejected', function (data) {
-            /**
-             * Invite rejected event.
-             * @desc
-             *
-             * @event Phone#invite-rejected
-             * @type {object}
-             */
-            emitter.publish('invite-rejected', data);
-          });
+
           conference.on('error', function (data) {
             /**
              * Call Error event.
