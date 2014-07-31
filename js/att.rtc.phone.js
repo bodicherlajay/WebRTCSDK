@@ -1037,31 +1037,49 @@
 
     function startConference(options) {
       var conference;
-
-      if (undefined === options
+      try {
+        if (undefined === options
           || 0 === Object.keys(options).length) {
-        publishError('18000');
-        return;
-      }
-      if (undefined === options.localMedia) {
-        publishError('18001');
-        return;
-      }
-      if (undefined === options.remoteMedia) {
-        publishError('18002');
-        return;
-      }
-      if ((undefined === options.mediaType)
+          publishError('18000');
+          return;
+        }
+        if (undefined === options.localMedia) {
+          publishError('18001');
+          return;
+        }
+        if (undefined === options.remoteMedia) {
+          publishError('18002');
+          return;
+        }
+        if ((undefined === options.mediaType)
           || ('audio' !== options.mediaType
-              && 'video' !== options.mediaType)) {
-        publishError('18003');
-        return;
+            && 'video' !== options.mediaType)) {
+          publishError('18003');
+          return;
+        }
+
+        options.breed = 'conference';
+        conference = session.createCall(options);
+
+        userMediaSvc.getUserMedia({
+          mediaType: options.mediaType,
+          localMedia: options.localMedia,
+          remoteMedia: options.remoteMedia,
+          onUserMedia: function (userMedia) {
+            conference.addStream(userMedia);
+            conference.connect();
+          },
+          onMediaEstablished: function () {
+            logger.logInfo('Media Established');
+          },
+          onUserMediaError: function (error) {
+            publishError('18004', error);
+          }
+        });
+      } catch (err) {
+        publishError('18004', err);
       }
 
-      options.breed = 'conference';
-      conference = session.createCall(options);
-
-      conference.connect();
     }
 
     /**
@@ -1122,26 +1140,7 @@
              */
             emitter.publish('participant-pending', data);
           });
-          conference.on('invite-accepted', function (data) {
-            /**
-             * Invite accepted event.
-             * @desc
-             *
-             * @event Phone#invite-accepted
-             * @type {object}
-             */
-            emitter.publish('invite-accepted', data);
-          });
-          conference.on('invite-rejected', function (data) {
-            /**
-             * Invite rejected event.
-             * @desc
-             *
-             * @event Phone#invite-rejected
-             * @type {object}
-             */
-            emitter.publish('invite-rejected', data);
-          });
+
           conference.on('error', function (data) {
             /**
              * Call Error event.

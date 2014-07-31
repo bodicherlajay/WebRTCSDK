@@ -220,18 +220,18 @@ describe('Call [Conference]', function () {
         expect(participants['cba123'].status).equal('invitee');
       });
 
-      it('should call setState with `invite-accepted` if [status === `accepted`]', function () {
+      it('should call setState with `connected` if [status === `accepted`]', function () {
         conference.setParticipant('raman@raman.com', 'invitee', 'abc123');
         conference.updateParticipant('abc123', 'accepted');
 
-        expect(setStateStub.calledWith('invite-accepted')).to.equal(true);
+        expect(setStateStub.calledWith('connected')).to.equal(true);
       });
 
-      it('should call setState with `invite-rejected` if [status === `rejected`]', function () {
+      it('should call setState with `rejected` if [status === `rejected`]', function () {
         conference.setParticipant('raman@raman.com', 'invitee', 'abc123');
         conference.updateParticipant('abc123', 'rejected');
 
-        expect(setStateStub.calledWith('invite-rejected')).to.equal(true);
+        expect(setStateStub.calledWith('rejected')).to.equal(true);
       });
     });
   });

@@ -340,10 +340,10 @@
         this.participants()[id]['status'] = status;
       }
       if ('accepted' === status) {
-        thisCall.setState('invite-accepted');
+        thisCall.setState('connected');
       }
       if ('rejected' === status) {
-        thisCall.setState('invite-rejected');
+        thisCall.setState('rejected');
       }
     }
 
