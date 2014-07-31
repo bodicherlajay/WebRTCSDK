@@ -353,7 +353,7 @@ describe('Event Manager', function () {
         setTimeout(function () {
           try {
             expect(publishSpy.calledWith('call-incoming')).to.equal(true);
-            expect(publishSpy.getCall(1).args[1].breed).to.equal('call');
+            expect(publishSpy.getCall(1).args[1].type).to.equal('call');
             expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
             expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
             expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
@@ -374,7 +374,7 @@ describe('Event Manager', function () {
         setTimeout(function () {
           try {
             expect(publishSpy.calledWith('call-incoming')).to.equal(true);
-            expect(publishSpy.getCall(1).args[1].breed).to.equal('conference');
+            expect(publishSpy.getCall(1).args[1].type).to.equal('conference');
             expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
             expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
             expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');

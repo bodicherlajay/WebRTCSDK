@@ -1103,7 +1103,7 @@ describe('Session', function () {
 
       beforeEach(function () {
         callInfo = {
-          breed: 'call',
+          type: 'call',
           id: '123',
           from: '1234',
           mediaType: 'video',
@@ -1111,7 +1111,7 @@ describe('Session', function () {
         };
 
         conferenceInfo = {
-          breed: 'conference',
+          type: 'conference',
           id: '123',
           from: '1234',
           mediaType: 'video',
@@ -1157,7 +1157,7 @@ describe('Session', function () {
         setTimeout(function () {
           try {
             expect(createCallSpyStub.called).to.equal(true);
-            expect(createCallSpyStub.getCall(0).args[0].breed).to.equal(callInfo.breed);
+            expect(createCallSpyStub.getCall(0).args[0].breed).to.equal(callInfo.type);
             expect(createCallSpyStub.getCall(0).args[0].id).to.equal(callInfo.id);
             expect(createCallSpyStub.getCall(0).args[0].peer).to.equal(callInfo.from);
             expect(createCallSpyStub.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);

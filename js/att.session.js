@@ -37,7 +37,7 @@
     rtcManager.on('call-incoming', function (callInfo) {
       var eventName,
         call = session.createCall({
-          breed: callInfo.breed,
+          breed: callInfo.type,
           id: callInfo.id,
           peer: callInfo.from,
           type: ATT.CallTypes.INCOMING,
