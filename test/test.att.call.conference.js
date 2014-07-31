@@ -102,12 +102,15 @@ describe('Call [Conference]', function () {
       });
 
       conference = new ATT.rtc.Call(options);
+
+      setStateStub = sinon.stub(conference, 'setState');
     });
 
     afterEach(function () {
       addParticipantStub.restore();
       getRTCManagerStub.restore();
       createEEStub.restore();
+      setStateStub.restore();
     });
 
     describe('addParticipant', function () {
@@ -138,8 +141,6 @@ describe('Call [Conference]', function () {
         });
 
         it('should publish `participant-pending` when rtcMgr invokes `onParticipantPending` callback', function () {
-          setStateStub = sinon.stub(conference, 'setState');
-
           conference.addParticipant('12345');
 
           expect(setStateStub.calledOnce).to.equal(true);
@@ -215,6 +216,13 @@ describe('Call [Conference]', function () {
         participants = conference.participants();
         expect(participants['abc123'].status).equal('accepted');
         expect(participants['cba123'].status).equal('invitee');
+      });
+
+      it('should publish `invite-accepted` if [status ===`accepted`]', function () {
+        conference.setParticipant('raman@raman.com', 'invitee', 'abc123');
+        conference.updateParticipant('abc123', 'accepted');
+
+        expect(setStateStub.calledWith('invite-accepted')).to.equal(true);
       });
     });
   });

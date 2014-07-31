@@ -108,8 +108,10 @@
         setRemoteSdp(modifications.remoteSdp);
       }
 
-      if (undefined !== modifications.type && 'conferences' === modifications.type) {
-        if (undefined !== modifications.modificationId && 'success' === modifications.reason) {
+      if (undefined !== modifications.type
+        && 'conferences' === modifications.type
+        && undefined !== modifications.modificationId) {
+        if ('success' === modifications.reason) {
           thisCall.updateParticipant(modifications.modificationId, 'accepted');
         }
       }
@@ -160,6 +162,7 @@
       if ('connecting' !== event &&
           'rejected' !== event &&
           'participant-pending' !== event &&
+          'invite-accepted' !== event &&
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
@@ -313,6 +316,9 @@
     function updateParticipant(id, status) {
       if (undefined !== thisCall.participants()[id]) {
         this.participants()[id]['status'] = status;
+      }
+      if ('accepted' === status) {
+        thisCall.setState('invite-accepted');
       }
     }
 

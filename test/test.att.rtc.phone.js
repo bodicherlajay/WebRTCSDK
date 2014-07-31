@@ -1111,6 +1111,15 @@ describe('Phone', function () {
           expect(onSpy.calledWith('participant-pending')).to.equal(true);
         });
 
+        it('should register for `invite-accepted` event on the conference object', function() {
+          session.setId('12343');
+
+          phone.addParticipant('23432');
+
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.calledWith('invite-accepted')).to.equal(true);
+        });
+
         it('should register for `error` event on the conference object', function () {
           session.setId('123456');
 
@@ -1135,6 +1144,24 @@ describe('Phone', function () {
                 try {
                   expect(publishStub.calledOnce).to.equal(true);
                   expect(publishStub.calledWith('participant-pending')).to.equal(true);
+                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 200);
+            });
+          });
+
+          describe('invite-accepted', function () {
+
+            it('should publish `invite-accepted` with event data on getting a `invite-accepted`', function (done) {
+              emitterConference.publish('invite-accepted', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledOnce).to.equal(true);
+                  expect(publishStub.calledWith('invite-accepted')).to.equal(true);
                   expect(publishStub.getCall(0).args[1]).to.equal(eventData);
                   done();
                 } catch(e) {

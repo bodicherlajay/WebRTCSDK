@@ -1117,10 +1117,20 @@
              *
              * @event Phone#participant-pending
              * @type {object}
-             * @property {Date} timestamp - Event fire time
-             * @property {String} participant - participantId
+             * @property {Object} participants - The current participants
              */
             emitter.publish('participant-pending', data);
+          });
+          conference.on('invite-accepted', function (data) {
+            /**
+             * Invite accepted event.
+             * @desc
+             *
+             * @event Phone#invite-accepted
+             * @type {object}
+             * @property {Object} participants - The current participants
+             */
+            emitter.publish('invite-accepted', data);
           });
           conference.on('error', function (data) {
             /**
