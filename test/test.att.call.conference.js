@@ -235,5 +235,10 @@ describe('Call [Conference]', function () {
       });
     });
 
+    describe('connect [OUTGOING]', function () {
+      it('should execute createPeerConnection with mediaConstraints, localStream and remoteSdp');
+
+      describe('createPeerConnection')
+    });
   });
 });
