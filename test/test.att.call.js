@@ -144,6 +144,7 @@ describe('Call', function () {
     peerConnection = factories.createPeerConnection({
       stream : {},
       mediaType : 'video',
+      onRemoteStream : function () {},
       onSuccess : function () {},
       onError : function () {}
     });
