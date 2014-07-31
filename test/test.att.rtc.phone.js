@@ -1397,6 +1397,10 @@ describe('Phone', function () {
           });
 
           session.currentCall = conference;
+
+          session.setId('123456');
+
+          phone.addParticipant('1234');
         });
 
         afterEach(function () {
@@ -1410,28 +1414,26 @@ describe('Phone', function () {
         });
 
         it('should register for `participant-pending` event on the conference object', function () {
-          session.setId('123456');
-
-          phone.addParticipant('1234');
-
           expect(onSpy.called).to.equal(true);
           expect(onSpy.calledWith('participant-pending')).to.equal(true);
         });
 
+        it('should register for `invite-accepted` event on the conference object', function() {
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.calledWith('invite-accepted')).to.equal(true);
+        });
+
+        it('should register for `invite-rejected` event on the conference object', function() {
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.calledWith('invite-rejected')).to.equal(true);
+        });
+
         it('should register for `error` event on the conference object', function () {
-          session.setId('123456');
-
-          phone.addParticipant('1234');
-
           expect(onSpy.called).to.equal(true);
           expect(onSpy.calledWith('error')).to.equal(true);
         });
 
         describe('addParticipant events', function () {
-          beforeEach(function () {
-            session.setId('12345');
-            phone.addParticipant('1234');
-          });
 
           describe('participant-pending', function () {
 
@@ -1442,6 +1444,42 @@ describe('Phone', function () {
                 try {
                   expect(publishStub.calledOnce).to.equal(true);
                   expect(publishStub.calledWith('participant-pending')).to.equal(true);
+                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 200);
+            });
+          });
+
+          describe('invite-accepted', function () {
+
+            it('should publish `invite-accepted` with event data on getting a `invite-accepted`', function (done) {
+              emitterConference.publish('invite-accepted', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledOnce).to.equal(true);
+                  expect(publishStub.calledWith('invite-accepted')).to.equal(true);
+                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 200);
+            });
+          });
+
+          describe('invite-rejected', function () {
+
+            it('should publish `invite-rejected` with event data on getting a `invite-rejected`', function (done) {
+              emitterConference.publish('invite-rejected', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledOnce).to.equal(true);
+                  expect(publishStub.calledWith('invite-rejected')).to.equal(true);
                   expect(publishStub.getCall(0).args[1]).to.equal(eventData);
                   done();
                 } catch(e) {
@@ -1471,9 +1509,6 @@ describe('Phone', function () {
         });
 
         it('should execute call.addParticipant', function () {
-          session.setId('1234567');
-
-          phone.addParticipant('1234');
           expect(addParticipantStub.called).to.equal(true);
           expect(addParticipantStub.getCall(0).args[0]).to.equal('1234');
         });
@@ -1492,10 +1527,8 @@ describe('Phone', function () {
 
           it('[19001] should be thrown if conference has not been started', function() {
 
-            session.setId('12344');
-
             conference.breed = function () {
-              return 'call'
+              return 'call';
             };
 
             phone.addParticipant('1234');
@@ -1507,8 +1540,6 @@ describe('Phone', function () {
           });
 
           it('[19002] should be thrown if parameter `participant` is not passed in', function () {
-
-            session.setId('12344');
 
             phone.addParticipant();
 
@@ -1524,7 +1555,6 @@ describe('Phone', function () {
               throw error;
             });
 
-            session.setId('12344');
             phone.addParticipant('12345');
 
             expect(ATT.errorDictionary.getSDKError('19003')).to.be.an('object');

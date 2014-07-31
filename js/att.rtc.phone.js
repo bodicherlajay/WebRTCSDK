@@ -1083,6 +1083,8 @@
      phone.addParticipant('4250000001');
      */
     function addParticipant(participant) {
+      logger.logDebug('Phone.addParticipant');
+
       var conference;
 
       try {
@@ -1117,10 +1119,28 @@
              *
              * @event Phone#participant-pending
              * @type {object}
-             * @property {Date} timestamp - Event fire time
-             * @property {String} participant - participantId
              */
             emitter.publish('participant-pending', data);
+          });
+          conference.on('invite-accepted', function (data) {
+            /**
+             * Invite accepted event.
+             * @desc
+             *
+             * @event Phone#invite-accepted
+             * @type {object}
+             */
+            emitter.publish('invite-accepted', data);
+          });
+          conference.on('invite-rejected', function (data) {
+            /**
+             * Invite rejected event.
+             * @desc
+             *
+             * @event Phone#invite-rejected
+             * @type {object}
+             */
+            emitter.publish('invite-rejected', data);
           });
           conference.on('error', function (data) {
             /**

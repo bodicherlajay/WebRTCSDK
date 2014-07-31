@@ -128,6 +128,8 @@ describe('Phone [Conference]', function () {
         }, 100);
       });
 
+      it('should publish `conference:connecting` immediately');
+
       it('should execute `session.createCall`', function () {
         var phone2;
 
@@ -147,30 +149,35 @@ describe('Phone [Conference]', function () {
 
       });
 
-      it('should execute `conference.connect`', function () {
+      it('should get the local userMedia');
 
-        var connectStub,
-          phone3;
+      describe('getUserMedia (local): onMediaEstablished', function () {
+        it('should log that the local media is ok');
+      });
 
-        phone3 = new Phone();
-        phone3.on('error', function (error) {
-          console.log(error);
-        });
+      describe('getUserMedia: onUserMedia', function () {
 
-        connectStub = sinon.stub(conference, 'connect');
+        it('should add the local stream to the current conference');
 
-        phone3.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType: 'video'
-        });
-
-        expect(connectStub.called).to.equal(true);
-
-        connectStub.restore();
+        it('should execute `conference.connect`');
 
       });
 
+      describe('getUserMedia: onMediaError', function () {
+        it('should publish error');
+      });
+
+    });
+
+    describe('Events', function () {
+      describe('Call', function () {
+        describe('conference:connected', function () {
+          it('should publish `conference:connected` when call is connected');
+        });
+        describe('error', function () {
+          it('should publish the `error`');
+        });
+      });
     });
   });
 });
