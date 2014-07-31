@@ -1083,6 +1083,8 @@
      phone.addParticipant('4250000001');
      */
     function addParticipant(participant) {
+      logger.logDebug('Phone.addParticipant');
+
       var conference;
 
       try {

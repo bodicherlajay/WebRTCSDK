@@ -108,11 +108,14 @@
         setRemoteSdp(modifications.remoteSdp);
       }
 
-      if (undefined !== modifications.type
-        && 'conferences' === modifications.type
-        && undefined !== modifications.modificationId) {
-        if ('success' === modifications.reason) {
-          thisCall.updateParticipant(modifications.modificationId, 'accepted');
+      if ('conferences' === modifications.type && undefined !== modifications.modificationId) {
+        if (null === thisCall.remoteSdp()) {
+          if ('success' === modifications.reason) {
+            thisCall.updateParticipant(modifications.modificationId, 'accepted');
+          }
+          if ('rejected' === modifications.reason) {
+            thisCall.updateParticipant(modifications.modificationId, 'rejected');
+          }
         }
       }
     }
@@ -154,7 +157,9 @@
 
     function setRemoteSdp(sdp) {
       remoteSdp = sdp;
-      codec = sdpFilter.getCodecfromSDP(sdp);
+      if (null !== sdp) {
+        codec = sdpFilter.getCodecfromSDP(sdp);
+      }
     }
 
     function on(event, handler) {
@@ -299,6 +304,7 @@
     }
 
     function addParticipant(participant) {
+      logger.logInfo('Inviting participant...');
       rtcManager.addParticipant({
         sessionInfo: sessionInfo,
         participant: participant,

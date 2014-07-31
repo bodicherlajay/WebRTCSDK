@@ -1416,6 +1416,7 @@ describe('Call', function () {
       var modificationsHold,
         modificationsResume,
         modificationsForInviteAccepted,
+        modificationsForInviteRejected,
         setRemoteDescriptionStub,
         updateParticipantStub,
         disableMediaStreamStub,
@@ -1436,6 +1437,11 @@ describe('Call', function () {
           type: 'conferences',
           modificationId: 'abc321',
           reason: 'success'
+        };
+        modificationsForInviteRejected = {
+          type: 'conferences',
+          modificationId: 'abc321',
+          reason: 'rejected'
         };
 
         setRemoteDescriptionStub = sinon.stub(rtcMgr, 'setRemoteDescription');
@@ -1498,15 +1504,33 @@ describe('Call', function () {
 
       describe('invite-accepted', function () {
         beforeEach(function (done) {
+          call.setRemoteSdp(null);
           emitterEM.publish('media-mod-terminations', modificationsForInviteAccepted);
 
           setTimeout(function () {
+            console.log('Wait for `media-mod-terminations` event');
             done();
           }, 100);
         });
 
         it('should call updateParticipant', function () {
           expect(updateParticipantStub.calledWith('abc321', 'accepted')).to.equal(true);
+        });
+      });
+
+      describe('invite-rejected', function () {
+        beforeEach(function (done) {
+          call.setRemoteSdp(null);
+          emitterEM.publish('media-mod-terminations', modificationsForInviteRejected);
+
+          setTimeout(function () {
+            console.log('Wait for `media-mod-terminations` event');
+            done();
+          }, 100);
+        });
+
+        it('should call updateParticipant with `rejected`', function () {
+          expect(updateParticipantStub.calledWith('abc321', 'rejected')).to.equal(true);
         });
       });
 
