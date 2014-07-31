@@ -59,7 +59,6 @@ describe('Phone [Conference]', function () {
           sessionInfo : {sessionId : '12345', token : '123'}
         });
 
-
         createCallStub = sinon.stub(session, 'createCall', function () {
           return conference;
         });
@@ -278,14 +277,106 @@ describe('Phone [Conference]', function () {
       });
     });
 
-    describe('Events', function () {
-      describe('Call', function () {
-        describe('conference:connected', function () {
-          it('should publish `conference:connected` when call is connected');
+    describe('endConference', function () {
+      var session,
+        eventData,
+        error,
+        errorData,
+        emitterConf,
+        conference,
+        createCallStub,
+        onSpy,
+        currentSession,
+        sessionStub,
+        conferenceDisconnectStub,
+        createEventEmitterStub,
+        conferenceDisconnectingHandlerSpy;
+
+      beforeEach(function () {
+        session = new Session();
+        sessionStub = sinon.stub(ATT.rtc, 'Session', function () {
+          return session;
         });
-        describe('error', function () {
-          it('should publish the `error`');
+
+        eventData = {
+          abc: 'abc'
+        };
+
+        error = {
+          ErrorMessage: 'Test Error'
+        };
+
+        errorData = {
+          error: error
+        };
+
+        emitterConf = ATT.private.factories.createEventEmitter();
+
+        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+          return emitterConf;
         });
+
+        conference = new Call({
+          breed: 'conference',
+          mediaType: 'audio',
+          type: ATT.CallTypes.OUTGOING,
+          sessionInfo : {sessionId : '12345', token : '123'}
+        });
+
+        createCallStub = sinon.stub(session, 'createCall', function () {
+          return conference;
+        });
+
+        createEventEmitterStub.restore();
+
+        conferenceDisconnectStub  = sinon.stub(conference, 'disconnect');
+
+        onSpy = sinon.spy(conference, 'on');
+        conferenceDisconnectingHandlerSpy = sinon.spy();
+
+        phone = ATT.rtc.Phone.getPhone();
+
+        phone.on('call-disconnecting', conferenceDisconnectingHandlerSpy);
+
+        currentSession = phone.getSession();
+        currentSession.currentCall = conference;
+      });
+
+      afterEach(function () {
+        createCallStub.restore();
+        sessionStub.restore();
+        onSpy.restore();
+      });
+
+      it('should exist', function () {
+        expect(phone.endConference).to.be.a('function');
+      });
+
+      it('should register for the `disconnecting` event on the call object', function () {
+        phone.endConference();
+
+        expect(onSpy.calledWith('disconnecting')).to.equal(true);
+      });
+
+      it('should execute conference.disconnect', function () {
+        phone.endConference();
+
+        expect(conferenceDisconnectStub.called).to.equal(true);
+      });
+
+      it('should trigger `call-disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
+        phone.endConference();
+
+        emitterConf.publish('disconnecting', eventData);
+
+        setTimeout(function () {
+          try {
+            expect(conferenceDisconnectingHandlerSpy.calledWith(eventData)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
       });
     });
   });

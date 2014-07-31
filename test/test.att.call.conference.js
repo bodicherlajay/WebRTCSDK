@@ -234,5 +234,6 @@ describe('Call [Conference]', function () {
         expect(setStateStub.calledWith('rejected')).to.equal(true);
       });
     });
+
   });
 });
