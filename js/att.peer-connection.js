@@ -39,6 +39,9 @@
     }
     onSuccess = options.onSuccess;
 
+    if ('function' !== typeof options.onRemoteStream) {
+      throw new Error('No `onRemoteStream` callback passed.');
+    }
     if ('function' !== typeof options.onError) {
       throw new Error('No `onError` callback passed.');
     }
@@ -52,37 +55,47 @@
 
     pc.addStream(options.stream);
     pc.onaddstream = function (event) {
-      if ('function' === typeof peerConnection.onRemoteStream) {
-        peerConnection.onRemoteStream(event.remoteStream);
+      if ('function' === typeof options.onRemoteStream) {
+        options.onRemoteStream(event.remoteStream);
       }
     };
 
     if (undefined === options.remoteSDP) {
       pc.createOffer(function (description) {
+        var fixedSDP;
         //description is the new SDP Which needs to processed
-        var fixedSDP = sdpFilter.processChromeSDPOffer(description);
-        pc.setLocalDescription(fixedSDP, function () {
+        try {
+          fixedSDP = sdpFilter.processChromeSDPOffer(description);
+        } catch (err) {
+          throw new Error('Could not process Chrome offer SDP.');
+        }
+        pc.setLocalDescription(fixedSDP, function () { // SUCCESS
           onSuccess(fixedSDP);
-        }, onError, {});
-      }, function () {
-        //should be an error
-      }, { mandatory: mediaConstraint});
+        }, function () { // ERROR
+          throw new Error('Could not set the localDescription.');
+        });
+      }, function () { // ERROR createOffer
+        throw new Error('Failed to create offer.');
+      }, {mandatory: mediaConstraint});
     } else {
-      pc.createAnswer(function (description) {
-        var fixedSDP = sdpFilter.processChromeSDPOffer(description);
+      pc.createAnswer(function (description) {// SUCCESS
+        var fixedSDP;
+        //description is the new SDP Which needs to processed
+        try {
+          fixedSDP = sdpFilter.processChromeSDPOffer(description);
+        } catch (err) {
+          throw new Error('Could not process Chrome offer SDP.');
+        }
         pc.setLocalDescription(fixedSDP, function () {
           onSuccess(fixedSDP);
-        }, onError);
-      }, function () {
-        return;
-      },{ mandatory: mediaConstraint});
+        }, function () { // ERROR setLocal
+          throw new Error('Could not set the localDescription.');
+        });
+      }, function () {// ERROR createAnswer
+        throw new Error('Failed to create answer.');
+      }, { mandatory: mediaConstraint});
     }
-
-    peerConnection = {
-      onRemoteStream: null
-    };
-
-    return peerConnection;
+    return {};
   }
 
   if (undefined === ATT.private.factories) {

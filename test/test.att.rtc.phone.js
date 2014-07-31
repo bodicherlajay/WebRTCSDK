@@ -1215,7 +1215,7 @@ describe('Phone', function () {
             session.setId('12344');
 
             conference.breed = function () {
-              return 'call'
+              return 'call';
             };
 
             phone.addParticipant('1234');
