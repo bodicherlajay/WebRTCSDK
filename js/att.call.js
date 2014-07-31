@@ -326,6 +326,9 @@
       if ('accepted' === status) {
         thisCall.setState('invite-accepted');
       }
+      if ('rejected' === status) {
+        thisCall.setState('invite-rejected');
+      }
     }
 
     function disconnect() {

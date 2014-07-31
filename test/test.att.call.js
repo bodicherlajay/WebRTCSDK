@@ -1514,7 +1514,7 @@ describe('Call', function () {
           }, 100);
         });
 
-        it('should call updateParticipant', function () {
+        it('should call updateParticipant with `accepted`', function () {
           expect(updateParticipantStub.calledWith('abc321', 'accepted')).to.equal(true);
         });
       });
