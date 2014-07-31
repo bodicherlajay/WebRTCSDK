@@ -1,0 +1,39 @@
+Instructions for AWS GUI Testing
+
+
+Overview - The configuration for this GUI testing was to install X11 with the LXDE desktop on an AWS instance along with the TightVNC server and allow inbound VNC traffic on port 5901 (it's OK - the traffic is SSH tunneled).  Details for connecting to the test systems X11 desktop described below.
+
+1.) Using the SSH key file attached inside our KeePass database, connect with port forwarding for VNC:
+#ssh -i GUITest.pem ubuntu@54.191.34.26 -L 5901/127.0.0.1/5901
+
+I've run this for with MobaXterm on Windows.  Also confirmed it works fine on Linux.  Mac should work just as well. NOTE: this example has the IP address from the last reboot and if the AWS instance has rebooted it will be different.
+
+2.) On the AWS instance, you'll need to launch and kill the vncserver from time to time:
+
+#vncserver -kill :1
+#vncserver :1
+
+3.) Once your SSH connection is made, use the SSH tunnel to connect to the AWS instance desktop.
+
+  a.) Run vncviewer
+     Server(:port) - 127.0.0.1:5901
+  b.) Enter the password: raptors
+
+4.)  Managing the DHS & CTAS tests
+    The DHS is running in a tmux session (if you're not familiar with tmux, do a little Google research).  We should keep the sessions operating this way and attach and detach from them so they're not tied to terminal sessions in GUI or SSH shells.  If running (and it should be), the following command will attach:
+
+#tmux attach
+
+Once attached, you can Control-C to stop and then restart after updating as needed. A tmux "^b, :detach" command will get you out of the session.
+
+At the moment, I've cloned the CTAS and DHS Git repos under my personal username/password.  If someone else need to manage/update I'm sure we can find another username/password or simply do the work to configure Jenkins SSH keys to allow access to the repos.  They can be updated with git pull, npm install (for the DHS) as needed and appropriate.
+
+The scripts used to automate CTAS can be found in the util_scripts directory of the CTAS repo on the ctas_refactor branch.  The automate.sh script is run with the following crontab entry:
+
+00	06	*	*	*	/home/ubuntu/autotest.sh
+
+Please note:  It's cron.  It's white space sensitive (those are tabs above), and yes, the script does run daily at 6am (AWS instance is set to the Pacific timezone).
+
+For future installation:  All of the set-up instructions were take from here - http://xmodulo.com/2013/06/how-to-set-up-ubuntu-desktop-vm-on-amazon-ec2.html 
+
+--Garrick West 07/31/2014
