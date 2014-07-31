@@ -21,6 +21,16 @@ describe('RTCManager [Conference]', function () {
       it('should exist', function () {
         expect(rtcManager.connectConference).to.be.a('function');
       });
+      // TODO: can we reuse startCall apiconfig?
+      it('should execute `doOperation(startConference)` with required params');
+
+      describe('doOperation: Success', function () {
+        it('should execute `onSuccess` with required params: [conference ID, state:x-state]');
+      });
+
+      describe('doOperation: Error', function () {
+        it('should execute `onError` callback for `connectConference`');
+      });
     });
   });
 });

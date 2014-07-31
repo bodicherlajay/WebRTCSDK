@@ -238,7 +238,13 @@ describe('Call [Conference]', function () {
     describe('connect [OUTGOING]', function () {
       it('should execute createPeerConnection with mediaConstraints, localStream and remoteSdp');
 
-      describe('createPeerConnection')
+      describe('createPeerConnection: onSuccess', function () {
+        it('should call `rtcManager.connectConference`');
+
+        describe('connectConference: Success', function () {
+          it('should log conference ID & state=x-state');
+        })
+      });
     });
   });
 });
