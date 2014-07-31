@@ -1119,7 +1119,6 @@
              *
              * @event Phone#participant-pending
              * @type {object}
-             * @property {Object} participants - The current participants
              */
             emitter.publish('participant-pending', data);
           });
@@ -1130,9 +1129,18 @@
              *
              * @event Phone#invite-accepted
              * @type {object}
-             * @property {Object} participants - The current participants
              */
             emitter.publish('invite-accepted', data);
+          });
+          conference.on('invite-rejected', function (data) {
+            /**
+             * Invite rejected event.
+             * @desc
+             *
+             * @event Phone#invite-rejected
+             * @type {object}
+             */
+            emitter.publish('invite-rejected', data);
           });
           conference.on('error', function (data) {
             /**
