@@ -418,7 +418,8 @@ describe('Event Manager', function () {
       var event;
 
       describe('media-mod-terminations', function () {
-        it('should publish event `media-mod-terminations` with `remoteSdp` and `modificationId`', function (done) {
+
+        it('should publish event `media-mod-terminations` with `type` call and `remoteSdp` and `modificationId` for calls event', function (done) {
           event = {
             'type': 'calls',
             'from': 'sip:1234@icmn.api.att.net',
@@ -433,7 +434,7 @@ describe('Event Manager', function () {
 
           setTimeout(function () {
             expect(publishSpy.calledWith('media-mod-terminations', {
-              type: 'calls',
+              type: 'call',
               remoteSdp: 'abcdefg',
               modificationId: '12345',
               reason: 'success'
@@ -441,19 +442,44 @@ describe('Event Manager', function () {
             done();
           }, 100);
         });
+
+        it('should publish event `media-mod-terminations` with `type` conference and `remoteSdp` and `modificationId` for conference event', function (done) {
+          event = {
+            'type': 'conferences',
+            'from': 'sip:1234@icmn.api.att.net',
+            'resourceURL': '/RTC/v1/sessions/00000/conferences/1111',
+            'modId': '12345',
+            'state': 'mod-terminated',
+            'sdp': 'abcdefg',
+            'reason': 'success'
+          };
+
+          emitterEC.publish('api-event', event);
+
+          setTimeout(function () {
+            expect(publishSpy.calledWith('media-mod-terminations', {
+              type: 'conference',
+              remoteSdp: 'abcdefg',
+              modificationId: '12345',
+              reason: 'success'
+            })).to.equal(true);
+            done();
+          }, 100);
+        });
+
       });
     });
 
     describe('session-open', function () {
       var event;
 
-      it('should publish `call-connected` event with remoteSdp', function (done) {
+      it('should publish `call-connected` event with type `call` and remoteSdp for a calls event', function (done) {
 
         event = {
-          'type':'calls',
-          'from':'sip:1234@icmn.api.att.net',
-          'resourceURL':'/RTC/v1/sessions/0000/calls/1111',
-          'state':'session-open',
+          type:'calls',
+          from:'sip:1234@icmn.api.att.net',
+          resourceURL:'/RTC/v1/sessions/0000/calls/1111',
+          state:'session-open',
           sdp: 'abc'
         };
 
@@ -461,7 +487,29 @@ describe('Event Manager', function () {
 
         setTimeout(function () {
           expect(publishSpy.calledWith('call-connected', {
-            remoteSdp: 'abc'
+            type: 'call',
+            remoteSdp: event.sdp
+          })).to.equal(true);
+          done();
+        }, 100);
+      });
+
+      it('should publish `call-connected` event with type `conferences` and remoteSdp for a conferences event', function (done) {
+
+        event = {
+          type:'conferences',
+          from:'sip:1234@icmn.api.att.net',
+          resourceURL:'/RTC/v1/sessions/0000/conferences/1111',
+          state:'session-open',
+          sdp: 'abc'
+        };
+
+        emitterEC.publish('api-event', event);
+
+        setTimeout(function () {
+          expect(publishSpy.calledWith('call-connected', {
+            type: 'conference',
+            remoteSdp: event.sdp
           })).to.equal(true);
           done();
         }, 100);

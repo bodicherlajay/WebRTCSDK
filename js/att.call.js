@@ -108,7 +108,7 @@
         setRemoteSdp(modifications.remoteSdp);
       }
 
-      if ('conferences' === modifications.type && undefined !== modifications.modificationId) {
+      if ('conference' === modifications.type && undefined !== modifications.modificationId) {
         if (null === thisCall.remoteSdp()) {
           if ('success' === modifications.reason) {
             thisCall.updateParticipant(modifications.modificationId, 'accepted');

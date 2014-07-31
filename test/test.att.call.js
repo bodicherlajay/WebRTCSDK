@@ -1523,12 +1523,12 @@ describe('Call', function () {
           reason: 'success'
         };
         modificationsForInviteAccepted = {
-          type: 'conferences',
+          type: 'conference',
           modificationId: 'abc321',
           reason: 'success'
         };
         modificationsForInviteRejected = {
-          type: 'conferences',
+          type: 'conference',
           modificationId: 'abc321',
           reason: 'rejected'
         };

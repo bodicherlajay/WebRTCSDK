@@ -63,7 +63,7 @@
         break;
       case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
         emitter.publish('media-mod-terminations', {
-          type: event.type,
+          type: event.type === 'calls' ? 'call' : 'conference',
           remoteSdp: event.sdp,
           modificationId: event.modId,
           reason: event.reason
@@ -71,6 +71,7 @@
         break;
       case ATT.RTCCallEvents.SESSION_OPEN:
         emitter.publish('call-connected', {
+          type: event.type === 'calls' ? 'call' : 'conference',
           remoteSdp: event.sdp
         });
         break;
