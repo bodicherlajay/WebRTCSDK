@@ -852,6 +852,313 @@ describe('Phone', function () {
         });
       });
 
+      describe('[US198535] answer', function () {
+
+        var options,
+          createCallOptions,
+          call,
+          onSpy,
+          callConnectStub,
+          onAnsweringSpy,
+          callConnectingHandlerSpy,
+          callCanceledHandlerSpy,
+          callRejectedHandlerSpy,
+          mediaEstablishedHandlerSpy,
+          callHoldHandlerSpy,
+          callResumeHandlerSpy,
+          callErrorHandlerSpy,
+          errorHandlerSpy;
+
+        beforeEach(function () {
+
+          options = {
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
+          };
+
+          createCallOptions = {
+            id: '123',
+            peer: '1234567',
+            type: 'abc',
+            mediaType: 'video'
+          };
+
+          onAnsweringSpy = sinon.spy();
+          callConnectingHandlerSpy = sinon.spy();
+          callCanceledHandlerSpy = sinon.spy();
+          callRejectedHandlerSpy = sinon.spy();
+          mediaEstablishedHandlerSpy = sinon.spy();
+          callErrorHandlerSpy = sinon.spy();
+          callHoldHandlerSpy = sinon.spy();
+          callResumeHandlerSpy = sinon.spy();
+          errorHandlerSpy = sinon.spy();
+
+          session.setId('ABC');
+          call = session.createCall(createCallOptions);
+
+          call.setRemoteSdp('abc');
+
+          onSpy = sinon.spy(call, 'on');
+
+          callConnectStub = sinon.stub(call, 'connect', function () {
+          });
+
+          phone.on('answering', onAnsweringSpy);
+          phone.on('call-connecting', callConnectingHandlerSpy);
+          phone.on('call-canceled', callCanceledHandlerSpy);
+          phone.on('call-rejected', callRejectedHandlerSpy);
+          phone.on('media-established', mediaEstablishedHandlerSpy);
+          phone.on('call-held', callHoldHandlerSpy);
+          phone.on('call-resumed', callResumeHandlerSpy);
+          phone.on('error', errorHandlerSpy);
+
+        });
+
+        afterEach(function () {
+          onSpy.restore();
+          callConnectStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.answer).to.be.a('function');
+        });
+
+        it('[5004] should be published `error` event with error data if called without any options', function (done) {
+
+          phone.answer();
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
+            done();
+          }, 100);
+
+        });
+
+        it('[5001] should be published `error` event with error data if called without `localMedia`', function (done) {
+
+          phone.answer({
+            test: 'test'
+          });
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            done();
+          }, 100);
+
+        });
+
+        it('[5001] should be published `error` event with error data if called without `remoteMedia`', function (done) {
+
+          phone.answer({
+            localMedia: options.localMedia
+          });
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            done();
+          }, 100);
+        });
+
+        it('[5003] should publish `error` event with data if the user is not logged in', function (done) {
+
+
+          session.setId(null);
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
+            done();
+          }, 100);
+        });
+
+        it('[5000] should publish `error` event with error data if there is no current call', function (done) {
+
+          session.currentCall = null;
+          phone.on('error', errorHandlerSpy);
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
+            done();
+          }, 100);
+
+        });
+
+        it('[5002] should publish `error` with data when there\'s an uncaught exception', function (done) {
+
+          session.currentCall = undefined;
+
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(errorHandlerSpy.calledOnce).to.equal(true);
+            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
+            done();
+          }, 100);
+        });
+
+        it('should trigger `answering` with event data', function (done) {
+          phone.answer(options);
+
+          setTimeout(function () {
+            expect(onAnsweringSpy.called).to.equal(true);
+            expect(onAnsweringSpy.getCall(0).args[0]).to.be.an('object');
+            expect(onAnsweringSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(onAnsweringSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(onAnsweringSpy.getCall(0).args[0].codec).to.be.an('array');
+            expect(typeof onAnsweringSpy.getCall(0).args[0].timestamp).to.equal('object');
+            done();
+          }, 100);
+        });
+
+        it('should register for the `connecting` event on the call object', function () {
+          phone.answer(options);
+
+          expect(onSpy.calledWith('connecting')).to.equal(true);
+        });
+
+        it('should register for the `connected` event on the call object', function () {
+          phone.answer(options);
+
+          expect(onSpy.calledWith('connected')).to.equal(true);
+        });
+
+        it('should register for the `media-established` event on the call object', function () {
+          phone.answer(options);
+
+          expect(onSpy.calledWith('media-established')).to.equal(true);
+        });
+
+        it('should register for the `held` event on the call object', function () {
+          phone.answer(options);
+
+          expect(onSpy.calledWith('held')).to.equal(true);
+        });
+
+        it('should register for the `resumed` event on the call object', function () {
+          phone.answer(options);
+
+          expect(onSpy.calledWith('resumed')).to.equal(true);
+        });
+
+        it('should register for the `error` event on the call object', function () {
+          phone.answer(options);
+
+          expect(onSpy.calledWith('error')).to.equal(true);
+        });
+
+        it('should call `call.connect` with optional params localMedia & remoteMedia', function () {
+          phone.answer(options);
+
+          expect(callConnectStub.calledWith(options)).to.equal(true);
+        });
+
+        describe('Answer Events', function () {
+
+          it('should trigger `call-connecting` with relevant data when call publishes `connecting` event', function (done) {
+            phone.answer(options);
+
+            emitterCall.publish('connecting', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(callConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
+
+          it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
+            phone.answer(options);
+
+            emitterCall.publish('rejected', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(callRejectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
+
+          it('should trigger `media-established` with relevant data when call publishes `media-established` event', function (done) {
+            phone.answer(options);
+
+            emitterCall.publish('media-established', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(mediaEstablishedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+          });
+
+          it('should trigger `call-held` with relevant data when call publishes `call-held` event', function (done) {
+            phone.answer(options);
+
+            emitterCall.publish('held', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(callHoldHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+
+          it('should trigger `call-resumed` with relevant data when call publishes `call-resumed` event', function (done) {
+            phone.answer(options);
+
+            emitterCall.publish('resumed', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(callResumeHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+
+          it('[5002] should trigger `error` with relevant data when call publishes `error` event', function (done) {
+
+            phone.answer(options);
+
+            emitterCall.publish('error', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(errorHandlerSpy.calledOnce).to.equal(true);
+                expect(onErrorHandlerSpy.getCall(0).args[0].data).to.be.an('object');
+                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 200);
+
+          });
+
+        });
+      });
+
       describe('[US272608] joinConference', function () {
 
         var options,
@@ -1227,313 +1534,6 @@ describe('Phone', function () {
 
             addParticipantStub.restore();
           });
-        });
-      });
-
-      describe('[US198535] answer', function () {
-
-        var options,
-          createCallOptions,
-          call,
-          onSpy,
-          callConnectStub,
-          onAnsweringSpy,
-          callConnectingHandlerSpy,
-          callCanceledHandlerSpy,
-          callRejectedHandlerSpy,
-          mediaEstablishedHandlerSpy,
-          callHoldHandlerSpy,
-          callResumeHandlerSpy,
-          callErrorHandlerSpy,
-          errorHandlerSpy;
-
-        beforeEach(function () {
-
-          options = {
-            localMedia: localVideo,
-            remoteMedia: remoteVideo
-          };
-
-          createCallOptions = {
-            id: '123',
-            peer: '1234567',
-            type: 'abc',
-            mediaType: 'video'
-          };
-
-          onAnsweringSpy = sinon.spy();
-          callConnectingHandlerSpy = sinon.spy();
-          callCanceledHandlerSpy = sinon.spy();
-          callRejectedHandlerSpy = sinon.spy();
-          mediaEstablishedHandlerSpy = sinon.spy();
-          callErrorHandlerSpy = sinon.spy();
-          callHoldHandlerSpy = sinon.spy();
-          callResumeHandlerSpy = sinon.spy();
-          errorHandlerSpy = sinon.spy();
-
-          session.setId('ABC');
-          call = session.createCall(createCallOptions);
-
-          call.setRemoteSdp('abc');
-
-          onSpy = sinon.spy(call, 'on');
-
-          callConnectStub = sinon.stub(call, 'connect', function () {
-          });
-
-          phone.on('answering', onAnsweringSpy);
-          phone.on('call-connecting', callConnectingHandlerSpy);
-          phone.on('call-canceled', callCanceledHandlerSpy);
-          phone.on('call-rejected', callRejectedHandlerSpy);
-          phone.on('media-established', mediaEstablishedHandlerSpy);
-          phone.on('call-held', callHoldHandlerSpy);
-          phone.on('call-resumed', callResumeHandlerSpy);
-          phone.on('error', errorHandlerSpy);
-
-        });
-
-        afterEach(function () {
-          onSpy.restore();
-          callConnectStub.restore();
-        });
-
-        it('should exist', function () {
-          expect(phone.answer).to.be.a('function');
-        });
-
-        it('[5004] should be published `error` event with error data if called without any options', function (done) {
-
-          phone.answer();
-
-          setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
-            done();
-          }, 100);
-
-        });
-
-        it('[5001] should be published `error` event with error data if called without `localMedia`', function (done) {
-
-          phone.answer({
-            test: 'test'
-          });
-
-          setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
-            done();
-          }, 100);
-
-        });
-
-        it('[5001] should be published `error` event with error data if called without `remoteMedia`', function (done) {
-
-          phone.answer({
-            localMedia: options.localMedia
-          });
-
-          setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
-            done();
-          }, 100);
-        });
-
-        it('[5003] should publish `error` event with data if the user is not logged in', function (done) {
-
-
-          session.setId(null);
-
-          phone.answer(options);
-
-          setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
-            done();
-          }, 100);
-        });
-
-        it('[5000] should publish `error` event with error data if there is no current call', function (done) {
-
-          session.currentCall = null;
-          phone.on('error', errorHandlerSpy);
-
-          phone.answer(options);
-
-          setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
-            done();
-          }, 100);
-
-        });
-
-        it('[5002] should publish `error` with data when there\'s an uncaught exception', function (done) {
-
-          session.currentCall = undefined;
-
-          phone.answer(options);
-
-          setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
-            done();
-          }, 100);
-        });
-
-        it('should trigger `answering` with event data', function (done) {
-          phone.answer(options);
-
-          setTimeout(function () {
-            expect(onAnsweringSpy.called).to.equal(true);
-            expect(onAnsweringSpy.getCall(0).args[0]).to.be.an('object');
-            expect(onAnsweringSpy.getCall(0).args[0].from).to.be.a('string');
-            expect(onAnsweringSpy.getCall(0).args[0].mediaType).to.be.a('string');
-            expect(onAnsweringSpy.getCall(0).args[0].codec).to.be.an('array');
-            expect(typeof onAnsweringSpy.getCall(0).args[0].timestamp).to.equal('object');
-            done();
-          }, 100);
-        });
-
-        it('should register for the `connecting` event on the call object', function () {
-          phone.answer(options);
-
-          expect(onSpy.calledWith('connecting')).to.equal(true);
-        });
-
-        it('should register for the `connected` event on the call object', function () {
-          phone.answer(options);
-
-          expect(onSpy.calledWith('connected')).to.equal(true);
-        });
-
-        it('should register for the `media-established` event on the call object', function () {
-          phone.answer(options);
-
-          expect(onSpy.calledWith('media-established')).to.equal(true);
-        });
-
-        it('should register for the `held` event on the call object', function () {
-          phone.answer(options);
-
-          expect(onSpy.calledWith('held')).to.equal(true);
-        });
-
-        it('should register for the `resumed` event on the call object', function () {
-          phone.answer(options);
-
-          expect(onSpy.calledWith('resumed')).to.equal(true);
-        });
-
-        it('should register for the `error` event on the call object', function () {
-          phone.answer(options);
-
-          expect(onSpy.calledWith('error')).to.equal(true);
-        });
-
-        it('should call `call.connect` with optional params localMedia & remoteMedia', function () {
-          phone.answer(options);
-
-          expect(callConnectStub.calledWith(options)).to.equal(true);
-        });
-
-        describe('Answer Events', function () {
-
-          it('should trigger `call-connecting` with relevant data when call publishes `connecting` event', function (done) {
-            phone.answer(options);
-
-            emitterCall.publish('connecting', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(callConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 200);
-          });
-
-          it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
-            phone.answer(options);
-
-            emitterCall.publish('rejected', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(callRejectedHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 200);
-          });
-
-          it('should trigger `media-established` with relevant data when call publishes `media-established` event', function (done) {
-            phone.answer(options);
-
-            emitterCall.publish('media-established', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(mediaEstablishedHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 200);
-          });
-
-          it('should trigger `call-held` with relevant data when call publishes `call-held` event', function (done) {
-            phone.answer(options);
-
-            emitterCall.publish('held', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(callHoldHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 300);
-          });
-
-          it('should trigger `call-resumed` with relevant data when call publishes `call-resumed` event', function (done) {
-            phone.answer(options);
-
-            emitterCall.publish('resumed', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(callResumeHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 300);
-          });
-
-          it('[5002] should trigger `error` with relevant data when call publishes `error` event', function (done) {
-
-            phone.answer(options);
-
-            emitterCall.publish('error', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(errorHandlerSpy.calledOnce).to.equal(true);
-                expect(onErrorHandlerSpy.getCall(0).args[0].data).to.be.an('object');
-                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 200);
-
-          });
-
         });
       });
 

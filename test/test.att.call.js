@@ -106,7 +106,6 @@ describe('Call', function () {
     resourceManager = factories.createResourceManager(apiConfig);
 
     doOperationStub = sinon.stub(resourceManager, 'doOperation', function (name, options) { // never hit the network
-      console.log(name);
       options.success();
     });
 
