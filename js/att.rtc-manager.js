@@ -333,7 +333,15 @@
     }
 
     function connectConference(options) {
-      var responseData, joinConfig, createConfig;
+      var responseData, joinConfig, createConfig, params;
+
+      params = {
+        url: [options.sessionInfo.sessionId],
+        headers: {
+          'Authorization': 'Bearer ' + options.sessionInfo.token
+        }
+      };
+
       joinConfig = {
         data: {
           conferenceModifications: {
@@ -349,6 +357,7 @@
         error: options.onError
       };
       createConfig = {
+        params: params,
         data: {
           conference: {
             sdp: options.localSdp

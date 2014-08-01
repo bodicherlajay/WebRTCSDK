@@ -910,6 +910,10 @@ describe('RTC Manager', function () {
 
           connectConfOpts = {
             localSdp: localSdp,
+            sessionInfo : {
+              sessionId: '123',
+              token : 'token'
+            },
             conferenceId : '123',
             onSuccess: onSuccessSpy,
             onError: onErrorSpy
