@@ -1299,7 +1299,7 @@
      var phone = ATT.rtc.Phone.getPhone();
      phone.endConference();
      */
-    function endConference () {
+    function endConference() {
       logger.logDebug('Phone.endConference');
 
       var conference;
@@ -1333,9 +1333,9 @@
      */
 
     function getParticipants() {
+      logger.logDebug('Phone.getParticipant');
 
       var conference;
-
 
       try {
         conference = session.currentCall;
