@@ -32,7 +32,7 @@ describe('Phone [Conference]', function () {
       createPeerConnectionStub.restore();
     });
 
-    describe('startConference', function () {
+    describe('[US225736] startConference', function () {
       var onErrorSpy,
         session,
         sessionStub,
