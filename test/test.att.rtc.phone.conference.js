@@ -144,18 +144,19 @@ describe('Phone [Conference]', function () {
       });
       it('[18004] should publish error if there\'s an uncaught exception', function (done) {
 
-        var getIdStub = sinon.stub(session, 'getId', function () {
+        var phone2, getIdStub = sinon.stub(session, 'getId', function () {
           throw new Error('bla');
         });
-
-        phone.startConference({
+        phone2 = new ATT.private.Phone();
+        phone2.on('error', onErrorSpy);
+        phone2.startConference({
           localMedia : {},
           remoteMedia : {},
           mediaType : 'video'
         });
 
         setTimeout(function () {
-          expect(onErrorSpy.calledOnce).to.equal(true);
+          expect(onErrorSpy.called).to.equal(true);
           expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18004');
           getIdStub.restore();
           done();
