@@ -307,7 +307,7 @@
 
   /**
    * @summary Make a call
-   * @desc
+   * @desc Add description here
    *
    * **Error codes**
    *
@@ -619,7 +619,7 @@
     /**
      * @summary
      * Join a conference by accepting an incoming invite.
-     * @desc
+     * @desc Add description here
      *
      * **Error Codes**
      *
@@ -748,7 +748,7 @@
     /**
     * @summary
     * Mute the current call.
-    * @desc
+    * @desc Add description here
     *
     * **Error Codes**
     *
@@ -805,7 +805,7 @@
     /**
     * @summary
     * Unmute the current call.
-    * @desc
+    * @desc Add description here
     *
     * **Error Codes**
     *
@@ -880,7 +880,7 @@
 
     /**
      * @summary Hangup existing call
-     * @desc
+     * @desc Add description here
      *
      * **Error codes**
      *
@@ -927,7 +927,7 @@
     /**
      * @summary
      * Cancel current call.
-     * @desc
+     * @desc Add description here
      *
      *  **Error Code**
      *
@@ -975,7 +975,7 @@
    /**
     * @summary
     * Reject current incoming call.
-    * @desc
+    * @desc Add description here
     *
     *  ** Error Codes **
     *
@@ -1019,7 +1019,7 @@
 
     /**
      * @summary Put the current call on hold
-     * @desc
+     * @desc Add description here
      *
      * **Error codes**
      *
@@ -1060,7 +1060,7 @@
     /**
      * @summary
      * Resume the current call
-     * @desc
+     * @desc Add description here
      *
      * **Error Codes**
      *
@@ -1107,7 +1107,7 @@
     /**
      * @summary
      * Update e911Id
-     * @desc
+     * @desc Add description here
      * **Error Codes**
      *   - 17000 - e911 parameter is missing
      *   - 17001 - Internal error occurred
@@ -1205,8 +1205,10 @@
     /**
      * @summary
      * Add participant
-     * @desc
+     * @desc Add description here
+     *
      * **Error Codes**
+     *
      *   - 19000 - User is not logged in
      *   - 19001 - Conference not initiated
      *   - 19002 - Participant parameter missing
@@ -1253,7 +1255,7 @@
           conference.on('participant-pending', function (data) {
             /**
              * Participant pending event.
-             * @desc
+             * @desc Add description here
              *
              * @event Phone#participant-pending
              * @type {object}
@@ -1314,10 +1316,14 @@
     /**
      * @summary
      * Get participants
-     * @desc Get the list of participants of a conference
+     * @desc
+     * Get the list of participants of a conference
+     *
      * **Error Codes**
+     *
      *   - 21000 - Conference not initiated
      *   - 21001 - Internal error occurred
+     *
      * @memberOf Phone
      * @instance
 
