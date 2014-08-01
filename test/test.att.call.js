@@ -572,12 +572,6 @@ describe('Call', function () {
           expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
         });
 
-        it('should not call peerConnection.setRemoteDescription for outgoing conference', function () {
-          outgoingConf.connect();
-
-          expect(createPeerConnectionStub.called).to.equal(false);
-        });
-
         describe('createPeerConnection callbacks', function () {
 
           describe('onSuccess', function () {
