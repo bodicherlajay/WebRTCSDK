@@ -230,7 +230,7 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe('connect [OUTGOING]', function () {
+    describe.only('connect [OUTGOING]', function () {
       var createPeerConnectionStub,
         optionsOutgoingVideo,
         outgoingVideoConference,
