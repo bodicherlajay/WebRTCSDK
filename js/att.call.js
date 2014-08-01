@@ -21,6 +21,7 @@
     var thisCall = this,
       id,
       peer,
+      peerConnection,
       mediaType,
       type,
       breed,
@@ -279,18 +280,16 @@
             localStream: localStream,
             onSuccess: function (localSdp) {
 
-//              thisCall.setLocalSdp(localSdp);
-
               rtcManager.connectConference({
-//                localSdp: thisCall.localSdp(),
-//                onSuccess: function (state) {
-//                  thisCall.setState('connecting');
-//                },
-//                onError: function (error) {
-//                  emitter.publish('error', {
-//                    error: error
-//                  });
-//                }
+                localSdp: peerConnection.getLocalSDP(),
+                onSuccess: function () {
+                  setState('connecting');
+                },
+                onError: function (error) {
+                  emitter.publish('error', {
+                    error: error
+                  });
+                }
               });
             },
             onError: function(error) {
@@ -304,7 +303,7 @@
             pcOptions.remoteSdp = remoteSdp;
           }
 
-          factories.createPeerConnection(pcOptions);
+          peerConnection = factories.createPeerConnection(pcOptions);
         }
 
       } catch (err) {
@@ -516,7 +515,10 @@
       return id;
     };
     this.localSdp = function () {
-      return localSdp;
+      if (undefined === peerConnection) {
+        return;
+      }
+      return peerConnection.getLocalSDP();
     };
     this.localMedia = function () {
       return localMedia;

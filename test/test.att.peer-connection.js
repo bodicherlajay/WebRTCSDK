@@ -424,7 +424,42 @@ describe('PeerConnection', function () {
         });
       });
 
-      it('should return an object???');
+      it('should return an object', function () {
+        var peerConnection = factories.createPeerConnection(createOptionsOutgoing);
+        expect(peerConnection).to.be.an('object');
+      });
+    });
+  });
+
+  describe('Methods', function () {
+    var peerConnection,
+      rtcPCStub;
+
+    beforeEach(function () {
+      rtcPCStub = sinon.stub(window, 'RTCPeerConnection', function () {
+        return rtcPC;
+      });
+
+      peerConnection = factories.createPeerConnection(createOptionsOutgoing);
+    });
+
+    afterEach(function () {
+      rtcPCStub.restore();
+    });
+
+    describe('getLocalDescription', function () {
+      var createOfferStub,
+        localSDP;
+
+      it('should exist', function () {
+        expect(peerConnection.getLocalSDP).to.be.a('function');
+      });
+
+      it('should return the `localDescription` of its RTCPeerConnection`', function () {
+        localSDP = 'ABCD';
+        rtcPC.localDescription = localSDP;
+        expect(peerConnection.getLocalSDP()).to.equal(localSDP);
+      });
     });
   });
 

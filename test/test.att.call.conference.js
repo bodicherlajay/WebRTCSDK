@@ -179,20 +179,20 @@ describe('Call [Conference]', function () {
     describe('[US233244] getParticipants', function () {
 
       it('should exist', function () {
-        expect(conference.getParticipants).to.be.a('function');
+        expect(outgoingConference.getParticipants).to.be.a('function');
       });
 
       it('should return `empty` object if no participants were set', function () {
-        var participants = conference.getParticipants();
+        var participants = outgoingConference.getParticipants();
 
         expect(participants).to.be.an('object');
         expect(Object.keys(participants).length).to.equal(0);
       });
 
       it('should return `participants` list', function () {
-        conference.setParticipant('456', 'invitee', '123');
+        outgoingConference.setParticipant('456', 'invitee', '123');
 
-        var participants = conference.getParticipants();
+        var participants = outgoingConference.getParticipants();
         expect(participants).to.be.an('object');
         expect(participants['123']).to.be.an('object');
         expect(participants['123'].status).to.equal('invitee');
@@ -255,7 +255,7 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe.only('connect [OUTGOING]', function () {
+    describe('connect [OUTGOING]', function () {
       var createPeerConnectionStub,
         optionsOutgoingVideo,
         outgoingVideoConference,
@@ -287,9 +287,9 @@ describe('Call [Conference]', function () {
         outgoingVideoConference.connect();
 
         console.log(JSON.stringify(createPeerConnectionStub.getCall(0).args[0]));
-        expect(createPeerConnectionStub.called).to.equal(true);
+        expect(createPeerConnectionStub.calledOnce).to.equal(true);
         expect(createPeerConnectionStub.getCall(0).args[0].mediaType).to.equal(outgoingVideoConference.mediaType());
-        expect(createPeerConnectionStub.getCall(0).args[0].localStream).to.equal(outgoingVideoConference.localSdp());
+        expect(createPeerConnectionStub.getCall(0).args[0].localStream).to.equal(outgoingVideoConference.localStream());
         expect(createPeerConnectionStub.getCall(0).args[0].onSuccess).to.be.a('function');
         expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
 
@@ -300,109 +300,107 @@ describe('Call [Conference]', function () {
 
         var localSDP,
           connectConferenceStub,
-          connectconferenceOptions,
-          onSuccessSpy,
-          onErrorSpy,
-          setLocalSdpStub;
+          pcOnSuccessSpy,
+          peerConnection;
 
         beforeEach(function () {
 
           localSDP = 'ABCD';
-          onSuccessSpy = sinon.spy();
-          onErrorSpy = sinon.spy();
-
-          connectconferenceOptions = {
-            localSdp : 'ABCD',
-            onSuccess : onSuccessSpy,
-            onError : onErrorSpy
+          peerConnection = {
+            getLocalSDP: function () {
+              return localSDP;
+            }
           };
-
           createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
-            options.onSuccess(localSDP);
+            setTimeout(function () {
+              pcOnSuccessSpy = sinon.spy(options, 'onSuccess');
+              options.onSuccess(localSDP);
+              pcOnSuccessSpy.restore();
+            }, 100);
+
+            return peerConnection;
           });
-
-          connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
-
-          setLocalSdpStub = sinon.stub(outgoingVideoConference, 'setLocalSdp');
-
-
-
         });
 
         afterEach(function () {
           createPeerConnectionStub.restore();
-          connectConferenceStub.restore();
-          setLocalSdpStub.restore();
         });
 
-        it('should set the local description to the new description', function () {
+        it('should call `rtcManager.connectConference`', function (done) {
+
+          connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
 
           outgoingVideoConference.connect();
-          expect(setLocalSdpStub.called).to.equal(true);
 
-        });
-
-        it('should call `rtcManager.connectConference`', function () {
-          outgoingVideoConference.connect();
-          expect(connectConferenceStub.calledOnce).to.equal(true);
-          expect(connectConferenceStub.getCall(0).args[0].localSdp).to.equal(connectconferenceOptions.localSdp);
-          expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
-          expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
+          setTimeout(function () {
+            expect(pcOnSuccessSpy.calledOnce).to.equal(true);
+            expect(connectConferenceStub.calledOnce).to.equal(true);
+            expect(connectConferenceStub.calledAfter(pcOnSuccessSpy)).to.equal(true);
+            expect(connectConferenceStub.getCall(0).args[0].localSdp).to.equal(outgoingVideoConference.localSdp());
+            expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
+            expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
+            connectConferenceStub.restore();
+            done();
+          }, 200);
         });
 
 
         describe('connectConference: Success', function () {
-          var state = "connecting";
+          var state,
+            onSuccessSpy;
           beforeEach(function () {
-            connectConferenceStub.restore();
+            state = "connecting";
+
             connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options){
-              setTimeout(function () {
-                options.onSuccess(state);
-              }, 0);
+              onSuccessSpy = sinon.spy(options, 'onSuccess');
+              options.onSuccess();
+              onSuccessSpy.restore();
             });
           });
-          it('should execute `setState` with state `connecting` ', function (done) {
-            var setstateStub = sinon.stub(outgoingVideoConference, 'setState');
+
+          afterEach(function () {
+            connectConferenceStub.restore();
+          });
+
+          it('should execute `conf.setState` with state `connecting` ', function (done) {
+
             outgoingVideoConference.connect();
+
             setTimeout(function () {
-              try {
-                expect(setstateStub.calledWith('connecting')).to.equal(true);
-                done();
-              } catch (err) {
-                done(err);
-              }
-              finally {
-                setstateStub.restore();
-
-              }
-
+              expect(onSuccessSpy.called).to.equal(true);
+              expect(outgoingVideoConference.getState()).to.equal('connecting');
+              expect(publishStub.calledOnce).to.equal(true);
+              expect(publishStub.getCall(0).args[0]).to.equal('connecting');
               done();
-            }, 100);
-
+            }, 200);
           });
         });
-        xdescribe('connectConference: Error', function () {
+
+        describe('connectConference: Error', function () {
+          var onErrorSpy,
+            cruelError;
           beforeEach(function () {
-            connectConferenceStub.restore();
+
+            cruelError = 'This is a cruel error.';
             connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
               setTimeout(function () {
-                options.onError();
-              }, 0);
+                onErrorSpy = sinon.spy(options, 'onError');
+                options.onError(cruelError);
+                onErrorSpy.restore();
+              }, 50);
             });
           })
-          it('should execute `setState` with state `connecting` ', function (done) {
-            outgoingVideoConference.connect();
-//            setTimeout(function () {
-//              try {
-//                expect(setstateStub.calledWith('connecting')).to.equal(true);
-//                done();
-//              } catch (err) {
-//                done(err);
-//              } finally {
-//                setstateStub.restore();
-//              }
-//            }, 100);
+          it('should publish the error', function (done) {
 
+            outgoingVideoConference.connect();
+
+            setTimeout(function () {
+              expect(onErrorSpy.calledOnce).to.equal(true);
+              expect(publishStub.called).to.equal(true);
+              expect(publishStub.getCall(0).args[0]).to.equal('error');
+              expect(publishStub.getCall(0).args[1].error).to.equal(cruelError);
+              done();
+            }, 200);
           });
         });
       });

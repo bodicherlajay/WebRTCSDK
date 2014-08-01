@@ -13,6 +13,21 @@
       onError,
       mediaConstraint;
 
+    function processDescription(description, success) {
+      var fixedSDP;
+      //description is the new SDP Which needs to processed
+      try {
+        fixedSDP = sdpFilter.processChromeSDPOffer(description);
+      } catch (err) {
+        throw new Error('Could not process Chrome offer SDP.');
+      }
+      pc.setLocalDescription(fixedSDP, function () {
+        success(fixedSDP);
+      }, function () { // ERROR setLocal
+        throw new Error('Could not set the localDescription.');
+      });
+    }
+
     function setRemoteDescription(sdp) {
       pc.setRemoteDescription(sdp);
     }
@@ -61,41 +76,24 @@
     };
 
     if (undefined === options.remoteSDP) {
+
       pc.createOffer(function (description) {
-        var fixedSDP;
-        //description is the new SDP Which needs to processed
-        try {
-          fixedSDP = sdpFilter.processChromeSDPOffer(description);
-        } catch (err) {
-          throw new Error('Could not process Chrome offer SDP.');
-        }
-        pc.setLocalDescription(fixedSDP, function () { // SUCCESS
-          onSuccess(fixedSDP);
-        }, function () { // ERROR
-          throw new Error('Could not set the localDescription.');
-        });
+        processDescription(description, onSuccess);
       }, function () { // ERROR createOffer
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
     } else {
       pc.createAnswer(function (description) {// SUCCESS
-        var fixedSDP;
-        //description is the new SDP Which needs to processed
-        try {
-          fixedSDP = sdpFilter.processChromeSDPOffer(description);
-        } catch (err) {
-          throw new Error('Could not process Chrome offer SDP.');
-        }
-        pc.setLocalDescription(fixedSDP, function () {
-          onSuccess(fixedSDP);
-        }, function () { // ERROR setLocal
-          throw new Error('Could not set the localDescription.');
-        });
+        processDescription(description, onSuccess);
       }, function () {// ERROR createAnswer
         throw new Error('Failed to create answer.');
       }, { mandatory: mediaConstraint});
     }
-    return {};
+    return {
+      getLocalSDP: function () {
+        return pc.localDescription;
+      }
+    };
   }
 
   if (undefined === ATT.private.factories) {
