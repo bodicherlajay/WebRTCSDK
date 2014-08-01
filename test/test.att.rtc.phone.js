@@ -2538,6 +2538,7 @@ describe('Phone', function () {
           sessionConstructorStub,
           onCallIncomingHandlerSpy,
 		      onCallDisconnectedHandlerSpy,
+          onConferenceDisconnectedHandlerSpy,
           onConferenceInviteHandlerSpy,
           onErrorHandlerSpy;
 
@@ -2558,6 +2559,7 @@ describe('Phone', function () {
 
           onCallIncomingHandlerSpy = sinon.spy();
 		      onCallDisconnectedHandlerSpy = sinon.spy();
+          onConferenceDisconnectedHandlerSpy = sinon.spy();
           onConferenceInviteHandlerSpy = sinon.spy();
           onErrorHandlerSpy = sinon.spy();
 
@@ -2565,6 +2567,7 @@ describe('Phone', function () {
 
           phone.on('call-incoming', onCallIncomingHandlerSpy);
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
+          phone.on('conference-disconnected', onConferenceDisconnectedHandlerSpy);
           phone.on('conference-invite', onConferenceInviteHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
@@ -2596,20 +2599,47 @@ describe('Phone', function () {
         });
 
         describe('call-disconnected', function () {
-          var eventData;
+          var deleteCurrentCallStub;
 
           beforeEach(function () {
-            eventData = {
-              abc: 'abc'
+            deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+          });
+
+          afterEach(function () {
+            deleteCurrentCallStub.restore();
+          });
+
+          it('should trigger `call-disconnected` if [data.breed === `call`]', function (done) {
+
+            var eventData = {
+              abc: 'abc',
+              breed: 'call'
             };
 
             emitterSession.publish('call-disconnected', eventData);
-          });
-          it('should trigger `call-disconnected` with relevant data on getting a `call-disconnected` from session', function (done) {
 
             setTimeout(function () {
               try {
                 expect(onCallDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+
+          it('should trigger `conference-disconnected` if [data.breed === `conference`]', function (done) {
+
+            var eventData = {
+              abc: 'abc',
+              breed: 'conference'
+            };
+
+            emitterSession.publish('call-disconnected', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(onConferenceDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -2618,18 +2648,17 @@ describe('Phone', function () {
           });
 
           it('should also execute session.deleteCurrentCall', function (done) {
-            var deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+
+            emitterSession.publish('call-disconnected', eventData);
 
             setTimeout(function () {
               try {
-                expect(onCallDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(deleteCurrentCallStub.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
               }
             }, 300);
-
-            deleteCurrentCallStub.restore();
           });
         });
 

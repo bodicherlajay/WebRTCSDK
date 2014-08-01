@@ -520,7 +520,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18000",
       ErrorMessage: "TODO- options missing",
       Cause: "TODO",
@@ -528,7 +528,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18001",
       ErrorMessage: "TODO- localmedia missing",
       Cause: "TODO",
@@ -536,7 +536,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18002",
       ErrorMessage: "TODO- remotemedia missing",
       Cause: "TODO",
@@ -544,7 +544,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18003",
       ErrorMessage: "TODO- mediaType missing",
       Cause: "TODO",
@@ -552,7 +552,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18004",
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",

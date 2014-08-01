@@ -64,8 +64,11 @@
       }
     });
     rtcManager.on('call-disconnected', function (callInfo) {
+      var breed = session.currentCall.breed();
+
       emitter.publish('call-disconnected', {
         from: callInfo.from,
+        breed: breed,
         mediaType: session.currentCall.mediaType(),
         codec: session.currentCall.codec(),
         timestamp: new Date()

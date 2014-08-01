@@ -167,8 +167,6 @@
       if ('connecting' !== event &&
           'rejected' !== event &&
           'participant-pending' !== event &&
-          'invite-accepted' !== event &&
-          'invite-rejected' !== event &&
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
