@@ -144,12 +144,10 @@ describe('Phone [Conference]', function () {
       });
       it('[18004] should publish error if there\'s an uncaught exception', function (done) {
 
-        var phone2, getIdStub = sinon.stub(session, 'getId', function () {
+        var  getIdStub = sinon.stub(session, 'getId', function () {
           throw new Error('bla');
         });
-        phone2 = new ATT.private.Phone();
-        phone2.on('error', onErrorSpy);
-        phone2.startConference({
+        phone.startConference({
           localMedia : {},
           remoteMedia : {},
           mediaType : 'video'
