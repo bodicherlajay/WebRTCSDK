@@ -346,8 +346,11 @@
           options.onError(error);
         }
       };
-
-      resourceManager.doOperation('acceptConference', config);
+      if (undefined !== options.conferenceId) {
+        resourceManager.doOperation('acceptConference', config);
+      } else {
+        resourceManager.doOperation('createConference', config);
+      }
     }
 
     function addParticipant(options) {
@@ -396,6 +399,7 @@
       });
     }
 
+    // Reused for call & conference
     function disconnectCall (options) {
       var sessionInfo;
 
@@ -411,6 +415,14 @@
         throw new Error('sessionInfo not defined');
       }
 
+      if (undefined === options.breed) {
+        throw new Error('breed not defined');
+      }
+
+      if (undefined === options.onError) {
+        throw new Error('onError callback not defined');
+      }
+
       sessionInfo = options.sessionInfo;
 
       resourceManager.doOperation('endCall', {
@@ -424,11 +436,15 @@
           }
         },
         success: function () {
-          logger.logInfo('EndCall Request success');
+          logger.logInfo('ResourceManager.disconnect request success');
         },
         error: function (error) {
           logger.logError(error);
-          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","hangup","RTC"));
+          if ('call' === options.breed) {
+            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'hangup', 'RTC'));
+          } else if ('conference' === options.breed) {
+            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'endConference', 'RTC'));
+          }
         }
       });
     }
@@ -471,7 +487,7 @@
             }
           },
           success: function () {
-            logger.logInfo('CancelCall Request success');
+            logger.logInfo('ResourceManager.cancel request success');
           },
           error: function (error) {
             logger.logError(error);

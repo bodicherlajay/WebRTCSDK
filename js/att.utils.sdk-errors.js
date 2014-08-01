@@ -592,6 +592,30 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20000",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20001",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking join conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20002",
+      ErrorMessage: "No conference invite",
+      Cause: "Invalid operation",
+      Resolution: "Cannot join conference before receiving an invite"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "getParticipants",
       ErrorCode: "21000",
       ErrorMessage: "Conference not initiated",

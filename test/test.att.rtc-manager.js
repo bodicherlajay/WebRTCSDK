@@ -908,6 +908,7 @@ describe('RTC Manager', function () {
 
           connectConfOpts = {
             localSdp: localSdp,
+            conferenceId : '123',
             onSuccess: onSuccessSpy,
             onError: onErrorSpy
           };
@@ -1096,6 +1097,10 @@ describe('RTC Manager', function () {
             onErrorSpy = sinon.spy();
           });
 
+          afterEach(function () {
+            createAPIErrorCodeStub.restore();
+          });
+
           it('should call `options.onError` if rtcManager returns an error', function () {
             error = {
               message: 'error',
@@ -1265,6 +1270,17 @@ describe('RTC Manager', function () {
           expect(rtcManager.disconnectCall.bind(rtcManager, {
             sessionInfo: {},
             callId: '1234'
+          })).to.throw('breed not defined');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            sessionInfo: {},
+            callId: '1234',
+            breed: 'conference'
+          })).to.throw('onError callback not defined');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            sessionInfo: {},
+            callId: '1234',
+            breed: 'conference',
+            onError: function () {}
           })).to.not.throw(Error);
         });
 
@@ -1272,11 +1288,60 @@ describe('RTC Manager', function () {
 
           rtcManager.disconnectCall({
             sessionInfo: {},
-            callId: '1234'
+            callId: '1234',
+            breed: 'conference',
+            onError: function () {}
           });
 
           expect(doOperationStub.calledWith('endCall')).to.equal(true);
+        });
 
+        describe('Error on doOperation', function () {
+          var error,
+            onErrorSpy = sinon.spy(),
+            createAPIErrorCodeStub;
+
+          beforeEach(function () {
+
+            createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
+              return error;
+            });
+          });
+
+          afterEach(function () {
+            createAPIErrorCodeStub.restore();
+          });
+
+          it('should call `options.onError` if resourceManager returns an error`', function (done) {
+
+            doOperationStub.restore();
+
+            error = {
+              message: 'foo'
+            };
+
+            doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
+              setTimeout(function () {
+                options.error(error);
+              }, 0);
+            });
+
+            rtcManager.disconnectCall({
+              sessionInfo: {},
+              callId: '123',
+              breed: 'conference',
+              onError: onErrorSpy
+            });
+
+            setTimeout(function () {
+              try {
+                expect(onErrorSpy.calledWith(error)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
         });
       });
 
