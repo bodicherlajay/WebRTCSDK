@@ -355,7 +355,7 @@ describe('Phone [Conference]', function () {
 
         phone = ATT.rtc.Phone.getPhone();
 
-        phone.on('call-disconnecting', conferenceDisconnectingHandlerSpy);
+        phone.on('conference-disconnecting', conferenceDisconnectingHandlerSpy);
 
         currentSession = phone.getSession();
         currentSession.currentCall = conference;
@@ -383,7 +383,7 @@ describe('Phone [Conference]', function () {
         expect(conferenceDisconnectStub.called).to.equal(true);
       });
 
-      it('should trigger `call-disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
+      it('should trigger `conference-disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
         phone.endConference();
 
         emitterConf.publish('disconnecting', eventData);

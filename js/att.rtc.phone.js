@@ -136,6 +136,7 @@
         && 'conference-connecting' !== event
         && 'participant-pending' !== event
         && 'call-disconnecting' !== event
+        && 'conference-disconnecting' !== event
         && 'call-disconnected' !== event
         && 'conference-disconnected' !== event
         && 'call-canceled' !== event
@@ -1282,6 +1283,20 @@
       }
     }
 
+    /**
+     * @summary
+     * End Conference
+     * @desc
+     * **Error Codes**
+     * @memberOf Phone
+     * @instance
+
+     * @fires Phone#conference-disconnecting
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.endConference();
+     */
     function endConference () {
       logger.logDebug('Phone.endConference');
 
@@ -1290,7 +1305,7 @@
       conference = session.currentCall;
 
       conference.on('disconnecting', function (data) {
-        emitter.publish('call-disconnecting', data);
+        emitter.publish('conference-disconnecting', data);
       });
 
       conference.disconnect();
