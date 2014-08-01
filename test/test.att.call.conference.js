@@ -438,7 +438,11 @@ describe('Call [Conference]', function () {
             peer: '12345',
             mediaType: 'video',
             type: ATT.CallTypes.INCOMING,
-            remoteSdp: 'abc'
+            remoteSdp: 'abc',
+            sessionInfo : {
+              sessionId : '123',
+              token : 'token'
+            }
           };
 
           incomingConf = new ATT.rtc.Call(optionsIncomingConf);
@@ -506,6 +510,7 @@ describe('Call [Conference]', function () {
                 expect(connectConferenceStub.getCall(0).args[0]).to.be.an('object');
                 expect(connectConferenceStub.getCall(0).args[0].localSdp).to.not.equal(null);
                 expect(connectConferenceStub.getCall(0).args[0].localSdp).to.equal(incomingConf.localSdp());
+                expect(connectConferenceStub.getCall(0).args[0].sessionInfo).to.equal(optionsIncomingConf.sessionInfo);
                 expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
                 expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
 
