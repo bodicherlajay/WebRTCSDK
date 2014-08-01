@@ -5,12 +5,35 @@
 describe('Phone', function () {
   'use strict';
 
-  var getRTCManagerStub,
-    factories,
+  var factories,
+    eventData,
+    error,
+    errorData,
+    confOpts,
     localVideo,
     remoteVideo,
+    getRTCManagerStub,
     createPeerConnectionStub,
     restClientStub;
+
+  before(function () {
+    factories = ATT.private.factories;
+    confOpts = {
+      breed: 'conference',
+      peer: '123',
+      type: 'abc',
+      mediaType: 'video'
+    };
+    eventData = {
+      abc: 'abc'
+    };
+    error = {
+      ErrorMessage: 'Test Error'
+    };
+    errorData = {
+      error: error
+    };
+  });
 
   beforeEach(function () {
     restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
@@ -18,7 +41,6 @@ describe('Phone', function () {
     localVideo = document.createElement('video');
     remoteVideo = document.createElement('video');
 
-    factories = ATT.private.factories;
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return {
         on: function (event, handler) {
@@ -135,24 +157,9 @@ describe('Phone', function () {
         createEventEmitterStub,
         callConstructorStub,
         sessionConstructorStub,
-        onErrorHandlerSpy,
-        eventData,
-        error,
-        errorData;
+        onErrorHandlerSpy;
 
       beforeEach(function () {
-
-        eventData = {
-          abc: 'abc'
-        };
-
-        error = {
-          ErrorMessage: 'Test Error'
-        };
-
-        errorData = {
-          error: error
-        };
 
         emitterCall = ATT.private.factories.createEventEmitter();
 
@@ -1240,6 +1247,12 @@ describe('Phone', function () {
           expect(onSpy.calledWith('connecting')).to.equal(true);
         });
 
+        it('should register for `connected` event from call', function () {
+          phone.joinConference(options);
+
+          expect(onSpy.calledWith('connected')).to.equal(true);
+        });
+
         it('should execute userMedia.getUserMedia with correct input params', function () {
           phone.joinConference(options);
 
@@ -1327,12 +1340,15 @@ describe('Phone', function () {
 
         describe('joinConference events', function () {
 
-          var onConfConnectingHandlerSpy;
+          var onConfConnectingHandlerSpy,
+            conferenceConnectedSpy;
 
           beforeEach(function () {
             onConfConnectingHandlerSpy = sinon.spy();
+            conferenceConnectedSpy = sinon.spy();
 
             phone.on('conference-connecting', onConfConnectingHandlerSpy);
+            phone.on('conference-connected', conferenceConnectedSpy);
 
             phone.joinConference(options);
           });
@@ -1350,6 +1366,20 @@ describe('Phone', function () {
                   done(e);
                 }
               }, 100);
+            });
+
+            it('should publish `conference-connected` when call publishes `connected` event', function (done) {
+              emitterConference.publish('connected', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(conferenceConnectedSpy.calledWith(eventData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 10);
+
             });
 
           });
