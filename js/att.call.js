@@ -292,7 +292,7 @@
 
           pcOptions = {
             mediaType: mediaType,
-            localStream: localStream,
+            stream: localStream,
             onSuccess: function (localSdp) {
 
               rtcManager.connectConference({
