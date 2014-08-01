@@ -1167,6 +1167,20 @@
       }
     }
 
+    function endConference () {
+      logger.logDebug('Phone.endConference');
+
+      var conference;
+
+      conference = session.currentCall;
+
+      conference.on('disconnecting', function (data) {
+        emitter.publish('call-disconnecting', data);
+      });
+
+      conference.disconnect();
+    }
+
     // ===================
     // Call interface
     // ===================
@@ -1192,6 +1206,7 @@
     // Conference interface
     // ===================
     this.startConference = startConference.bind(this);
+    this.endConference = endConference.bind(this);
     this.joinConference = joinConference.bind(this);
     this.addParticipant = addParticipant.bind(this);
   }
