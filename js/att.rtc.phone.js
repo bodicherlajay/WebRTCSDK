@@ -330,7 +330,7 @@
    * @fires Phone#call-held
    * @fires Phone#call-resumed
    * @fires Phone#call-disconnected
-   * @fires Phone#call-error
+   * @fires Phone#error
 
    * @example
     // Start video call with an ICMN User
@@ -485,7 +485,7 @@
              * Call Error event.
              * @desc Indicates an error condition during a call's flow
              *
-             * @event Phone#call-error
+             * @event Phone#error
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
@@ -615,35 +615,133 @@
 
     }
 
+    /**
+     * @summary
+     * Join a conference by accepting an incoming invite.
+     * @desc
+     *
+     * **Error Codes**
+     *
+     *   - 20000 - Internal error occurred
+     *   - 20001 - User is not logged in
+     *   - 20002 - No conference invite
+     *
+     * @memberOf Phone
+     * @instance
+
+     * @fires Phone#conference-joining
+     * @fires Phone#conference-connecting
+     * @fires Phone#conference-connected
+     * @fires Phone#error
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.joinConference();
+     */
     function joinConference(options) {
-      var conference = session.currentCall;
 
-      emitter.publish('conference-joining', {
-        from: conference.peer(),
-        mediaType: conference.mediaType(),
-        codec: conference.codec(),
-        timestamp: new Date()
-      });
+      try {
 
-      conference.on('connecting', function(data) {
-        emitter.publish('conference-connecting', data);
-      });
-      conference.on('connected', function (data) {
-        emitter.publish('conference-connected', data);
-      });
+        if (null === session || null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('20001');
+        }
+        if (null === session.currentCall) {
+          throw ATT.errorDictionary.getSDKError('20002');
+        }
 
-      userMediaSvc.getUserMedia({
-        localMedia: options.localMedia,
-        remoteMedia: options.remoteMedia,
-        mediaType: options.mediaType,
-        onUserMedia: function (media) {
-          conference.addStream(media.localStream);
-          conference.connect();
-        },
-        onMediaEstablished: function () {},
-        onUserMediaError: function () {}
-      });
+        try {
+          logger.logDebug('Phone.joinConference');
 
+          var conference = session.currentCall;
+
+          /**
+           * Conference joining event.
+           * @desc Trying to accept and conference invitation and join the conference.
+           * @event Phone#conference-joining
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference-joining', {
+            from: conference.peer(),
+            mediaType: conference.mediaType(),
+            codec: conference.codec(),
+            timestamp: new Date()
+          });
+
+          conference.on('connecting', function (data) {
+            /**
+             * Conference connecting event.
+             * @desc Trying to connecting to a conference after accepting the invite.
+             * @event Phone#conference-connecting
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('conference-connecting', data);
+          });
+          conference.on('connected', function (data) {
+            /**
+             * Conference connected event.
+             * @desc Successfully joined the conference after accepting the invite.
+             * @event Phone#conference-connected
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('conference-connected', data);
+          });
+
+          userMediaSvc.getUserMedia({
+            localMedia: options.localMedia,
+            remoteMedia: options.remoteMedia,
+            mediaType: options.mediaType,
+            onUserMedia: function (media) {
+              try {
+                logger.logInfo('Successfully got user media');
+
+                conference.addStream(media.localStream);
+                conference.connect();
+              } catch (err) {
+                logger.logError(err);
+
+                /**
+                 * Call Error event.
+                 * @desc Indicates an error condition during a call's flow
+                 *
+                 * @event Phone#error
+                 * @type {object}
+                 * @property {Object} error - error detail
+                 */
+                emitter.publish('error', {
+                  error: ATT.errorDictionary.getSDKError('20000')
+                });
+              }
+            },
+            onMediaEstablished: function () {
+            },
+            onUserMediaError: function () {
+            }
+          });
+
+        } catch (err) {
+          logger.logError(err);
+
+          throw ATT.errorDictionary.getSDKError('20000');
+        }
+
+      } catch (err) {
+        logger.logError(err);
+
+        /**
+         * Call Error event.
+         * @desc Indicates an error condition during a call's flow
+         *
+         * @event Phone#error
+         * @type {object}
+         * @property {Object} error - error detail
+         */
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
     /**
@@ -839,7 +937,7 @@
      * @instance
      *
      * @fires Phone#call-canceled
-     * @fires Phone#call-error
+     * @fires Phone#error
      *
      * @example
      * var phone = ATT.rtc.Phone.getPhone();
@@ -887,7 +985,7 @@
     * @instance
 
     * @fires Phone#call-rejected
-    * @fires Phone#call-error
+    * @fires Phone#error
 
     * @example
       var phone = ATT.rtc.Phone.getPhone();
@@ -1167,7 +1265,7 @@
              * Call Error event.
              * @desc Indicates an error condition during a call's flow
              *
-             * @event Phone#call-error
+             * @event Phone#error
              * @type {object}
              * @property {Object} error - error detail
              */
