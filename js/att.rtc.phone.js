@@ -1219,6 +1219,9 @@
     }
 
     function startConference(options) {
+
+      logger.logInfo('startConference');
+
       var conference;
       try {
         if (undefined === options
@@ -1254,10 +1257,12 @@
           localMedia: options.localMedia,
           remoteMedia: options.remoteMedia,
           onUserMedia: function (userMedia) {
+            logger.logInfo('onUserMedia');
             conference.addStream(userMedia.localStream);
             conference.connect();
           },
           onMediaEstablished: function () {
+            logger.logInfo('onMediaEstablished');
             logger.logInfo('Media Established');
           },
           onUserMediaError: function (error) {

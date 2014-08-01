@@ -57,7 +57,7 @@ describe('RTCManager [Conference]', function () {
       it('should exist', function () {
         expect(rtcManager.connectConference).to.be.a('function');
       });
-      // TODO: can we reuse startCall apiconfig?
+
       it('should execute `doOperation(createConference)` with required params', function () {
         doOperationStub = sinon.stub(resourceManager, 'doOperation');
 
@@ -66,11 +66,7 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.called).to.equal(true);
         expect(doOperationStub.getCall(0).args[0]).to.equal('createConference');
         expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
-        expect(doOperationStub.getCall(0).args[1].data).eql({
-          conferenceModifications: {
-            sdp: localSdp
-          }
-        });
+        expect(doOperationStub.getCall(0).args[1].data.conference.sdp).equal(localSdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
         expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
         doOperationStub.restore();

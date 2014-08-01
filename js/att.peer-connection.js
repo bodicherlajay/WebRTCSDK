@@ -87,8 +87,10 @@
     if (undefined === options.remoteSDP) {
 
       pc.createOffer(function (description) {
+        logger.logInfo('createOffer: success');
         processDescription(description, onSuccess);
       }, function () { // ERROR createOffer
+        logger.logInfo('createOffer: success');
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
     } else {
