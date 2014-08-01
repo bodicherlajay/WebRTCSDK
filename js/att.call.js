@@ -322,7 +322,7 @@
             }
           };
 
-          if(ATT.CallTypes.INCOMING === type) {
+          if (ATT.CallTypes.INCOMING === type) {
             pcOptions.remoteSdp = remoteSdp;
           }
 
