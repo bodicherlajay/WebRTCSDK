@@ -345,6 +345,10 @@
       }
     }
 
+    function getParticipants() {
+      return participants;
+    }
+
     function disconnect() {
 
       setState('disconnecting');
@@ -533,6 +537,7 @@
     this.addParticipant = addParticipant;
     this.setParticipant = setParticipant;
     this.updateParticipant = updateParticipant;
+    this.getParticipants = getParticipants;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

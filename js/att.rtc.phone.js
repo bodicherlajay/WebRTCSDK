@@ -607,7 +607,7 @@
         timestamp: new Date()
       });
 
-      conference.on('connecting', function(data) {
+      conference.on('connecting', function (data) {
         emitter.publish('conference-connecting', data);
       });
 
@@ -1163,6 +1163,41 @@
       }
     }
 
+    /**
+     * @summary
+     * Get participants
+     * @desc Get the list of participants of a conference
+     * **Error Codes**
+     *   - 19000 - User is not logged in
+     * @memberOf Phone
+     * @instance
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.getParticipants();
+     */
+
+    function getParticipants() {
+
+      var conference;
+
+      try {
+        conference = session.currentCall;
+
+        if (null === conference
+            || 'conference' !== conference.breed()) {
+          publishError(21000);
+          return;
+        }
+
+        return conference.getParticipants();
+      } catch (err) {
+        throw ATT.errorDictionary.getSDKError(21001);
+      }
+    }
+
+
+
     // ===================
     // Call interface
     // ===================
@@ -1190,6 +1225,7 @@
     this.startConference = startConference.bind(this);
     this.joinConference = joinConference.bind(this);
     this.addParticipant = addParticipant.bind(this);
+    this.getParticipants = getParticipants.bind(this);
   }
 
 

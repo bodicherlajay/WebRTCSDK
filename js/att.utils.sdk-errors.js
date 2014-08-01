@@ -589,6 +589,22 @@
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "getParticipants",
+      ErrorCode: "21000",
+      ErrorMessage: "Conference not initiated",
+      Cause: "Invalid operation",
+      Resolution: "Please invoke conference first before invoking getParticipants"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "getParticipants",
+      ErrorCode: "21001",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
     }
   ];
 

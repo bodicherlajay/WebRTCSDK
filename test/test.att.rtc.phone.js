@@ -1467,9 +1467,9 @@ describe('Phone', function () {
           expect(addParticipantStub.getCall(0).args[0]).to.equal('1234');
         });
 
-        describe('Error Handling', function() {
+        describe('Error Handling', function () {
 
-          it('[19000] should be thrown if the user is not logged in', function() {
+          it('[19000] should be thrown if the user is not logged in', function () {
             session.setId(null);
             phone.addParticipant();
 
@@ -1479,7 +1479,7 @@ describe('Phone', function () {
             })).to.equal(true);
           });
 
-          it('[19001] should be thrown if conference has not been started', function() {
+          it('[19001] should be thrown if conference has not been started', function () {
 
             conference.breed = function () {
               return 'call';
@@ -1519,6 +1519,112 @@ describe('Phone', function () {
             addParticipantStub.restore();
           });
         });
+      });
+
+      describe('[US233244] getParticipants', function () {
+
+        var publishStub,
+          getParticipantsSpy;
+
+        beforeEach(function () {
+
+          callConstructorStub.restore();
+
+          conference = new ATT.rtc.Call({
+            breed: 'conference',
+            peer: '1234567',
+            type: 'abc',
+            mediaType: 'video',
+            id: '1234'
+          });
+
+          getParticipantsSpy = sinon.spy(conference, 'getParticipants');
+
+          publishStub = sinon.stub(emitter, 'publish');
+
+          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+            return conference;
+          });
+
+          session.currentCall = conference;
+          session.setId('123456');
+
+        });
+
+        afterEach(function () {
+          callConstructorStub.restore();
+          getParticipantsSpy.restore();
+          publishStub.restore();
+
+        });
+
+        it('should exist', function () {
+          expect(phone.getParticipants).to.be.a('function');
+        });
+
+        it('should call `conference.getParticipants`', function () {
+          phone.getParticipants();
+
+          expect(getParticipantsSpy.called).to.equal(true);
+        });
+
+        it('should return `participants` list', function () {
+          conference.setParticipant('456', 'invitee', '123');
+
+          var participants = phone.getParticipants();
+          expect(participants).to.be.an('object');
+          expect(participants['123']).to.be.an('object');
+          expect(participants['123'].status).to.equal('invitee');
+          expect(participants['123'].participant).to.equal('456');
+          expect(participants['123'].id).to.equal('123');
+        });
+
+        describe('Error Handling', function () {
+          it('[21000] should be thrown if conference has not been started', function () {
+            session.currentCall = null;
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21000')
+            })).to.equal(true);
+          });
+
+          it('[21000] should be thrown if `breed` is not equal to `conference`', function () {
+            conference.breed = function () {
+              return 'call';
+            };
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21000')
+            })).to.equal(true);
+          });
+
+          xit('[21001] should be thrown if internal error occurred', function () {
+            var getParticipantsStub;
+
+            getParticipantsSpy.restore();
+
+            getParticipantsStub = sinon.stub(conference, 'getParticipants', function () {
+              throw error;
+            });
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21001')
+            })).to.equal(true);
+
+            getParticipantsStub.restore();
+          });
+
+        });
+
       });
 
       describe('[US198615] mute & unmute', function () {
