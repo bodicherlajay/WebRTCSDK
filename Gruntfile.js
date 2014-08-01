@@ -12,6 +12,7 @@ module.exports = function (grunt) {
       'test/test.att.utils.error-dictionary.js',
       'test/test.att.event-manager.js',
       'test/test.att.rtc-manager.js',
+      'test/test.att.rtc-manager.conference.js',
       'test/test.att.peer-connection.js',
       'test/test.att.call.js',
       'test/test.att.call.conference.js',
