@@ -557,176 +557,6 @@ describe('Call', function () {
 
         });
       });
-
-      describe('Conference', function () {
-
-        it('should execute createPeerConnection with mediaConstraints, localStream and remoteSdp for incoming conference', function () {
-          incomingConf.connect();
-
-          expect(createPeerConnectionStub.called).to.equal(true);
-          expect(createPeerConnectionStub.getCall(0).args[0]).to.be.an('object');
-          expect(createPeerConnectionStub.getCall(0).args[0].mediaType).to.equal(incomingConf.mediaType());
-          expect(createPeerConnectionStub.getCall(0).args[0].localStream).to.equal(incomingConf.localStream());
-          expect(createPeerConnectionStub.getCall(0).args[0].remoteSdp).to.equal(incomingConf.remoteSdp());
-          expect(createPeerConnectionStub.getCall(0).args[0].onSuccess).to.be.a('function');
-          expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
-        });
-
-        describe('createPeerConnection callbacks', function () {
-
-          describe('onSuccess', function () {
-
-            var setLocalSdpSpy,
-              connectConferenceStub;
-
-            beforeEach(function () {
-              createPeerConnectionStub.restore();
-
-              createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
-                setTimeout(function () {
-                  options.onSuccess(localSdp);
-                }, 0);
-              });
-
-              setLocalSdpSpy = sinon.spy(incomingConf, 'setLocalSdp');
-              connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function () {});
-            });
-
-            afterEach(function () {
-              setLocalSdpSpy.restore();
-              connectConferenceStub.restore();
-            });
-
-            it('should execute Call.setLocalSdp with the returned localSdp', function (done) {
-              incomingConf.connect();
-
-              setTimeout(function () {
-                try {
-                  expect(setLocalSdpSpy.called).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 100);
-
-            });
-
-            it('should execute RTCManager.connectConference with localSdp', function (done) {
-              incomingConf.connect();
-
-              setTimeout(function () {
-                try {
-                  expect(connectConferenceStub.called).to.equal(true);
-                  expect(connectConferenceStub.getCall(0).args[0]).to.be.an('object');
-                  expect(connectConferenceStub.getCall(0).args[0].localSdp).to.not.be.an('null');
-                  expect(connectConferenceStub.getCall(0).args[0].localSdp).to.equal(incomingConf.localSdp());
-                  expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
-                  expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 100);
-
-            });
-
-            describe('RTCManager.connectConference callbacks', function () {
-
-              describe('onSuccess', function () {
-
-                var setStateStub;
-
-                beforeEach(function () {
-                  connectConferenceStub.restore();
-
-                  connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
-                    setTimeout(function () {
-                      options.onSuccess('connecting');
-                    }, 0);
-                  });
-
-                  setStateStub = sinon.stub(incomingConf, 'setState', function () {});
-                });
-
-                afterEach(function () {
-                  setStateStub.restore();
-                });
-
-                it('should set the `state` that is returned by `onSuccess`', function (done) {
-                  incomingConf.connect();
-
-                  setTimeout(function () {
-                    try {
-                      expect(setStateStub.calledWith('connecting')).to.equal(true);
-                      done();
-                    } catch (e) {
-                      done(e);
-                    }
-                  }, 100);
-
-                });
-              });
-
-              describe('onError', function () {
-
-                beforeEach(function () {
-                  connectConferenceStub.restore();
-
-                  connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
-                    setTimeout(function () {
-                      options.onError(error);
-                    }, 0);
-                  })
-                });
-
-                it('should publish an error with error data', function (done) {
-                  incomingConf.connect();
-
-                  setTimeout(function () {
-                    try {
-                      expect(onErrorHandlerSpy.calledWith({
-                        error: error
-                      })).to.equal(true);
-                      done();
-                    } catch (e) {
-                      done(e);
-                    }
-                  }, 100);
-                })
-              });
-            });
-          });
-
-          describe('onError', function () {
-
-            beforeEach(function () {
-              createPeerConnectionStub.restore();
-
-              createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
-                setTimeout(function () {
-                  options.onError(error);
-                });
-              })
-            });
-
-            it('should publish `error` with error data', function (done) {
-              incomingConf.connect();
-
-              setTimeout(function () {
-                try {
-                  expect(onErrorHandlerSpy.calledWith({
-                    error: error
-                  })).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 100);
-            });
-          });
-        });
-
-      });
     });
 
     describe('mute/unmute', function () {
@@ -1329,12 +1159,27 @@ describe('Call', function () {
         expect(outgoingConf.setLocalSdp).to.be.a('function');
       });
 
-      it('should set the local description', function () {
-        var localSdp = 'localSdp';
+      it('should set the local description for its PeerConnection', function (done) {
+        var localSdp = 'localSdp',
+          onErrorSpy = sinon.spy(),
+          setLocalSDPStub = sinon.stub(peerConnection, 'setLocalSDP');
+        outgoingConf.on('error', onErrorSpy);
 
         outgoingConf.setLocalSdp(localSdp);
 
-        expect(outgoingConf.localSdp()).to.equal(localSdp);
+        setTimeout(function () {
+          // trying to set the local SDP before connecting
+          // should give you an error
+          expect(onErrorSpy.called).to.equal(true);
+
+          // setting the SDP after connecting is allowed
+          outgoingConf.connect();
+          outgoingConf.setLocalSdp(localSdp);
+          expect(setLocalSDPStub.called).to.equal(true);
+          expect(setLocalSDPStub.calledWith(localSdp)).to.equal(true);
+          setLocalSDPStub.restore();
+          done();
+        }, 100);
       });
 
     });

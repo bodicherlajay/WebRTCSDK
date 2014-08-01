@@ -2,6 +2,7 @@
 /*global ATT, RTCPeerConnection*/
 (function () {
   'use strict';
+  var logManager = ATT.logManager.getInstance();
 
   function createPeerConnection(options) {
 
@@ -11,7 +12,8 @@
       sdpFilter = ATT.sdpFilter.getInstance(),
       onSuccess,
       onError,
-      mediaConstraint;
+      mediaConstraint,
+      logger = logManager.addLoggerForModule('PeerConnection');
 
     function processDescription(description, success) {
       var fixedSDP;
@@ -31,6 +33,8 @@
     function setRemoteDescription(sdp) {
       pc.setRemoteDescription(sdp);
     }
+
+    logger.setLevel(logManager.logLevel.DEBUG);
 
     if (undefined === options || Object.keys(options).length === 0) {
       throw new Error('No options passed.');
@@ -92,6 +96,13 @@
     return {
       getLocalSDP: function () {
         return pc.localDescription;
+      },
+      setLocalSDP: function (sdp) {
+        pc.setLocalDescription(sdp, function () {// SUCCESS
+          logger.logInfo('Successfully set the local SDP.');
+        }, function (error) {// ERROR
+          logger.logError(error);
+        });
       }
     };
   }

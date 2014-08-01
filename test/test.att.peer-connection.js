@@ -448,6 +448,26 @@ describe('PeerConnection', function () {
     });
 
     describe('getLocalDescription', function () {
+      it('should exist', function () {
+        expect(peerConnection.setLocalSDP).to.be.a('function');
+      });
+      it('should set the `localDescription` of its RTCPeerConnection', function () {
+        var someSDP,
+          setLocalDescriptionStub;
+        someSDP = 'adsfa';
+        setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription');
+
+        peerConnection.setLocalSDP(someSDP);
+
+        expect(setLocalDescriptionStub.called).to.equal(true);
+        expect(setLocalDescriptionStub.getCall(0).args[0]).to.equal(someSDP);
+        expect(setLocalDescriptionStub.getCall(0).args[1]).to.be.a('function');
+        expect(setLocalDescriptionStub.getCall(0).args[2]).to.be.a('function');
+
+        setLocalDescriptionStub.restore();
+      });
+    });
+    describe('getLocalDescription', function () {
       var createOfferStub,
         localSDP;
 

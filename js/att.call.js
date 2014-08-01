@@ -153,7 +153,22 @@
     }
 
     function setLocalSdp(sdp) {
-      localSdp = sdp;
+      if ('call' === breed) {
+        localSdp = sdp;
+        return;
+      }
+
+      if ('conference' === breed) {
+        if (undefined === peerConnection) {
+          logger.logError('PeerConnection is undefined.');
+          emitter.publish('error', {
+            error: 'PeerConnection is undefined.'
+          });
+          return;
+        }
+        peerConnection.setLocalSDP(sdp);
+        return;
+      }
     }
 
     function setRemoteSdp(sdp) {
@@ -293,9 +308,9 @@
               });
             },
             onError: function(error) {
-//              emitter.publish('error', {
-//                error: error
-//            });
+              emitter.publish('error', {
+                error: error
+            });
             }
           };
 
@@ -515,9 +530,15 @@
       return id;
     };
     this.localSdp = function () {
+
+      if ('call' === breed) {
+        return localSdp;
+      }
+
       if (undefined === peerConnection) {
         return;
       }
+
       return peerConnection.getLocalSDP();
     };
     this.localMedia = function () {
