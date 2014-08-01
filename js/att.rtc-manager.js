@@ -339,8 +339,13 @@
             sdp: options.localSdp
           }
         },
-        success: function () {
-          options.onSuccess('connecting');
+        success: function (response) {
+
+          var responseData = {
+            id: response.getResponseHeader('Location').split('/')[6],
+            state: response.getResponseHeader('x-state')
+          };
+          options.onSuccess(responseData);
         },
         error: function (error) {
           options.onError(error);

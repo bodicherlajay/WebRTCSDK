@@ -347,19 +347,19 @@ describe('Call [Conference]', function () {
             }, 200);
           });
 
-          afterEach(function () {
-            connectConferenceStub.restore();
-          })
-
           describe('connectConference: Success', function () {
             var state,
-                onSuccessSpy;
+                onSuccessSpy,
+              response;
             beforeEach(function () {
               state = "connecting";
-
+              response = {
+                id : '1234',
+                state : 'invitation-sent'
+              }
               connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options){
                 onSuccessSpy = sinon.spy(options, 'onSuccess');
-                options.onSuccess();
+                options.onSuccess(response);
                 onSuccessSpy.restore();
               });
             });
@@ -368,15 +368,24 @@ describe('Call [Conference]', function () {
               connectConferenceStub.restore();
             });
 
-            it('should execute `conf.setState` with state `connecting` ', function (done) {
+            it('should set the conference id', function (done) {
+              outgoingVideoConference.connect();
+
+              setTimeout(function () {
+                expect(outgoingVideoConference.id()).to.equal(response.id);
+                done();
+              }, 200);
+
+            });
+            it('should execute `conf.setState` with state `connected` ', function (done) {
 
               outgoingVideoConference.connect();
 
               setTimeout(function () {
                 expect(onSuccessSpy.called).to.equal(true);
-                expect(outgoingVideoConference.getState()).to.equal('connecting');
+                expect(outgoingVideoConference.getState()).to.equal('connected');
                 expect(publishStub.calledOnce).to.equal(true);
-                expect(publishStub.getCall(0).args[0]).to.equal('connecting');
+                expect(publishStub.getCall(0).args[0]).to.equal('connected');
                 done();
               }, 200);
             });
@@ -525,7 +534,7 @@ describe('Call [Conference]', function () {
                   connectConferenceStub.restore();
                 });
 
-                it('should set the `connecting`', function (done) {
+                it('should set the state to `connecting`', function (done) {
                   incomingConf.connect();
 
                   setTimeout(function () {
