@@ -4,32 +4,130 @@
 describe('RTCManager [Conference]', function () {
   'use strict';
 
-  var factories;
+  var factories,
+    resourceManager,
+    apiConfig,
+    rtcManager,
+    optionsForRTCM,
+    userMediaSvc,
+    peerConnSvc;
 
   beforeEach(function (){
     factories = ATT.private.factories;
+    apiConfig = ATT.private.config.api;
+    userMediaSvc = ATT.UserMediaService;
+    peerConnSvc = ATT.PeerConnectionService;
+
   });
 
   describe('Methods', function () {
-    var rtcManager;
+    var doOperationStub;
 
     beforeEach(function () {
-      rtcManager = ATT.private.rtcManager.getRTCManager();
+      resourceManager = factories.createResourceManager(apiConfig);
+      optionsForRTCM = {
+        resourceManager: resourceManager,
+        userMediaSvc: userMediaSvc,
+        peerConnSvc: peerConnSvc
+      };
+      rtcManager = new ATT.private.RTCManager(optionsForRTCM);
+
     });
 
+
     describe('connectConference', function () {
+      var  connectConfOpts,
+        onSuccessSpy,
+        onRemoteStreamSpy,
+        onErrorSpy,
+        localSdp;
+      beforeEach(function () {
+        localSdp = '123';
+        onSuccessSpy = sinon.spy();
+        onRemoteStreamSpy = sinon.spy();
+        onErrorSpy = sinon.spy();
+
+        connectConfOpts = {
+          localSdp: localSdp,
+          onSuccess: onSuccessSpy,
+          onRemoteStream : onRemoteStreamSpy,
+          onError: onErrorSpy
+        };
+      });
       it('should exist', function () {
         expect(rtcManager.connectConference).to.be.a('function');
       });
       // TODO: can we reuse startCall apiconfig?
-      it('should execute `doOperation(startConference)` with required params');
+      it('should execute `doOperation(createConference)` with required params', function () {
+        doOperationStub = sinon.stub(resourceManager, 'doOperation');
+
+        rtcManager.connectConference(connectConfOpts);
+
+        expect(doOperationStub.called).to.equal(true);
+        expect(doOperationStub.getCall(0).args[0]).to.equal('createConference');
+        expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+        expect(doOperationStub.getCall(0).args[1].data).eql({
+          conferenceModifications: {
+            sdp: localSdp
+          }
+        });
+        expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
+        expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
+        doOperationStub.restore();
+      });
 
       describe('doOperation: Success', function () {
-        it('should execute `onSuccess` with required params: [conference ID, state:x-state]');
+        var data = {};
+        beforeEach(function () {
+          doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
+            setTimeout(function () {
+              options.success(data);
+            }, 0);
+          });
+        });
+
+        afterEach(function () {
+          doOperationStub.restore();
+        });
+        it('should execute `onSuccess` with required params: [conference ID, state:x-state]', function (done) {
+          rtcManager.connectConference(connectConfOpts);
+          setTimeout(function () {
+            try {
+              expect(onSuccessSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+
+        });
       });
 
       describe('doOperation: Error', function () {
-        it('should execute `onError` callback for `connectConference`');
+        var err = {}
+        beforeEach(function () {
+          doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
+            setTimeout(function () {
+              options.error(err);
+            }, 0);
+          });
+        });
+
+        afterEach(function () {
+          doOperationStub.restore();
+        });
+        it('should execute `onError` callback for `connectConference`', function (done) {
+          rtcManager.connectConference(connectConfOpts);
+          setTimeout(function () {
+            try {
+              expect(onErrorSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
+
+        });
       });
     });
   });

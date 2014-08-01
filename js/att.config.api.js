@@ -303,6 +303,20 @@ if (!ATT) {
           },
           headers: DEFAULTS.headers
         },
+        createConference: {
+          method: 'put',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/conferences';
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
+        },
         /**
          * Add Participant via RTCEndpoint
          * @memberof ATT.APIConfigs

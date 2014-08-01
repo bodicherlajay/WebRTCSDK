@@ -908,6 +908,7 @@ describe('RTC Manager', function () {
 
           connectConfOpts = {
             localSdp: localSdp,
+            conferenceId : '123',
             onSuccess: onSuccessSpy,
             onError: onErrorSpy
           };

@@ -346,8 +346,11 @@
           options.onError(error);
         }
       };
-
-      resourceManager.doOperation('acceptConference', config);
+      if (undefined !== options.conferenceId) {
+        resourceManager.doOperation('acceptConference', config);
+      } else {
+        resourceManager.doOperation('createConference', config);
+      }
     }
 
     function addParticipant(options) {
