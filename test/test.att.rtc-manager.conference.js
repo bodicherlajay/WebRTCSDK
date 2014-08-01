@@ -77,11 +77,25 @@ describe('RTCManager [Conference]', function () {
       });
 
       describe('doOperation: Success', function () {
-        var data = {};
+        var conferenceId = 'SuperDuperID',
+          response;
+
+        response = {
+          getResponseHeader: function (name) {
+            switch (name) {
+            case 'Location':
+              return '/RTC/v1/sessions/0045-ab42-89a2/conferences/' + conferenceId;
+            case 'x-state':
+              return 'invitation-sent'; // seconds
+            default:
+              break;
+            }
+          }
+        };
         beforeEach(function () {
           doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
             setTimeout(function () {
-              options.success(data);
+              options.success(response);
             }, 0);
           });
         });
@@ -94,6 +108,8 @@ describe('RTCManager [Conference]', function () {
           setTimeout(function () {
             try {
               expect(onSuccessSpy.called).to.equal(true);
+              expect(onSuccessSpy.getCall(0).args[0].id).to.equal(conferenceId);
+              expect(onSuccessSpy.getCall(0).args[0].state).to.equal('invitation-sent');
               done();
             } catch (e) {
               done(e);

@@ -176,14 +176,14 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe('[US233244] getParticipants', function () {
+    describe('[US233244] participants', function () {
 
       it('should exist', function () {
-        expect(outgoingConference.getParticipants).to.be.a('function');
+        expect(outgoingConference.participants).to.be.a('function');
       });
 
       it('should return `empty` object if no participants were set', function () {
-        var participants = outgoingConference.getParticipants();
+        var participants = outgoingConference.participants();
 
         expect(participants).to.be.an('object');
         expect(Object.keys(participants).length).to.equal(0);
@@ -192,7 +192,7 @@ describe('Call [Conference]', function () {
       it('should return `participants` list', function () {
         outgoingConference.setParticipant('456', 'invitee', '123');
 
-        var participants = outgoingConference.getParticipants();
+        var participants = outgoingConference.participants();
         expect(participants).to.be.an('object');
         expect(participants['123']).to.be.an('object');
         expect(participants['123'].status).to.equal('invitee');
@@ -347,19 +347,19 @@ describe('Call [Conference]', function () {
             }, 200);
           });
 
-          afterEach(function () {
-            connectConferenceStub.restore();
-          })
-
           describe('connectConference: Success', function () {
             var state,
-                onSuccessSpy;
+                onSuccessSpy,
+              response;
             beforeEach(function () {
               state = "connecting";
-
+              response = {
+                id : '1234',
+                state : 'invitation-sent'
+              }
               connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options){
                 onSuccessSpy = sinon.spy(options, 'onSuccess');
-                options.onSuccess();
+                options.onSuccess(response);
                 onSuccessSpy.restore();
               });
             });
@@ -368,15 +368,24 @@ describe('Call [Conference]', function () {
               connectConferenceStub.restore();
             });
 
-            it('should execute `conf.setState` with state `connecting` ', function (done) {
+            it('should set the conference id', function (done) {
+              outgoingVideoConference.connect();
+
+              setTimeout(function () {
+                expect(outgoingVideoConference.id()).to.equal(response.id);
+                done();
+              }, 200);
+
+            });
+            it('should execute `conf.setState` with state `connected` ', function (done) {
 
               outgoingVideoConference.connect();
 
               setTimeout(function () {
                 expect(onSuccessSpy.called).to.equal(true);
-                expect(outgoingVideoConference.getState()).to.equal('connecting');
+                expect(outgoingVideoConference.getState()).to.equal('connected');
                 expect(publishStub.calledOnce).to.equal(true);
-                expect(publishStub.getCall(0).args[0]).to.equal('connecting');
+                expect(publishStub.getCall(0).args[0]).to.equal('connected');
                 done();
               }, 200);
             });
@@ -525,7 +534,7 @@ describe('Call [Conference]', function () {
                   connectConferenceStub.restore();
                 });
 
-                it('should set the `connecting`', function (done) {
+                it('should set the state to `connecting`', function (done) {
                   incomingConf.connect();
 
                   setTimeout(function () {

@@ -51,6 +51,8 @@ describe('RTC Manager', function () {
       }
     };
 
+
+
   });
 
   before(function () {
@@ -938,23 +940,34 @@ describe('RTC Manager', function () {
         describe('doOperations Callbacks', function () {
 
           describe('success', function () {
+            var response;
 
             beforeEach(function () {
+              response = {
+                getResponseHeader: function (name) {
+                  switch (name) {
+                  case 'x-conference-action':
+                    return 'call-answer'; // seconds
+                  default:
+                    break;
+                  }
+                }
+              };
               doOperationStub.restore();
 
               doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
                 setTimeout(function () {
-                  options.success();
+                  options.success(response);
                 }, 0);
               });
             });
 
-            it('should trigger `onSuccess` callback of `connectConference` with `connecting` state', function (done) {
+            it('should trigger `onSuccess` callback of `connectConference` with `call-answer` state', function (done) {
               rtcManager.connectConference(connectConfOpts);
 
-              setTimeout(function() {
+              setTimeout(function () {
                 try {
-                  expect(onSuccessSpy.calledWith('connecting')).to.equal(true);
+                  expect(onSuccessSpy.calledWith({ state: 'call-answer' })).to.equal(true);
                   done();
                 } catch(e) {
                   done(e);

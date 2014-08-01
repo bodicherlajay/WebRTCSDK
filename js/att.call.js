@@ -297,8 +297,13 @@
 
               rtcManager.connectConference({
                 localSdp: peerConnection.getLocalSDP(),
-                onSuccess: function () {
-                  setState('connecting');
+                onSuccess: function (responsedata) {
+                  if (ATT.CallTypes.INCOMING === type) {
+                    setState('connecting');
+                  } else {
+                    id = responsedata.id;
+                    setState('connected');
+                  }
                 },
                 onError: function (error) {
                   emitter.publish('error', {
@@ -362,10 +367,6 @@
       if ('rejected' === status) {
         thisCall.setState('rejected');
       }
-    }
-
-    function getParticipants() {
-      return participants;
     }
 
     function disconnect() {
@@ -566,7 +567,6 @@
     this.addParticipant = addParticipant;
     this.setParticipant = setParticipant;
     this.updateParticipant = updateParticipant;
-    this.getParticipants = getParticipants;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

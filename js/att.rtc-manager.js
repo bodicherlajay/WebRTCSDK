@@ -333,14 +333,27 @@
     }
 
     function connectConference(options) {
-      var config = {
+      var responseData, config;
+
+        config = {
         data: {
           conferenceModifications: {
             sdp: options.localSdp
           }
         },
-        success: function () {
-          options.onSuccess('connecting');
+        success: function (response) {
+          if (response.getResponseHeader('x-conference-action') === 'call-answer') {
+            responseData = {
+              state: response.getResponseHeader('x-conference-action')
+            };
+          } else {
+            responseData = {
+              id: response.getResponseHeader('Location').split('/')[6],
+              state: response.getResponseHeader('x-state')
+            };
+          }
+
+          options.onSuccess(responseData);
         },
         error: function (error) {
           options.onError(error);
