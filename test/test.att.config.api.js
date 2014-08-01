@@ -126,10 +126,10 @@ describe('APIConfig', function () {
     });
 
     it('should have a valid method endCall method and returns Authorization and url', function () {
-      var  params = ["param1", "param2"];
+      var  params = ["sessionId", "/uri/", "callId"];
       expect(currentConfiguration.endCall.method).to.equal('delete');
       expect(currentConfiguration.endCall).to.be.an('object');
-      expect(currentConfiguration.endCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/param1/calls/param2');
+      expect(currentConfiguration.endCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/uri/callId');
       expect(currentConfiguration.endCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
     });
   });

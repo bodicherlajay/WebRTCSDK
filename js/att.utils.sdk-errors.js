@@ -520,7 +520,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18000",
       ErrorMessage: "TODO- options missing",
       Cause: "TODO",
@@ -528,7 +528,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18001",
       ErrorMessage: "TODO- localmedia missing",
       Cause: "TODO",
@@ -536,7 +536,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18002",
       ErrorMessage: "TODO- remotemedia missing",
       Cause: "TODO",
@@ -544,7 +544,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18003",
       ErrorMessage: "TODO- mediaType missing",
       Cause: "TODO",
@@ -552,7 +552,7 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dialConference",
+      JSMethod: "startConference",
       ErrorCode: "18004",
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
@@ -586,6 +586,46 @@
       JSObject: "ATT.rtc.Phone",
       JSMethod: "addParticipant",
       ErrorCode: "19003",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20000",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20001",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking join conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20002",
+      ErrorMessage: "No conference invite",
+      Cause: "Invalid operation",
+      Resolution: "Cannot join conference before receiving an invite"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "getParticipants",
+      ErrorCode: "21000",
+      ErrorMessage: "Conference not initiated",
+      Cause: "Invalid operation",
+      Resolution: "Please invoke conference first before invoking getParticipants"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "getParticipants",
+      ErrorCode: "21001",
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"

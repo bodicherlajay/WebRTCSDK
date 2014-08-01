@@ -167,8 +167,6 @@
       if ('connecting' !== event &&
           'rejected' !== event &&
           'participant-pending' !== event &&
-          'invite-accepted' !== event &&
-          'invite-rejected' !== event &&
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
@@ -350,6 +348,10 @@
       if ('rejected' === status) {
         thisCall.setState('rejected');
       }
+    }
+
+    function getParticipants() {
+      return participants;
     }
 
     function disconnect() {
@@ -541,6 +543,7 @@
     this.addParticipant = addParticipant;
     this.setParticipant = setParticipant;
     this.updateParticipant = updateParticipant;
+    this.getParticipants = getParticipants;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

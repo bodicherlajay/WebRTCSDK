@@ -77,6 +77,7 @@
         break;
       case ATT.RTCCallEvents.SESSION_TERMINATED:
         emitter.publish('call-disconnected', {
+          type: event.type === 'calls' ? 'call' : 'conference',
           id: event.resourceURL.split('/')[6],
           from: event.from.split('@')[0].split(':')[1],
           reason: event.reason

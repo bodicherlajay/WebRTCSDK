@@ -303,6 +303,20 @@ if (!ATT) {
           },
           headers: DEFAULTS.headers
         },
+        createConference: {
+          method: 'put',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/conferences';
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
+        },
         /**
          * Add Participant via RTCEndpoint
          * @memberof ATT.APIConfigs
@@ -346,14 +360,14 @@ if (!ATT) {
           }, DEFAULTS.headers)
         },
         /**
-        * End Call via RTCEndpoint
+        * End Call/Conference via RTCEndpoint
         * @memberof WebRTC.APIConfigs
         */
         endCall: {
           method: 'delete',
           formatters: {
             url: function (params) {
-              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + params[1] + params[2];
             },
             headers: {
               'Authorization': function (param) {

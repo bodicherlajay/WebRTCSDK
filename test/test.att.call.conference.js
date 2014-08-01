@@ -176,6 +176,31 @@ describe('Call [Conference]', function () {
       });
     });
 
+    describe('[US233244] getParticipants', function () {
+
+      it('should exist', function () {
+        expect(conference.getParticipants).to.be.a('function');
+      });
+
+      it('should return `empty` object if no participants were set', function () {
+        var participants = conference.getParticipants();
+
+        expect(participants).to.be.an('object');
+        expect(Object.keys(participants).length).to.equal(0);
+      });
+
+      it('should return `participants` list', function () {
+        conference.setParticipant('456', 'invitee', '123');
+
+        var participants = conference.getParticipants();
+        expect(participants).to.be.an('object');
+        expect(participants['123']).to.be.an('object');
+        expect(participants['123'].status).to.equal('invitee');
+        expect(participants['123'].participant).to.equal('456');
+        expect(participants['123'].id).to.equal('123');
+      });
+    });
+
     describe('setParticipant', function () {
 
       it('should exist', function () {

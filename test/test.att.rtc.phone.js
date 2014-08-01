@@ -873,8 +873,7 @@ describe('Phone', function () {
           mediaEstablishedHandlerSpy,
           callHoldHandlerSpy,
           callResumeHandlerSpy,
-          callErrorHandlerSpy,
-          errorHandlerSpy;
+          callErrorHandlerSpy;
 
         beforeEach(function () {
 
@@ -898,7 +897,6 @@ describe('Phone', function () {
           callErrorHandlerSpy = sinon.spy();
           callHoldHandlerSpy = sinon.spy();
           callResumeHandlerSpy = sinon.spy();
-          errorHandlerSpy = sinon.spy();
 
           session.setId('ABC');
           call = session.createCall(createCallOptions);
@@ -917,8 +915,6 @@ describe('Phone', function () {
           phone.on('media-established', mediaEstablishedHandlerSpy);
           phone.on('call-held', callHoldHandlerSpy);
           phone.on('call-resumed', callResumeHandlerSpy);
-          phone.on('error', errorHandlerSpy);
-
         });
 
         afterEach(function () {
@@ -935,8 +931,8 @@ describe('Phone', function () {
           phone.answer();
 
           setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
+            expect(onErrorHandlerSpy.calledOnce).to.equal(true);
+            expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
             done();
           }, 100);
 
@@ -949,8 +945,8 @@ describe('Phone', function () {
           });
 
           setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            expect(onErrorHandlerSpy.calledOnce).to.equal(true);
+            expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
           }, 100);
 
@@ -963,8 +959,8 @@ describe('Phone', function () {
           });
 
           setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
+            expect(onErrorHandlerSpy.calledOnce).to.equal(true);
+            expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
           }, 100);
         });
@@ -977,8 +973,8 @@ describe('Phone', function () {
           phone.answer(options);
 
           setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
+            expect(onErrorHandlerSpy.calledOnce).to.equal(true);
+            expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
             done();
           }, 100);
         });
@@ -986,13 +982,12 @@ describe('Phone', function () {
         it('[5000] should publish `error` event with error data if there is no current call', function (done) {
 
           session.currentCall = null;
-          phone.on('error', errorHandlerSpy);
 
           phone.answer(options);
 
           setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
+            expect(onErrorHandlerSpy.calledOnce).to.equal(true);
+            expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
             done();
           }, 100);
 
@@ -1005,8 +1000,8 @@ describe('Phone', function () {
           phone.answer(options);
 
           setTimeout(function () {
-            expect(errorHandlerSpy.calledOnce).to.equal(true);
-            expect(errorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
+            expect(onErrorHandlerSpy.calledOnce).to.equal(true);
+            expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
             done();
           }, 100);
         });
@@ -1152,7 +1147,7 @@ describe('Phone', function () {
 
             setTimeout(function () {
               try {
-                expect(errorHandlerSpy.calledOnce).to.equal(true);
+                expect(onErrorHandlerSpy.calledOnce).to.equal(true);
                 expect(onErrorHandlerSpy.getCall(0).args[0].data).to.be.an('object');
                 expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
                 done();
@@ -1209,6 +1204,8 @@ describe('Phone', function () {
           conferenceJoiningSpy = sinon.spy();
 
           phone.on('conference-joining', conferenceJoiningSpy);
+
+          session.setId('sessionId');
 
           session.currentCall = conference;
         });
@@ -1335,6 +1332,29 @@ describe('Phone', function () {
               }, 100);
             });
 
+            it('[20000] should be published with `error` event if there is an uncaught exception', function (done) {
+
+              connectStub.restore();
+
+              connectStub = sinon.stub(conference, 'connect', function () {
+                throw error;
+              });
+
+              phone.joinConference(options);
+
+              setTimeout(function () {
+                try {
+                  expect(ATT.errorDictionary.getSDKError('20000')).to.be.an('object');
+                  expect(onErrorHandlerSpy.called).to.equal(true);
+                  expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('20000');
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+
+            });
+
           });
         });
 
@@ -1378,11 +1398,75 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 10);
+              }, 100);
 
             });
 
           });
+
+        });
+
+        describe('Error Handling', function () {
+
+          it('[20000] should be published with `error` event if there is an uncaught exception', function (done) {
+
+            getUserMediaStub.restore();
+
+            getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function () {
+              throw error;
+            });
+
+            phone.joinConference(options);
+
+            setTimeout(function () {
+              try {
+                expect(ATT.errorDictionary.getSDKError('20000')).to.be.an('object');
+                expect(onErrorHandlerSpy.called).to.equal(true);
+                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('20000');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+
+          });
+
+          it('[20001] should be published with `error` event if the user is not logged in', function (done) {
+            session.setId(null);
+
+            phone.joinConference(options);
+
+            setTimeout(function () {
+              try {
+                expect(ATT.errorDictionary.getSDKError('20001')).to.be.an('object');
+                expect(onErrorHandlerSpy.called).to.equal(true);
+                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('20001');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+
+          });
+
+          it('[20002] should be published with `error` event if there is no incoming conference invite', function (done) {
+            session.currentCall = null;
+
+            phone.joinConference(options);
+
+            setTimeout(function () {
+              try {
+                expect(ATT.errorDictionary.getSDKError('20002')).to.be.an('object');
+                expect(onErrorHandlerSpy.called).to.equal(true);
+                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('20002');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+
+          });
+
 
         });
       });
@@ -1497,9 +1581,9 @@ describe('Phone', function () {
           expect(addParticipantStub.getCall(0).args[0]).to.equal('1234');
         });
 
-        describe('Error Handling', function() {
+        describe('Error Handling', function () {
 
-          it('[19000] should be thrown if the user is not logged in', function() {
+          it('[19000] should be thrown if the user is not logged in', function () {
             session.setId(null);
             phone.addParticipant();
 
@@ -1509,7 +1593,7 @@ describe('Phone', function () {
             })).to.equal(true);
           });
 
-          it('[19001] should be thrown if conference has not been started', function() {
+          it('[19001] should be thrown if conference has not been started', function () {
 
             conference.breed = function () {
               return 'call';
@@ -1549,6 +1633,112 @@ describe('Phone', function () {
             addParticipantStub.restore();
           });
         });
+      });
+
+      describe('[US233244] getParticipants', function () {
+
+        var publishStub,
+          getParticipantsSpy;
+
+        beforeEach(function () {
+
+          callConstructorStub.restore();
+
+          conference = new ATT.rtc.Call({
+            breed: 'conference',
+            peer: '1234567',
+            type: 'abc',
+            mediaType: 'video',
+            id: '1234'
+          });
+
+          getParticipantsSpy = sinon.spy(conference, 'getParticipants');
+
+          publishStub = sinon.stub(emitter, 'publish');
+
+          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+            return conference;
+          });
+
+          session.currentCall = conference;
+          session.setId('123456');
+
+        });
+
+        afterEach(function () {
+          callConstructorStub.restore();
+          getParticipantsSpy.restore();
+          publishStub.restore();
+
+        });
+
+        it('should exist', function () {
+          expect(phone.getParticipants).to.be.a('function');
+        });
+
+        it('should call `conference.getParticipants`', function () {
+          phone.getParticipants();
+
+          expect(getParticipantsSpy.called).to.equal(true);
+        });
+
+        it('should return `participants` list', function () {
+          conference.setParticipant('456', 'invitee', '123');
+
+          var participants = phone.getParticipants();
+          expect(participants).to.be.an('object');
+          expect(participants['123']).to.be.an('object');
+          expect(participants['123'].status).to.equal('invitee');
+          expect(participants['123'].participant).to.equal('456');
+          expect(participants['123'].id).to.equal('123');
+        });
+
+        describe('Error Handling', function () {
+          it('[21000] should be thrown if conference has not been started', function () {
+            session.currentCall = null;
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21000')
+            })).to.equal(true);
+          });
+
+          it('[21000] should be thrown if `breed` is not equal to `conference`', function () {
+            conference.breed = function () {
+              return 'call';
+            };
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21000')
+            })).to.equal(true);
+          });
+
+          xit('[21001] should be thrown if internal error occurred', function () {
+            var getParticipantsStub;
+
+            getParticipantsSpy.restore();
+
+            getParticipantsStub = sinon.stub(conference, 'getParticipants', function () {
+              throw error;
+            });
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21001')
+            })).to.equal(true);
+
+            getParticipantsStub.restore();
+          });
+
+        });
+
       });
 
       describe('[US198615] mute & unmute', function () {
@@ -2348,6 +2538,7 @@ describe('Phone', function () {
           sessionConstructorStub,
           onCallIncomingHandlerSpy,
 		      onCallDisconnectedHandlerSpy,
+          onConferenceDisconnectedHandlerSpy,
           onConferenceInviteHandlerSpy,
           onErrorHandlerSpy;
 
@@ -2368,6 +2559,7 @@ describe('Phone', function () {
 
           onCallIncomingHandlerSpy = sinon.spy();
 		      onCallDisconnectedHandlerSpy = sinon.spy();
+          onConferenceDisconnectedHandlerSpy = sinon.spy();
           onConferenceInviteHandlerSpy = sinon.spy();
           onErrorHandlerSpy = sinon.spy();
 
@@ -2375,6 +2567,7 @@ describe('Phone', function () {
 
           phone.on('call-incoming', onCallIncomingHandlerSpy);
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
+          phone.on('conference-disconnected', onConferenceDisconnectedHandlerSpy);
           phone.on('conference-invite', onConferenceInviteHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
@@ -2406,20 +2599,47 @@ describe('Phone', function () {
         });
 
         describe('call-disconnected', function () {
-          var eventData;
+          var deleteCurrentCallStub;
 
           beforeEach(function () {
-            eventData = {
-              abc: 'abc'
+            deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+          });
+
+          afterEach(function () {
+            deleteCurrentCallStub.restore();
+          });
+
+          it('should trigger `call-disconnected` if [data.breed === `call`]', function (done) {
+
+            var eventData = {
+              abc: 'abc',
+              breed: 'call'
             };
 
             emitterSession.publish('call-disconnected', eventData);
-          });
-          it('should trigger `call-disconnected` with relevant data on getting a `call-disconnected` from session', function (done) {
 
             setTimeout(function () {
               try {
                 expect(onCallDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+
+          it('should trigger `conference-disconnected` if [data.breed === `conference`]', function (done) {
+
+            var eventData = {
+              abc: 'abc',
+              breed: 'conference'
+            };
+
+            emitterSession.publish('call-disconnected', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(onConferenceDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -2428,18 +2648,17 @@ describe('Phone', function () {
           });
 
           it('should also execute session.deleteCurrentCall', function (done) {
-            var deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+
+            emitterSession.publish('call-disconnected', eventData);
 
             setTimeout(function () {
               try {
-                expect(onCallDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(deleteCurrentCallStub.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
               }
             }, 300);
-
-            deleteCurrentCallStub.restore();
           });
         });
 
