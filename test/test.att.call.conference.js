@@ -176,14 +176,14 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe('[US233244] getParticipants', function () {
+    describe('[US233244] participants', function () {
 
       it('should exist', function () {
-        expect(outgoingConference.getParticipants).to.be.a('function');
+        expect(outgoingConference.participants).to.be.a('function');
       });
 
       it('should return `empty` object if no participants were set', function () {
-        var participants = outgoingConference.getParticipants();
+        var participants = outgoingConference.participants();
 
         expect(participants).to.be.an('object');
         expect(Object.keys(participants).length).to.equal(0);
@@ -192,7 +192,7 @@ describe('Call [Conference]', function () {
       it('should return `participants` list', function () {
         outgoingConference.setParticipant('456', 'invitee', '123');
 
-        var participants = outgoingConference.getParticipants();
+        var participants = outgoingConference.participants();
         expect(participants).to.be.an('object');
         expect(participants['123']).to.be.an('object');
         expect(participants['123'].status).to.equal('invitee');

@@ -1637,8 +1637,7 @@ describe('Phone', function () {
 
       describe('[US233244] getParticipants', function () {
 
-        var publishStub,
-          getParticipantsSpy;
+        var publishStub;
 
         beforeEach(function () {
 
@@ -1651,8 +1650,6 @@ describe('Phone', function () {
             mediaType: 'video',
             id: '1234'
           });
-
-          getParticipantsSpy = sinon.spy(conference, 'getParticipants');
 
           publishStub = sinon.stub(emitter, 'publish');
 
@@ -1667,7 +1664,6 @@ describe('Phone', function () {
 
         afterEach(function () {
           callConstructorStub.restore();
-          getParticipantsSpy.restore();
           publishStub.restore();
 
         });
@@ -1676,10 +1672,16 @@ describe('Phone', function () {
           expect(phone.getParticipants).to.be.a('function');
         });
 
-        it('should call `conference.getParticipants`', function () {
+        it('should call `conference.participants`', function () {
+          var getParticipantsSpy;
+
+          getParticipantsSpy = sinon.spy(conference, 'participants');
+
           phone.getParticipants();
 
           expect(getParticipantsSpy.called).to.equal(true);
+
+          getParticipantsSpy.restore();
         });
 
         it('should return `participants` list', function () {
@@ -1718,12 +1720,10 @@ describe('Phone', function () {
             })).to.equal(true);
           });
 
-          xit('[21001] should be thrown if internal error occurred', function () {
+          it('[21001] should be thrown if internal error occurred', function () {
             var getParticipantsStub;
 
-            getParticipantsSpy.restore();
-
-            getParticipantsStub = sinon.stub(conference, 'getParticipants', function () {
+            getParticipantsStub = sinon.stub(conference, 'participants', function () {
               throw error;
             });
 

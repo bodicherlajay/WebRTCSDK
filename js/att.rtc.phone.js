@@ -1339,10 +1339,15 @@
           publishError(21000);
           return;
         }
-
-        return conference.getParticipants();
+        try {
+          return conference.participants();
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError(21001);
+        }
       } catch (err) {
-        publishError('21001', err);
+        emitter.publish('error', {
+          error: err
+        });
       }
     }
 
