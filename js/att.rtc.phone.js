@@ -1254,7 +1254,7 @@
           localMedia: options.localMedia,
           remoteMedia: options.remoteMedia,
           onUserMedia: function (userMedia) {
-            conference.addStream(userMedia);
+            conference.addStream(userMedia.localStream);
             conference.connect();
           },
           onMediaEstablished: function () {

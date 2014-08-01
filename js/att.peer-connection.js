@@ -13,7 +13,12 @@
       onSuccess,
       onError,
       mediaConstraint,
-      logger = logManager.addLoggerForModule('PeerConnection');
+      logger = logManager.addLoggerForModule('PeerConnection'),
+      pcConfig = {
+        'iceServers': [
+          { 'url': 'STUN:74.125.133.127:19302' }
+        ]
+      };
 
     function processDescription(description, success) {
       var fixedSDP;
@@ -67,7 +72,7 @@
     onError = options.onError;
 
     try {
-      pc = new RTCPeerConnection();
+      pc = new RTCPeerConnection(pcConfig);
     } catch (error) {
       throw new Error('Failed to create PeerConnection.');
     }
