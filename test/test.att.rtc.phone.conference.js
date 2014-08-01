@@ -142,9 +142,12 @@ describe('Phone [Conference]', function () {
           done();
         }, 100);
       });
-      it('[18004] should publish error when `currentcall` is invalid  ', function (done) {
+      it('[18004] should publish error if there\'s an uncaught exception', function (done) {
 
-        session.currentCall = undefined;
+        var getIdStub = sinon.stub(session, 'getId', function () {
+          throw new Error('bla');
+        });
+
         phone.startConference({
           localMedia : {},
           remoteMedia : {},
@@ -154,6 +157,7 @@ describe('Phone [Conference]', function () {
         setTimeout(function () {
           expect(onErrorSpy.calledOnce).to.equal(true);
           expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18004');
+          getIdStub.restore();
           done();
         }, 100);
       });

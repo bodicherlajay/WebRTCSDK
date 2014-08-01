@@ -1222,7 +1222,7 @@
       var conference;
       try {
         if (undefined === options
-          || 0 === Object.keys(options).length) {
+            || 0 === Object.keys(options).length) {
           publishError('18000');
           return;
         }
