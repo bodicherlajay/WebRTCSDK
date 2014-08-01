@@ -230,7 +230,7 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe.only('connect [OUTGOING]', function () {
+    describe('connect [OUTGOING]', function () {
       var createPeerConnectionStub,
         optionsOutgoingVideo,
         outgoingVideoConference,
@@ -274,11 +274,23 @@ describe('Call [Conference]', function () {
       describe('createPeerConnection: onSuccess', function () {
 
         var localSDP,
-          connectConferenceStub ;
+          connectConferenceStub,
+          connectconferenceOptions,
+          onSuccessSpy,
+          onErrorSpy,
+          setLocalSdpStub;
 
         beforeEach(function () {
 
           localSDP = 'ABCD';
+          onSuccessSpy = sinon.spy();
+          onErrorSpy = sinon.spy();
+
+          connectconferenceOptions = {
+            localSdp : 'ABCD',
+            onSuccess : onSuccessSpy,
+            onError : onErrorSpy
+          };
 
           createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
             options.onSuccess(localSDP);
@@ -286,21 +298,88 @@ describe('Call [Conference]', function () {
 
           connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
 
-          outgoingVideoConference.connect();
+          setLocalSdpStub = sinon.stub(outgoingVideoConference, 'setLocalSdp');
+
+
+
         });
 
         afterEach(function () {
           createPeerConnectionStub.restore();
           connectConferenceStub.restore();
+          setLocalSdpStub.restore();
+        });
+
+        it('should set the local description to the new description', function () {
+
+          outgoingVideoConference.connect();
+          expect(setLocalSdpStub.called).to.equal(true);
+
         });
 
         it('should call `rtcManager.connectConference`', function () {
-          expect(connectConferenceStub.called).to.equal(true);
+          outgoingVideoConference.connect();
+          expect(connectConferenceStub.calledOnce).to.equal(true);
+          expect(connectConferenceStub.getCall(0).args[0].localSdp).to.equal(connectconferenceOptions.localSdp);
+          expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
+          expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
         });
 
+
         describe('connectConference: Success', function () {
-          it('should log conference ID & state=x-state');
-        })
+          var state = "connecting";
+          beforeEach(function () {
+            connectConferenceStub.restore();
+            connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options){
+              setTimeout(function () {
+                options.onSuccess(state);
+              }, 0);
+            });
+          });
+          it('should execute `setState` with state `connecting` ', function (done) {
+            var setstateStub = sinon.stub(outgoingVideoConference, 'setState');
+            outgoingVideoConference.connect();
+            setTimeout(function () {
+              try {
+                expect(setstateStub.calledWith('connecting')).to.equal(true);
+                done();
+              } catch (err) {
+                done(err);
+              }
+              finally {
+                setstateStub.restore();
+
+              }
+
+              done();
+            }, 100);
+
+          });
+        });
+        xdescribe('connectConference: Error', function () {
+          beforeEach(function () {
+            connectConferenceStub.restore();
+            connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
+              setTimeout(function () {
+                options.onError();
+              }, 0);
+            });
+          })
+          it('should execute `setState` with state `connecting` ', function (done) {
+            outgoingVideoConference.connect();
+//            setTimeout(function () {
+//              try {
+//                expect(setstateStub.calledWith('connecting')).to.equal(true);
+//                done();
+//              } catch (err) {
+//                done(err);
+//              } finally {
+//                setstateStub.restore();
+//              }
+//            }, 100);
+
+          });
+        });
       });
     });
   });

@@ -281,18 +281,18 @@
             localStream: localStream,
             onSuccess: function (localSdp) {
 
-//              thisCall.setLocalSdp(localSdp);
+              thisCall.setLocalSdp(localSdp);
 
               rtcManager.connectConference({
-//                localSdp: thisCall.localSdp(),
-//                onSuccess: function (state) {
-//                  thisCall.setState('connecting');
-//                },
-//                onError: function (error) {
+                localSdp: localSdp,
+                onSuccess: function (state) {
+                  thisCall.setState('connecting');
+                },
+                onError: function (error) {
 //                  emitter.publish('error', {
 //                    error: error
 //                  });
-//                }
+                }
               });
             },
             onError: function(error) {
