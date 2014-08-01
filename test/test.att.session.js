@@ -1212,7 +1212,7 @@ describe('Session', function () {
             expect(callIncomingHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(callIncomingHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(callIncomingHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof callIncomingHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(callIncomingHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           } catch (e) {
             done(e);
@@ -1231,7 +1231,7 @@ describe('Session', function () {
             expect(conferenceInviteHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(conferenceInviteHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(conferenceInviteHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof conferenceInviteHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(conferenceInviteHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           } catch (e) {
             done(e);
@@ -1245,15 +1245,25 @@ describe('Session', function () {
       var rtcManager,
         session,
         callInfo,
+        conferenceInfo,
         emitterEM,
         createEventEmitterStub,
         getRTCMgrStub,
-        callDisconnectedHandlerSpy;
+        callDisconnectedHandlerSpy,
+        confDisconnectedHandlerSpy;
 
       beforeEach(function () {
         callInfo = {
           id: '123',
-          type: 'calls',
+          type: 'call',
+          from: '1234',
+          mediaType: 'video',
+          remoteSdp: 'abc'
+        };
+
+        conferenceInfo = {
+          type: 'conference',
+          id: '123',
           from: '1234',
           mediaType: 'video',
           remoteSdp: 'abc'
@@ -1275,28 +1285,36 @@ describe('Session', function () {
 
         session = new ATT.rtc.Session();
 
-        session.currentCall = new ATT.rtc.Call({
-          breed: 'call',
-          peer: '1234',
-          type: 'abc',
-          mediaType: 'audio'
-        });
+//        conference = new ATT.rtc.Call({
+//          breed: 'conference',
+//          id: '12345',
+//          peer: '12345',
+//          type: 'abc',
+//          mediaType: 'audio'
+//        });
 
         callDisconnectedHandlerSpy = sinon.spy();
+        confDisconnectedHandlerSpy = sinon.spy();
 
         session.on('call-disconnected', callDisconnectedHandlerSpy);
-        session.on('error', function (data) {
-          console.error(JSON.stringify(data));
-        });
+        session.on('conference-disconnected', confDisconnectedHandlerSpy);
 
-        emitterEM.publish('call-disconnected', callInfo);
       });
 
       afterEach(function () {
         getRTCMgrStub.restore();
       });
 
-      it('should trigger `call-disconnected` with data on getting `call-disconnected` from RTCMgr', function (done) {
+      it('should publish `call-disconnected` with data on getting `call-disconnected` with type `call` from RTCMgr', function (done) {
+        session.currentCall = new ATT.rtc.Call({
+          breed: 'call',
+          id: '12345',
+          peer: '12345',
+          type: 'abc',
+          mediaType: 'audio'
+        });
+
+        emitterEM.publish('call-disconnected', callInfo);
 
         setTimeout(function () {
           try {
@@ -1305,13 +1323,82 @@ describe('Session', function () {
             expect(callDisconnectedHandlerSpy.getCall(0).args[0].from).to.be.a('string');
             expect(callDisconnectedHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(callDisconnectedHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(typeof callDisconnectedHandlerSpy.getCall(0).args[0].timestamp).to.equal('object');
+            expect(callDisconnectedHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           } catch (e) {
             done(e);
           }
-        }, 300);
+        }, 20);
       });
+
+      it('should not publish `call-disconnected` on getting `call-disconnected` with type `conference` from RTCMgr', function (done) {
+        session.currentCall = new ATT.rtc.Call({
+          breed: 'call',
+          id: '12345',
+          peer: '12345',
+          type: 'abc',
+          mediaType: 'audio'
+        });
+
+        emitterEM.publish('call-disconnected', conferenceInfo);
+
+        setTimeout(function () {
+          try {
+            expect(callDisconnectedHandlerSpy.called).to.equal(false);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 20);
+      });
+
+      it('should publish `conference-disconnected` with data on getting `call-disconnected` with type `conference` from RTCMgr', function (done) {
+        session.currentCall = new ATT.rtc.Call({
+          breed: 'conference',
+          id: '12345',
+          peer: '12345',
+          type: 'abc',
+          mediaType: 'audio'
+        });
+
+        emitterEM.publish('call-disconnected', conferenceInfo);
+
+        setTimeout(function () {
+          try {
+            expect(confDisconnectedHandlerSpy.called).to.equal(true);
+            expect(confDisconnectedHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(confDisconnectedHandlerSpy.getCall(0).args[0].from).to.be.a('string');
+            expect(confDisconnectedHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(confDisconnectedHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
+            expect(confDisconnectedHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 20);
+      });
+
+      it('should not publish `conference-disconnected` on getting `call-disconnected` with type `call` from RTCMgr', function (done) {
+        session.currentCall = new ATT.rtc.Call({
+          breed: 'conference',
+          id: '12345',
+          peer: '12345',
+          type: 'abc',
+          mediaType: 'audio'
+        });
+
+        emitterEM.publish('call-disconnected', callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(confDisconnectedHandlerSpy.called).to.equal(false);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 20);
+      });
+
     });
   });
 

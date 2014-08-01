@@ -63,12 +63,16 @@
         });
       }
     });
-    rtcManager.on('call-disconnected', function (callInfo) {
-      var breed = session.currentCall.breed();
 
-      emitter.publish('call-disconnected', {
+    rtcManager.on('call-disconnected', function (callInfo) {
+      var eventName;
+      if ('call' === callInfo.type) {
+        eventName = 'call-disconnected';
+      } else {
+        eventName = 'conference-disconnected';
+      }
+      emitter.publish(eventName, {
         from: callInfo.from,
-        breed: breed,
         mediaType: session.currentCall.mediaType(),
         codec: session.currentCall.codec(),
         timestamp: new Date()
@@ -78,18 +82,19 @@
     function on(event, handler) {
 
       if ('ready' !== event &&
-          'connecting' !== event &&
-          'connected' !== event &&
-          'updating' !== event &&
-          'needs-refresh' !== event &&
-          'call-incoming' !== event &&
-          'conference-invite' !== event &&
-          'call-disconnected' !== event &&
-          'disconnecting' !== event &&
-          'disconnected' !== event &&
-          'address-updated' !== event &&
-          'allcallsterminated' !== event &&
-          'error' !== event) {
+        'connecting' !== event &&
+        'connected' !== event &&
+        'updating' !== event &&
+        'needs-refresh' !== event &&
+        'call-incoming' !== event &&
+        'conference-invite' !== event &&
+        'call-disconnected' !== event &&
+        'conference-disconnected' !== event &&
+        'disconnecting' !== event &&
+        'disconnected' !== event &&
+        'address-updated' !== event &&
+        'allcallsterminated' !== event &&
+        'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 

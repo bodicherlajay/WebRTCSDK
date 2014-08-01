@@ -37,37 +37,6 @@
       emitter.publish('call-incoming', data);
     });
 
-	  session.on('call-disconnected', function (data) {
-      /**
-       * Call disconnected event.
-       * @desc Indicates a call has been disconnected
-       *
-       * @event Phone#call-disconnected
-       * @type {object}
-       * @property {String} from - The ID of the caller.
-       * @property {String} mediaType - The type of call.
-       * @property {String} codec - The codec of the call
-       * @property {Date} timestamp - Event fire time.
-       */
-      if ('call' === data.breed) {
-        emitter.publish('call-disconnected', data);
-      } else {
-        /**
-         * Conference disconnected event.
-         * @desc Indicates a conference has been disconnected
-         *
-         * @event Phone#conference-disconnected
-         * @type {object}
-         * @property {String} from - The ID of the conference.
-         * @property {String} mediaType - The type of conference.
-         * @property {String} codec - The codec of the conference
-         * @property {Date} timestamp - Event fire time.
-         */
-        emitter.publish('conference-disconnected', data);
-      }
-      session.deleteCurrentCall();
-    });
-
     session.on('conference-invite', function (data) {
       /**
        * Conference Invite event.
@@ -81,6 +50,38 @@
        * @property {Date} timestamp - Event fire time.
        */
       emitter.publish('conference-invite', data);
+    });
+
+	  session.on('call-disconnected', function (data) {
+      /**
+       * Call disconnected event.
+       * @desc Indicates a call has been disconnected
+       *
+       * @event Phone#call-disconnected
+       * @type {object}
+       * @property {String} from - The ID of the caller.
+       * @property {String} mediaType - The type of call.
+       * @property {String} codec - The codec of the call
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('call-disconnected', data);
+      session.deleteCurrentCall();
+    });
+
+    session.on('conference-disconnected', function (data) {
+      /**
+       * Conference disconnected event.
+       * @desc Indicates a conference has been disconnected
+       *
+       * @event Phone#conference-disconnected
+       * @type {object}
+       * @property {String} from - The ID of the conference.
+       * @property {String} mediaType - The type of conference.
+       * @property {String} codec - The codec of the conference
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('conference-disconnected', data);
+      session.deleteCurrentCall();
     });
 
     session.on('error', function (data) {
@@ -1054,17 +1055,6 @@
 
           var conference = session.currentCall;
 
-          conference.on('disconnected', function (data) {
-            /**
-             * Conference disconnected event.
-             * @desc Rejected the conference invitation.
-             * @event Phone#conference-disconnected
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('conference-disconnected', data);
-          });
-
           conference.reject();
 
         } catch (err) {
@@ -1089,6 +1079,7 @@
         });
       }
     }
+
     /**
      * @summary Put the current call on hold
      * @desc Add description here

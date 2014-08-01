@@ -134,6 +134,10 @@ describe('Phone', function () {
         expect(onSpy.calledWith('call-disconnected')).to.equal(true);
       });
 
+      it('should register for `conference-disconnected` event on the session object', function() {
+        expect(onSpy.calledWith('conference-disconnected')).to.equal(true);
+      });
+
       it('should register for `conference-invite` event on session object', function () {
         expect(onSpy.calledWith('conference-invite')).to.equal(true);
       });
@@ -2288,40 +2292,10 @@ describe('Phone', function () {
           expect(phone.rejectConference).to.be.a('function');
         });
 
-        it('should register for event `disconnected` from call', function () {
-          phone.rejectConference();
-
-          expect(onSpy.calledWith('disconnected')).to.equal(true);
-        });
-
         it('should invoke Call.reject', function () {
           phone.rejectConference();
 
           expect(rejectStub.called).to.equal(true);
-        });
-
-        describe('rejectConference Events', function () {
-
-          beforeEach(function () {
-            phone.rejectConference();
-          });
-
-          describe('disconnected', function () {
-
-            it('should publish `conference-disconnected` when call published `disconnected`', function (done) {
-              emitterConference.publish('disconnected', eventData);
-
-              setTimeout(function () {
-                try {
-                  expect(onConfDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 10);
-            });
-
-          });
         });
 
         describe('Error Handling', function () {
@@ -2680,6 +2654,7 @@ describe('Phone', function () {
           emitterSession,
           createEmitterStub,
           sessionConstructorStub,
+          deleteCurrentCallStub,
           onCallIncomingHandlerSpy,
 		      onCallDisconnectedHandlerSpy,
           onConferenceDisconnectedHandlerSpy,
@@ -2701,6 +2676,8 @@ describe('Phone', function () {
             return session;
           });
 
+          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+
           onCallIncomingHandlerSpy = sinon.spy();
 		      onCallDisconnectedHandlerSpy = sinon.spy();
           onConferenceDisconnectedHandlerSpy = sinon.spy();
@@ -2710,24 +2687,21 @@ describe('Phone', function () {
           phone = new ATT.private.Phone();
 
           phone.on('call-incoming', onCallIncomingHandlerSpy);
+          phone.on('conference-invite', onConferenceInviteHandlerSpy);
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
           phone.on('conference-disconnected', onConferenceDisconnectedHandlerSpy);
-          phone.on('conference-invite', onConferenceInviteHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
         });
 
         afterEach(function () {
           sessionConstructorStub.restore();
+          deleteCurrentCallStub.restore();
         });
 
         describe('call-incoming', function () {
 
           it('should trigger `call-incoming` with relevant data on getting a `call-incoming` from session', function (done) {
-
-            var eventData = {
-              abc: 'abc'
-            };
 
             emitterSession.publish('call-incoming', eventData);
 
@@ -2742,23 +2716,26 @@ describe('Phone', function () {
           });
         });
 
+        describe('conference-invite', function () {
+
+          it('should trigger `conference-invite` with relevant data on getting a `conference-invite` from session', function (done) {
+
+            emitterSession.publish('conference-invite', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(onConferenceInviteHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+        });
+
         describe('call-disconnected', function () {
-          var deleteCurrentCallStub;
 
-          beforeEach(function () {
-            deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
-          });
-
-          afterEach(function () {
-            deleteCurrentCallStub.restore();
-          });
-
-          it('should trigger `call-disconnected` if [data.breed === `call`]', function (done) {
-
-            var eventData = {
-              abc: 'abc',
-              breed: 'call'
-            };
+          it('should trigger `call-disconnected` session publishes `call-disconnected`', function (done) {
 
             emitterSession.publish('call-disconnected', eventData);
 
@@ -2770,25 +2747,6 @@ describe('Phone', function () {
                 done(e);
               }
             }, 100);
-          });
-
-          it('should trigger `conference-disconnected` if [data.breed === `conference`]', function (done) {
-
-            var eventData = {
-              abc: 'abc',
-              breed: 'conference'
-            };
-
-            emitterSession.publish('call-disconnected', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(onConferenceDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 300);
           });
 
           it('should also execute session.deleteCurrentCall', function (done) {
@@ -2806,19 +2764,29 @@ describe('Phone', function () {
           });
         });
 
-        describe('conference-invite', function () {
+        describe('conference-disconnected', function () {
 
-          it('should trigger `conference-invite` with relevant data on getting a `conference-invite` from session', function (done) {
+          it('should trigger `conference-disconnected` if session publishes `conference-disconnected`', function (done) {
 
-            var eventData = {
-              abc: 'abc'
-            };
-
-            emitterSession.publish('conference-invite', eventData);
+            emitterSession.publish('conference-disconnected', eventData);
 
             setTimeout(function () {
               try {
-                expect(onConferenceInviteHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(onConferenceDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 300);
+          });
+
+          it('should also execute session.deleteCurrentCall', function (done) {
+
+            emitterSession.publish('conference-disconnected', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(deleteCurrentCallStub.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
