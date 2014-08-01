@@ -181,6 +181,7 @@ describe('Phone [Conference]', function () {
         expect(createCallStub.getCall(0).args[0].remoteMedia).to.be.an('object');
         expect(createCallStub.getCall(0).args[0].mediaType).to.be.an('string');
         expect(createCallStub.getCall(0).args[0].breed).to.be.an('string');
+        expect(createCallStub.getCall(0).args[0].type).to.be.an('string');
 
       });
 

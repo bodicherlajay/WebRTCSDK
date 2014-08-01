@@ -1242,6 +1242,7 @@
         }
 
         options.breed = 'conference';
+        options.type = ATT.CallTypes.OUTGOING;
         conference = session.createCall(options);
 
         conference.on('connected', function (data) {
