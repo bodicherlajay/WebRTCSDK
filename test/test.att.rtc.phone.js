@@ -1467,7 +1467,6 @@ describe('Phone', function () {
 
           });
 
-
         });
       });
 
@@ -2237,6 +2236,151 @@ describe('Phone', function () {
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('12001')
             })).to.equal(true);
+          });
+        });
+      });
+
+      describe('[US272608] rejectConference', function () {
+
+        var onSpy,
+          rejectStub,
+          onConfDisconnectedHandlerSpy;
+
+        beforeEach(function () {
+          session.setId('sessionId');
+
+          createEventEmitterStub.restore();
+
+          emitterConference = ATT.private.factories.createEventEmitter();
+
+          createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+            return emitterConference;
+          });
+
+          callConstructorStub.restore();
+
+          conference = new ATT.rtc.Call({
+            breed: 'conference',
+            peer: '1234567',
+            type: 'abc',
+            mediaType: 'video'
+          });
+
+          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+            return conference;
+          });
+
+          onSpy = sinon.spy(conference, 'on');
+          rejectStub = sinon.stub(conference, 'reject', function () {});
+
+          session.currentCall = conference;
+
+          onConfDisconnectedHandlerSpy = sinon.spy();
+          phone.on('conference-disconnected', onConfDisconnectedHandlerSpy);
+        });
+
+        afterEach(function () {
+          onSpy.restore();
+          rejectStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.rejectConference).to.be.a('function');
+        });
+
+        it('should register for event `disconnected` from call', function () {
+          phone.rejectConference();
+
+          expect(onSpy.calledWith('disconnected')).to.equal(true);
+        });
+
+        it('should invoke Call.reject', function () {
+          phone.rejectConference();
+
+          expect(rejectStub.called).to.equal(true);
+        });
+
+        describe('rejectConference Events', function () {
+
+          beforeEach(function () {
+            phone.rejectConference();
+          });
+
+          describe('disconnected', function () {
+
+            it('should publish `conference-disconnected` when call published `disconnected`', function (done) {
+              emitterConference.publish('disconnected', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(onConfDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 10);
+            });
+
+          });
+        });
+
+        describe('Error Handling', function () {
+
+          it('[22000] should be published with `error` event when there is an uncaught exception', function (done) {
+            rejectStub.restore();
+
+            rejectStub = sinon.stub(conference, 'reject', function () {
+              throw error;
+            });
+
+            phone.rejectConference();
+
+            setTimeout(function () {
+              try {
+                expect(ATT.errorDictionary.getSDKError('22000')).to.be.an('object');
+                expect(onErrorHandlerSpy.called).to.equal(true);
+                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('22000');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+
+          it('[22001] should be published with `error` event if the user is not logged in', function (done) {
+            session.setId(null);
+
+            phone.rejectConference();
+
+            setTimeout(function () {
+              try {
+                expect(ATT.errorDictionary.getSDKError('22001')).to.be.an('object');
+                expect(onErrorHandlerSpy.called).to.equal(true);
+                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('22001');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+
+          });
+
+          it('[22002] should be published with `error` event if there is no incoming conference invite', function (done) {
+            session.currentCall = null;
+
+            phone.rejectConference();
+
+            setTimeout(function () {
+              try {
+                expect(ATT.errorDictionary.getSDKError('22002')).to.be.an('object');
+                expect(onErrorHandlerSpy.called).to.equal(true);
+                expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('22002');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+
           });
         });
       });

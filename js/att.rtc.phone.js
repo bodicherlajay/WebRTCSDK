@@ -985,7 +985,7 @@
     * @memberOf Phone
     * @instance
 
-    * @fires Phone#call-rejected
+    * @fires Phone#call-disconnected
     * @fires Phone#error
 
     * @example
@@ -1017,6 +1017,78 @@
       }
     }
 
+    /**
+     * @summary
+     * Reject current incoming conference invite.
+     * @desc
+     *
+     *  ** Error Codes **
+     *
+     *  - 22000 - Internal error occurred
+     *  - 22001 - User is not logged in
+     *  - 22002 - No conference invite
+     *
+     * @memberOf Phone
+     * @instance
+
+     * @fires Phone#conference-disconnected
+     * @fires Phone#error
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.reject();
+     */
+    function rejectConference() {
+
+      try {
+
+        if (null === session || null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('22001');
+        }
+        if (null === session.currentCall) {
+          throw ATT.errorDictionary.getSDKError('22002');
+        }
+
+        try {
+          logger.logDebug('Phone.rejectConference');
+
+          var conference = session.currentCall;
+
+          conference.on('disconnected', function (data) {
+            /**
+             * Conference disconnected event.
+             * @desc Rejected the conference invitation.
+             * @event Phone#conference-disconnected
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('conference-disconnected', data);
+          });
+
+          conference.reject();
+
+        } catch (err) {
+          logger.logError(err);
+
+          throw ATT.errorDictionary.getSDKError('22000');
+        }
+
+      } catch (err) {
+        logger.logError(err);
+
+        /**
+         * Call Error event.
+         * @desc Indicates an error condition during a call's flow
+         *
+         * @event Phone#error
+         * @type {object}
+         * @property {Object} error - error detail
+         */
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
     /**
      * @summary Put the current call on hold
      * @desc
@@ -1349,34 +1421,34 @@
     // ===================
     // Call interface
     // ===================
-    this.on = on.bind(this);
-    this.getSession = getSession.bind(this);
-    this.login = login.bind(this);
-    this.logout = logout.bind(this);
-    this.dial = dial.bind(this);
-    this.answer = answer.bind(this);
-    this.mute = mute.bind(this);
-    this.unmute = unmute.bind(this);
-    this.getMediaType = getMediaType.bind(this);
-    this.hangup = hangup.bind(this);
-    this.hold = hold.bind(this);
-    this.resume = resume.bind(this);
-    this.cancel = cancel.bind(this);
-    this.reject = reject.bind(this);
-    this.updateE911Id = updateE911Id.bind(this);
+    this.on = on;
+    this.getSession = getSession;
+    this.login = login;
+    this.logout = logout;
+    this.dial = dial;
+    this.answer = answer;
+    this.mute = mute;
+    this.unmute = unmute;
+    this.getMediaType = getMediaType;
+    this.hangup = hangup;
+    this.hold = hold;
+    this.resume = resume;
+    this.cancel = cancel;
+    this.reject = reject;
+    this.updateE911Id = updateE911Id;
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
 
     // ===================
     // Conference interface
     // ===================
-    this.startConference = startConference.bind(this);
-    this.endConference = endConference.bind(this);
-    this.joinConference = joinConference.bind(this);
-    this.addParticipant = addParticipant.bind(this);
-    this.getParticipants = getParticipants.bind(this);
+    this.startConference = startConference;
+    this.endConference = endConference;
+    this.joinConference = joinConference;
+    this.rejectConference = rejectConference;
+    this.addParticipant = addParticipant;
+    this.getParticipants = getParticipants;
   }
-
 
   if (undefined === ATT.private) {
     throw new Error('Error exporting ATT.private.Phone.');

@@ -616,6 +616,30 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "rejectConference",
+      ErrorCode: "22000",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "rejectConference",
+      ErrorCode: "22001",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking reject conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "rejectConference",
+      ErrorCode: "22002",
+      ErrorMessage: "No conference invite",
+      Cause: "Invalid operation",
+      Resolution: "Cannot reject conference before receiving an invite"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "getParticipants",
       ErrorCode: "21000",
       ErrorMessage: "Conference not initiated",
