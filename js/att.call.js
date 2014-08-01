@@ -195,6 +195,8 @@
      * @param {Object} The call config
     */
     function connect(connectOpts) {
+      var pcOptions;
+
       try {
 
         if (undefined !== connectOpts) {
@@ -273,36 +275,38 @@
         }
 
         if ('conference' === this.breed()) {
-          if (ATT.CallTypes.INCOMING === this.type()) {
 
-            factories.createPeerConnection({
+          pcOptions = {
+            mediaType: mediaType,
+            localStream: localStream,
+            onSuccess: function (localSdp) {
 
-              mediaType: thisCall.mediaType(),
-              localStream: thisCall.localStream(),
-              remoteSdp: thisCall.remoteSdp(),
-              onSuccess: function (localSdp) {
+//              thisCall.setLocalSdp(localSdp);
 
-                thisCall.setLocalSdp(localSdp);
+              rtcManager.connectConference({
+//                localSdp: thisCall.localSdp(),
+//                onSuccess: function (state) {
+//                  thisCall.setState('connecting');
+//                },
+//                onError: function (error) {
+//                  emitter.publish('error', {
+//                    error: error
+//                  });
+//                }
+              });
+            },
+            onError: function(error) {
+//              emitter.publish('error', {
+//                error: error
+//            });
+            }
+          };
 
-                rtcManager.connectConference({
-                  localSdp: thisCall.localSdp(),
-                  onSuccess: function (state) {
-                    thisCall.setState('connecting');
-                  },
-                  onError: function (error) {
-                    emitter.publish('error', {
-                      error: error
-                    });
-                  }
-                });
-              },
-              onError: function (error) {
-                emitter.publish('error', {
-                  error: error
-                });
-              }
-            });
+          if(ATT.CallTypes.INCOMING === type) {
+            pcOptions.remoteSdp = remoteSdp;
           }
+
+          factories.createPeerConnection(pcOptions);
         }
 
       } catch (err) {
