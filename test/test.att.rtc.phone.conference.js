@@ -142,11 +142,14 @@ describe('Phone [Conference]', function () {
           done();
         }, 100);
       });
-      it('[18004] should publish error if there\'s an uncaught exception', function (done) {
 
-        var  getIdStub = sinon.stub(session, 'getId', function () {
-          throw new Error('bla');
-        });
+      it('[18005] should publish error if there\'s an uncaught exception', function (done) {
+
+        var bkpOutgoing = ATT.CallTypes;
+
+        // break something internal
+        ATT.CallTypes = 'Bogus';
+
         phone.startConference({
           localMedia : {},
           remoteMedia : {},
@@ -154,11 +157,12 @@ describe('Phone [Conference]', function () {
         });
 
         setTimeout(function () {
-          expect(onErrorSpy.called).to.equal(true);
+          expect(onErrorSpy.calledOnce).to.equal(true);
           expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18004');
-          getIdStub.restore();
+          // DON'T forget to restore it :)
+          ATT.CallTypes = bkpOutgoing;
           done();
-        }, 100);
+        }, 300);
       });
 
       it('should publish `conference:connecting` immediately');
@@ -271,7 +275,7 @@ describe('Phone [Conference]', function () {
             expect(addStreamStub.calledWith(stream)).to.equal(true);
             addStreamStub.restore();
             done();
-          }, 200)
+          }, 200);
         });
 
         it('should execute `conference.connect`', function (done) {

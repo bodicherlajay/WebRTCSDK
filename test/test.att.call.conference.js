@@ -295,6 +295,7 @@ describe('Call [Conference]', function () {
           expect(createPeerConnectionStub.getCall(0).args[0].stream).to.equal(outgoingVideoConference.localStream());
           expect(createPeerConnectionStub.getCall(0).args[0].onSuccess).to.be.a('function');
           expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
+          expect(createPeerConnectionStub.getCall(0).args[0].onRemoteStream).to.be.a('function');
 
           createPeerConnectionStub.restore();
         });
@@ -454,6 +455,7 @@ describe('Call [Conference]', function () {
           expect(createPeerConnectionStub.getCall(0).args[0].remoteSdp).to.equal(incomingConf.remoteSdp());
           expect(createPeerConnectionStub.getCall(0).args[0].onSuccess).to.be.a('function');
           expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
+          expect(createPeerConnectionStub.getCall(0).args[0].onRemoteStream).to.be.a('function');
 
           createPeerConnectionStub.restore();
         });

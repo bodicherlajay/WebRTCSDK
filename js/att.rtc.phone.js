@@ -1235,7 +1235,7 @@
           return;
         }
         if ((undefined === options.mediaType)
-          || ('audio' !== options.mediaType
+            || ('audio' !== options.mediaType
             && 'video' !== options.mediaType)) {
           publishError('18003');
           return;
@@ -1265,7 +1265,7 @@
           }
         });
       } catch (err) {
-        publishError('18004', err);
+        publishError('18005', err);
       }
 
     }

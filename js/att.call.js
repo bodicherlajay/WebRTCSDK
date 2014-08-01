@@ -312,10 +312,13 @@
                 }
               });
             },
-            onError: function(error) {
+            onError: function (error) {
               emitter.publish('error', {
                 error: error
-            });
+              });
+            },
+            onRemoteStream : function () {
+
             }
           };
 
