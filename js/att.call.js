@@ -352,12 +352,12 @@
       setState('disconnecting');
 
       if (null === remoteSdp) {
-        logger.logInfo('Canceling call ...');
+        logger.logInfo('Canceling...');
         rtcManager.cancelCall({
           sessionInfo: sessionInfo,
           callId: id,
           success: function () {
-            logger.logInfo('Call canceled successfully');
+            logger.logInfo('Canceled successfully!');
             rtcManager.resetPeerConnection();
           },
           onError : function (error) {
@@ -365,10 +365,11 @@
           }
         });
       } else if (null !== id && null !== remoteSdp) {
-        logger.logInfo('Disconnecting call');
+        logger.logInfo('Disconnecting...');
         rtcManager.disconnectCall({
           sessionInfo: sessionInfo,
           callId: id,
+          breed: thisCall.breed(),
           onError: function (error) {
             emitter.publish('error', {
               error: error

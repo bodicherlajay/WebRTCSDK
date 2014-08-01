@@ -923,12 +923,13 @@ describe('Call', function () {
         it('should call rtcManager.disconnectCall', function () {
           var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
           // for this test we need that call to have a valid remoteSdp, otherwise
-          // it will call `rtcManager.cancellCall`
+          // it will call `rtcManager.cancelCall`
           outgoingCall.setRemoteSdp('abcdefg');
           outgoingCall.setId('1234');
           outgoingCall.disconnect();
 
           expect(disconnectCallStub.called).to.equal(true);
+          expect(disconnectCallStub.getCall(0).args[0].breed).to.be.a('string');
 
           disconnectCallStub.restore();
         });

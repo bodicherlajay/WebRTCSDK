@@ -36,6 +36,7 @@
        */
       emitter.publish('call-incoming', data);
     });
+
 	  session.on('call-disconnected', function (data) {
       /**
        * Call disconnected event.
