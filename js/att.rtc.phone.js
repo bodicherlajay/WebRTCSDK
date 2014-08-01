@@ -49,7 +49,22 @@
        * @property {String} codec - The codec of the call
        * @property {Date} timestamp - Event fire time.
        */
-      emitter.publish('call-disconnected', data);
+      if ('call' === data.breed) {
+        emitter.publish('call-disconnected', data);
+      } else {
+        /**
+         * Conference disconnected event.
+         * @desc Indicates a conference has been disconnected
+         *
+         * @event Phone#conference-disconnected
+         * @type {object}
+         * @property {String} from - The ID of the conference.
+         * @property {String} mediaType - The type of conference.
+         * @property {String} codec - The codec of the conference
+         * @property {Date} timestamp - Event fire time.
+         */
+        emitter.publish('conference-disconnected', data);
+      }
       session.deleteCurrentCall();
     });
 
@@ -122,6 +137,7 @@
         && 'participant-pending' !== event
         && 'call-disconnecting' !== event
         && 'call-disconnected' !== event
+        && 'conference-disconnected' !== event
         && 'call-canceled' !== event
         && 'call-rejected' !== event
         && 'call-connected' !== event

@@ -346,14 +346,14 @@ if (!ATT) {
           }, DEFAULTS.headers)
         },
         /**
-        * End Call via RTCEndpoint
+        * End Call/Conference via RTCEndpoint
         * @memberof WebRTC.APIConfigs
         */
         endCall: {
           method: 'delete',
           formatters: {
             url: function (params) {
-              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + params[1] + params[2];
             },
             headers: {
               'Authorization': function (param) {

@@ -1253,6 +1253,7 @@ describe('Session', function () {
       beforeEach(function () {
         callInfo = {
           id: '123',
+          type: 'calls',
           from: '1234',
           mediaType: 'video',
           remoteSdp: 'abc'
@@ -1286,7 +1287,7 @@ describe('Session', function () {
         session.on('call-disconnected', callDisconnectedHandlerSpy);
         session.on('error', function (data) {
           console.error(JSON.stringify(data));
-        })
+        });
 
         emitterEM.publish('call-disconnected', callInfo);
       });

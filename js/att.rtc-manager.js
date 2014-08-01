@@ -398,7 +398,8 @@
 
     // Reused for call & conference
     function disconnectCall (options) {
-      var sessionInfo;
+      var sessionInfo,
+        uri;
 
       if (undefined === options) {
         throw new Error('No options defined.');
@@ -421,11 +422,13 @@
       }
 
       sessionInfo = options.sessionInfo;
+      uri = (options.breed === 'call' ? '/calls/' : '/conferences/');
 
       resourceManager.doOperation('endCall', {
         params: {
           url: [
             sessionInfo.sessionId,
+            uri,
             options.callId
           ],
           headers: {
