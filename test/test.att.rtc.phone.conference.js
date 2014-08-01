@@ -10,18 +10,35 @@ describe('Phone [Conference]', function () {
     createPeerConnectionStub,
     restClientStub,
     userMediaService,
-    logger;
+    logger,
+    phone,
+    session,
+    sessionStub;
+
+  beforeEach(function () {
+
+    Phone = ATT.private.Phone;
+    Call = ATT.rtc.Call;
+    Session = ATT.rtc.Session;
+
+    session = new Session();
+    sessionStub = sinon.stub(ATT.rtc, 'Session', function () {
+      return session;
+    });
+
+    phone = new ATT.private.Phone();
+
+  });
+  afterEach(function () {
+    sessionStub.restore();
+  });
 
   describe('Conference Methods', function () {
-    var phone;
 
     beforeEach(function () {
       logger = ATT.logManager.getInstance().addLoggerForModule('Phone');
       userMediaService = ATT.UserMediaService;
       restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
-      Phone = ATT.private.Phone;
-      Call = ATT.rtc.Call;
-      Session = ATT.rtc.Session;
       createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
         return {};
       });
@@ -34,22 +51,15 @@ describe('Phone [Conference]', function () {
 
     describe('[US225736] startConference', function () {
       var onErrorSpy,
-        session,
-        sessionStub,
         conference,
         createCallStub,
         userMedia,
-        getUserMediaStub;
+        getUserMediaStub,
+        conferenceOnStub;
 
       beforeEach(function () {
         onErrorSpy = sinon.spy();
 
-        session = new Session();
-        sessionStub = sinon.stub(ATT.rtc, 'Session', function () {
-          return session;
-        });
-
-        phone = ATT.rtc.Phone.getPhone();
         phone.on('error', onErrorSpy);
 
         conference = new Call({
@@ -66,7 +76,6 @@ describe('Phone [Conference]', function () {
 
       afterEach(function () {
         createCallStub.restore();
-        sessionStub.restore();
       });
 
       it('should exist', function () {
@@ -170,6 +179,19 @@ describe('Phone [Conference]', function () {
 
       });
 
+      it('it should subscribe to the `connected` event on the conference', function () {
+        var phone2;
+
+        conferenceOnStub = sinon.stub(conference, 'on');
+        phone2 = new Phone();
+
+        phone2.startConference({
+          localMedia : {},
+          remoteMedia : {},
+          mediaType : 'video'
+        });
+        expect(conferenceOnStub.calledWith('connected')).to.equal(true);
+      });
       it('should get the local userMedia', function () {
         var phone2;
 
@@ -297,8 +319,7 @@ describe('Phone [Conference]', function () {
     });
 
     describe('endConference', function () {
-      var session,
-        eventData,
+      var eventData,
         error,
         errorData,
         emitterConf,
@@ -312,10 +333,6 @@ describe('Phone [Conference]', function () {
         conferenceDisconnectingHandlerSpy;
 
       beforeEach(function () {
-        session = new Session();
-        sessionStub = sinon.stub(ATT.rtc, 'Session', function () {
-          return session;
-        });
 
         eventData = {
           abc: 'abc'
@@ -363,7 +380,6 @@ describe('Phone [Conference]', function () {
 
       afterEach(function () {
         createCallStub.restore();
-        sessionStub.restore();
         onSpy.restore();
       });
 
@@ -396,6 +412,56 @@ describe('Phone [Conference]', function () {
             done(e);
           }
         }, 100);
+      });
+    });
+
+    describe('Events', function () {
+      var outgoingAudioConference,
+        createCallStub;
+
+      beforeEach(function () {
+        outgoingAudioConference = new Call({
+          breed: 'conference',
+          mediaType: 'audio',
+          type: ATT.CallTypes.OUTGOING,
+          sessionInfo : {sessionId : '12345', token : '123'}
+        });
+
+        createCallStub = sinon.stub(session, 'createCall', function () {
+          return outgoingAudioConference;
+        });
+      });
+
+      afterEach(function () {
+        createCallStub.restore();
+      });
+
+      it('should publish `conference-connected` when conference publishes `connected`', function (done) {
+        var connectedSpy = sinon.spy(),
+          getUserMediaStub;
+        userMediaService = ATT.UserMediaService;
+
+        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+        phone.on('conference-connected', connectedSpy);
+        phone.startConference({
+          localMedia : {},
+          remoteMedia : {},
+          mediaType : 'video'
+        });
+
+        outgoingAudioConference.setState('connected');
+
+        setTimeout(function () {
+          try {
+            expect(connectedSpy.called).to.equal(true);
+            expect(connectedSpy.calledOnce).to.equal(true);
+            getUserMediaStub.restore();
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 200);
+
       });
     });
   });

@@ -1244,6 +1244,10 @@
         options.breed = 'conference';
         conference = session.createCall(options);
 
+        conference.on('connected', function (data) {
+          emitter.publish('conference-connected', data);
+        });
+
         userMediaSvc.getUserMedia({
           mediaType: options.mediaType,
           localMedia: options.localMedia,
