@@ -1853,7 +1853,7 @@ describe('Call', function () {
         setStateSpy.restore();
       });
 
-      describe('Conference', function () {
+      describe('call-connected', function () {
 
         var eventData,
           playStreamSpy;

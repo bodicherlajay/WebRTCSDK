@@ -125,6 +125,7 @@
         && 'call-canceled' !== event
         && 'call-rejected' !== event
         && 'call-connected' !== event
+        && 'conference-connected' !== event
         && 'call-muted' !== event
         && 'call-unmuted' !== event
         && 'call-held' !== event
@@ -610,6 +611,9 @@
 
       conference.on('connecting', function(data) {
         emitter.publish('conference-connecting', data);
+      });
+      conference.on('connected', function (data) {
+        emitter.publish('conference-connected', data);
       });
 
       userMediaSvc.getUserMedia({

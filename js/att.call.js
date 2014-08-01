@@ -218,6 +218,7 @@
         rtcManager.on('media-mod-terminations', onMediaModTerminations);
 
         rtcManager.on('call-connected', function (data) {
+
           thisCall.setState('connected');
 
           if ('call' === thisCall.breed()) {

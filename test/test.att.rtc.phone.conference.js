@@ -208,71 +208,90 @@ describe('Phone [Conference]', function () {
           getUserMediaStub.restore();
           loggerStub.restore();
         });
+      });
 
+      describe('getUserMedia: onUserMedia', function () {
+        var stream, getUserMediaStub,
+          phone2,
+          onUserMediaDummy,
+          onUserMediaSpy;
+        beforeEach(function () {
+          stream = {abc : '123'};
 
-        describe('getUserMedia: onUserMedia', function () {
-          var stream, getUserMediaStub, phone2;
-          beforeEach(function () {
-            stream = {abc : '123'};
+          onUserMediaDummy = function () {};
+          onUserMediaSpy = sinon.spy(onUserMediaDummy);
 
-            getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
-              options.onUserMedia(stream);
-            });
-            phone2 = new Phone();
-          });
-          afterEach(function () {
-            getUserMediaStub.restore();
-          });
-          it('should add the local stream to the current conference', function () {
-            var  addStreamStub = sinon.stub(conference, 'addStream');
-            phone2.startConference({
-              localMedia : {},
-              remoteMedia : {},
-              mediaType : 'video'
-            });
-            expect(addStreamStub.calledWith(stream)).to.equal(true);
-            addStreamStub.restore();
-          });
-
-          it('should execute `conference.connect`', function () {
-            var   connectStub = sinon.stub(conference, 'connect');
-            phone2.startConference({
-              localMedia : {},
-              remoteMedia : {},
-              mediaType : 'video'
-            });
-            //TODO need to check if we can test if a line of code is excuted inside a function
-            expect(connectStub.called).to.equal(true);
-            connectStub.restore();
-          });
-
-        });
-
-        describe('[18004] getUserMedia: onMediaError', function () {
-          var getUserMediaStub, phone3;
-          beforeEach(function () {
-
-            getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
-              options.onUserMediaError();
-            });
-            phone3 = new Phone();
-          });
-          afterEach(function () {
-            getUserMediaStub.restore();
-          });
-          it('should publish error', function (done) {
-            phone3.on('error', onErrorSpy);
-            phone3.startConference({
-              localMedia : {},
-              remoteMedia : {},
-              mediaType : 'video'
-            });
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
             setTimeout(function () {
-              expect(onErrorSpy.called).to.equal(true);
-              expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18004');
-              done();
+              onUserMediaSpy = sinon.spy(options, 'onUserMedia');
+              options.onUserMedia(stream);
+              onUserMediaSpy.restore();
             }, 100);
           });
+          phone2 = new Phone();
+        });
+        afterEach(function () {
+          getUserMediaStub.restore();
+        });
+        it('should add the local stream to the current conference', function (done) {
+          var  addStreamStub = sinon.stub(conference, 'addStream');
+          phone2.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+
+          setTimeout(function () {
+            expect(addStreamStub.calledWith(stream)).to.equal(true);
+            addStreamStub.restore();
+            done();
+          }, 200)
+        });
+
+        it('should execute `conference.connect`', function (done) {
+          var   connectStub = sinon.stub(conference, 'connect');
+          phone2.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+
+          setTimeout(function () {
+            expect(onUserMediaSpy.called).to.equal(true);
+            expect(connectStub.called).to.equal(true);
+            expect(onUserMediaSpy.calledBefore(connectStub)).to.equal(true);
+            expect(connectStub.calledAfter(onUserMediaSpy)).to.equal(true);
+            connectStub.restore();
+            done();
+          }, 200);
+        });
+
+      });
+
+      describe('[18004] getUserMedia: onMediaError', function () {
+        var getUserMediaStub, phone3;
+        beforeEach(function () {
+
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+            options.onUserMediaError();
+          });
+          phone3 = new Phone();
+        });
+        afterEach(function () {
+          getUserMediaStub.restore();
+        });
+        it('should publish error', function (done) {
+          phone3.on('error', onErrorSpy);
+          phone3.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+          setTimeout(function () {
+            expect(onErrorSpy.called).to.equal(true);
+            expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18004');
+            done();
+          }, 100);
         });
       });
     });
