@@ -292,7 +292,7 @@
 
           pcOptions = {
             mediaType: mediaType,
-            localStream: localStream,
+            stream: localStream,
             onSuccess: function (localSdp) {
 
               rtcManager.connectConference({
@@ -312,10 +312,13 @@
                 }
               });
             },
-            onError: function(error) {
+            onError: function (error) {
               emitter.publish('error', {
                 error: error
-            });
+              });
+            },
+            onRemoteStream : function () {
+
             }
           };
 

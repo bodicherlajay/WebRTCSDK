@@ -555,6 +555,14 @@
       JSMethod: "startConference",
       ErrorCode: "18004",
       ErrorMessage: "Internal error occurred",
+      Cause: "onUserMediaError",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "startConference",
+      ErrorCode: "18005",
+      ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
     },

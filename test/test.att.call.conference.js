@@ -292,9 +292,10 @@ describe('Call [Conference]', function () {
           console.log(JSON.stringify(createPeerConnectionStub.getCall(0).args[0]));
           expect(createPeerConnectionStub.calledOnce).to.equal(true);
           expect(createPeerConnectionStub.getCall(0).args[0].mediaType).to.equal(outgoingVideoConference.mediaType());
-          expect(createPeerConnectionStub.getCall(0).args[0].localStream).to.equal(outgoingVideoConference.localStream());
+          expect(createPeerConnectionStub.getCall(0).args[0].stream).to.equal(outgoingVideoConference.localStream());
           expect(createPeerConnectionStub.getCall(0).args[0].onSuccess).to.be.a('function');
           expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
+          expect(createPeerConnectionStub.getCall(0).args[0].onRemoteStream).to.be.a('function');
 
           createPeerConnectionStub.restore();
         });
@@ -450,10 +451,11 @@ describe('Call [Conference]', function () {
           expect(createPeerConnectionStub.called).to.equal(true);
           expect(createPeerConnectionStub.getCall(0).args[0]).to.be.an('object');
           expect(createPeerConnectionStub.getCall(0).args[0].mediaType).to.equal(incomingConf.mediaType());
-          expect(createPeerConnectionStub.getCall(0).args[0].localStream).to.equal(incomingConf.localStream());
+          expect(createPeerConnectionStub.getCall(0).args[0].stream).to.equal(incomingConf.localStream());
           expect(createPeerConnectionStub.getCall(0).args[0].remoteSdp).to.equal(incomingConf.remoteSdp());
           expect(createPeerConnectionStub.getCall(0).args[0].onSuccess).to.be.a('function');
           expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
+          expect(createPeerConnectionStub.getCall(0).args[0].onRemoteStream).to.be.a('function');
 
           createPeerConnectionStub.restore();
         });

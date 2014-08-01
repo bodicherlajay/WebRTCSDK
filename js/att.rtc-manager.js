@@ -333,36 +333,41 @@
     }
 
     function connectConference(options) {
-      var responseData, config;
-
-        config = {
+      var responseData, joinConfig, createConfig;
+      joinConfig = {
         data: {
           conferenceModifications: {
             sdp: options.localSdp
           }
         },
         success: function (response) {
-          if (response.getResponseHeader('x-conference-action') === 'call-answer') {
-            responseData = {
-              state: response.getResponseHeader('x-conference-action')
-            };
-          } else {
-            responseData = {
-              id: response.getResponseHeader('Location').split('/')[6],
-              state: response.getResponseHeader('x-state')
-            };
-          }
-
+          responseData = {
+            state: response.getResponseHeader('x-conference-action')
+          };
           options.onSuccess(responseData);
         },
-        error: function (error) {
-          options.onError(error);
-        }
+        error: options.onError
       };
+      createConfig = {
+        data: {
+          conference: {
+            sdp: options.localSdp
+          }
+        },
+        success: function (response) {
+          responseData = {
+            id: response.getResponseHeader('Location').split('/')[6],
+            state: response.getResponseHeader('x-state')
+          };
+          options.onSuccess(responseData);
+        },
+        error: options.onError
+      };
+
       if (undefined !== options.conferenceId) {
-        resourceManager.doOperation('acceptConference', config);
+        resourceManager.doOperation('acceptConference', joinConfig);
       } else {
-        resourceManager.doOperation('createConference', config);
+        resourceManager.doOperation('createConference', createConfig);
       }
     }
 

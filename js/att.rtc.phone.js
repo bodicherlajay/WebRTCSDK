@@ -1219,10 +1219,13 @@
     }
 
     function startConference(options) {
+
+      logger.logInfo('startConference');
+
       var conference;
       try {
         if (undefined === options
-          || 0 === Object.keys(options).length) {
+            || 0 === Object.keys(options).length) {
           publishError('18000');
           return;
         }
@@ -1235,24 +1238,31 @@
           return;
         }
         if ((undefined === options.mediaType)
-          || ('audio' !== options.mediaType
+            || ('audio' !== options.mediaType
             && 'video' !== options.mediaType)) {
           publishError('18003');
           return;
         }
 
         options.breed = 'conference';
+        options.type = ATT.CallTypes.OUTGOING;
         conference = session.createCall(options);
+
+        conference.on('connected', function (data) {
+          emitter.publish('conference-connected', data);
+        });
 
         userMediaSvc.getUserMedia({
           mediaType: options.mediaType,
           localMedia: options.localMedia,
           remoteMedia: options.remoteMedia,
           onUserMedia: function (userMedia) {
-            conference.addStream(userMedia);
+            logger.logInfo('onUserMedia');
+            conference.addStream(userMedia.localStream);
             conference.connect();
           },
           onMediaEstablished: function () {
+            logger.logInfo('onMediaEstablished');
             logger.logInfo('Media Established');
           },
           onUserMediaError: function (error) {
@@ -1260,7 +1270,7 @@
           }
         });
       } catch (err) {
-        publishError('18004', err);
+        publishError('18005', err);
       }
 
     }
