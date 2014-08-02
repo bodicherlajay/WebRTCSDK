@@ -25,7 +25,7 @@ describe('PeerConnection', function () {
     createOptionsIncoming = {
       stream : {},
       mediaType: 'video',
-      remoteSDP : '123',
+      remoteSdp : '123',
       onSuccess : function () {},
       onRemoteStream : function () {},
       onError : function () {}
@@ -308,6 +308,17 @@ describe('PeerConnection', function () {
           createAnswerStub.restore();
         });
 
+        it.only('should set the `pc.remoteSdp` if we have a remoteSdp', function () {
+          var setRemoteDescriptionSpy = sinon.spy(rtcPC, 'setRemoteDescription');
+
+          factories.createPeerConnection(createOptionsIncoming);
+
+          console.log(createOptionsIncoming.remoteSdp);
+          expect(setRemoteDescriptionSpy.calledWith(createOptionsIncoming.remoteSdp)).to.equal(true);
+
+          setRemoteDescriptionSpy.restore();
+        });
+
         it('should call `pc.createAnswer` if we have a remoteSdp', function () {
           var expectedConstraints = {};
 
@@ -480,13 +491,13 @@ describe('PeerConnection', function () {
         localSDP;
 
       it('should exist', function () {
-        expect(peerConnection.getLocalSDP).to.be.a('function');
+        expect(peerConnection.getLocalDescription).to.be.a('function');
       });
 
       it('should return the `localDescription` of its RTCPeerConnection`', function () {
         localSDP = 'ABCD';
         rtcPC.localDescription = localSDP;
-        expect(peerConnection.getLocalSDP()).to.equal(localSDP);
+        expect(peerConnection.getLocalDescription()).to.equal(localSDP);
       });
     });
   });

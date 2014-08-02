@@ -48,7 +48,10 @@ describe('RTCManager [Conference]', function () {
         onErrorSpy = sinon.spy();
 
         connectConfOpts = {
-          localSdp: localSdp,
+          description: {
+            sdp: localSdp,
+            type: 'offer'
+          },
           sessionInfo : {
             sessionId: '123',
             token : 'token'
@@ -79,7 +82,7 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
         expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(params.url[0]);
         expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.sessionInfo.token);
-        expect(doOperationStub.getCall(0).args[1].data.conference.sdp).to.equal(localSdp);
+        expect(doOperationStub.getCall(0).args[1].data.conference.sdp).to.equal(connectConfOpts.description.sdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
         expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
         doOperationStub.restore();

@@ -309,7 +309,7 @@ describe('Call [Conference]', function () {
 
             localSDP = 'ABCD';
             peerConnection = {
-              getLocalSDP: function () {
+              getLocalDescription: function () {
                 return localSDP;
               }
             };
@@ -339,7 +339,7 @@ describe('Call [Conference]', function () {
               expect(connectConferenceStub.calledAfter(pcOnSuccessSpy)).to.equal(true);
               expect(connectConferenceStub.getCall(0).args[0].sessionId).not.to.be.an('undefined');
               expect(connectConferenceStub.getCall(0).args[0].token).not.to.be.an('undefined');
-              expect(connectConferenceStub.getCall(0).args[0].localSdp).to.equal(outgoingVideoConference.localSdp());
+              expect(connectConferenceStub.getCall(0).args[0].description).to.equal(outgoingVideoConference.localSdp());
               expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
               expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
               connectConferenceStub.restore();
@@ -479,7 +479,7 @@ describe('Call [Conference]', function () {
               rtcPCStub = sinon.stub(window, 'RTCPeerConnection');
 
               peerConnection = {
-                getLocalSDP: function () {
+                getLocalDescription: function () {
                   return localSdp;
                 }
               };
@@ -498,7 +498,7 @@ describe('Call [Conference]', function () {
 
             it('should execute RTCManager.connectConference with localSdp', function (done) {
 
-              var getLocalSDPStub = sinon.stub(peerConnection, 'getLocalSDP', function () {
+              var getLocalSDPStub = sinon.stub(peerConnection, 'getLocalDescription', function () {
                 return localSdp;
               });
               connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
@@ -508,8 +508,8 @@ describe('Call [Conference]', function () {
               setTimeout(function () {
                 expect(connectConferenceStub.called).to.equal(true);
                 expect(connectConferenceStub.getCall(0).args[0]).to.be.an('object');
-                expect(connectConferenceStub.getCall(0).args[0].localSdp).to.not.equal(null);
-                expect(connectConferenceStub.getCall(0).args[0].localSdp).to.equal(incomingConf.localSdp());
+                expect(connectConferenceStub.getCall(0).args[0].description).to.not.equal(null);
+                expect(connectConferenceStub.getCall(0).args[0].description).to.equal(incomingConf.localSdp());
                 expect(connectConferenceStub.getCall(0).args[0].sessionInfo).to.equal(optionsIncomingConf.sessionInfo);
                 expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
                 expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
