@@ -108,6 +108,43 @@ describe('Call [Conference]', function () {
       setStateStub.restore();
     });
 
+    describe('remoteSdp', function () {
+      var createPeerConnctionStub,
+        peerConnection;
+
+      beforeEach(function () {
+        peerConnection = {
+          getRemoteDescription: function () { return; }
+        };
+        createPeerConnctionStub = sinon.stub(factories, 'createPeerConnection', function () {
+          return peerConnection;
+        });
+      });
+      afterEach(function () {
+        createPeerConnctionStub.restore();
+      });
+
+      it('should return the SDP given from `peerConnection`\s `remoteDescription`', function () {
+
+        var getRemoteDescriptionStub,
+          remoteDesc = {
+            sdp: '213',
+            type: 'abc'
+          };
+
+        getRemoteDescriptionStub = sinon.stub(peerConnection, 'getRemoteDescription', function () {
+          return remoteDesc;
+        });
+        // before connecting it should be null
+        expect(outgoingConference.remoteSdp()).to.equal(null);
+
+        outgoingConference.connect();
+        // afterConnecting, it should call peerConnection.getRemoteDescription
+        expect(outgoingConference.remoteSdp()).to.equal(remoteDesc.sdp);
+        expect(getRemoteDescriptionStub.called).to.equal(true);
+
+      });
+    });
     describe('addParticipant', function () {
 
       it('should exist', function () {

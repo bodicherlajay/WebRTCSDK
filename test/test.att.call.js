@@ -1195,6 +1195,24 @@ describe('Call', function () {
 
     });
 
+    describe('remoteSdp', function () {
+      it('should exist', function () {
+        expect(outgoingCall.remoteSdp).to.be.a('function');
+      });
+
+      it('should return the current `remoteSdp`', function () {
+        // before being connected
+        expect(outgoingCall.remoteSdp()).to.equal(null);
+
+        // after setting a new value
+        var newSDP = 'sdf';
+        outgoingCall.setRemoteSdp(newSDP);
+        expect(outgoingCall.remoteSdp()).to.equal(newSDP);
+
+      });
+
+    });
+
     describe('setRemoteSdp', function () {
 
       it('should exist', function () {

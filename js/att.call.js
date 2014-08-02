@@ -572,6 +572,16 @@
       return remoteMedia;
     };
     this.remoteSdp = function () {
+      var description;
+
+      if (breed === 'conference') {
+        if (undefined === peerConnection) {
+          return null;
+        }
+        description = peerConnection.getRemoteDescription();
+        return description.sdp;
+      }
+
       return remoteSdp;
     };
     this.localStream = function () {

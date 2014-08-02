@@ -469,7 +469,7 @@ describe('PeerConnection', function () {
       rtcPCStub.restore();
     });
 
-    describe.only('getRemoteDescription', function () {
+    describe('getRemoteDescription', function () {
       it('should exist', function () {
         expect(peerConnection.getRemoteDescription).to.be.a('function');
       });
