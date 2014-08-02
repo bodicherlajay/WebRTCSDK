@@ -308,7 +308,7 @@ describe('PeerConnection', function () {
           createAnswerStub.restore();
         });
 
-        it.only('should set the `pc.remoteSdp` if we have a remoteSdp', function () {
+        it('should set the `pc.remoteSdp` if we have a remoteSdp', function () {
           var setRemoteDescriptionSpy = sinon.spy(rtcPC, 'setRemoteDescription');
 
           factories.createPeerConnection(createOptionsIncoming);
