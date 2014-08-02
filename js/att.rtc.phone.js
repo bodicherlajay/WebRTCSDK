@@ -670,16 +670,29 @@
             timestamp: new Date()
           });
 
+          conference.on('error', function (data) {
+            /**
+             * Conference error event
+             * @desc An error occurred during conferencing
+             * @event Phone#error
+             * @type {object}
+             * @property {Date} timestamp - Event fire time
+             * @property {Object} data - Available error detail
+             */
+            emitter.publish('error', data);
+          });
+
           conference.on('connecting', function (data) {
             /**
              * Conference connecting event.
              * @desc Trying to connecting to a conference after accepting the invite.
              * @event Phone#conference-connecting
              * @type {object}
-             * @property {Date} timestamp - Event fire time.
+             * @property {Date} timestamp - Event fire time
              */
             emitter.publish('conference-connecting', data);
           });
+
           conference.on('connected', function (data) {
             /**
              * Conference connected event.
@@ -1254,6 +1267,7 @@
       logger.logInfo('startConference');
 
       var conference;
+
       try {
         if (undefined === options
             || 0 === Object.keys(options).length) {
@@ -1278,6 +1292,10 @@
         options.breed = 'conference';
         options.type = ATT.CallTypes.OUTGOING;
         conference = session.createCall(options);
+
+        conference.on('error', function (data) {
+          emitter.publish('error', data);
+        });
 
         conference.on('connected', function (data) {
           emitter.publish('conference-connected', data);
@@ -1366,19 +1384,6 @@
            * @property {Object} participants - Participants list
            */
           emitter.publish('participant-pending', data);
-        });
-
-        conference.on('error', function (error) {
-          /**
-           * Conference Error event.
-           * @desc Indicates an error condition during addParticipant operation
-           *
-           * @event Phone#error
-           * @type {object}
-           * @property {Date} timestamp - Event fire time
-           * @property {Object} data - Available Error detail
-           */
-          emitter.publish('error', error);
         });
 
         try {
