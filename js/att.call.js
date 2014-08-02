@@ -293,12 +293,12 @@
           pcOptions = {
             mediaType: mediaType,
             stream: localStream,
-            onSuccess: function (localSdp) {
+            onSuccess: function (description) {
 
               rtcManager.connectConference({
                 sessionId: sessionInfo.sessionId,
                 token: sessionInfo.token,
-                localSdp: localSdp,
+                description: description,
                 sessionInfo: sessionInfo,
                 onSuccess: function (responsedata) {
                   if (ATT.CallTypes.INCOMING === type) {
@@ -560,7 +560,7 @@
         return;
       }
 
-      return peerConnection.getLocalSDP();
+      return peerConnection.getLocalDescription();
     };
     this.localMedia = function () {
       return localMedia;

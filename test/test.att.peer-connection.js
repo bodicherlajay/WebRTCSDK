@@ -480,13 +480,13 @@ describe('PeerConnection', function () {
         localSDP;
 
       it('should exist', function () {
-        expect(peerConnection.getLocalSDP).to.be.a('function');
+        expect(peerConnection.getLocalDescription).to.be.a('function');
       });
 
       it('should return the `localDescription` of its RTCPeerConnection`', function () {
         localSDP = 'ABCD';
         rtcPC.localDescription = localSDP;
-        expect(peerConnection.getLocalSDP()).to.equal(localSDP);
+        expect(peerConnection.getLocalDescription()).to.equal(localSDP);
       });
     });
   });

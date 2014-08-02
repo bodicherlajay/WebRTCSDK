@@ -360,7 +360,7 @@
         params: params,
         data: {
           conference: {
-            sdp: options.localSdp
+            sdp: options.description.sdp
           }
         },
         success: function (response) {

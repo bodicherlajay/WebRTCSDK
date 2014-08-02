@@ -101,7 +101,7 @@
       }, { mandatory: mediaConstraint});
     }
     return {
-      getLocalSDP: function () {
+      getLocalDescription: function () {
         return pc.localDescription;
       },
       setLocalSDP: function (sdp) {
