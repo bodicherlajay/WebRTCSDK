@@ -403,9 +403,9 @@
       participant = options.participant;
 
       if (participant.indexOf('@') > 0) {
-        participant = 'sip:+' + participant
+        participant = 'sip:' + participant;
       } else {
-        participant = 'tel:+' + participant
+        participant = 'tel:+' + participant;
       }
 
       resourceManager.doOperation('addParticipant', {
