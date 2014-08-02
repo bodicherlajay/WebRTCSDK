@@ -1217,7 +1217,38 @@
         });
       }
     }
+    /**
+     * @summary
+     * start  a conference with a valid parameters.
+     * @desc start conference and create conference object
+     *
+     * **Error Codes**
+     *
+     *   - 18000 - Parameters missing
+     *   - 18001 - Invalid localmedia passed
+     *   - 18002 - Invalid remotemedia passed
+     *   - 18002 - Invalid mediatype passed
+     *   - 18002 - Failed to get usermedia
+     *   - 18002 - Internal error occurred
+     *
+     * @memberOf Phone
+     * @instance
+     * @param {Object} options
+     * @param {HTMLElement} options.localMedia
+     * @param {HTMLElement} options.remoteMedia
+     * @param {HTMLElement} options.mediaType
 
+     * @fires Phone#conference-connected
+     * @fires Phone#error
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.startConference({
+     mediaType: 'video',
+     localMedia: document.getElementById('localVideo'),
+     remoteMedia: document.getElementById('remoteVideo'),
+    });
+     */
     function startConference(options) {
 
       logger.logInfo('startConference');
