@@ -391,7 +391,7 @@
           sessionId: sessionInfo.sessionId,
           token: sessionInfo.token,
           onSuccess: function () {
-            logger.logInfo('Canceled successfully!');
+            logger.logInfo('Canceled successfully.');
 
             rtcManager.resetPeerConnection();
           },
@@ -412,11 +412,10 @@
           callId: id,
           breed: thisCall.breed(),
           onSuccess: function () {
-            logger.logInfo('Successfully hungup the current call');
+            logger.logInfo('Successfully disconnected.');
           },
           onError: function (error) {
             logger.logError(error);
-
             emitter.publish('error', {
               error: error
             });
