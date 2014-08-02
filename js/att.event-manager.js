@@ -43,6 +43,10 @@
 
       logger.logDebug('Consumed event from event channel', JSON.stringify(event));
 
+      // TODO: fix this mess
+      if (event.from.indexOf('conf-factory') > 0) {
+        event.type = 'conferences';
+      }
       switch (event.state) {
       case ATT.RTCCallEvents.INVITATION_RECEIVED:
         codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);

@@ -522,33 +522,33 @@
       JSObject: "ATT.rtc.Phone",
       JSMethod: "startConference",
       ErrorCode: "18000",
-      ErrorMessage: "TODO- options missing",
-      Cause: "TODO",
-      Resolution: "TODO"
+      ErrorMessage: "parameters missing",
+      Cause: "no parameter passed ",
+      Resolution: "Please pass paramters to startConference"
     },
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "startConference",
       ErrorCode: "18001",
-      ErrorMessage: "TODO- localmedia missing",
-      Cause: "TODO",
-      Resolution: "TODO"
+      ErrorMessage: "Invalid localmedia passed ",
+      Cause: "localmedia parameter missing",
+      Resolution: "please pass localmedia as a parameter for start conference"
     },
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "startConference",
       ErrorCode: "18002",
-      ErrorMessage: "TODO- remotemedia missing",
-      Cause: "TODO",
-      Resolution: "TODO"
+      ErrorMessage: "Invalid remotemedia passed ",
+      Cause: "remotemedia parameter missing",
+      Resolution: "please pass remotemedia as a parameter for start conference"
     },
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "startConference",
       ErrorCode: "18003",
-      ErrorMessage: "TODO- mediaType missing",
-      Cause: "TODO",
-      Resolution: "TODO"
+      ErrorMessage: "Invalid mediatype passed ",
+      Cause: "mediatype parameter missing",
+      Resolution: "please pass mediatype as a parameter for start conference"
     },
     {
       JSObject: "ATT.rtc.Phone",
