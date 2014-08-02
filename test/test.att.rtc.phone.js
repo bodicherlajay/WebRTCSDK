@@ -535,7 +535,8 @@ describe('Phone', function () {
             breed: 'call',
             mediaType: 'video',
             localMedia: localVideo,
-            remoteMedia: remoteVideo
+            remoteMedia: remoteVideo,
+            holdCurrentCall: true
           };
 
           onSpy = sinon.spy(call, 'on');

@@ -342,6 +342,7 @@
       mediaType: 'video',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
+      holdCurrentCall
     };
     @example
     // Start audio call with a NoTN/VTN User
@@ -351,6 +352,7 @@
       mediaType: 'audio',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
+      holdCurrentCall
     };
    */
     function dial(options) {
@@ -381,6 +383,22 @@
               && 'video' !== options.mediaType) {
             throw ATT.errorDictionary.getSDKError('4002');
           }
+        }
+
+        if (null !== session.backgroundCall) {
+            if (options.holdCurrentCall === true) {
+                throw ATT.errorDictionary.getSDKError('4010');
+            }
+        }
+
+        if (null !== session.currentCall) {
+            if (options.holdCurrentCall === true) {
+                session.currentCall.hold();
+            } else {
+                session.currentCall.hangup();
+            }
+            session.backgroundCall = session.currentCall;
+            session.currentCall = null;
         }
 
         try {
@@ -429,6 +447,11 @@
              */
             emitter.publish('call-rejected', data);
             session.deleteCurrentCall();
+            session.switchCall();
+
+            if (session.currentCall !== null) {
+                session.currentCall.resume();
+            }
           });
           call.on('connected', function (data) {
             /**
@@ -481,6 +504,11 @@
              */
             emitter.publish('call-disconnected', data);
             session.deleteCurrentCall();
+            session.switchCall();
+
+            if (session.currentCall !== null) {
+                session.currentCall.resume();
+            }
           });
           call.on('error', function (data) {
             /**
@@ -604,6 +632,11 @@
         call.on('disconnected', function (data) {
           emitter.publish('call-disconnected', data);
           session.deleteCurrentCall();
+          session.switchCall();
+
+          if (session.currentCall !== null) {
+              session.currentCall.resume();
+          }
         });
         call.on('error', function (data) {
           publishError(5002, data);
@@ -960,7 +993,12 @@
               timestamp: new Date()
             });
             session.deleteCurrentCall();
-          }
+            session.switchCall();
+
+            if (session.currentCall !== null) {
+                session.currentCall.resume();
+            }
+        }
           call.disconnect();
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('11001');
@@ -1005,6 +1043,11 @@
           call.on('disconnected', function (data) {
             emitter.publish('call-disconnected', data);
             session.deleteCurrentCall();
+            session.switchCall();
+
+            if (session.currentCall !== null) {
+                session.currentCall.resume();
+            }
           });
           call.reject();
         } catch (err) {
