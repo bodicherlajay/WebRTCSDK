@@ -699,21 +699,25 @@ describe('Call', function () {
       });
 
       it('Should execute Call.setState with `disconnecting` state', function () {
-
         outgoingCall.disconnect();
 
         expect(outgoingCall.getState()).to.equal('disconnecting');
       });
 
       describe('Cancel Call [call.remoteSdp === null]', function () {
+
         it('should call `rtcManager.cancelCall` if the remoteSdp is null', function () {
           var cancelCallStub = sinon.stub(rtcMgr, 'cancelCall');
 
           outgoingCall.disconnect();
 
           expect(cancelCallStub.called).to.equal(true);
-          expect(cancelCallStub.getCall(0).args[0].success).to.be.a('function');
-          expect(cancelCallStub.getCall(0).args[0].sessionInfo).to.be.an('object');
+          expect(cancelCallStub.getCall(0).args[0]).to.be.an('object');
+          expect(cancelCallStub.getCall(0).args[0].callId).not.to.be.an('undefined');
+          expect(cancelCallStub.getCall(0).args[0].sessionId).not.to.be.an('undefined');
+          expect(cancelCallStub.getCall(0).args[0].token).not.to.be.an('undefined');
+          expect(cancelCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
+          expect(cancelCallStub.getCall(0).args[0].onError).to.be.a('function');
 
           cancelCallStub.restore();
         });
@@ -724,7 +728,7 @@ describe('Call', function () {
           beforeEach(function () {
             outgoingCall.setId(null);
             cancelCallStub = sinon.stub(rtcMgr, 'cancelCall', function (options) {
-              options.success();
+              options.onSuccess();
             });
 
           });
@@ -737,7 +741,9 @@ describe('Call', function () {
             var resetStub = sinon.spy(rtcMgr, 'resetPeerConnection');
 
             outgoingCall.disconnect();
+
             expect(resetStub.calledOnce).to.equal(true);
+
             resetStub.restore();
           });
         });
@@ -746,6 +752,7 @@ describe('Call', function () {
       describe('Disconnect Call [call.remoteSdp !== null]', function () {
         it('should call rtcManager.disconnectCall', function () {
           var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
+
           // for this test we need that call to have a valid remoteSdp, otherwise
           // it will call `rtcManager.cancelCall`
           outgoingCall.setRemoteSdp('abcdefg');
@@ -753,7 +760,12 @@ describe('Call', function () {
           outgoingCall.disconnect();
 
           expect(disconnectCallStub.called).to.equal(true);
-          expect(disconnectCallStub.getCall(0).args[0].breed).to.be.a('string');
+          expect(disconnectCallStub.getCall(0).args[0].callId).to.equal(outgoingCall.id());
+          expect(disconnectCallStub.getCall(0).args[0].breed).to.equal(outgoingCall.breed());
+          expect(disconnectCallStub.getCall(0).args[0].sessionId).not.to.be.a('undefined');
+          expect(disconnectCallStub.getCall(0).args[0].token).not.to.be.a('undefined');
+          expect(disconnectCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
+          expect(disconnectCallStub.getCall(0).args[0].onError).to.be.a('function');
 
           disconnectCallStub.restore();
         });
@@ -785,7 +797,6 @@ describe('Call', function () {
         outgoingCall.reject();
 
         expect(rejectCallStub.called).to.equal(true);
-//        console.log(JSON.stringify(rejectCallStub.getCall(0).args[0]));
         args = rejectCallStub.getCall(0).args[0];
         expect(args.sessionId).to.equal(outgoingCall.sessionInfo().sessionId);
         expect(args.token).to.equal(outgoingCall.sessionInfo().token);

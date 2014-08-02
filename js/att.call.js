@@ -293,10 +293,13 @@
           pcOptions = {
             mediaType: mediaType,
             stream: localStream,
-            onSuccess: function (localSdp) {
+            onSuccess: function (description) {
 
               rtcManager.connectConference({
-                localSdp: peerConnection.getLocalSDP(),
+                sessionId: sessionInfo.sessionId,
+                token: sessionInfo.token,
+                description: description,
+                sessionInfo: sessionInfo,
                 onSuccess: function (responsedata) {
                   if (ATT.CallTypes.INCOMING === type) {
                     setState('connecting');
@@ -322,7 +325,7 @@
             }
           };
 
-          if(ATT.CallTypes.INCOMING === type) {
+          if (ATT.CallTypes.INCOMING === type) {
             pcOptions.remoteSdp = remoteSdp;
           }
 
@@ -378,24 +381,38 @@
 
       if (null === remoteSdp) {
         logger.logInfo('Canceling...');
+
         rtcManager.cancelCall({
-          sessionInfo: sessionInfo,
           callId: id,
-          success: function () {
+          sessionId: sessionInfo.sessionId,
+          token: sessionInfo.token,
+          onSuccess: function () {
             logger.logInfo('Canceled successfully!');
+
             rtcManager.resetPeerConnection();
           },
           onError : function (error) {
-            emitter.publish('error', error);
+            logger.logError(error);
+
+            emitter.publish('error', {
+              error: error
+            });
           }
         });
       } else if (null !== id && null !== remoteSdp) {
         logger.logInfo('Disconnecting...');
+
         rtcManager.disconnectCall({
-          sessionInfo: sessionInfo,
+          sessionId: sessionInfo.sessionId,
+          token: sessionInfo.token,
           callId: id,
           breed: thisCall.breed(),
+          onSuccess: function () {
+            logger.logInfo('Successfully hungup the current call');
+          },
           onError: function (error) {
+            logger.logError(error);
+
             emitter.publish('error', {
               error: error
             });
@@ -457,8 +474,8 @@
     function reject() {
 
       rtcManager.rejectCall({
-        sessionId : sessionInfo.sessionId,
         callId : id,
+        sessionId : sessionInfo.sessionId,
         token : sessionInfo.token,
         onSuccess : function () {
           rtcManager.off('call-disconnected', onCallDisconnected);
@@ -543,7 +560,7 @@
         return;
       }
 
-      return peerConnection.getLocalSDP();
+      return peerConnection.getLocalDescription();
     };
     this.localMedia = function () {
       return localMedia;

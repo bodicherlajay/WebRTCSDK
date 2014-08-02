@@ -909,7 +909,14 @@ describe('RTC Manager', function () {
           onErrorSpy = sinon.spy();
 
           connectConfOpts = {
-            localSdp: localSdp,
+            description: {
+              sdp: localSdp,
+              type: 'offer'
+            },
+            sessionInfo : {
+              sessionId: '123',
+              token : 'token'
+            },
             conferenceId : '123',
             onSuccess: onSuccessSpy,
             onError: onErrorSpy
@@ -921,20 +928,17 @@ describe('RTC Manager', function () {
           expect(rtcManager.connectConference).to.be.a('function');
         });
 
-        it('should execute `resourceManager.doOperation` with required params', function () {
+        it.skip('should execute `resourceManager.doOperation` with required params', function () {
 
           rtcManager.connectConference(connectConfOpts);
 
           expect(doOperationStub.called).to.equal(true);
           expect(doOperationStub.getCall(0).args[0]).to.equal('acceptConference');
           expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
-          expect(doOperationStub.getCall(0).args[1].data).eql({
-            conferenceModifications: {
-              sdp: localSdp
-            }
-          });
-          expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
-          expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
+          console.log(JSON.stringify(doOperationStub.getCall(0).args));
+          expect(doOperationStub.getCall(0).args[1].data.conference.sdp).to.equal(connectConfOpts.description.sdp);
+//          expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
+//          expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
         });
 
         describe('doOperations Callbacks', function () {
@@ -1170,9 +1174,23 @@ describe('RTC Manager', function () {
 
       describe('cancelCall', function () {
 
-        var cancelSdpOfferStub;
+        var options,
+          cancelSdpOfferStub,
+          onSuccessSpy,
+          onErrorSpy;
 
         beforeEach(function () {
+          onSuccessSpy = sinon.spy();
+          onErrorSpy = sinon.spy();
+
+          options = {
+            callId: 'callId',
+            sessionId: 'sessionId',
+            token: 'token',
+            onSuccess: onSuccessSpy,
+            onError: onErrorSpy
+          };
+
           cancelSdpOfferStub = sinon.stub(peerConnSvc, 'cancelSdpOffer', function (success) {
             success();
           });
@@ -1186,135 +1204,88 @@ describe('RTC Manager', function () {
           expect(rtcManager.cancelCall).to.be.a('function');
         });
 
-        it('should throw an error if invalid `options` are passed', function () {
-          expect(rtcManager.cancelCall.bind(rtcManager)).to.throw('No `options` passed');
-          expect(rtcManager.cancelCall.bind(rtcManager, {})).to.throw('No `options` passed');
+        it('should throw an error if invalid `options`', function () {
+          expect(rtcManager.cancelCall.bind(rtcManager)).to.throw('No options provided');
+          expect(rtcManager.cancelCall.bind(rtcManager, {})).to.throw('No callId provided');
           expect(rtcManager.cancelCall.bind(rtcManager, {
-            test: 'test'
-          })).to.throw('No `success` callback passed');
+            callId: options.callId
+          })).to.throw('No sessionId provided');
           expect(rtcManager.cancelCall.bind(rtcManager, {
-            success: function () {},
-            callId: null
-          })).to.throw('No `sessionInfo` passed');
+            callId: options.callId,
+            sessionId: options.sessionId
+          })).to.throw('No token provided');
           expect(rtcManager.cancelCall.bind(rtcManager, {
-            success: function () {},
-            sessionInfo: {}
-          })).to.throw('No `callId` passed');
+            callId: options.callId,
+            sessionId: options.sessionId,
+            token: options.token
+          })).to.throw('No success callback provided');
           expect(rtcManager.cancelCall.bind(rtcManager, {
-            success: function () { return; }
-          })).to.not.throw('No `options.success` callback passed');
+            callId: options.callId,
+            sessionId: options.sessionId,
+            token: options.token,
+            onSuccess: options.onSuccess
+          })).to.throw('No error callback provided');
+          expect(rtcManager.cancelCall.bind(rtcManager, {
+            callId: options.callId,
+            sessionId: options.sessionId,
+            token: options.token,
+            onSuccess: options.onSuccess,
+            onError: options.onError
+          })).not.to.throw(Error);
         });
 
-        it('should call peerConnSvc.cancelSdpOffer if [null === options.callId', function () {
-
-          rtcManager.cancelCall({
-            sessionInfo: {},
-            callId: '12345',
-            success: function () {}
-          });
+        it('should not call peerConnSvc.cancelSdpOffer if options.callId is not null', function () {
+          rtcManager.cancelCall(options);
 
           expect(cancelSdpOfferStub.called).to.equal(false);
-
-          rtcManager.cancelCall({
-            sessionInfo: {},
-            callId: null,
-            success: function () {}
-          });
-
-          expect(cancelSdpOfferStub.called).to.equal(true);
         });
 
-        it('should call peerConnSvc.cancelSdpOffer with a success callback', function () {
-          var onSuccessSpy = sinon.spy();
+        it('should call peerConnSvc.cancelSdpOffer with a success callback if options.callId is null', function () {
+          options.callId = null;
 
-          rtcManager.cancelCall({
-            sessionInfo: {},
-            callId: null,
-            success: onSuccessSpy
-          });
+          rtcManager.cancelCall(options);
 
           expect(cancelSdpOfferStub.called).to.equal(true);
           expect(cancelSdpOfferStub.getCall(0).args[0]).to.be.a('function');
         });
 
+        it('should call resourceManager.doOperation if options.callId is not null', function () {
+          rtcManager.cancelCall(options);
+
+          expect(doOperationStub.called).to.equal(true);
+          expect(doOperationStub.getCall(0).args[0]).to.equal('cancelCall');
+          expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('array');
+          expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(options.sessionId);
+          expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal(options.callId);
+          expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+        });
+
         describe('Success on `cancelSdpOffer`', function () {
-          var cancelSdpOfferStub,
-            onSuccessSpy;
-
-          beforeEach(function () {
-            onSuccessSpy = sinon.spy();
-
-            rtcManager.cancelCall({
-              sessionInfo: {},
-              callId: null,
-              success: onSuccessSpy
-            });
-          });
 
           it('should execute `success` callback', function () {
+            options.callId = null;
+
+            rtcManager.cancelCall(options);
+
             expect(onSuccessSpy.called).to.equal(true);
           });
-        });
 
-        it('should call resourceManager.doOperation if [null !== options.callId', function () {
-          rtcManager.cancelCall({
-            sessionInfo: {},
-            callId: '123456789',
-            success: function () {}
-          });
-          expect(doOperationStub.calledWith('cancelCall')).to.equal(true);
-        });
-      });
-
-      describe('disconnectCall', function () {
-
-        it('should exist', function () {
-          expect(rtcManager.disconnectCall).to.be.a('function');
-        });
-
-        it('should throw an error if invalid options', function () {
-          expect(rtcManager.disconnectCall.bind(rtcManager)).to.throw('No options defined.');
-          expect(rtcManager.disconnectCall.bind(rtcManager, {
-            sessionInfo: {}
-          })).to.throw('CallId not defined');
-          expect(rtcManager.disconnectCall.bind(rtcManager, {
-            callId: '1234'
-          })).to.throw('sessionInfo not defined');
-          expect(rtcManager.disconnectCall.bind(rtcManager, {
-            sessionInfo: {},
-            callId: '1234'
-          })).to.throw('breed not defined');
-          expect(rtcManager.disconnectCall.bind(rtcManager, {
-            sessionInfo: {},
-            callId: '1234',
-            breed: 'conference'
-          })).to.throw('onError callback not defined');
-          expect(rtcManager.disconnectCall.bind(rtcManager, {
-            sessionInfo: {},
-            callId: '1234',
-            breed: 'conference',
-            onError: function () {}
-          })).to.not.throw(Error);
-        });
-
-        it('should call doOperation on the resourceManager with `endCall`', function () {
-
-          rtcManager.disconnectCall({
-            sessionInfo: {},
-            callId: '1234',
-            breed: 'conference',
-            onError: function () {}
-          });
-
-          expect(doOperationStub.calledWith('endCall')).to.equal(true);
         });
 
         describe('Error on doOperation', function () {
-          var error,
-            onErrorSpy = sinon.spy(),
-            createAPIErrorCodeStub;
+          var createAPIErrorCodeStub;
 
           beforeEach(function () {
+            doOperationStub.restore();
+
+            doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
+              setTimeout(function () {
+                options.error(error);
+              }, 0);
+            });
 
             createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
               return error;
@@ -1325,13 +1296,115 @@ describe('RTC Manager', function () {
             createAPIErrorCodeStub.restore();
           });
 
-          it('should call `options.onError` if resourceManager returns an error`', function (done) {
+          it('should call createAPIErrorCode with operation `cancel`', function (done) {
+            rtcManager.cancelCall(options);
 
+            setTimeout(function () {
+              try {
+                expect(createAPIErrorCodeStub.calledWith(error, 'ATT.rtc.Phone', 'cancel', 'RTC')).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+
+          it('should call onError callback of cancelCall with the error object', function (done) {
+            rtcManager.cancelCall(options);
+
+            setTimeout(function () {
+              try {
+                expect(onErrorSpy.calledWith(error)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+
+        });
+      });
+
+      describe('disconnectCall', function () {
+
+        var options,
+          onErrorSpy;
+
+        beforeEach(function () {
+          onErrorSpy = sinon.spy();
+
+          options = {
+            callId: '1234',
+            breed: 'call',
+            sessionId: 'sessionId',
+            token: 'token',
+            onSuccess: function () {},
+            onError: onErrorSpy
+          };
+        });
+
+        it('should exist', function () {
+          expect(rtcManager.disconnectCall).to.be.a('function');
+        });
+
+        it('should throw an error if invalid options', function () {
+          expect(rtcManager.disconnectCall.bind(rtcManager)).to.throw('No options provided');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {})).to.throw('No CallId provided');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            callId: options.callId
+          })).to.throw('No call breed provided');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            callId: options.callId,
+            breed: options.breed
+          })).to.throw('No sessionId provided');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            callId: options.callId,
+            breed: options.breed,
+            sessionId: options.sessionId
+          })).to.throw('No token provided');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            callId: options.callId,
+            breed: options.breed,
+            sessionId: options.sessionId,
+            token: options.token
+          })).to.throw('No success callback provided');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            callId: options.callId,
+            breed: options.breed,
+            sessionId: options.sessionId,
+            token: options.token,
+            onSuccess: options.onSuccess
+          })).to.throw('No error callback provided');
+          expect(rtcManager.disconnectCall.bind(rtcManager, {
+            callId: options.callId,
+            breed: options.breed,
+            sessionId: options.sessionId,
+            token: options.token,
+            onSuccess: options.onSuccess,
+            onError: options.onError
+          })).to.not.throw(Error);
+        });
+
+        it('should call doOperation on the resourceManager with `endCall`', function () {
+
+          rtcManager.disconnectCall(options);
+
+          expect(doOperationStub.called).to.equal(true);
+          expect(doOperationStub.getCall(0).args[0]).to.equal('endCall');
+          expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('array');
+          expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(options.sessionId);
+          expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal(options.breed + 's');
+          expect(doOperationStub.getCall(0).args[1].params.url[2]).to.equal(options.callId);
+          expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+        });
+
+        describe('Error on doOperation', function () {
+          var createAPIErrorCodeStub;
+
+          beforeEach(function () {
             doOperationStub.restore();
-
-            error = {
-              message: 'foo'
-            };
 
             doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
               setTimeout(function () {
@@ -1339,12 +1412,46 @@ describe('RTC Manager', function () {
               }, 0);
             });
 
-            rtcManager.disconnectCall({
-              sessionInfo: {},
-              callId: '123',
-              breed: 'conference',
-              onError: onErrorSpy
+            createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
+              return error;
             });
+          });
+
+          afterEach(function () {
+            createAPIErrorCodeStub.restore();
+          });
+
+          it('should execute createAPIErrorCode with operation `hangup` for breed `call`', function (done) {
+            rtcManager.disconnectCall(options);
+
+            setTimeout(function () {
+              try {
+                expect(createAPIErrorCodeStub.calledWith(error, 'ATT.rtc.Phone', 'hangup', 'RTC')).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+
+          it('should execute createAPIErrorCode with operation `endConference` for breed `conference`', function (done) {
+            options.breed = 'conference';
+
+            rtcManager.disconnectCall(options);
+
+            setTimeout(function () {
+              try {
+                expect(createAPIErrorCodeStub.calledWith(error, 'ATT.rtc.Phone', 'endConference', 'RTC')).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 100);
+          });
+
+          it('should call `options.onError` callback with the error object', function (done) {
+
+            rtcManager.disconnectCall(options);
 
             setTimeout(function () {
               try {
@@ -1356,6 +1463,7 @@ describe('RTC Manager', function () {
             }, 100);
           });
         });
+
       });
 
       describe('muteCall', function () {
@@ -1374,7 +1482,7 @@ describe('RTC Manager', function () {
           rtcManager.muteCall({
             onSuccess: onSuccessSpy
           });
-          
+
           expect(muteStreamStub.called).to.equal(true);
           expect(muteStreamStub.getCall(0).args[0]).to.be.an('object');
           muteStreamStub.restore();
@@ -1609,7 +1717,21 @@ describe('RTC Manager', function () {
 
       describe('rejectCall', function () {
 
+        var options,
+          onErrorSpy;
+
         beforeEach(function () {
+          onErrorSpy = sinon.spy();
+
+          options = {
+            token : 'token',
+            callId : 'callId',
+            sessionId : 'sessionId',
+            breed: 'call',
+            onSuccess: function () {},
+            onError: onErrorSpy
+          };
+
           doOperationStub.restore();
 
           doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
@@ -1624,72 +1746,123 @@ describe('RTC Manager', function () {
         });
 
         it('should throw an error if `options` are invalid', function () {
-
-          var options = {
-            callId : '1234',
-            sessionId : '1234',
-            token : 'dsfgdsdf'
-          };
           expect(rtcManager.rejectCall.bind(rtcManager, undefined)).to.throw('Invalid options');
+          expect(rtcManager.rejectCall.bind(rtcManager, {})).to.throw('No callId provided');
+          expect(rtcManager.rejectCall.bind(rtcManager, {
+            callId : options.callId
+          })).to.throw('No call breed provided');
           expect(rtcManager.rejectCall.bind(rtcManager, {
             callId : options.callId,
-            sessionId : options.sessionId,
-            onSuccess : function () {},
-            onError : function () {}
-          })).to.throw('No token passed');
-          expect(rtcManager.rejectCall.bind(rtcManager, {
-            sessionId : options.sessionId,
-            token : options.token,
-            onSuccess : function () {},
-            onError : function () {}
-          })).to.throw('No callId passed');
+            breed: options.breed
+          })).to.throw('No session Id provided');
           expect(rtcManager.rejectCall.bind(rtcManager, {
             callId : options.callId,
-            token : options.token,
-            onSuccess : function () {},
-            onError : function () {}
-          })).to.throw('No session Id passed');
-
+            breed: options.breed,
+            sessionId : options.sessionId
+          })).to.throw('No token provided');
           expect(rtcManager.rejectCall.bind(rtcManager, {
             callId : options.callId,
+            breed: options.breed,
             sessionId : options.sessionId,
-            token : options.token,
-            onError : function () {}
-          })).to.throw('No success callback passed');
-
+            token : options.token
+          })).to.throw('No success callback provided');
           expect(rtcManager.rejectCall.bind(rtcManager, {
             callId : options.callId,
+            breed: options.breed,
             sessionId : options.sessionId,
             token : options.token,
-            onSuccess : function () {}
-          })).to.throw('No error callback passed');
-
+            onSuccess: options.onSuccess
+          })).to.throw('No error callback provided');
           expect(rtcManager.rejectCall.bind(rtcManager, {
             callId : options.callId,
+            breed: options.breed,
             sessionId : options.sessionId,
             token : options.token,
-            onSuccess : function () {},
-            onError : function () {}
-          })).to.not.throw('No token passed');
+            onSuccess: options.onSuccess,
+            onError : options.onError
+          })).to.not.throw(Error);
         });
 
         it('should call doOperation on the resourceManager with `rejectCall`', function () {
-
-          rtcManager.rejectCall({
-            callId : '1234',
-            sessionId : '2345',
-            token : 'dsfgdsdf',
-            onSuccess : function () { },
-            onError : function () {}
-          });
+          rtcManager.rejectCall(options);
 
           expect(doOperationStub.calledWith('rejectCall')).to.equal(true);
           expect(doOperationStub.getCall(0).args[0]).to.equal('rejectCall');
-          expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal('2345');
-          expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal('1234');
-          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer dsfgdsdf');
+          expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('array');
+          expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(options.sessionId);
+          expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal('calls');
+          expect(doOperationStub.getCall(0).args[1].params.url[2]).to.equal(options.callId);
+          expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+        });
+
+        describe('Error on doOperation', function () {
+          var createAPIErrorCodeStub;
+
+          beforeEach(function () {
+            doOperationStub.restore();
+
+            doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
+              setTimeout(function () {
+                options.error(error);
+              }, 0);
+            });
+
+            createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
+              return error;
+            });
+          });
+
+          afterEach(function () {
+            createAPIErrorCodeStub.restore();
+          });
+
+          it('should call createAPIErrorCode with `reject` for breed call', function (done) {
+
+            rtcManager.rejectCall(options);
+
+            setTimeout(function () {
+              try {
+                expect(createAPIErrorCodeStub.calledWith(error, 'ATT.rtc.Phone', 'reject', 'RTC')).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+
+          it('should call createAPIErrorCode with `rejectConference` for breed conference`', function (done) {
+            options.breed = 'conference';
+
+            rtcManager.rejectCall(options);
+
+            setTimeout(function () {
+              try {
+                expect(createAPIErrorCodeStub.calledWith(error, 'ATT.rtc.Phone', 'rejectConference', 'RTC')).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+
+          it('should call onError callback of rejectCall with the error object', function (done) {
+            rtcManager.rejectCall(options);
+
+            setTimeout(function () {
+              try {
+                expect(onErrorSpy.calledWith(error)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
 
         });
+
       });
 
     });

@@ -1260,8 +1260,42 @@
         });
       }
     }
+    /**
+     * @summary
+     * start  a conference with a valid parameters.
+     * @desc start conference and create conference object
+     *
+     * **Error Codes**
+     *
+     *   - 18000 - Parameters missing
+     *   - 18001 - Invalid localmedia passed
+     *   - 18002 - Invalid remotemedia passed
+     *   - 18002 - Invalid mediatype passed
+     *   - 18002 - Failed to get usermedia
+     *   - 18002 - Internal error occurred
+     *
+     * @memberOf Phone
+     * @instance
+     * @param {Object} options
+     * @param {HTMLElement} options.localMedia
+     * @param {HTMLElement} options.remoteMedia
+     * @param {HTMLElement} options.mediaType
 
+     * @fires Phone#conference-connected
+     * @fires Phone#error
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.startConference({
+     mediaType: 'video',
+     localMedia: document.getElementById('localVideo'),
+     remoteMedia: document.getElementById('remoteVideo'),
+    });
+     */
     function startConference(options) {
+
+      logger.logInfo('startConference');
+
       var conference;
       try {
         if (undefined === options
@@ -1297,10 +1331,12 @@
           localMedia: options.localMedia,
           remoteMedia: options.remoteMedia,
           onUserMedia: function (userMedia) {
-            conference.addStream(userMedia);
+            logger.logInfo('onUserMedia');
+            conference.addStream(userMedia.localStream);
             conference.connect();
           },
           onMediaEstablished: function () {
+            logger.logInfo('onMediaEstablished');
             logger.logInfo('Media Established');
           },
           onUserMediaError: function (error) {
@@ -1347,12 +1383,7 @@
 
         conference = session.currentCall;
 
-        if (null === conference) {
-          publishError(19001);
-          return;
-        }
-
-        if ('conference' !== conference.breed()) {
+        if (null === conference || 'conference' !== conference.breed()) {
           publishError(19001);
           return;
         }
@@ -1366,7 +1397,7 @@
           conference.on('participant-pending', function (data) {
             /**
              * Participant pending event.
-             * @desc Add description here
+             * @desc An invitation has been sent to a participant
              *
              * @event Phone#participant-pending
              * @type {object}
@@ -1415,13 +1446,33 @@
 
       var conference;
 
-      conference = session.currentCall;
+      try {
+        if (null === session.getId()) {
+          publishError(23001);
+          return;
+        }
 
-      conference.on('disconnecting', function (data) {
-        emitter.publish('conference-disconnecting', data);
-      });
+        conference = session.currentCall;
 
-      conference.disconnect();
+        if (null === conference || 'conference' !== conference.breed()) {
+          publishError(23002);
+          return;
+        }
+
+        conference.on('disconnecting', function (data) {
+          emitter.publish('conference-disconnecting', data);
+        });
+
+        try {
+          conference.disconnect();
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError(23000);
+        }
+      } catch(err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
     /**
@@ -1446,7 +1497,10 @@
     function getParticipants() {
       logger.logDebug('Phone.getParticipant');
 
-      var conference;
+      var conference,
+        participants,
+        active,
+        key;
 
       try {
         conference = session.currentCall;
@@ -1457,7 +1511,16 @@
           return;
         }
         try {
-          return conference.participants();
+          participants = conference.participants();
+          active = {};
+
+          for (key in participants) {
+            if ('accepted' === participants[key].status) {
+              active[key] = participants[key];
+            }
+          }
+
+          return active;
         } catch (err) {
           throw ATT.errorDictionary.getSDKError(21001);
         }

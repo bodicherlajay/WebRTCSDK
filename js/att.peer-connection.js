@@ -13,7 +13,12 @@
       onSuccess,
       onError,
       mediaConstraint,
-      logger = logManager.addLoggerForModule('PeerConnection');
+      logger = logManager.addLoggerForModule('PeerConnection'),
+      pcConfig = {
+        'iceServers': [
+          { 'url': 'STUN:74.125.133.127:19302' }
+        ]
+      };
 
     function processDescription(description, success) {
       var fixedSDP;
@@ -67,7 +72,7 @@
     onError = options.onError;
 
     try {
-      pc = new RTCPeerConnection();
+      pc = new RTCPeerConnection(pcConfig);
     } catch (error) {
       throw new Error('Failed to create PeerConnection.');
     }
@@ -82,8 +87,10 @@
     if (undefined === options.remoteSDP) {
 
       pc.createOffer(function (description) {
+        logger.logInfo('createOffer: success');
         processDescription(description, onSuccess);
       }, function () { // ERROR createOffer
+        logger.logInfo('createOffer: success');
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
     } else {
@@ -94,7 +101,7 @@
       }, { mandatory: mediaConstraint});
     }
     return {
-      getLocalSDP: function () {
+      getLocalDescription: function () {
         return pc.localDescription;
       },
       setLocalSDP: function (sdp) {

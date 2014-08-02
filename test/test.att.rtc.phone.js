@@ -1688,15 +1688,23 @@ describe('Phone', function () {
           getParticipantsSpy.restore();
         });
 
-        it('should return `participants` list', function () {
+        it('should return active `participants` list', function () {
           conference.setParticipant('456', 'invitee', '123');
+          conference.setParticipant('454', 'accepted', '124');
+          conference.setParticipant('455', 'accepted', '125');
 
           var participants = phone.getParticipants();
+
           expect(participants).to.be.an('object');
-          expect(participants['123']).to.be.an('object');
-          expect(participants['123'].status).to.equal('invitee');
-          expect(participants['123'].participant).to.equal('456');
-          expect(participants['123'].id).to.equal('123');
+          expect(participants['124']).to.be.an('object');
+          expect(participants['124'].status).to.equal('accepted');
+          expect(participants['124'].participant).to.equal('454');
+          expect(participants['124'].id).to.equal('124');
+
+          expect(participants['125']).to.be.an('object');
+          expect(participants['125'].status).to.equal('accepted');
+          expect(participants['125'].participant).to.equal('455');
+          expect(participants['125'].id).to.equal('125');
         });
 
         describe('Error Handling', function () {
