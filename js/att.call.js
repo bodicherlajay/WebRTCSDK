@@ -187,6 +187,7 @@
           'muted' !== event &&
           'unmuted' !== event &&
           'media-established' !== event &&
+          'stream-added' !== event &&
           'error' !== event &&
           'held' !== event &&
           'resumed' !== event &&
@@ -320,8 +321,11 @@
                 error: error
               });
             },
-            onRemoteStream : function () {
-
+            onRemoteStream : function (stream) {
+              logger.logInfo('onRemoteStream');
+              emitter.publish('stream-added', {
+                stream: stream
+              });
             }
           };
 

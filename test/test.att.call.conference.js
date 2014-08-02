@@ -427,7 +427,7 @@ describe('Call [Conference]', function () {
         });
       });
 
-      describe('Constructor [INCOMING]', function () {
+      describe('connect [INCOMING]', function () {
         var incomingConf,
           optionsIncomingConf;
 
@@ -596,11 +596,9 @@ describe('Call [Conference]', function () {
           });
           describe('onRemoteStream', function () {
             var myStream,
-              ums,
               onRemoteStreamSpy;
 
             beforeEach(function () {
-              ums = ATT.UserMediaService;
               myStream = 'stream';
               createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
                 onRemoteStreamSpy = sinon.spy(options, 'onRemoteStream');
@@ -609,23 +607,23 @@ describe('Call [Conference]', function () {
               });
             });
             afterEach(function () {
-              createPeerConnectionStub.restore();
             });
 
-            it.only('should call `ums.showStream` with the remote stream', function () {
-              var showStreamStub = sinon.stub(ums, 'showStream');
+            it.only('should call publish `stream-added` with the remote stream', function (done) {
 
-              factories.createPeerConnection(pcOptions);
+              var onStreamAddedSpy = sinon.spy();
 
-              expect(onRemoteStreamSpy.called).to.equal(true);
-              expect(showStreamStub.called).to.equal(true);
-//              expect(showStreamStub.calledAfter(onRemoteStreamSpy)).to.equal(true);
-//              expect(showStreamStub.calledWith({
-//                stream: myStream,
-//                localOrRemote: 'remote'
-//              })).to.equal(true);
+              incomingConf.connect();
 
-              showStreamStub.restore();
+              setTimeout(function () {
+                expect(onRemoteStreamSpy.called).to.equal(true);
+                expect(publishStub.called).to.equal(true);
+                expect(publishStub.calledAfter(onRemoteStreamSpy)).to.equal(true);
+                expect(publishStub.getCall(0).args[0]).to.equal('stream-added');
+                expect(publishStub.getCall(0).args[1].stream).to.equal(myStream);
+                done();
+              }, 100);
+
             });
           });
           describe('onError', function () {
