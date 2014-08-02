@@ -1408,7 +1408,10 @@
     function getParticipants() {
       logger.logDebug('Phone.getParticipant');
 
-      var conference;
+      var conference,
+        participants,
+        active,
+        key;
 
       try {
         conference = session.currentCall;
@@ -1419,7 +1422,16 @@
           return;
         }
         try {
-          return conference.participants();
+          participants = conference.participants();
+          active = {};
+
+          for (key in participants) {
+            if ('accepted' === participants[key].status) {
+              active[key] = participants[key];
+            }
+          }
+
+          return active;
         } catch (err) {
           throw ATT.errorDictionary.getSDKError(21001);
         }
