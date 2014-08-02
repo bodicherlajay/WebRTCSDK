@@ -304,7 +304,7 @@ if (!ATT) {
           headers: DEFAULTS.headers
         },
         createConference: {
-          method: 'put',
+          method: 'POST',
           formatters: {
             url: function (params) {
               return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/conferences';
