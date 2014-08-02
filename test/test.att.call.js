@@ -1488,10 +1488,6 @@ describe('Call', function () {
 
         describe('invite-accepted', function () {
 
-          beforeEach(function () {
-            call.setRemoteSdp(null);
-          });
-
           it('should call updateParticipant with `accepted`', function (done) {
             emitterEM.publish('media-mod-terminations', modificationsForInviteAccepted);
 
@@ -1507,10 +1503,6 @@ describe('Call', function () {
         });
 
         describe('invite-rejected', function () {
-
-          beforeEach(function () {
-            call.setRemoteSdp(null);
-          });
 
           it('should call updateParticipant with `rejected`', function (done) {
             emitterEM.publish('media-mod-terminations', modificationsForInviteRejected);

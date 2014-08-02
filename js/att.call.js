@@ -110,13 +110,11 @@
       }
 
       if ('conference' === modifications.type && undefined !== modifications.modificationId) {
-        if (null === thisCall.remoteSdp()) {
-          if ('success' === modifications.reason) {
-            thisCall.updateParticipant(modifications.modificationId, 'accepted');
-          }
-          if ('rejected' === modifications.reason) {
-            thisCall.updateParticipant(modifications.modificationId, 'rejected');
-          }
+        if ('success' === modifications.reason) {
+          thisCall.updateParticipant(modifications.modificationId, 'accepted');
+        }
+        if ('rejected' === modifications.reason) {
+          thisCall.updateParticipant(modifications.modificationId, 'rejected');
         }
       }
     }
@@ -372,12 +370,14 @@
     function updateParticipant(id, status) {
       if (undefined !== thisCall.participants()[id]) {
         this.participants()[id]['status'] = status;
-      }
-      if ('accepted' === status) {
-        thisCall.setState('connected');
-      }
-      if ('rejected' === status) {
-        thisCall.setState('rejected');
+
+        if ('accepted' === status) {
+          thisCall.setState('connected');
+        }
+
+        if ('rejected' === status) {
+          thisCall.setState('rejected');
+        }
       }
     }
 
