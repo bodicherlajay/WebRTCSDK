@@ -61,7 +61,7 @@
        * @type {object}
        * @property {String} from - The ID of the caller.
        * @property {String} mediaType - The type of call.
-       * @property {String} codec - The codec of the call
+       * @property {String} codec - The codec of the call.
        * @property {Date} timestamp - Event fire time.
        */
       emitter.publish('call-disconnected', data);
@@ -1309,7 +1309,10 @@
     /**
      * @summary
      * Add participant
-     * @desc Add description here
+     * @desc
+     * Add a participant to a conference
+     *
+     * @param {String} participant
      *
      * **Error Codes**
      *
@@ -1354,10 +1357,12 @@
           conference.on('participant-pending', function (data) {
             /**
              * Participant pending event.
-             * @desc An invitation has been sent to a participant
+             * @desc An invitation has been sent.
              *
              * @event Phone#participant-pending
              * @type {object}
+             * @property {Date} timestamp - Event fire time
+             * @property {Object} participants - Participants list
              */
             emitter.publish('participant-pending', data);
           });
@@ -1369,6 +1374,7 @@
              *
              * @event Phone#error
              * @type {object}
+             * @property {Date} timestamp - Event fire time
              * @property {Object} error - error detail
              */
             emitter.publish('error', data);
@@ -1388,7 +1394,13 @@
      * @summary
      * End Conference
      * @desc
+     * End an ongoing conference
+     *
      * **Error Codes**
+     *
+     *   - 23001 - User is not logged in
+     *   - 23002 - Conference not initiated
+     *   - 23000 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -1417,6 +1429,14 @@
         }
 
         conference.on('disconnecting', function (data) {
+          /**
+           * Conference disconnecting event.
+           * @desc The conference is being disconnected
+           *
+           * @event Phone#conference-disconnecting
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           */
           emitter.publish('conference-disconnecting', data);
         });
 
