@@ -51,12 +51,12 @@
       case ATT.RTCCallEvents.INVITATION_RECEIVED:
         codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
 
-        emitter.publish('call-incoming', {
-          type: event.type === 'calls' ? 'call' : 'conference',
+        emitter.publish('invitation-received', {
+          type: event.type,
           id: event.resourceURL.split('/')[6],
           from: event.from.split('@')[0].split(':')[1],
           mediaType: (codec.length === 1) ? 'audio' : 'video',
-          remoteDescription: event.sdp
+          sdp: event.sdp
         });
         break;
       case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
@@ -146,7 +146,7 @@
     function on(event, handler) {
       if ('listening' !== event
           && 'stop-listening' !== event
-          && 'call-incoming' !== event
+          && 'invitation-received' !== event
           && 'call-disconnected' !== event
           && 'remote-sdp' !== event
           && 'call-connected' !== event

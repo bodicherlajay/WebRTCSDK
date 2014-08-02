@@ -99,8 +99,8 @@ describe('Session', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
-    it('should register for `call-incoming` event on RTCManager', function () {
-      expect(rtcManagerOnSpy.calledWith('call-incoming')).to.equal(true);
+    it('should register for `invitation-received` event on RTCManager', function () {
+      expect(rtcManagerOnSpy.calledWith('invitation-received')).to.equal(true);
     });
 
     it('should register for `call-disconnected` event on RTCManager', function () {
@@ -1152,7 +1152,7 @@ describe('Session', function () {
 
       it('should execute session.createCall with breed as the type received in event data from event manager', function (done) {
 
-        emitterEM.publish('call-incoming', callInfo);
+        emitterEM.publish('invitation-received', callInfo);
 
         setTimeout(function () {
           try {
@@ -1185,7 +1185,7 @@ describe('Session', function () {
 
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
 
-        emitterEM.publish('call-incoming', callInfo);
+        emitterEM.publish('invitation-received', callInfo);
 
         setTimeout(function () {
           try {
@@ -1203,7 +1203,7 @@ describe('Session', function () {
 
       it('should trigger `call-incoming` with relevant data on creating the new call', function (done) {
 
-        emitterEM.publish('call-incoming', callInfo);
+        emitterEM.publish('invitation-received', callInfo);
 
         setTimeout(function () {
           try {
@@ -1222,7 +1222,7 @@ describe('Session', function () {
 
       it('should trigger `conference-invite` with relevant data on creating the new conference', function (done) {
 
-        emitterEM.publish('call-incoming', conferenceInfo);
+        emitterEM.publish('invitation-received', conferenceInfo);
 
         setTimeout(function () {
           try {

@@ -316,8 +316,8 @@
             },
             onRemoteStream: function (stream) {
               userMediaSvc.showStream({
-                localOrRemote: 'remote',
-                stream: stream
+//                localOrRemote: 'remote',
+//                stream: stream
               });
             },
             onPeerConnectionError: function(error) {
