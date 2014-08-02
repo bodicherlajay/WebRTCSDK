@@ -257,9 +257,9 @@ describe('Call [Conference]', function () {
 
     describe('connect', function () {
       var createPeerConnectionStub,
-          optionsOutgoingVideo,
-          outgoingVideoConference,
-          pcOptions;
+        optionsOutgoingVideo,
+        outgoingVideoConference,
+        pcOptions;
 
       beforeEach(function () {
         optionsOutgoingVideo = {
@@ -280,8 +280,7 @@ describe('Call [Conference]', function () {
         };
       });
 
-      describe('connect [OUTGOING]', function () {
-
+      describe.only('connect [OUTGOING]', function () {
 
         it('should execute createPeerConnection with mediaConstraints, localStream and remoteSdp', function () {
 
@@ -289,7 +288,6 @@ describe('Call [Conference]', function () {
 
           outgoingVideoConference.connect();
 
-          console.log(JSON.stringify(createPeerConnectionStub.getCall(0).args[0]));
           expect(createPeerConnectionStub.calledOnce).to.equal(true);
           expect(createPeerConnectionStub.getCall(0).args[0].mediaType).to.equal(outgoingVideoConference.mediaType());
           expect(createPeerConnectionStub.getCall(0).args[0].stream).to.equal(outgoingVideoConference.localStream());
@@ -303,9 +301,9 @@ describe('Call [Conference]', function () {
         describe('createPeerConnection: onSuccess', function () {
 
           var localSDP,
-              connectConferenceStub,
-              pcOnSuccessSpy,
-              peerConnection;
+            connectConferenceStub,
+            pcOnSuccessSpy,
+            peerConnection;
 
           beforeEach(function () {
 
@@ -331,7 +329,6 @@ describe('Call [Conference]', function () {
           });
 
           it('should call `rtcManager.connectConference`', function (done) {
-
             connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
 
             outgoingVideoConference.connect();
@@ -340,6 +337,8 @@ describe('Call [Conference]', function () {
               expect(pcOnSuccessSpy.calledOnce).to.equal(true);
               expect(connectConferenceStub.calledOnce).to.equal(true);
               expect(connectConferenceStub.calledAfter(pcOnSuccessSpy)).to.equal(true);
+              expect(connectConferenceStub.getCall(0).args[0].sessionId).not.to.be.an('undefined');
+              expect(connectConferenceStub.getCall(0).args[0].token).not.to.be.an('undefined');
               expect(connectConferenceStub.getCall(0).args[0].localSdp).to.equal(outgoingVideoConference.localSdp());
               expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
               expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
@@ -350,14 +349,15 @@ describe('Call [Conference]', function () {
 
           describe('connectConference: Success', function () {
             var state,
-                onSuccessSpy,
+              onSuccessSpy,
               response;
+
             beforeEach(function () {
               state = "connecting";
               response = {
                 id : '1234',
                 state : 'invitation-sent'
-              }
+              };
               connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options){
                 onSuccessSpy = sinon.spy(options, 'onSuccess');
                 options.onSuccess(response);
@@ -394,9 +394,9 @@ describe('Call [Conference]', function () {
 
           describe('connectConference: Error', function () {
             var onErrorSpy,
-                cruelError;
-            beforeEach(function () {
+              cruelError;
 
+            beforeEach(function () {
               cruelError = 'This is a cruel error.';
               connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
                 setTimeout(function () {

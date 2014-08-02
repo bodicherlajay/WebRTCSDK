@@ -296,7 +296,9 @@
             onSuccess: function (localSdp) {
 
               rtcManager.connectConference({
-                localSdp: peerConnection.getLocalSDP(),
+                sessionId: sessionInfo.sessionId,
+                token: sessionInfo.token,
+                localSdp: localSdp,
                 sessionInfo: sessionInfo,
                 onSuccess: function (responsedata) {
                   if (ATT.CallTypes.INCOMING === type) {
