@@ -379,7 +379,7 @@
 
       setState('disconnecting');
 
-      if (null === remoteSdp) {
+      if (null === this.remoteSdp()) {
         logger.logInfo('Canceling...');
 
         rtcManager.cancelCall({
@@ -399,7 +399,7 @@
             });
           }
         });
-      } else if (null !== id && null !== remoteSdp) {
+      } else if (null !== id && null !== this.remoteSdp()) {
         logger.logInfo('Disconnecting...');
 
         rtcManager.disconnectCall({
@@ -569,7 +569,14 @@
       return remoteMedia;
     };
     this.remoteSdp = function () {
-      return remoteSdp;
+      if ('call' === breed) {
+        return remoteSdp;
+      }
+
+      if (undefined === peerConnection) {
+        return;
+      }
+      return peerConnection.getRemoteDescription();
     };
     this.localStream = function () {
       return localStream;
