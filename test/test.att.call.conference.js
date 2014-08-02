@@ -280,7 +280,7 @@ describe('Call [Conference]', function () {
         };
       });
 
-      describe.only('connect [OUTGOING]', function () {
+      describe('connect [OUTGOING]', function () {
 
         it('should execute createPeerConnection with mediaConstraints, localStream and remoteSdp', function () {
 

@@ -1638,7 +1638,7 @@ describe('Phone', function () {
         });
       });
 
-      describe.only('[US233244] getParticipants', function () {
+      describe('[US233244] getParticipants', function () {
 
         var publishStub;
 
