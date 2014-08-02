@@ -111,6 +111,9 @@
         }, function (error) {// ERROR
           logger.logError(error);
         });
+      },
+      getRemoteDescription: function () {
+        return pc.remoteDescription;
       }
     };
   }

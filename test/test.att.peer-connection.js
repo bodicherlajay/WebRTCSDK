@@ -41,7 +41,8 @@ describe('PeerConnection', function () {
       addStream : function () {return; },
       onaddstream : null,
       createOffer : function () {return; },
-      createAnswer : function () {return;}
+      createAnswer : function () {return;},
+      remoteDescription: 'ABCDEFG'
     };
 
     sdpFilter = ATT.sdpFilter.getInstance();
@@ -468,7 +469,16 @@ describe('PeerConnection', function () {
       rtcPCStub.restore();
     });
 
-    describe('getLocalDescription', function () {
+    describe.only('getRemoteDescription', function () {
+      it('should exist', function () {
+        expect(peerConnection.getRemoteDescription).to.be.a('function');
+      });
+      it('should return the current `pc.remoteDescription`', function () {
+        expect(peerConnection.getRemoteDescription()).to.equal(rtcPC.remoteDescription);
+      });
+    });
+    // TODO: review is this method is needed at all
+    describe('setLocalDescription', function () {
       it('should exist', function () {
         expect(peerConnection.setLocalSDP).to.be.a('function');
       });
