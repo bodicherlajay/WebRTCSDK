@@ -237,7 +237,7 @@
          * @property {String} error.JSMethod
          * @property {String} error.ErrorCode
          * @property {String} error.ErrorMessage
-         * @property {String} error.PosibleCauses
+         * @property {String} error.PossibleCauses
          * @property {String} error.PossibleResolution
          * @property {String} error.APIError
          * @property {String} error.ResourceMethod
@@ -1324,17 +1324,19 @@
      * @instance
 
      * @fires Phone#participant-pending
+     * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
      phone.addParticipant('4250000001');
      */
     function addParticipant(participant) {
-      logger.logDebug('Phone.addParticipant');
 
       var conference;
 
       try {
+
+        logger.logDebug('Phone.addParticipant');
 
         if (null === session.getId()) {
           publishError(19000);
@@ -1353,37 +1355,40 @@
           return;
         }
 
-        try {
-          conference.on('participant-pending', function (data) {
-            /**
-             * Participant pending event.
-             * @desc An invitation has been sent.
-             *
-             * @event Phone#participant-pending
-             * @type {object}
-             * @property {Date} timestamp - Event fire time
-             * @property {Object} participants - Participants list
-             */
-            emitter.publish('participant-pending', data);
-          });
+        conference.on('participant-pending', function (data) {
+          /**
+           * Participant pending event.
+           * @desc An invitation has been sent.
+           *
+           * @event Phone#participant-pending
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} participants - Participants list
+           */
+          emitter.publish('participant-pending', data);
+        });
 
-          conference.on('error', function (data) {
-            /**
-             * Call Error event.
-             * @desc Indicates an error condition during a call's flow
-             *
-             * @event Phone#error
-             * @type {object}
-             * @property {Date} timestamp - Event fire time
-             * @property {Object} error - error detail
-             */
-            emitter.publish('error', data);
-          });
+        conference.on('error', function (error) {
+          /**
+           * Conference Error event.
+           * @desc Indicates an error condition during addParticipant operation
+           *
+           * @event Phone#error
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - Available Error detail
+           */
+          emitter.publish('error', error);
+        });
+
+        try {
           conference.addParticipant(participant);
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError(19003);
         }
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });
@@ -1443,9 +1448,11 @@
         try {
           conference.disconnect();
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError(23000);
         }
       } catch(err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });
@@ -1501,9 +1508,11 @@
 
           return active;
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError(21001);
         }
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });

@@ -152,14 +152,17 @@ describe('Call [Conference]', function () {
           error = {
             message: 'error'
           };
+        });
+
+        afterEach(function () {
+          addParticipantStub.restore();
+        });
+
+        it('should publish `error` when rtcMgr invokes `onError` callback', function (done) {
 
           addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function (options) {
             options.onError(error);
           });
-        });
-
-
-        it('should publish `error` when rtcMgr invokes `onError` callback', function (done) {
 
           outgoingConference.addParticipant('12345');
 
@@ -172,6 +175,28 @@ describe('Call [Conference]', function () {
               done(e);
             }
           }, 100);
+        });
+
+        it('should publish `error` if rtcMgr throws an error', function (done) {
+          var error = {
+            message: 'thrown!'
+          };
+
+          addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function () {
+            throw error;
+          });
+
+          outgoingConference.addParticipant('12345');
+
+          setTimeout(function () {
+            try {
+              expect(publishStub.calledOnce).to.equal(true);
+              expect(publishStub.calledWith('error', error)).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 50);
         });
       });
     });
@@ -405,7 +430,7 @@ describe('Call [Conference]', function () {
                   onErrorSpy.restore();
                 }, 50);
               });
-            })
+            });
 
             afterEach(function () {
               connectConferenceStub.restore();
@@ -447,7 +472,8 @@ describe('Call [Conference]', function () {
 
           incomingConf = new ATT.rtc.Call(optionsIncomingConf);
         });
-        it('should execute createPeerConnection with mediaConstraints, localStream and remoteSdp for incoming conference', function () {
+
+        xit('should execute createPeerConnection with mediaConstraints, localStream and remoteSdp for incoming conference', function () {
 
           createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
           incomingConf.connect();
@@ -483,6 +509,9 @@ describe('Call [Conference]', function () {
                   return localSdp;
                 }
               };
+
+              createPeerConnectionStub.restore();
+
               createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
                 setTimeout(function () {
                   options.onSuccess(localSdp);

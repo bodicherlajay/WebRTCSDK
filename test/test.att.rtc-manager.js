@@ -1068,81 +1068,6 @@ describe('RTC Manager', function () {
                 done(e);
               }
             }, 100);
-
-//            Commneted out the test because it creates problem
-//            // ==== Negative case
-//            response = {
-//              getResponseHeader: function (name) {
-//                return 'add-not-pending';
-//              }
-//            };
-//
-//            doOperationStub.restore();
-//
-//            doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
-//              setTimeout(function () {
-//                options.success(response);
-//              }, 0);
-//            });
-//
-//            rtcManager.addParticipant({
-//              sessionInfo: {},
-//              confId: '123',
-//              onParticipantPending: onParticipantPendingSpy,
-//              participant: '12345'
-//            });
-//
-//            setTimeout(function () {
-//              try {
-//                // calledOnce, meaning only the positive case trigger a call
-//                expect(onParticipantPendingSpy.calledOnce).to.equal(true);
-//                done();
-//              } catch (e) {
-//                done(e);
-//              }
-//            }, 100);
-
-          });
-        });
-
-        describe('Error on doOperation', function () {
-          var onErrorSpy,
-            error,
-            createAPIErrorCodeStub;
-
-          beforeEach(function () {
-            onErrorSpy = sinon.spy();
-          });
-
-          afterEach(function () {
-            createAPIErrorCodeStub.restore();
-          });
-
-          it('should call `options.onError` if rtcManager returns an error', function () {
-            error = {
-              message: 'error',
-              HttpStatusCode: '400'
-            };
-
-            createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
-              return error;
-            });
-
-            doOperationStub.restore();
-
-            doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
-              options.error(error);
-            });
-
-            rtcManager.addParticipant({
-              sessionInfo: {},
-              confId: '123',
-              onParticipantPending: function () { },
-              onError: onErrorSpy,
-              participant: '12345'
-            });
-
-            expect(onErrorSpy.calledWith(error)).to.equal(true);
           });
         });
 
@@ -1168,6 +1093,47 @@ describe('RTC Manager', function () {
               participant: '12345',
               onParticipantPending: function () {}
             })).to.not.throw(Error);
+          });
+        });
+
+        describe('Error on doOperation', function () {
+          var onErrorSpy,
+            error,
+            createAPIErrorCodeStub;
+
+          beforeEach(function () {
+            onErrorSpy = sinon.spy();
+          });
+
+          afterEach(function () {
+            createAPIErrorCodeStub.restore();
+          });
+
+          it('should call `options.onError` if resourceManager returns an error', function () {
+            error = {
+              message: 'error',
+              HttpStatusCode: '400'
+            };
+
+            createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
+              return error;
+            });
+
+            doOperationStub.restore();
+
+            doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
+              options.error(error);
+            });
+
+            rtcManager.addParticipant({
+              sessionInfo: {},
+              confId: '123',
+              onParticipantPending: function () { },
+              onError: onErrorSpy,
+              participant: '12345'
+            });
+
+            expect(onErrorSpy.calledWith(error)).to.equal(true);
           });
         });
       });

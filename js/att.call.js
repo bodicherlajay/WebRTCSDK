@@ -349,18 +349,24 @@
 
     function addParticipant(participant) {
       logger.logInfo('Inviting participant...');
-      rtcManager.addParticipant({
-        sessionInfo: sessionInfo,
-        participant: participant,
-        confId: id,
-        onParticipantPending: function (modId) {
-          thisCall.setParticipant(participant, 'invitee', modId);
-          thisCall.setState('participant-pending');
-        },
-        onError: function (error) {
-          emitter.publish('error', error);
-        }
-      });
+
+      try {
+        rtcManager.addParticipant({
+          sessionInfo: sessionInfo,
+          participant: participant,
+          confId: id,
+          onParticipantPending: function (modId) {
+            thisCall.setParticipant(participant, 'invitee', modId);
+            thisCall.setState('participant-pending');
+          },
+          onError: function (err) {
+            logger.logError(err);
+            emitter.publish('error', err);
+          }
+        });
+      } catch (err) {
+        emitter.publish('error', err);
+      }
     }
 
     function updateParticipant(id, status) {

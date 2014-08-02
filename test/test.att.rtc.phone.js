@@ -1480,6 +1480,7 @@ describe('Phone', function () {
           addParticipantStub,
           conference,
           onSpy,
+          onErrorSpy,
           emitterConference,
           onParticipantPendingSpy;
 
@@ -1505,6 +1506,7 @@ describe('Phone', function () {
 
           onSpy = sinon.spy(conference, 'on');
           onParticipantPendingSpy = sinon.spy();
+          onErrorSpy = sinon.spy();
 
           addParticipantStub = sinon.stub(conference, 'addParticipant');
           publishStub = sinon.stub(emitter, 'publish');
@@ -1563,13 +1565,12 @@ describe('Phone', function () {
           describe('error', function () {
 
             it('should publish `error` with event data on getting an `error` from conf', function (done) {
-              emitterConference.publish('error', eventData);
+              emitterConference.publish('error', errorData);
 
               setTimeout(function() {
                 try {
                   expect(publishStub.calledOnce).to.equal(true);
-                  expect(publishStub.calledWith('error')).to.equal(true);
-                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  expect(publishStub.calledWith('error', errorData)).to.equal(true);
                   done();
                 } catch(e) {
                   done(e);
@@ -1580,8 +1581,7 @@ describe('Phone', function () {
         });
 
         it('should execute call.addParticipant', function () {
-          expect(addParticipantStub.called).to.equal(true);
-          expect(addParticipantStub.getCall(0).args[0]).to.equal('1234');
+          expect(addParticipantStub.calledWith('1234')).to.equal(true);
         });
 
         describe('Error Handling', function () {
