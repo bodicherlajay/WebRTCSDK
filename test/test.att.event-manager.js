@@ -357,7 +357,7 @@ describe('Event Manager', function () {
             expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
             expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
             expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
-            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal(event.sdp);
+            expect(publishSpy.getCall(1).args[1].remoteDescription).to.equal(event.sdp);
             done();
           } catch (e) {
             done(e);
@@ -378,7 +378,7 @@ describe('Event Manager', function () {
             expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
             expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
             expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
-            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal(event.sdp);
+            expect(publishSpy.getCall(1).args[1].remoteDescription).to.equal(event.sdp);
             done();
           } catch (e) {
             done(e);
@@ -391,7 +391,7 @@ describe('Event Manager', function () {
       var event;
 
       describe('media-modifications', function () {
-        it('should publish event `media-modifications` with `remoteSdp` and `modificationId`', function (done) {
+        it('should publish event `media-modifications` with `remoteDescription` and `modificationId`', function (done) {
           event = {
             'type': 'calls',
             'from': 'sip:1234@icmn.api.att.net',
@@ -405,7 +405,7 @@ describe('Event Manager', function () {
 
           setTimeout(function () {
             expect(publishSpy.calledWith('media-modifications', {
-              remoteSdp: 'abc',
+              remoteDescription: 'abc',
               modificationId: '12345'
             })).to.equal(true);
             done();
@@ -419,7 +419,7 @@ describe('Event Manager', function () {
 
       describe('media-mod-terminations', function () {
 
-        it('should publish event `media-mod-terminations` with `type` call and `remoteSdp` and `modificationId` for calls event', function (done) {
+        it('should publish event `media-mod-terminations` with `type` call and `remoteDescription` and `modificationId` for calls event', function (done) {
           event = {
             'type': 'calls',
             'from': 'sip:1234@icmn.api.att.net',
@@ -435,7 +435,7 @@ describe('Event Manager', function () {
           setTimeout(function () {
             expect(publishSpy.calledWith('media-mod-terminations', {
               type: 'call',
-              remoteSdp: 'abcdefg',
+              remoteDescription: 'abcdefg',
               modificationId: '12345',
               reason: 'success'
             })).to.equal(true);
@@ -443,7 +443,7 @@ describe('Event Manager', function () {
           }, 100);
         });
 
-        it('should publish event `media-mod-terminations` with `type` conference and `remoteSdp` and `modificationId` for conference event', function (done) {
+        it('should publish event `media-mod-terminations` with `type` conference and `remoteDescription` and `modificationId` for conference event', function (done) {
           event = {
             'type': 'conferences',
             'from': 'sip:1234@icmn.api.att.net',
@@ -459,7 +459,7 @@ describe('Event Manager', function () {
           setTimeout(function () {
             expect(publishSpy.calledWith('media-mod-terminations', {
               type: 'conference',
-              remoteSdp: 'abcdefg',
+              remoteDescription: 'abcdefg',
               modificationId: '12345',
               reason: 'success'
             })).to.equal(true);
@@ -473,7 +473,7 @@ describe('Event Manager', function () {
     describe('session-open', function () {
       var event;
 
-      it('should publish `call-connected` event with type `call` and remoteSdp for a calls event', function (done) {
+      it('should publish `call-connected` event with type `call` and remoteDescription for a calls event', function (done) {
 
         event = {
           type:'calls',
@@ -488,13 +488,13 @@ describe('Event Manager', function () {
         setTimeout(function () {
           expect(publishSpy.calledWith('call-connected', {
             type: 'call',
-            remoteSdp: event.sdp
+            remoteDescription: event.sdp
           })).to.equal(true);
           done();
         }, 100);
       });
 
-      it('should publish `call-connected` event with type `conferences` and remoteSdp for a conferences event', function (done) {
+      it('should publish `call-connected` event with type `conferences` and remoteDescription for a conferences event', function (done) {
 
         event = {
           type:'conferences',
@@ -509,7 +509,7 @@ describe('Event Manager', function () {
         setTimeout(function () {
           expect(publishSpy.calledWith('call-connected', {
             type: 'conference',
-            remoteSdp: event.sdp
+            remoteDescription: event.sdp
           })).to.equal(true);
           done();
         }, 100);

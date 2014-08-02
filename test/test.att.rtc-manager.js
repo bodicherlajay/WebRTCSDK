@@ -1528,14 +1528,14 @@ describe('RTC Manager', function () {
 
         it('should execute peerConnSvc.setRemoteAndCreateAnswer', function () {
           var modifications = {
-              remoteSdp: 'abc',
+              remoteDescription: 'abc',
               modificationId: '123'
             },
             setRemoteAndCreateAnswerStub = sinon.stub(peerConnSvc, 'setRemoteAndCreateAnswer', function () {});
 
           rtcManager.setMediaModifications(modifications);
 
-          expect(setRemoteAndCreateAnswerStub.calledWith(modifications.remoteSdp, modifications.modificationId)).to.equal(true);
+          expect(setRemoteAndCreateAnswerStub.calledWith(modifications.remoteDescription, modifications.modificationId)).to.equal(true);
 
           setRemoteAndCreateAnswerStub.restore();
         });

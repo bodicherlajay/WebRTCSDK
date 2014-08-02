@@ -49,11 +49,11 @@
     });
 
     function setMediaModifications(modifications) {
-      peerConnSvc.setRemoteAndCreateAnswer(modifications.remoteSdp, modifications.modificationId);
+      peerConnSvc.setRemoteAndCreateAnswer(modifications.remoteDescription, modifications.modificationId);
     }
 
     function setRemoteDescription(modifications) {
-      peerConnSvc.setTheRemoteDescription(modifications.remoteSdp, modifications.type);
+      peerConnSvc.setTheRemoteDescription(modifications.remoteDescription, modifications.type);
     }
 
     function resetPeerConnection() {
@@ -303,7 +303,7 @@
             type: options.type,
             mediaConstraints: userMedia.mediaConstraints,
             localStream: userMedia.localStream,
-            remoteSdp: options.remoteSdp,
+            remoteDescription: options.remoteDescription,
             sessionInfo: options.sessionInfo,
             onPeerConnectionInitiated: function (callInfo) {
               if (undefined !== callInfo.xState

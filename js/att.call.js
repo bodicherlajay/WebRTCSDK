@@ -30,7 +30,7 @@
       localMedia,
       remoteMedia,
       localSdp = null,
-      remoteSdp = null,
+      remoteDescription = null,
       localStream = null,
       state = null,
       codec = [],
@@ -73,44 +73,44 @@
 
     function onMediaModifications(modifications) {
       rtcManager.setMediaModifications(modifications);
-      if (modifications.remoteSdp
-        && modifications.remoteSdp.indexOf('recvonly') !== -1) {
+      if (modifications.remoteDescription
+        && modifications.remoteDescription.indexOf('recvonly') !== -1) {
         thisCall.setState('held');
         rtcManager.disableMediaStream();
       }
-      if (modifications.remoteSdp
-        && remoteSdp
-        && remoteSdp.indexOf
-        && remoteSdp.indexOf('recvonly') !== -1
-        && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+      if (modifications.remoteDescription
+        && remoteDescription
+        && remoteDescription.indexOf
+        && remoteDescription.indexOf('recvonly') !== -1
+        && modifications.remoteDescription.indexOf('sendrecv') !== -1) {
         thisCall.setState('resumed');
         rtcManager.enableMediaStream();
       }
-      thisCall.setRemoteSdp(modifications.remoteSdp);
+      thisCall.setRemoteSdp(modifications.remoteDescription);
     }
 
     function onMediaModTerminations(modifications) {
-      if (modifications.remoteSdp) {
+      if (modifications.remoteDescription) {
         rtcManager.setRemoteDescription({
-          remoteSdp: modifications.remoteSdp,
+          remoteDescription: modifications.remoteDescription,
           type: 'answer'
         });
         if (modifications.reason === 'success'
-          && modifications.remoteSdp.indexOf('sendonly') !== -1
-          && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+          && modifications.remoteDescription.indexOf('sendonly') !== -1
+          && modifications.remoteDescription.indexOf('sendrecv') === -1) {
           thisCall.setState('held');
           rtcManager.disableMediaStream();
         }
         if (modifications.reason === 'success'
-          && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+          && modifications.remoteDescription.indexOf('sendrecv') !== -1) {
           thisCall.setState('resumed');
           rtcManager.enableMediaStream();
         }
-        thisCall.setRemoteSdp(modifications.remoteSdp);
+        thisCall.setRemoteSdp(modifications.remoteDescription);
       }
 
       if ('conference' === modifications.type && undefined !== modifications.modificationId) {
-        if (null === thisCall.remoteSdp()) {
+        if (null === thisCall.remoteDescription()) {
           if ('success' === modifications.reason) {
             thisCall.updateParticipant(modifications.modificationId, 'accepted');
           }
@@ -172,7 +172,7 @@
     }
 
     function setRemoteSdp(sdp) {
-      remoteSdp = sdp;
+      remoteDescription = sdp;
       if (null !== sdp) {
         codec = sdpFilter.getCodecfromSDP(sdp);
       }
@@ -238,12 +238,12 @@
           thisCall.setState('connected');
 
           if ('call' === thisCall.breed()) {
-            if (data.remoteSdp) {
+            if (data.remoteDescription) {
               rtcManager.setRemoteDescription({
-                remoteSdp: data.remoteSdp,
+                remoteDescription: data.remoteDescription,
                 type: 'answer'
               });
-              thisCall.setRemoteSdp(data.remoteSdp);
+              thisCall.setRemoteSdp(data.remoteDescription);
             }
 
             rtcManager.playStream('remote');
@@ -258,7 +258,7 @@
             callId: id,
             type: type,
             mediaType: mediaType,
-            remoteSdp: remoteSdp,
+            remoteDescription: remoteDescription,
             sessionInfo: sessionInfo,
             onCallConnecting: function (callInfo) {
               try {
@@ -326,7 +326,7 @@
           };
 
           if (ATT.CallTypes.INCOMING === type) {
-            pcOptions.remoteSdp = remoteSdp;
+            pcOptions.remoteDescription = remoteDescription;
           }
 
           peerConnection = factories.createPeerConnection(pcOptions);
@@ -379,7 +379,7 @@
 
       setState('disconnecting');
 
-      if (null === this.remoteSdp()) {
+      if (null === this.remoteDescription()) {
         logger.logInfo('Canceling...');
 
         rtcManager.cancelCall({
@@ -399,7 +399,7 @@
             });
           }
         });
-      } else if (null !== id && null !== this.remoteSdp()) {
+      } else if (null !== id && null !== this.remoteDescription()) {
         logger.logInfo('Disconnecting...');
 
         rtcManager.disconnectCall({
@@ -568,9 +568,9 @@
     this.remoteMedia = function () {
       return remoteMedia;
     };
-    this.remoteSdp = function () {
+    this.remoteDescription = function () {
       if ('call' === breed) {
-        return remoteSdp;
+        return remoteDescription;
       }
 
       if (undefined === peerConnection) {

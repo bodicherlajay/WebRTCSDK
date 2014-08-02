@@ -56,19 +56,19 @@
           id: event.resourceURL.split('/')[6],
           from: event.from.split('@')[0].split(':')[1],
           mediaType: (codec.length === 1) ? 'audio' : 'video',
-          remoteSdp: event.sdp
+          remoteDescription: event.sdp
         });
         break;
       case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
         emitter.publish('media-modifications', {
-          remoteSdp: event.sdp,
+          remoteDescription: event.sdp,
           modificationId: event.modId
         });
         break;
       case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
         emitter.publish('media-mod-terminations', {
           type: event.type === 'calls' ? 'call' : 'conference',
-          remoteSdp: event.sdp,
+          remoteDescription: event.sdp,
           modificationId: event.modId,
           reason: event.reason
         });
@@ -76,7 +76,7 @@
       case ATT.RTCCallEvents.SESSION_OPEN:
         emitter.publish('call-connected', {
           type: event.type === 'calls' ? 'call' : 'conference',
-          remoteSdp: event.sdp
+          remoteDescription: event.sdp
         });
         break;
       case ATT.RTCCallEvents.SESSION_TERMINATED:

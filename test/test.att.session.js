@@ -1107,7 +1107,7 @@ describe('Session', function () {
           id: '123',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteDescription: 'abc'
         };
 
         conferenceInfo = {
@@ -1115,7 +1115,7 @@ describe('Session', function () {
           id: '123',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteDescription: 'abc'
         };
 
         emitterEM = ATT.private.factories.createEventEmitter();
@@ -1168,7 +1168,7 @@ describe('Session', function () {
         }, 100);
       });
 
-      it('should execute call.setRemoteSdp with remoteSdp on the newly created call', function (done) {
+      it('should execute call.setRemoteSdp with remoteDescription on the newly created call', function (done) {
 
         var call = new ATT.rtc.Call({
           breed: 'call',
@@ -1189,7 +1189,7 @@ describe('Session', function () {
 
         setTimeout(function () {
           try {
-            expect(setRemoteSdpSpy.calledWith(callInfo.remoteSdp)).to.equal(true);
+            expect(setRemoteSdpSpy.calledWith(callInfo.remoteDescription)).to.equal(true);
             createCallSpyStub.restore();
             setRemoteSdpSpy.restore();
             done();
@@ -1258,7 +1258,7 @@ describe('Session', function () {
           type: 'call',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteDescription: 'abc'
         };
 
         conferenceInfo = {
@@ -1266,7 +1266,7 @@ describe('Session', function () {
           id: '123',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteDescription: 'abc'
         };
 
         emitterEM = ATT.private.factories.createEventEmitter();

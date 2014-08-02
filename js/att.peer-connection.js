@@ -84,7 +84,7 @@
       }
     };
 
-    if (undefined === options.remoteSdp) {
+    if (undefined === options.remoteDescription) {
 
       pc.createOffer(function (description) {
         logger.logInfo('createOffer: success');
@@ -94,7 +94,7 @@
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
     } else {
-      pc.setRemoteDescription(options.remoteSdp);
+      pc.setRemoteDescription(options.remoteDescription);
       pc.createAnswer(function (description) {// SUCCESS
         processDescription(description, onSuccess);
       }, function () {// ERROR createAnswer

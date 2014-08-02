@@ -45,8 +45,8 @@
         });
 
       if (undefined !== call) {
-        if (callInfo.remoteSdp) {
-          call.setRemoteSdp(callInfo.remoteSdp);
+        if (callInfo.remoteDescription) {
+          call.setRemoteSdp(callInfo.remoteDescription);
         }
 
         if (call.breed() === 'call') {

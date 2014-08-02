@@ -73,7 +73,7 @@ describe('Call', function () {
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.INCOMING,
-      remoteSdp: 'abc',
+      remoteDescription: 'abc',
       sessionInfo : {sessionId : '12345'}
     };
 
@@ -82,7 +82,7 @@ describe('Call', function () {
       peer: '12345',
       mediaType: 'video',
       type: ATT.CallTypes.INCOMING,
-      remoteSdp: 'abc'
+      remoteDescription: 'abc'
     };
 
     optionsOutgoingConf = {
@@ -286,7 +286,7 @@ describe('Call', function () {
       outgoingConf = new ATT.rtc.Call(optionsOutgoingConf);
       incomingConf = new ATT.rtc.Call(optionsIncomingConf);
 
-      incomingCall.setRemoteSdp(optionsIncoming.remoteSdp);
+      incomingCall.setRemoteSdp(optionsIncoming.remoteDescription);
 
       onConnectingSpy = sinon.spy();
       onConnectedSpy = sinon.spy();
@@ -409,10 +409,10 @@ describe('Call', function () {
           expect(connectCallStub.called).to.equal(true);
         });
 
-        it('should execute RTCManager.connectCall with `remoteSdp` for incoming calls', function () {
+        it('should execute RTCManager.connectCall with `remoteDescription` for incoming calls', function () {
           incomingCall.connect(connectOptions);
 
-          expect(connectCallStub.getCall(0).args[0].remoteSdp).to.equal(optionsIncoming.remoteSdp);
+          expect(connectCallStub.getCall(0).args[0].remoteDescription).to.equal(optionsIncoming.remoteDescription);
         });
 
         it('should not execute RTCManager.connectCall for breed `conference`', function () {
@@ -704,9 +704,9 @@ describe('Call', function () {
         expect(outgoingCall.getState()).to.equal('disconnecting');
       });
 
-      describe('Cancel Call [call.remoteSdp === null]', function () {
+      describe('Cancel Call [call.remoteDescription === null]', function () {
 
-        it('should call `rtcManager.cancelCall` if the remoteSdp is null', function () {
+        it('should call `rtcManager.cancelCall` if the remoteDescription is null', function () {
           var cancelCallStub = sinon.stub(rtcMgr, 'cancelCall');
 
           outgoingCall.disconnect();
@@ -749,11 +749,11 @@ describe('Call', function () {
         });
       });
 
-      describe('Disconnect Call [call.remoteSdp !== null]', function () {
+      describe('Disconnect Call [call.remoteDescription !== null]', function () {
         it('should call rtcManager.disconnectCall', function () {
           var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
 
-          // for this test we need that call to have a valid remoteSdp, otherwise
+          // for this test we need that call to have a valid remoteDescription, otherwise
           // it will call `rtcManager.cancelCall`
           outgoingCall.setRemoteSdp('abcdefg');
           outgoingCall.setId('1234');
@@ -1201,12 +1201,12 @@ describe('Call', function () {
         expect(outgoingCall.setRemoteSdp).to.be.a('function');
       });
 
-      it('should set the remoteSdp', function () {
+      it('should set the remoteDescription', function () {
         var remoteSdp = 'abc';
 
         outgoingCall.setRemoteSdp(remoteSdp);
 
-        expect(outgoingCall.remoteSdp()).to.equal(remoteSdp);
+        expect(outgoingCall.remoteDescription()).to.equal(remoteSdp);
       });
 
       it('should set the codec', function () {
@@ -1267,18 +1267,18 @@ describe('Call', function () {
 
         beforeEach(function () {
           modificationsHold = {
-            remoteSdp: 'abc recvonly',
+            remoteDescription: 'abc recvonly',
             modificationId: '123'
           };
           modificationsResume = {
-            remoteSdp: 'abc sendrecv',
+            remoteDescription: 'abc sendrecv',
             modificationId: '123'
           };
 
           disableMediaStreamStub = sinon.stub(rtcMgr, 'disableMediaStream');
           enableMediaStreamStub = sinon.stub(rtcMgr, 'enableMediaStream');
 
-          call.setRemoteSdp(modificationsHold.remoteSdp);
+          call.setRemoteSdp(modificationsHold.remoteDescription);
 
           setMediaModificationsStub = sinon.stub(rtcMgr, 'setMediaModifications');
         });
@@ -1307,7 +1307,7 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setRemoteSdpSpy.calledWith(modificationsHold.remoteSdp)).to.equal(true);
+              expect(setRemoteSdpSpy.calledWith(modificationsHold.remoteDescription)).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1346,8 +1346,8 @@ describe('Call', function () {
 
         describe('Resume modification', function () {
 
-          it('should execute setState with `resumed` state if the new remoteSdp contains `sendrecv` '
-            + '&& the current remoteSdp contains `recvonly`', function (done) {
+          it('should execute setState with `resumed` state if the new remoteDescription contains `sendrecv` '
+            + '&& the current remoteDescription contains `recvonly`', function (done) {
             emitterEM.publish('media-modifications', modificationsResume);
 
             setTimeout(function () {
@@ -1360,8 +1360,8 @@ describe('Call', function () {
             }, 10);
           });
 
-          it('should execute rtcManager.enableMediaStream if the new remoteSdp contains `sendrecv`'
-            + ' && the current remoteSdp contains `recvonly`', function (done) {
+          it('should execute rtcManager.enableMediaStream if the new remoteDescription contains `sendrecv`'
+            + ' && the current remoteDescription contains `recvonly`', function (done) {
             emitterEM.publish('media-modifications', modificationsResume);
 
             setTimeout(function () {
@@ -1390,12 +1390,12 @@ describe('Call', function () {
 
         beforeEach(function () {
           modificationsHold = {
-            remoteSdp: 'abcsendonly',
+            remoteDescription: 'abcsendonly',
             modificationId: '123',
             reason: 'success'
           };
           modificationsResume = {
-            remoteSdp: 'abcsendrecv',
+            remoteDescription: 'abcsendrecv',
             modificationId: '12345',
             reason: 'success'
           };
@@ -1428,7 +1428,7 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setRemoteSdpSpy.calledWith(modificationsHold.remoteSdp)).to.equal(true);
+              expect(setRemoteSdpSpy.calledWith(modificationsHold.remoteDescription)).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1436,13 +1436,13 @@ describe('Call', function () {
           }, 10);
         });
 
-        it('should call `RTCManager.setRemoteDescription` if there is a remoteSdp', function (done) {
+        it('should call `RTCManager.setRemoteDescription` if there is a remoteDescription', function (done) {
           emitterEM.publish('media-mod-terminations', modificationsHold);
 
           setTimeout(function () {
             try {
               expect(setRemoteDescriptionStub.calledWith({
-                remoteSdp: modificationsHold.remoteSdp,
+                remoteDescription: modificationsHold.remoteDescription,
                 type: 'answer'
               })).to.equal(true);
               done();
@@ -1471,7 +1471,7 @@ describe('Call', function () {
 
         describe('resume', function () {
 
-          it('should execute setState with `resumed` state if the new remoteSdp contains `sendrecv`', function (done) {
+          it('should execute setState with `resumed` state if the new remoteDescription contains `sendrecv`', function (done) {
             emitterEM.publish('media-mod-terminations', modificationsResume);
 
             setTimeout(function () {
@@ -1537,7 +1537,7 @@ describe('Call', function () {
         beforeEach(function () {
           eventData = {
             type: 'call',
-            remoteSdp: 'abcdefg'
+            remoteDescription: 'abcdefg'
           };
 
           setRemoteDescriptionStub = sinon.stub(rtcMgr, 'setRemoteDescription');
@@ -1568,7 +1568,7 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setRemoteSdpSpy.calledWith(eventData.remoteSdp)).to.equal(true);
+              expect(setRemoteSdpSpy.calledWith(eventData.remoteDescription)).to.equal(true);
               expect(setRemoteSdpSpy.calledAfter(setStateSpy)).to.equal(true);
               done();
             } catch (e) {
@@ -1584,7 +1584,7 @@ describe('Call', function () {
             try {
               expect(setRemoteDescriptionStub.calledWith({
                 type: 'answer',
-                remoteSdp: eventData.remoteSdp
+                remoteDescription: eventData.remoteDescription
               })).to.equal(true);
               done();
             } catch (e) {
