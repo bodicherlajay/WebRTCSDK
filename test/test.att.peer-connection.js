@@ -25,7 +25,7 @@ describe('PeerConnection', function () {
     createOptionsIncoming = {
       stream : {},
       mediaType: 'video',
-      remoteSDP : '123',
+      remoteSdp : '123',
       onSuccess : function () {},
       onRemoteStream : function () {},
       onError : function () {}
@@ -306,6 +306,17 @@ describe('PeerConnection', function () {
 
         afterEach(function () {
           createAnswerStub.restore();
+        });
+
+        it.only('should set the `pc.remoteSdp` if we have a remoteSdp', function () {
+          var setRemoteDescriptionSpy = sinon.spy(rtcPC, 'setRemoteDescription');
+
+          factories.createPeerConnection(createOptionsIncoming);
+
+          console.log(createOptionsIncoming.remoteSdp);
+          expect(setRemoteDescriptionSpy.calledWith(createOptionsIncoming.remoteSdp)).to.equal(true);
+
+          setRemoteDescriptionSpy.restore();
         });
 
         it('should call `pc.createAnswer` if we have a remoteSdp', function () {
