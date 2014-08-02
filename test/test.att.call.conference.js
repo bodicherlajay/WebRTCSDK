@@ -300,27 +300,24 @@ describe('Call [Conference]', function () {
 
         describe('createPeerConnection: onSuccess', function () {
 
-          var localSDP,
+          var localDescription,
             connectConferenceStub,
             pcOnSuccessSpy,
             peerConnection;
 
           beforeEach(function () {
 
-            localSDP = 'ABCD';
-            peerConnection = {
-              getLocalDescription: function () {
-                return localSDP;
-              }
+            localDescription = {
+              sdp: 'ABDC',
+              type: 'abc'
             };
+
             createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
               setTimeout(function () {
                 pcOnSuccessSpy = sinon.spy(options, 'onSuccess');
-                options.onSuccess(localSDP);
+                options.onSuccess(localDescription);
                 pcOnSuccessSpy.restore();
               }, 100);
-
-              return peerConnection;
             });
           });
 
@@ -477,23 +474,23 @@ describe('Call [Conference]', function () {
             var setLocalSdpStub,
               connectConferenceStub,
               rtcPCStub,
-              localSdp,
-              peerConnection;
+              localDescription,
+              peerConnection,
+              onSuccessSpy;
 
             beforeEach(function () {
-              localSdp = '123';
+              localDescription = {
+                sdp: '213',
+                type: 'abc'
+              };
               rtcPCStub = sinon.stub(window, 'RTCPeerConnection');
 
-              peerConnection = {
-                getLocalDescription: function () {
-                  return localSdp;
-                }
-              };
               createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
                 setTimeout(function () {
-                  options.onSuccess(localSdp);
-                }, 0);
-                return peerConnection;
+                  onSuccessSpy = sinon.spy(options, 'onSuccess');
+                  options.onSuccess(localDescription);
+                  onSuccessSpy.restore();
+                }, 50);
               });
             });
 
@@ -504,23 +501,17 @@ describe('Call [Conference]', function () {
 
             it('should execute RTCManager.connectConference with localSdp', function (done) {
 
-              var getLocalSDPStub = sinon.stub(peerConnection, 'getLocalDescription', function () {
-                return localSdp;
-              });
               connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
 
               incomingConf.connect();
 
               setTimeout(function () {
+                expect(onSuccessSpy.called).to.equal(true);
                 expect(connectConferenceStub.called).to.equal(true);
-                expect(connectConferenceStub.getCall(0).args[0]).to.be.an('object');
-                expect(connectConferenceStub.getCall(0).args[0].description).to.not.equal(null);
                 expect(connectConferenceStub.getCall(0).args[0].description).to.equal(incomingConf.localSdp());
                 expect(connectConferenceStub.getCall(0).args[0].sessionInfo).to.equal(optionsIncomingConf.sessionInfo);
                 expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
                 expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
-
-                getLocalSDPStub.restore();
                 connectConferenceStub.restore();
                 done();
               }, 100);
@@ -607,9 +598,10 @@ describe('Call [Conference]', function () {
               });
             });
             afterEach(function () {
+              createPeerConnectionStub.restore();
             });
 
-            it.only('should call publish `stream-added` with the remote stream', function (done) {
+            it('should call publish `stream-added` with the remote stream', function (done) {
 
               var onStreamAddedSpy = sinon.spy();
 
