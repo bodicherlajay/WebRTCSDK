@@ -76,8 +76,8 @@ describe('APIConfig', function () {
     });
 
     it('should have a valid method startCall method and returns Authorization and url', function () {
-      expect(currentConfiguration.startCall.method).to.equal('post');
       expect(currentConfiguration.startCall).to.be.an('object');
+      expect(currentConfiguration.startCall.method).to.equal('post');
       expect(currentConfiguration.startCall.formatters.url('sessionid')).to.equal(appConfig.RTCEndpoint + '/sessions/sessionid/calls');
       expect(currentConfiguration.startCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
     });
@@ -110,8 +110,8 @@ describe('APIConfig', function () {
 
     it('should have a valid method addParticipant', function () {
       var params = ['sessionId', 'confId', 'participantId'];
-      expect(currentConfiguration.addParticipant.method).to.equal('put');
       expect(currentConfiguration.addParticipant).to.be.an('object');
+      expect(currentConfiguration.addParticipant.method).to.equal('put');
       expect(currentConfiguration.addParticipant.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/confId/participants/participantId');
       expect(currentConfiguration.addParticipant.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
       expect(currentConfiguration.addParticipant.headers).to.be.an('object');
@@ -119,19 +119,28 @@ describe('APIConfig', function () {
 
     it('should have a valid method acceptModifications method and returns Authorization and url', function () {
       var  params = ["param1", "param2"];
-      expect(currentConfiguration.acceptModifications.method).to.equal('put');
       expect(currentConfiguration.acceptModifications).to.be.an('object');
+      expect(currentConfiguration.acceptModifications.method).to.equal('put');
       expect(currentConfiguration.acceptModifications.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/param1/calls/param2');
       expect(currentConfiguration.acceptModifications.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
     });
 
     it('should have a valid method endCall method and returns Authorization and url', function () {
-      var  params = ["sessionId", "/uri/", "callId"];
-      expect(currentConfiguration.endCall.method).to.equal('delete');
+      var  params = ["sessionId", "callType", "callId"];
       expect(currentConfiguration.endCall).to.be.an('object');
-      expect(currentConfiguration.endCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/uri/callId');
+      expect(currentConfiguration.endCall.method).to.equal('delete');
+      expect(currentConfiguration.endCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/callType/callId');
       expect(currentConfiguration.endCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
     });
+
+    it('should have a valid method rejectCall method and returns Authorization and url', function () {
+      var  params = ["sessionId", "callType", "callId"];
+      expect(currentConfiguration.rejectCall).to.be.an('object');
+      expect(currentConfiguration.rejectCall.method).to.equal('delete');
+      expect(currentConfiguration.rejectCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/callType/callId');
+      expect(currentConfiguration.rejectCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
+    });
+
   });
 
 });

@@ -333,36 +333,50 @@
     }
 
     function connectConference(options) {
-      var responseData, config;
+      var responseData, joinConfig, createConfig, params;
 
-        config = {
+      params = {
+        url: [options.sessionInfo.sessionId],
+        headers: {
+          'Authorization': 'Bearer ' + options.sessionInfo.token
+        }
+      };
+
+      joinConfig = {
         data: {
           conferenceModifications: {
             sdp: options.localSdp
           }
         },
         success: function (response) {
-          if (response.getResponseHeader('x-conference-action') === 'call-answer') {
-            responseData = {
-              state: response.getResponseHeader('x-conference-action')
-            };
-          } else {
-            responseData = {
-              id: response.getResponseHeader('Location').split('/')[6],
-              state: response.getResponseHeader('x-state')
-            };
-          }
-
+          responseData = {
+            state: response.getResponseHeader('x-conference-action')
+          };
           options.onSuccess(responseData);
         },
-        error: function (error) {
-          options.onError(error);
-        }
+        error: options.onError
       };
+      createConfig = {
+        params: params,
+        data: {
+          conference: {
+            sdp: options.localSdp
+          }
+        },
+        success: function (response) {
+          responseData = {
+            id: response.getResponseHeader('Location').split('/')[6],
+            state: response.getResponseHeader('x-state')
+          };
+          options.onSuccess(responseData);
+        },
+        error: options.onError
+      };
+
       if (undefined !== options.conferenceId) {
-        resourceManager.doOperation('acceptConference', config);
+        resourceManager.doOperation('acceptConference', joinConfig);
       } else {
-        resourceManager.doOperation('createConference', config);
+        resourceManager.doOperation('createConference', createConfig);
       }
     }
 
@@ -423,41 +437,41 @@
 
     // Reused for call & conference
     function disconnectCall (options) {
-      var sessionInfo,
-        uri;
 
       if (undefined === options) {
-        throw new Error('No options defined.');
+        throw new Error('No options provided');
       }
-
       if (undefined === options.callId) {
-        throw new Error('CallId not defined');
+        throw new Error('No CallId provided');
       }
-
-      if (undefined === options.sessionInfo) {
-        throw new Error('sessionInfo not defined');
-      }
-
       if (undefined === options.breed) {
-        throw new Error('breed not defined');
+        throw new Error('No call breed provided');
       }
-
+      if (undefined === options.sessionId) {
+        throw new Error('No sessionId provided');
+      }
+      if (undefined === options.token) {
+        throw new Error('No token provided');
+      }
+      if (undefined === options.onSuccess) {
+        throw new Error('No success callback provided');
+      }
       if (undefined === options.onError) {
-        throw new Error('onError callback not defined');
+        throw new Error('No error callback provided');
       }
 
-      sessionInfo = options.sessionInfo;
-      uri = (options.breed === 'call' ? '/calls/' : '/conferences/');
+      var type = (options.breed === 'call' ? 'calls' : 'conferences'),
+        operation = (options.breed === 'call' ? 'hangup' : 'endConference');
 
       resourceManager.doOperation('endCall', {
         params: {
           url: [
-            sessionInfo.sessionId,
-            uri,
+            options.sessionId,
+            type,
             options.callId
           ],
           headers: {
-            'Authorization': 'Bearer ' + sessionInfo.token
+            'Authorization': 'Bearer ' + options.token
           }
         },
         success: function () {
@@ -465,38 +479,37 @@
         },
         error: function (error) {
           logger.logError(error);
-          if ('call' === options.breed) {
-            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'hangup', 'RTC'));
-          } else if ('conference' === options.breed) {
-            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'endConference', 'RTC'));
-          }
+
+          options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', operation, 'RTC'));
         }
       });
     }
 
     function cancelCall(options) {
 
-      if (undefined === options
-          || 0 === Object.keys(options).length) {
-        throw new Error('No `options` passed');
+      if (undefined === options) {
+        throw new Error('No options provided');
       }
-
-      if (undefined === options.success) {
-        throw new Error('No `success` callback passed');
-      }
-
-      if (undefined === options.sessionInfo) {
-        throw new Error('No `sessionInfo` passed');
-      }
-
       if (undefined === options.callId) {
-        throw new Error('No `callId` passed');
+        throw new Error('No callId provided');
+      }
+      if (undefined === options.sessionId) {
+        throw new Error('No sessionId provided');
+      }
+      if (undefined === options.token) {
+        throw new Error('No token provided');
+      }
+      if (undefined === options.onSuccess) {
+        throw new Error('No success callback provided');
+      }
+      if (undefined === options.onError) {
+        throw new Error('No error callback provided');
       }
 
       // Its not ringing on the other end yet
       if (null === options.callId) {
         peerConnSvc.cancelSdpOffer(function () {
-          options.success();
+          options.onSuccess();
         });
 
       // Its probably ringing on the other end
@@ -504,11 +517,11 @@
         resourceManager.doOperation('cancelCall', {
           params: {
             url: [
-              options.sessionInfo.sessionId,
+              options.sessionId,
               options.callId
             ],
             headers: {
-              'Authorization': 'Bearer ' + options.sessionInfo.token
+              'Authorization': 'Bearer ' + options.token
             }
           },
           success: function () {
@@ -516,6 +529,7 @@
           },
           error: function (error) {
             logger.logError(error);
+
             options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'cancel', 'RTC'));
           }
         });
@@ -641,34 +655,36 @@
 
     function rejectCall(options) {
 
-
       if (undefined === options) {
-        throw 'Invalid options';
-      }
-      if (undefined === options.token || '' === options.token) {
-        throw 'No token passed';
+        throw new Error('Invalid options');
       }
       if (undefined === options.callId || '' === options.callId) {
-        throw 'No callId passed';
+        throw new Error('No callId provided');
       }
-
+      if(undefined === options.breed || '' === options.breed) {
+        throw new Error('No call breed provided');
+      }
       if (undefined === options.sessionId || '' === options.sessionId) {
-        throw 'No session Id passed';
+        throw new Error('No session Id provided');
       }
-
+      if (undefined === options.token || '' === options.token) {
+        throw new Error('No token provided');
+      }
       if (undefined === options.onSuccess  || typeof options.onSuccess !== 'function') {
-        throw 'No success callback passed';
+        throw new Error('No success callback provided');
       }
-
       if (undefined === options.onError || typeof options.onError !== 'function') {
-        throw 'No error callback passed';
+        throw new Error('No error callback provided');
       }
 
+      var type = 'call' === options.breed ? 'calls': 'conferences',
+        operation = 'call' === options.breed ? 'reject' : 'rejectConference';
 
       resourceManager.doOperation('rejectCall', {
         params: {
           url: [
             options.sessionId,
+            type,
             options.callId
           ],
           headers: {
@@ -680,7 +696,7 @@
         },
         error: function (error) {
           logger.logError(error);
-          options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'reject', 'RTC'));
+          options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', operation, 'RTC'));
         }
       });
     }

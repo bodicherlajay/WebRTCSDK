@@ -107,8 +107,15 @@ describe('PeerConnection', function () {
     });
 
     describe('Constructor: Valid parameters', function () {
+      var rtcPCConfig;
 
       beforeEach(function () {
+        rtcPCConfig = {
+          'iceServers': [
+            { 'url': 'STUN:74.125.133.127:19302' }
+          ]
+        };
+
         rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
           return rtcPC;
         });
@@ -123,6 +130,7 @@ describe('PeerConnection', function () {
         peerConnection = factories.createPeerConnection(createOptionsOutgoing);
 
         expect(peerConnection).to.be.a('object');
+        expect(rtcpcStub.calledWith(rtcPCConfig)).to.equal(true);
 
       });
 

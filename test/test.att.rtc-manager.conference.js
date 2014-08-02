@@ -49,6 +49,10 @@ describe('RTCManager [Conference]', function () {
 
         connectConfOpts = {
           localSdp: localSdp,
+          sessionInfo : {
+            sessionId: '123',
+            token : 'token'
+          },
           onSuccess: onSuccessSpy,
           onRemoteStream : onRemoteStreamSpy,
           onError: onErrorSpy
@@ -57,8 +61,15 @@ describe('RTCManager [Conference]', function () {
       it('should exist', function () {
         expect(rtcManager.connectConference).to.be.a('function');
       });
-      // TODO: can we reuse startCall apiconfig?
+
       it('should execute `doOperation(createConference)` with required params', function () {
+        var params = {
+          url : [ connectConfOpts.sessionInfo.sessionId ],
+          headers : {
+            Authorization : 'Bearer ' + connectConfOpts.sessionInfo.token
+          }
+        };
+
         doOperationStub = sinon.stub(resourceManager, 'doOperation');
 
         rtcManager.connectConference(connectConfOpts);
@@ -66,11 +77,9 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.called).to.equal(true);
         expect(doOperationStub.getCall(0).args[0]).to.equal('createConference');
         expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
-        expect(doOperationStub.getCall(0).args[1].data).eql({
-          conferenceModifications: {
-            sdp: localSdp
-          }
-        });
+        expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(params.url[0]);
+        expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.sessionInfo.token);
+        expect(doOperationStub.getCall(0).args[1].data.conference.sdp).to.equal(localSdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
         expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
         doOperationStub.restore();

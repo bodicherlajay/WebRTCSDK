@@ -1219,6 +1219,9 @@
     }
 
     function startConference(options) {
+
+      logger.logInfo('startConference');
+
       var conference;
       try {
         if (undefined === options
@@ -1235,7 +1238,7 @@
           return;
         }
         if ((undefined === options.mediaType)
-          || ('audio' !== options.mediaType
+            || ('audio' !== options.mediaType
             && 'video' !== options.mediaType)) {
           publishError('18003');
           return;
@@ -1254,10 +1257,12 @@
           localMedia: options.localMedia,
           remoteMedia: options.remoteMedia,
           onUserMedia: function (userMedia) {
-            conference.addStream(userMedia);
+            logger.logInfo('onUserMedia');
+            conference.addStream(userMedia.localStream);
             conference.connect();
           },
           onMediaEstablished: function () {
+            logger.logInfo('onMediaEstablished');
             logger.logInfo('Media Established');
           },
           onUserMediaError: function (error) {
@@ -1265,7 +1270,7 @@
           }
         });
       } catch (err) {
-        publishError('18004', err);
+        publishError('18005', err);
       }
 
     }
@@ -1418,7 +1423,10 @@
     function getParticipants() {
       logger.logDebug('Phone.getParticipant');
 
-      var conference;
+      var conference,
+        participants,
+        active,
+        key;
 
       try {
         conference = session.currentCall;
@@ -1429,7 +1437,16 @@
           return;
         }
         try {
-          return conference.participants();
+          participants = conference.participants();
+          active = {};
+
+          for (key in participants) {
+            if ('accepted' === participants[key].status) {
+              active[key] = participants[key];
+            }
+          }
+
+          return active;
         } catch (err) {
           throw ATT.errorDictionary.getSDKError(21001);
         }

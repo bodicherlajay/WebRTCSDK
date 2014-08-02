@@ -47,8 +47,8 @@
     * @attribute {Object} callbacks UI callbacks. Event object will be passed to these callbacks.
     */
     getUserMedia: function (options) {
+      logger.logInfo('getUserMedia');
       var that = this, error;
-      logger.logTrace('starting call');
 
       this.localMedia = options.localMedia;
       this.remoteMedia = options.remoteMedia;
