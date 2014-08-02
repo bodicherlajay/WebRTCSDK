@@ -367,6 +367,7 @@
     }
 
     function addParticipant(options) {
+      var participant;
 
       if (undefined === options) {
         throw new Error('No `options` passed');
@@ -385,12 +386,20 @@
         throw new Error('No `onParticipantPending` callback passed');
       }
 
+      participant = options.participant;
+
+      if (participant.indexOf('@') > 0) {
+        participant = 'sip:+' + participant
+      } else {
+        participant = 'tel:+' + participant
+      }
+
       resourceManager.doOperation('addParticipant', {
         params: {
           url: [
             options.sessionInfo.sessionId,
             options.confId,
-            options.participant
+            participant
           ],
           headers: {
             'Authorization': 'Bearer ' + options.sessionInfo.token
