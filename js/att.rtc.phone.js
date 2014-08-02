@@ -1304,12 +1304,7 @@
 
         conference = session.currentCall;
 
-        if (null === conference) {
-          publishError(19001);
-          return;
-        }
-
-        if ('conference' !== conference.breed()) {
+        if (null === conference || 'conference' !== conference.breed()) {
           publishError(19001);
           return;
         }
@@ -1323,7 +1318,7 @@
           conference.on('participant-pending', function (data) {
             /**
              * Participant pending event.
-             * @desc Add description here
+             * @desc An invitation has been sent to a participant
              *
              * @event Phone#participant-pending
              * @type {object}
@@ -1372,13 +1367,33 @@
 
       var conference;
 
-      conference = session.currentCall;
+      try {
+        if (null === session.getId()) {
+          publishError(23001);
+          return;
+        }
 
-      conference.on('disconnecting', function (data) {
-        emitter.publish('conference-disconnecting', data);
-      });
+        conference = session.currentCall;
 
-      conference.disconnect();
+        if (null === conference || 'conference' !== conference.breed()) {
+          publishError(23002);
+          return;
+        }
+
+        conference.on('disconnecting', function (data) {
+          emitter.publish('conference-disconnecting', data);
+        });
+
+        try {
+          conference.disconnect();
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError(23000);
+        }
+      } catch(err) {
+        emitter.publish('error', {
+          error: err
+        });
+      }
     }
 
     /**

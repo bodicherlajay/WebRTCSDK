@@ -653,6 +653,30 @@
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "endConference",
+      ErrorCode: "23000",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "endConference",
+      ErrorCode: "23001",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking endConference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "endConference",
+      ErrorCode: "23002",
+      ErrorMessage: "endConference failed - Conference is not in progress",
+      Cause: "Cannot end Conference before the conference is established",
+      Resolution: "Allow conference to be established before trying to end"
     }
   ];
 

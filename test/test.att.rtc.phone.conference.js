@@ -26,7 +26,7 @@ describe('Phone [Conference]', function () {
       return session;
     });
 
-    phone = new ATT.private.Phone();
+    phone = new Phone();
 
   });
   afterEach(function () {
@@ -322,16 +322,14 @@ describe('Phone [Conference]', function () {
       });
     });
 
-    describe('endConference', function () {
+    describe('[US225741] endConference', function () {
       var eventData,
         error,
         errorData,
         emitterConf,
         conference,
-        createCallStub,
         onSpy,
-        currentSession,
-        sessionStub,
+        callConstructorStub,
         conferenceDisconnectStub,
         createEventEmitterStub,
         conferenceDisconnectingHandlerSpy;
@@ -363,28 +361,27 @@ describe('Phone [Conference]', function () {
           sessionInfo : {sessionId : '12345', token : '123'}
         });
 
-        createCallStub = sinon.stub(session, 'createCall', function () {
+        callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
           return conference;
         });
 
-        createEventEmitterStub.restore();
+        phone = new ATT.private.Phone();
 
         conferenceDisconnectStub  = sinon.stub(conference, 'disconnect');
 
         onSpy = sinon.spy(conference, 'on');
         conferenceDisconnectingHandlerSpy = sinon.spy();
 
-        phone = ATT.rtc.Phone.getPhone();
-
         phone.on('conference-disconnecting', conferenceDisconnectingHandlerSpy);
 
-        currentSession = phone.getSession();
-        currentSession.currentCall = conference;
+        session.currentCall = conference;
+        session.setId('1234');
       });
 
       afterEach(function () {
-        createCallStub.restore();
         onSpy.restore();
+        callConstructorStub.restore();
+        createEventEmitterStub.restore();
       });
 
       it('should exist', function () {
@@ -416,6 +413,57 @@ describe('Phone [Conference]', function () {
             done(e);
           }
         }, 100);
+      });
+
+      describe('Error handling', function () {
+        var publishStub;
+
+        beforeEach(function () {
+          publishStub = sinon.stub(emitterConf, 'publish');
+          conferenceDisconnectStub.restore();
+        });
+
+        afterEach(function () {
+          publishStub.restore();
+        });
+
+        it('[23001] should be thrown if user is not logged in', function () {
+          session.setId(null);
+
+          phone.endConference();
+
+          expect(ATT.errorDictionary.getSDKError('23001')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('23001')
+          })).to.equal(true);
+        });
+
+        it('[23002] should be thrown if a conference is not in progress', function () {
+
+          conference.breed = function () {
+            return 'call'
+          };
+
+          phone.endConference();
+
+          expect(ATT.errorDictionary.getSDKError('23002')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('23002')
+          })).to.equal(true);
+        });
+
+        it('[23000] should be thrown if an internal error occurs', function () {
+          conferenceDisconnectStub  = sinon.stub(conference, 'disconnect', function () {
+            throw error;
+          });
+
+          phone.endConference();
+
+          expect(ATT.errorDictionary.getSDKError('23000')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('23000')
+          })).to.equal(true);
+        });
       });
     });
 
