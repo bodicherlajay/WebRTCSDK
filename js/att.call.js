@@ -220,7 +220,8 @@
      * @param {Object} The call config
     */
     function connect(connectOpts) {
-      var pcOptions;
+      var pcOptions,
+        connectOptions;
 
       try {
 
@@ -306,7 +307,7 @@
             stream: localStream,
             onSuccess: function (description) {
 
-              rtcManager.connectConference({
+              connectOptions = {
                 sessionId: sessionInfo.sessionId,
                 token: sessionInfo.token,
                 description: description,
@@ -324,7 +325,13 @@
                     error: error
                   });
                 }
-              });
+              };
+
+              if (undefined !== id && null !== id) {
+                connectOptions.conferenceId = id;
+              }
+
+              rtcManager.connectConference(connectOptions);
             },
             onError: function (error) {
               emitter.publish('error', {

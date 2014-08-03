@@ -51,7 +51,7 @@
       // parameter of Get Events after Add Participant request for
       // both noTN and VTN.
       if (event.from.indexOf('conf-factory') > 0) {
-        type = 'conferences';
+        type = 'conference';
       } else {
         type = event.type === 'calls' ? 'call' : 'conference';
       }

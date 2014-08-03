@@ -596,12 +596,14 @@ describe('Call [Conference]', function () {
 
               connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
 
+              incomingConf.setId('ABCD');
+
               incomingConf.connect();
 
               setTimeout(function () {
                 expect(onSuccessSpy.called).to.equal(true);
                 expect(connectConferenceStub.called).to.equal(true);
-                console.log(connectConferenceStub.getCall(0).args[0]);
+                expect(connectConferenceStub.getCall(0).args[0].conferenceId).to.equal(incomingConf.id());
                 expect(connectConferenceStub.getCall(0).args[0].description).to.equal(localDescription);
                 expect(connectConferenceStub.getCall(0).args[0].sessionInfo).to.equal(optionsIncomingConf.sessionInfo);
                 expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
