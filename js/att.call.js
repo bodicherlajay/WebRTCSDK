@@ -124,6 +124,9 @@
           }
           remoteSdp = modifications.remoteSdp;
         }
+        if ('rejected' === modifications.reason) {
+          thisCall.updateParticipant(modifications.modificationId, 'rejected');
+        }
       }
     }
 
@@ -363,29 +366,36 @@
         status: 'pending'
       };
 
-      rtcManager.addParticipant({
-        sessionInfo: sessionInfo,
-        participant: participant,
-        confId: id,
-        onSuccess: function (modId) {
-          that.setParticipant(participant, 'invited', modId);
-          that.setState('participant-pending');
-        },
-        onError: function (error) {
-          emitter.publish('error', error);
-        }
-      });
+      try {
+        rtcManager.addParticipant({
+          sessionInfo: sessionInfo,
+          participant: participant,
+          confId: id,
+          onSuccess: function (modId) {
+            that.setParticipant(participant, 'invited', modId);
+            that.setState('participant-pending');
+          },
+          onError: function (err) {
+            logger.logError(err);
+            emitter.publish('error', err);
+          }
+        });
+      } catch (err) {
+        emitter.publish('error', err);
+      }
     }
 
     function updateParticipant(id, status) {
       if (undefined !== that.participants()[id]) {
         this.participants()[id]['status'] = status;
-      }
-      if ('accepted' === status) {
-        that.setState('connected');
-      }
-      if ('rejected' === status) {
-        that.setState('rejected');
+
+        if ('accepted' === status) {
+          thisCall.setState('connected');
+        }
+
+        if ('rejected' === status) {
+          thisCall.setState('rejected');
+        }
       }
     }
 

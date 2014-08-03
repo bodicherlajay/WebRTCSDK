@@ -221,18 +221,17 @@ describe.only('Call [Conference]', function () {
           error = {
             message: 'error'
           };
-
-          addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function (options) {
-            options.onError(error);
-          });
         });
 
         afterEach(function () {
           addParticipantStub.restore();
-        })
-
+        });
 
         it('should publish `error` when rtcMgr invokes `onError` callback', function (done) {
+
+          addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function (options) {
+            options.onError(error);
+          });
 
           outgoingConference.addParticipant('12345');
 
@@ -245,6 +244,28 @@ describe.only('Call [Conference]', function () {
               done(e);
             }
           }, 100);
+        });
+
+        it('should publish `error` if rtcMgr throws an error', function (done) {
+          var error = {
+            message: 'thrown!'
+          };
+
+          addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function () {
+            throw error;
+          });
+
+          outgoingConference.addParticipant('12345');
+
+          setTimeout(function () {
+            try {
+              expect(publishStub.calledOnce).to.equal(true);
+              expect(publishStub.calledWith('error', error)).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 50);
         });
       });
     });
@@ -464,7 +485,7 @@ describe.only('Call [Conference]', function () {
                   onErrorSpy.restore();
                 }, 50);
               });
-            })
+            });
 
             afterEach(function () {
               connectConferenceStub.restore();
@@ -546,6 +567,12 @@ describe.only('Call [Conference]', function () {
                 type: 'abc'
               };
               rtcPCStub = sinon.stub(window, 'RTCPeerConnection');
+
+              peerConnection = {
+                getLocalDescription: function () {
+                  return localSdp;
+                }
+              };
 
               createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
                 setTimeout(function () {
@@ -780,7 +807,23 @@ describe.only('Call [Conference]', function () {
 
     describe('media-mod-terminations', function () {
 
-      describe('invitation-accepted', function () {
+      it('should call updateParticipant with `accepted`', function (done) {
+        emitterEM.publish('media-mod-terminations', modificationsForInviteAccepted);
+
+        setTimeout(function () {
+          try {
+            expect(updateParticipantStub.calledWith('abc321', 'accepted')).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+    });
+
+
+    describe('invitation-accepted', function () {
           var modifications;
 
           beforeEach(function () {

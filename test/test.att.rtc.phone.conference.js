@@ -201,6 +201,21 @@ describe('Phone [Conference]', function () {
         });
         expect(conferenceOnStub.calledWith('connected')).to.equal(true);
       });
+
+      it('it should subscribe to the `error` event on the conference', function () {
+        var phone3;
+
+        conferenceOnStub = sinon.stub(conference, 'on');
+        phone3 = new Phone();
+
+        phone3.startConference({
+          localMedia : {},
+          remoteMedia : {},
+          mediaType : 'video'
+        });
+        expect(conferenceOnStub.calledWith('error')).to.equal(true);
+      });
+
       it('should get the local userMedia', function () {
         var phone2;
 
@@ -512,6 +527,33 @@ describe('Phone [Conference]', function () {
           try {
             expect(connectedSpy.called).to.equal(true);
             expect(connectedSpy.calledOnce).to.equal(true);
+            getUserMediaStub.restore();
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 200);
+
+      });
+
+      it('should publish `error` when conference publishes `error`', function (done) {
+        var errorSpy = sinon.spy(),
+          getUserMediaStub;
+        userMediaService = ATT.UserMediaService;
+
+        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+        phone.on('error', errorSpy);
+        phone.startConference({
+          localMedia : {},
+          remoteMedia : {},
+          mediaType : 'video'
+        });
+
+        outgoingAudioConference.setState('error');
+
+        setTimeout(function () {
+          try {
+            expect(errorSpy.called).to.equal(true);
             getUserMediaStub.restore();
             done();
           } catch (e) {
