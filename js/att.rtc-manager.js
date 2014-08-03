@@ -395,9 +395,8 @@
         throw new Error('No `confId` passed');
       }
 
-      if (undefined === options.onParticipantPending
-        || typeof options.onParticipantPending !== 'function') {
-        throw new Error('No `onParticipantPending` callback passed');
+      if (typeof options.onSuccess !== 'function') {
+        throw new Error('No `onSuccess` callback passed');
       }
 
       participant = options.participant;
@@ -425,7 +424,7 @@
 
           if ('add-pending' === response.getResponseHeader('x-state')) {
             modId = response.getResponseHeader('x-modId');
-            options.onParticipantPending(modId);
+            options.onSuccess(modId);
           }
         },
         error: function (error) {

@@ -400,32 +400,7 @@ describe('Event Manager', function () {
     describe('mod-terminated', function () {
       var event;
 
-      describe('media-mod-terminations', function () {
-
-        it('should publish event `media-mod-terminations` with `type` call and `remoteDescription` and `modificationId` for calls event', function (done) {
-          event = {
-            'type': 'calls',
-            'from': 'sip:1234@icmn.api.att.net',
-            'resourceURL': '/RTC/v1/sessions/00000/calls/1111',
-            'modId': '12345',
-            'state': 'mod-terminated',
-            'sdp': 'abcdefg',
-            'reason': 'success'
-          };
-
-          emitterEC.publish('api-event', event);
-
-          setTimeout(function () {
-            expect(publishSpy.calledWith('media-mod-terminations', {
-              type: 'call',
-              remoteDescription: 'abcdefg',
-              modificationId: '12345',
-              reason: 'success'
-            })).to.equal(true);
-            done();
-          }, 100);
-        });
-
+      describe('media-mod-terminations [Conference]', function () {
         it('should publish event `media-mod-terminations` with `type` conference and `remoteDescription` and `modificationId` for conference event', function (done) {
           event = {
             'type': 'conferences',
@@ -442,10 +417,40 @@ describe('Event Manager', function () {
           setTimeout(function () {
             expect(publishSpy.calledWith('media-mod-terminations', {
               type: 'conference',
-              remoteDescription: 'abcdefg',
+              remoteSdp: 'abcdefg',
               modificationId: '12345',
-              reason: 'success'
+              reason: 'success',
+              from: event.from
             })).to.equal(true);
+            done();
+          }, 100);
+        });
+      });
+      describe('media-mod-terminations [Call]', function () {
+
+        it('should publish event `media-mod-terminations` with `type` call and `remoteDescription` and `modificationId` for calls event', function (done) {
+          event = {
+            'type': 'calls',
+            'from': 'sip:1234@icmn.api.att.net',
+            'resourceURL': '/RTC/v1/sessions/00000/calls/1111',
+            'modId': '12345',
+            'state': 'mod-terminated',
+            'sdp': 'abcdefg',
+            'reason': 'success'
+          };
+
+          emitterEC.publish('api-event', event);
+
+          setTimeout(function () {
+            expect(publishSpy.called).to.equal(true);
+            expect(publishSpy.calledWith('media-mod-terminations', {
+                type: 'call',
+                remoteSdp: 'abcdefg',
+                modificationId: '12345',
+                reason: 'success',
+                from: event.from
+              }
+            )).to.equal(true);
             done();
           }, 100);
         });

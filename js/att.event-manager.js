@@ -70,7 +70,8 @@
           type: event.type === 'calls' ? 'call' : 'conference',
           remoteSdp: event.sdp,
           modificationId: event.modId,
-          reason: event.reason
+          reason: event.reason,
+          from: event.from
         });
         break;
       case ATT.RTCCallEvents.SESSION_OPEN:

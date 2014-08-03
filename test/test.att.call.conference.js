@@ -1,13 +1,25 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit*/
 
-describe('Call [Conference]', function () {
+describe.only('Call [Conference]', function () {
   "use strict";
 
   var Call,
-    restClientStub;
+    restClientStub,
+    factories,
+    optionsOutgoingVideo;
 
   beforeEach(function () {
+
+    optionsOutgoingVideo = {
+      breed: 'conference',
+      peer: '12345',
+      mediaType: 'video',
+      type: ATT.CallTypes.OUTGOING,
+      sessionInfo : {sessionId : '12345', token : '123'}
+    };
+
+    factories = ATT.private.factories;
     restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
     Call = ATT.rtc.Call;
   });
@@ -92,17 +104,12 @@ describe('Call [Conference]', function () {
 
       publishStub = sinon.stub(emitter, 'publish');
 
-      addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function (options) {
-        options.onParticipantPending(modId);
-      });
-
       outgoingConference = new ATT.rtc.Call(optionsOutgoing);
 
       setStateStub = sinon.stub(outgoingConference, 'setState');
     });
 
     afterEach(function () {
-      addParticipantStub.restore();
       getRTCManagerStub.restore();
       createEEStub.restore();
       setStateStub.restore();
@@ -151,25 +158,52 @@ describe('Call [Conference]', function () {
         expect(outgoingConference.addParticipant).to.be.a('function');
       });
 
+      it('should add a participant to the list with status `pending`', function () {
+        var participant
+
+        outgoingConference.addParticipant('john123');
+
+        participant = outgoingConference.participants()['john123'];
+        expect(participant.status).to.equal('pending');
+      });
+
       it('should call rtcManager.addParticipant', function () {
+        addParticipantStub = sinon.stub(rtcMgr, 'addParticipant');
+
         outgoingConference.addParticipant('12345');
+
         expect(addParticipantStub.called).to.equal(true);
         expect(addParticipantStub.getCall(0).args[0].sessionInfo).to.be.an('object');
         expect(addParticipantStub.getCall(0).args[0].participant).to.equal('12345');
         expect(addParticipantStub.getCall(0).args[0].confId).to.equal(outgoingConference.id());
-        expect(addParticipantStub.getCall(0).args[0].onParticipantPending).to.be.a('function');
+        expect(addParticipantStub.getCall(0).args[0].onSuccess).to.be.a('function');
         expect(addParticipantStub.getCall(0).args[0].onError).to.be.a('function');
+
+        addParticipantStub.restore();
       });
 
       describe('Success on rtcManager.addParticipant', function () {
-        var setParticipantStub;
+        var setParticipantStub,
+          onSuccessSpy;
+
+        beforeEach(function () {
+          addParticipantStub = sinon.stub(rtcMgr, 'addParticipant', function (options) {
+            onSuccessSpy = sinon.spy(options, 'onSuccess');
+            options.onSuccess(modId);
+            onSuccessSpy.restore();
+          });
+        });
+        afterEach(function () {
+          addParticipantStub.restore();
+        })
 
         it('should call `setParticipant`', function () {
           setParticipantStub = sinon.stub(outgoingConference, 'setParticipant');
 
           outgoingConference.addParticipant('4250001');
 
-          expect(setParticipantStub.calledWith('4250001', 'invitee', modId)).to.equal(true);
+          expect(setParticipantStub.called).to.equal(true);
+          expect(setParticipantStub.calledWith('4250001', 'invited', modId)).to.equal(true);
         });
 
         it('should publish `participant-pending` when rtcMgr invokes `onParticipantPending` callback', function () {
@@ -184,8 +218,6 @@ describe('Call [Conference]', function () {
         var error;
 
         beforeEach(function () {
-          addParticipantStub.restore();
-
           error = {
             message: 'error'
           };
@@ -194,6 +226,10 @@ describe('Call [Conference]', function () {
             options.onError(error);
           });
         });
+
+        afterEach(function () {
+          addParticipantStub.restore();
+        })
 
 
         it('should publish `error` when rtcMgr invokes `onError` callback', function (done) {
@@ -227,14 +263,14 @@ describe('Call [Conference]', function () {
       });
 
       it('should return `participants` list', function () {
-        outgoingConference.setParticipant('456', 'invitee', '123');
+        outgoingConference.setParticipant('john', 'invited', 'modId');
+        outgoingConference.setParticipant('peter', 'invited', 'modId');
 
         var participants = outgoingConference.participants();
+
         expect(participants).to.be.an('object');
-        expect(participants['123']).to.be.an('object');
-        expect(participants['123'].status).to.equal('invitee');
-        expect(participants['123'].participant).to.equal('456');
-        expect(participants['123'].id).to.equal('123');
+        expect(participants['john']).to.be.an('object');
+        expect(participants['peter']).to.be.an('object');
       });
     });
 
@@ -247,14 +283,10 @@ describe('Call [Conference]', function () {
       it('should add the new participant to the list', function () {
         var participants;
 
-        outgoingConference.setParticipant('raman@raman.com', 'invitee', 'abc123');
-        outgoingConference.setParticipant('4250000001', 'accepted', 'cba123');
-        outgoingConference.setParticipant('toyin@toyin.com', 'accepted', 'efg456');
+        outgoingConference.setParticipant('raman@raman.com', 'pending', 'abc123');
 
         participants = outgoingConference.participants();
-        expect(participants['abc123'].status).equal('invitee');
-        expect(participants['cba123'].participant).equal('4250000001');
-        expect(participants['efg456'].id).equal('efg456');
+        expect(participants['raman@raman.com'].status).equal('pending');
       });
     });
 
@@ -265,16 +297,16 @@ describe('Call [Conference]', function () {
 
       it('should update the status of that specific participant', function () {
         var participants;
+        outgoingConference.setParticipant('raman@raman.com', 'invited', 'abc123');
+        outgoingConference.setParticipant('peter', 'invited', 'abc123');
 
-        outgoingConference.setParticipant('raman@raman.com', 'invitee', 'abc123');
-        outgoingConference.setParticipant('4250000001', 'invitee', 'cba123');
-        outgoingConference.updateParticipant('abc123', 'accepted');
+        outgoingConference.updateParticipant('raman@raman.com', 'joined');
 
         participants = outgoingConference.participants();
-        expect(participants['abc123'].status).equal('accepted');
+        expect(participants['raman@raman.com'].status).equal('joined');
 
         // don't touch the other guy
-        expect(participants['cba123'].status).equal('invitee');
+        expect(participants['peter'].status).equal('invited');
       });
 
       it('should call setState with `connected` if [status === `accepted`]', function () {
@@ -294,18 +326,11 @@ describe('Call [Conference]', function () {
 
     describe('connect', function () {
       var createPeerConnectionStub,
-        optionsOutgoingVideo,
         outgoingVideoConference,
         pcOptions;
 
       beforeEach(function () {
-        optionsOutgoingVideo = {
-          breed: 'conference',
-          peer: '12345',
-          mediaType: 'video',
-          type: ATT.CallTypes.OUTGOING,
-          sessionInfo : {sessionId : '12345', token : '123'}
-        };
+
         outgoingVideoConference = new Call(optionsOutgoingVideo);
 
         pcOptions = {
@@ -692,5 +717,106 @@ describe('Call [Conference]', function () {
       });
 
     });
+  });
+
+  describe('Events', function () {
+    var emitterEM,
+        createEventEmitterStub,
+      outgoingVideoConf,
+      createPeerConnectionStub,
+      remoteDesc,
+      peerConnection,
+      optionsforRTCM,
+      rtcManager,
+      getRTCManagerStub,
+      resourceManager,
+      apiConfig;
+
+    beforeEach(function () {
+
+      apiConfig = ATT.private.config.api;
+      resourceManager = factories.createResourceManager(apiConfig);
+
+      optionsforRTCM = {
+        resourceManager: resourceManager,
+        userMediaSvc: ATT.UserMediaService,
+        peerConnSvc: ATT.PeerConnectionService
+      };
+
+      emitterEM = factories.createEventEmitter();
+      createEventEmitterStub =  sinon.stub(factories, 'createEventEmitter', function () {
+        return emitterEM;
+      });
+      rtcManager = new ATT.private.RTCManager(optionsforRTCM);
+      createEventEmitterStub.restore();
+
+      getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+        return rtcManager;
+      });
+
+      outgoingVideoConf = new Call(optionsOutgoingVideo);
+
+      remoteDesc = {
+        sdp: 'sdf',
+        type: 'offer'
+      };
+
+      peerConnection = {
+        getRemoteDescription: function () {
+          return remoteDesc;
+        }
+      };
+
+      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
+        return peerConnection;
+      });
+
+      outgoingVideoConf.connect();
+    });
+
+    afterEach(function () {
+      createPeerConnectionStub.restore();
+    });
+
+    describe('media-mod-terminations', function () {
+
+      describe('invitation-accepted', function () {
+          var modifications;
+
+          beforeEach(function () {
+            modifications = {
+              from: 'me@myplace.com',
+              type: 'conference',
+              modificationId: 'abc321',
+              reason: 'success'
+            };
+          });
+          it('should call updateParticipant with `accepted`', function (done) {
+
+            var getRemoteDescriptionStub = sinon.stub(peerConnection, 'getRemoteDescription', function () {
+              return {
+                sdp: null,
+                type: 'adsfa'
+              };
+            });
+
+            emitterEM.publish('media-mod-terminations', modifications);
+
+            setTimeout(function () {
+              try {
+                var participantInfo = outgoingVideoConf.participants()[modifications.from];
+                expect(participantInfo.status).to.equal('accepted');
+                getRemoteDescriptionStub.restore();
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+      });
+      describe('invitation-rejected', function () {
+
+      })
+    })
   });
 });
