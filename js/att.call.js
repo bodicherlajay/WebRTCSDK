@@ -309,7 +309,7 @@
               rtcManager.connectConference({
                 sessionId: sessionInfo.sessionId,
                 token: sessionInfo.token,
-                remoteDescription: description,
+                description: description,
                 sessionInfo: sessionInfo,
                 onSuccess: function (responsedata) {
                   if (ATT.CallTypes.INCOMING === type) {
