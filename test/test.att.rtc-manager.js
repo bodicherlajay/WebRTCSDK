@@ -898,7 +898,7 @@ describe('RTC Manager', function () {
 
       });
 
-      describe('connectConference', function () {
+      describe('connectConference [JOIN]', function () {
 
         var connectConfOpts,
           onSuccessSpy,
@@ -928,7 +928,7 @@ describe('RTC Manager', function () {
           expect(rtcManager.connectConference).to.be.a('function');
         });
 
-        it.skip('should execute `resourceManager.doOperation` with required params', function () {
+        it('should execute `resourceManager.doOperation` with required params', function () {
 
           rtcManager.connectConference(connectConfOpts);
 
@@ -936,9 +936,9 @@ describe('RTC Manager', function () {
           expect(doOperationStub.getCall(0).args[0]).to.equal('acceptConference');
           expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
           console.log(JSON.stringify(doOperationStub.getCall(0).args));
-          expect(doOperationStub.getCall(0).args[1].data.conference.sdp).to.equal(connectConfOpts.description.sdp);
-//          expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
-//          expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
+          expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(connectConfOpts.description.sdp);
+          expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
+          expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
         });
 
         describe('doOperations Callbacks', function () {

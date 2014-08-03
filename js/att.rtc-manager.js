@@ -345,7 +345,7 @@
       joinConfig = {
         data: {
           conferenceModifications: {
-            sdp: options.localSdp
+            sdp: options.description.sdp
           }
         },
         success: function (response) {
