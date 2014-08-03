@@ -96,12 +96,13 @@
           && undefined !== modifications.modificationId) {
           // TODO: NOTE: for conference we get all SDP-related info from the call's `peerConnection` property.
           var remoteDescription = peerConnection.getRemoteDescription();
+          logger.logInfo('onMediaModTerminations:conference');
           if (null === remoteDescription.sdp) {
             if ('success' === modifications.reason) {
-              that.updateParticipant(modifications.modificationId, 'accepted');
+              that.updateParticipant(modifications.from, 'accepted');
             }
             if ('rejected' === modifications.reason) {
-              that.updateParticipant(modifications.modificationId, 'rejected');
+              that.updateParticipant(modifications.from, 'rejected');
             }
           }
         }
@@ -385,16 +386,20 @@
       }
     }
 
-    function updateParticipant(id, status) {
-      if (undefined !== that.participants()[id]) {
-        this.participants()[id]['status'] = status;
+    function updateParticipant(name, status) {
+
+      logger.logDebug('updateParticipant');
+
+      if (undefined !== that.participants()[name]) {
+        logger.logDebug(name + ':' + status);
+        this.participants()[name]['status'] = status;
 
         if ('accepted' === status) {
-          thisCall.setState('connected');
+          that.setState('connected');
         }
 
         if ('rejected' === status) {
-          thisCall.setState('rejected');
+          that.setState('rejected');
         }
       }
     }
