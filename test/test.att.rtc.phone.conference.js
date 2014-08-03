@@ -83,7 +83,7 @@ describe('Phone [Conference]', function () {
         expect(phone.startConference).to.be.a('function');
       });
 
-      describe.skip('Input Validation', function () {
+      describe('Input Validation', function () {
 
         beforeEach(function () {
           getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
@@ -329,7 +329,7 @@ describe('Phone [Conference]', function () {
 
       });
 
-      describe.skip('[18004] getUserMedia: onMediaError', function () {
+      describe('[18004] getUserMedia: onMediaError', function () {
         var getUserMediaStub, phone3;
         beforeEach(function () {
 
