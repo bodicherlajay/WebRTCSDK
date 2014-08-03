@@ -356,7 +356,7 @@ describe('Event Manager', function () {
         setTimeout(function () {
           try {
             expect(invitationReceivedSpy.called).to.equal(true);
-            expect(invitationReceivedSpy.getCall(0).args[0].type).to.equal(event.type);
+            expect(invitationReceivedSpy.getCall(0).args[0].type).to.equal('conference');
             expect(invitationReceivedSpy.getCall(0).args[0].id).to.equal('1234');
             expect(invitationReceivedSpy.getCall(0).args[0].from).to.equal('1111');
             expect(invitationReceivedSpy.getCall(0).args[0].mediaType).to.equal('video');
