@@ -20,7 +20,8 @@
     apiConfigs = ATT.private.config.api,
     appConfig = ATT.private.config.app,
     logManager = ATT.logManager.getInstance(),
-    logger = logManager.getLoggerByName("RTCManager");
+    logger = logManager.getLoggerByName("RTCManager"),
+    utils = ATT.utils;
 
   /**
   * Create a new RTC Manager
@@ -333,16 +334,52 @@
     }
 
     function connectConference(options) {
-      var responseData, joinConfig, createConfig, params;
+      var responseData,
+          joinConfig,
+          createConfig,
+          commonParams,
+          joinParams;
 
-      params = {
+      commonParams = {
         url: [options.sessionInfo.sessionId],
         headers: {
           'Authorization': 'Bearer ' + options.sessionInfo.token
         }
       };
 
+      // If you DON'T have a conference ID, then CREATE the conference
+      if (undefined === options.conferenceId) {
+
+        createConfig = {
+          params: commonParams,
+          data: {
+            conference: {
+              sdp: options.description.sdp
+            }
+          },
+          success: function (response) {
+            responseData = {
+              id: response.getResponseHeader('Location').split('/')[6],
+              state: response.getResponseHeader('x-state')
+            };
+            options.onSuccess(responseData);
+          },
+          error: options.onError
+        };
+
+        resourceManager.doOperation('createConference', createConfig);
+        return;
+      }
+
+      // If you DO have a conference ID, then JOIN
+      joinParams = {
+        url: [options.sessionInfo.sessionId, options.conferenceId],
+        headers: commonParams.headers
+      };
+      joinParams.headers['x-conference-action'] = 'call-answer';
+
       joinConfig = {
+        params: joinParams,
         data: {
           conferenceModifications: {
             sdp: options.description.sdp
@@ -350,22 +387,6 @@
         },
         success: function (response) {
           responseData = {
-            state: response.getResponseHeader('x-conference-action')
-          };
-          options.onSuccess(responseData);
-        },
-        error: options.onError
-      };
-      createConfig = {
-        params: params,
-        data: {
-          conference: {
-            sdp: options.description.sdp
-          }
-        },
-        success: function (response) {
-          responseData = {
-            id: response.getResponseHeader('Location').split('/')[6],
             state: response.getResponseHeader('x-state')
           };
           options.onSuccess(responseData);
@@ -373,11 +394,8 @@
         error: options.onError
       };
 
-      if (undefined !== options.conferenceId) {
-        resourceManager.doOperation('acceptConference', joinConfig);
-      } else {
-        resourceManager.doOperation('createConference', createConfig);
-      }
+      resourceManager.doOperation('acceptConference', joinConfig);
+      return;
     }
 
     function addParticipant(options) {

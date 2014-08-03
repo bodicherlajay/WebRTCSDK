@@ -937,6 +937,7 @@ describe('RTC Manager', function () {
           expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
           console.log(JSON.stringify(doOperationStub.getCall(0).args));
           expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(connectConfOpts.description.sdp);
+          expect(doOperationStub.getCall(0).args[1].params.headers['x-conference-action']).to.equal('call-answer');
           expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
           expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
         });
@@ -950,8 +951,8 @@ describe('RTC Manager', function () {
               response = {
                 getResponseHeader: function (name) {
                   switch (name) {
-                  case 'x-conference-action':
-                    return 'call-answer'; // seconds
+                  case 'x-state':
+                    return 'accepted';
                   default:
                     break;
                   }
@@ -966,12 +967,15 @@ describe('RTC Manager', function () {
               });
             });
 
-            it('should trigger `onSuccess` callback of `connectConference` with `call-answer` state', function (done) {
+            it('should trigger `onSuccess` callback of `connectConference` with the returned state', function (done) {
               rtcManager.connectConference(connectConfOpts);
 
               setTimeout(function () {
                 try {
-                  expect(onSuccessSpy.calledWith({ state: 'call-answer' })).to.equal(true);
+                  console.log(onSuccessSpy.getCall(0).args);
+                  expect(onSuccessSpy.calledWith({
+                    state: response.getResponseHeader('x-state')
+                  })).to.equal(true);
                   done();
                 } catch(e) {
                   done(e);
