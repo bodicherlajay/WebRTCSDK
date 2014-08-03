@@ -811,23 +811,6 @@ describe('Call [Conference]', function () {
       createPeerConnectionStub.restore();
     });
 
-    describe.skip('media-mod-terminations', function () {
-
-      it('should call updateParticipant with `accepted`', function (done) {
-        emitterEM.publish('media-mod-terminations', modificationsForInviteAccepted);
-
-        setTimeout(function () {
-          try {
-            expect(updateParticipantStub.calledWith('abc321', 'accepted')).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-      });
-
-    });
-
     describe('invitation-accepted', function () {
         var modifications;
 
@@ -839,17 +822,11 @@ describe('Call [Conference]', function () {
             reason: 'success'
           };
         });
+
         it('should call updateParticipant with `active`', function (done) {
 
-          var getRemoteDescriptionStub,
-            rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
+          var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
 
-          getRemoteDescriptionStub = sinon.stub(peerConnection, 'getRemoteDescription', function () {
-            return {
-              sdp: null,
-              type: 'adsfa'
-            };
-          });
           outgoingVideoConf.addParticipant(modifications.from);
 
           emitterEM.publish('media-mod-terminations', modifications);
@@ -858,7 +835,6 @@ describe('Call [Conference]', function () {
             try {
               var participantInfo = outgoingVideoConf.participants()[modifications.from];
               expect(participantInfo.status).to.equal('active');
-              getRemoteDescriptionStub.restore();
               rtcMgrAddParticipantStub.restore();
               done();
             } catch (e) {
@@ -867,8 +843,38 @@ describe('Call [Conference]', function () {
           }, 10);
         });
       });
-      describe('invitation-rejected', function () {
 
+    describe('invitation-rejected', function () {
+      var modifications;
+
+      beforeEach(function () {
+        modifications = {
+          from: 'me@myplace.com',
+          type: 'conference',
+          modificationId: 'abc321',
+          reason: 'rejected'
+        };
+      });
+      it('should call updateParticipant with `rejected`', function (done) {
+
+        var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
+
+        outgoingVideoConf.addParticipant(modifications.from);
+
+        emitterEM.publish('media-mod-terminations', modifications);
+
+        setTimeout(function () {
+          try {
+            var participantInfo = outgoingVideoConf.participants()[modifications.from];
+            expect(participantInfo.status).to.equal('rejected');
+            rtcMgrAddParticipantStub.restore();
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
       });
     });
+
+  });
 });

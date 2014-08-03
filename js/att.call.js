@@ -94,16 +94,12 @@
       if (breed === 'conference') {
         if ('conference' === modifications.type
           && undefined !== modifications.modificationId) {
-          // TODO: NOTE: for conference we get all SDP-related info from the call's `peerConnection` property.
-          var remoteDescription = peerConnection.getRemoteDescription();
           logger.logInfo('onMediaModTerminations:conference');
-          if (null === remoteDescription.sdp) {
-            if ('success' === modifications.reason) {
-              that.updateParticipant(modifications.from, 'active');
-            }
-            if ('rejected' === modifications.reason) {
-              that.updateParticipant(modifications.from, 'rejected');
-            }
+          if ('success' === modifications.reason) {
+            that.updateParticipant(modifications.from, 'active');
+          }
+          if ('rejected' === modifications.reason) {
+            that.updateParticipant(modifications.from, 'rejected');
           }
         }
       } else if (breed === 'call') {
@@ -436,7 +432,7 @@
               });
             }
           });
-        } else if (null !== id && null !== remoteSdp) {
+        } else if (null !== id && null !== this.remoteSdp()) {
           logger.logInfo('Disconnecting...');
 
           rtcManager.disconnectCall({

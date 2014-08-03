@@ -751,7 +751,7 @@ describe('Call', function () {
         });
       });
 
-      describe('Disconnect Call [call.remoteDescription !== null]', function () {
+      describe('Disconnect Call [call.remoteDescription !== null] && [call.id !== null]', function () {
         it('should call rtcManager.disconnectCall', function () {
           var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
 
@@ -1501,31 +1501,6 @@ describe('Call', function () {
             }, 10);
           });
         });
-
-        // TODO: This belongs to Conference Management, thus
-        // it will fail because the current call is of breed='call'
-        // Move this to `test.att.call.conference` inside the
-        // 'Events' describe
-        describe.skip('invite-rejected', function () {
-
-          beforeEach(function () {
-            call.setRemoteSdp(null);
-          });
-
-          it('should call updateParticipant with `rejected`', function (done) {
-            emitterEM.publish('media-mod-terminations', modificationsForInviteRejected);
-
-            setTimeout(function () {
-              try {
-                expect(updateParticipantStub.calledWith('abc321', 'rejected')).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 10);
-          });
-        });
-
       });
 
       describe('call-connected', function () {
