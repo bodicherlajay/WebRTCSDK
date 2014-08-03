@@ -1505,7 +1505,7 @@
 
           for (key in participants) {
             if (participants.hasOwnProperty(key)) {
-              if ('accepted' === participants[key].status) {
+              if ('active' === participants[key].status) {
                 active[key] = participants[key];
               }
             }

@@ -321,10 +321,10 @@ describe('Call [Conference]', function () {
         outgoingConference.setParticipant('raman@raman.com', 'invited', 'abc123');
         outgoingConference.setParticipant('peter', 'invited', 'abc123');
 
-        outgoingConference.updateParticipant('raman@raman.com', 'joined');
+        outgoingConference.updateParticipant('raman@raman.com', 'active');
 
         participants = outgoingConference.participants();
-        expect(participants['raman@raman.com'].status).equal('joined');
+        expect(participants['raman@raman.com'].status).equal('active');
 
         // don't touch the other guy
         expect(participants['peter'].status).equal('invited');
@@ -804,6 +804,7 @@ describe('Call [Conference]', function () {
     });
 
     afterEach(function () {
+      getRTCManagerStub.restore();
       createPeerConnectionStub.restore();
     });
 
@@ -835,7 +836,7 @@ describe('Call [Conference]', function () {
             reason: 'success'
           };
         });
-        it('should call updateParticipant with `accepted`', function (done) {
+        it('should call updateParticipant with `active`', function (done) {
 
           var getRemoteDescriptionStub,
             rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
@@ -853,7 +854,7 @@ describe('Call [Conference]', function () {
           setTimeout(function () {
             try {
               var participantInfo = outgoingVideoConf.participants()[modifications.from];
-              expect(participantInfo.status).to.equal('accepted');
+              expect(participantInfo.status).to.equal('active');
               getRemoteDescriptionStub.restore();
               rtcMgrAddParticipantStub.restore();
               done();

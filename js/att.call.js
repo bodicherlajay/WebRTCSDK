@@ -99,7 +99,7 @@
           logger.logInfo('onMediaModTerminations:conference');
           if (null === remoteDescription.sdp) {
             if ('success' === modifications.reason) {
-              that.updateParticipant(modifications.from, 'accepted');
+              that.updateParticipant(modifications.from, 'active');
             }
             if ('rejected' === modifications.reason) {
               that.updateParticipant(modifications.from, 'rejected');

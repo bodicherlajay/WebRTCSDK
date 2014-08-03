@@ -1016,7 +1016,7 @@ describe('RTC Manager', function () {
           rtcManager.addParticipant({
             sessionInfo: {},
             confId: '123',
-            onParticipantPending: function () {},
+            onSuccess: function () {},
             participant: '12345'
           });
 
@@ -1056,7 +1056,7 @@ describe('RTC Manager', function () {
             rtcManager.addParticipant({
               sessionInfo: {},
               confId: '123',
-              onParticipantPending: onParticipantPendingSpy,
+              onSuccess: onParticipantPendingSpy,
               participant: '12345'
             });
 
@@ -1086,12 +1086,12 @@ describe('RTC Manager', function () {
               sessionInfo: {},
               participant: '12345',
               confId: '1234'
-            })).to.throw('No `onParticipantPending` callback passed');
+            })).to.throw('No `onSuccess` callback passed');
             expect(rtcManager.addParticipant.bind(rtcManager, {
               sessionInfo: {},
               confId: '123',
               participant: '12345',
-              onParticipantPending: function () {}
+              onSuccess: function () {}
             })).to.not.throw(Error);
           });
         });
@@ -1128,7 +1128,7 @@ describe('RTC Manager', function () {
             rtcManager.addParticipant({
               sessionInfo: {},
               confId: '123',
-              onParticipantPending: function () { },
+              onSuccess: function () { },
               onError: onErrorSpy,
               participant: '12345'
             });

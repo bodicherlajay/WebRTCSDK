@@ -14,9 +14,11 @@ describe('Phone', function () {
     remoteVideo,
     getRTCManagerStub,
     createPeerConnectionStub,
-    restClientStub;
+    restClientStub,
+    ums;
 
   before(function () {
+    ums = ATT.UserMediaService;
     factories = ATT.private.factories;
     confOpts = {
       breed: 'conference',
@@ -658,6 +660,15 @@ describe('Phone', function () {
         });
 
         describe('Events for Dial', function () {
+          var getUserMediaStub;
+
+          beforeEach(function () {
+            getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+          });
+
+          afterEach(function (){
+            getUserMediaStub.restore();
+          });
 
           it('should trigger `call-connecting` with relevant data when call publishes `connecting` event', function (done) {
             phone.dial(options);
@@ -1203,7 +1214,6 @@ describe('Phone', function () {
 
           onSpy = sinon.spy(conference, 'on');
 
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function () {});
 
           conferenceJoiningSpy = sinon.spy();
 
@@ -1215,7 +1225,6 @@ describe('Phone', function () {
         });
 
         afterEach(function () {
-          getUserMediaStub.restore();
           onSpy.restore();
         });
 
@@ -1261,6 +1270,8 @@ describe('Phone', function () {
         });
 
         it('should execute userMedia.getUserMedia with correct input params', function () {
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+
           phone.joinConference(options);
 
           expect(getUserMediaStub.called).to.equal(true);
@@ -1271,6 +1282,8 @@ describe('Phone', function () {
           expect(getUserMediaStub.getCall(0).args[0].onUserMedia).to.be.a('function');
           expect(getUserMediaStub.getCall(0).args[0].onMediaEstablished).to.be.a('function');
           expect(getUserMediaStub.getCall(0).args[0].onUserMediaError).to.be.a('function');
+
+          getUserMediaStub.restore();
         });
 
         describe('getUserMedia Callbacks', function () {
@@ -1296,7 +1309,6 @@ describe('Phone', function () {
               connectStub = sinon.stub(conference, 'connect', function() {});
               addStreamStub = sinon.stub(conference, 'addStream', function () {});
 
-              getUserMediaStub.restore();
 
               getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
                 onUserMediaSpy = sinon.spy(options, 'onUserMedia');
@@ -1311,6 +1323,7 @@ describe('Phone', function () {
               addStreamStub.restore();
               connectStub.restore();
               onUserMediaSpy.restore();
+              getUserMediaStub.restore();
             });
 
             it('should execute Call.addStream with local stream', function (done) {
@@ -1687,22 +1700,16 @@ describe('Phone', function () {
         });
 
         it('should return active `participants` list', function () {
-          conference.setParticipant('456', 'invitee', '123');
-          conference.setParticipant('454', 'accepted', '124');
-          conference.setParticipant('455', 'accepted', '125');
+          conference.setParticipant('456', 'invited', '123');
+          conference.setParticipant('454', 'active', '124');
 
           var participants = phone.getParticipants();
 
           expect(participants).to.be.an('object');
-          expect(participants['124']).to.be.an('object');
-          expect(participants['124'].status).to.equal('accepted');
-          expect(participants['124'].participant).to.equal('454');
-          expect(participants['124'].id).to.equal('124');
+          expect(participants['454']).to.be.an('object');
+          expect(participants['454'].status).to.equal('active');
 
-          expect(participants['125']).to.be.an('object');
-          expect(participants['125'].status).to.equal('accepted');
-          expect(participants['125'].participant).to.equal('455');
-          expect(participants['125'].id).to.equal('125');
+          expect(participants['456']).to.equal(undefined);
         });
 
         describe('Error Handling', function () {
