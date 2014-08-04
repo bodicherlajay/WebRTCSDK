@@ -741,7 +741,6 @@
     this.resumeCall = resumeCall.bind(this);
     this.rejectCall = rejectCall.bind(this);
     this.updateSessionE911Id = updateSessionE911Id.bind(this);
-    this.connectConference = connectConference;
   }
 
   if (undefined === ATT.private) {
