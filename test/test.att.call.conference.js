@@ -897,5 +897,24 @@ describe('Call [Conference]', function () {
       });
     });
 
+    describe('media-modifications', function () {
+      it('should set the remote description', function (done) {
+        var setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
+
+        emitterEM.publish('media-modifications', {
+          remoteSdp: 'abdc',
+          modificationId: 'ID'
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(true);
+          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('abdc');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+          setRemoteDescriptionStub.restore();
+          done();
+        }, 100);
+      });
+    });
+
   });
 });

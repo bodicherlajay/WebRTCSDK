@@ -72,28 +72,38 @@
     }
 
     function onMediaModifications(modifications) {
-      rtcManager.setMediaModifications(modifications);
-      if (modifications.remoteDescription
-        && modifications.remoteDescription.indexOf('recvonly') !== -1) {
-        that.setState('held');
-        rtcManager.disableMediaStream();
+      if ('call' === breed) {
+        rtcManager.setMediaModifications(modifications);
+        if (modifications.remoteDescription
+            && modifications.remoteDescription.indexOf('recvonly') !== -1) {
+          that.setState('held');
+          rtcManager.disableMediaStream();
+        }
+        if (modifications.remoteDescription
+            && remoteSdp
+            && remoteSdp.indexOf
+            && remoteSdp.indexOf('recvonly') !== -1
+            && modifications.remoteDescription.indexOf('sendrecv') !== -1) {
+          that.setState('resumed');
+          rtcManager.enableMediaStream();
+        }
+        that.setRemoteSdp(modifications.remoteDescription);
+        return;
       }
-      if (modifications.remoteDescription
-        && remoteSdp
-        && remoteSdp.indexOf
-        && remoteSdp.indexOf('recvonly') !== -1
-        && modifications.remoteDescription.indexOf('sendrecv') !== -1) {
-        that.setState('resumed');
-        rtcManager.enableMediaStream();
+
+      if ('conference' === breed) {
+        peerConnection.setRemoteDescription({
+          sdp: modifications.remoteSdp,
+          type: 'offer'
+        });
       }
-      that.setRemoteSdp(modifications.remoteDescription);
     }
 
     function onMediaModTerminations(modifications) {
 
       if (breed === 'conference') {
         if ('conference' === modifications.type
-          && undefined !== modifications.modificationId) {
+            && undefined !== modifications.modificationId) {
           logger.logInfo('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
             that.updateParticipant(modifications.from, 'active');
@@ -109,13 +119,13 @@
             type: 'answer'
           });
           if (modifications.reason === 'success'
-            && modifications.remoteSdp.indexOf('sendonly') !== -1
-            && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+              && modifications.remoteSdp.indexOf('sendonly') !== -1
+              && modifications.remoteSdp.indexOf('sendrecv') === -1) {
             that.setState('held');
             rtcManager.disableMediaStream();
           }
           if (modifications.reason === 'success'
-            && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
             that.setState('resumed');
             rtcManager.enableMediaStream();
           }
