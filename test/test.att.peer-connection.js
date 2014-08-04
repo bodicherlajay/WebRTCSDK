@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit*/
+/*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit, RTCSessionDescription*/
 
 describe('PeerConnection', function () {
   'use strict';
@@ -483,7 +483,7 @@ describe('PeerConnection', function () {
         expect(peerConnection.setRemoteDescription).to.be.a('function');
       });
 
-      it('should set the remote desiption on the peer connection object', function () {
+      it('should set the remote description on the peer connection object', function () {
         var setRemoteDescriptionStub = sinon.stub(rtcPC,  'setRemoteDescription'),
           description = {
             sdp: 'abcd',
@@ -492,7 +492,8 @@ describe('PeerConnection', function () {
 
         peerConnection.setRemoteDescription(description);
 
-        expect(setRemoteDescriptionStub.calledWith(description)).to.equal(true);
+        expect(setRemoteDescriptionStub.called).to.equal(true);
+        expect(setRemoteDescriptionStub.getCall(0).args[0] instanceof RTCSessionDescription).to.equal(true);
         expect(setRemoteDescriptionStub.getCall(0).args[1]).to.be.a('function');
         expect(setRemoteDescriptionStub.getCall(0).args[2]).to.be.a('function');
 

@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT, RTCPeerConnection*/
+/*global ATT, RTCPeerConnection, RTCSessionDescription*/
 (function () {
   'use strict';
   var logManager = ATT.logManager.getInstance();
@@ -106,7 +106,7 @@
         return pc.localDescription;
       },
       setRemoteDescription: function (description) {
-        pc.setRemoteDescription(description, function () {
+        pc.setRemoteDescription(new RTCSessionDescription(description), function () {
           logger.logInfo('Remote Description set.');
         }, function (error) {
           logger.logError(error);

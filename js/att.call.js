@@ -240,7 +240,10 @@
           }
 
           if ('conference' === breed) {
-            peerConnection.setRemoteDescription(data.remoteDescription);
+            peerConnection.setRemoteDescription({
+              sdp: data.remoteSdp,
+              type: 'offer'
+            });
             return;
           }
         });
