@@ -1221,7 +1221,7 @@ describe('Call', function () {
 
       var call,
         setRemoteSdpSpy,
-        setStateSpy,
+        setStateStub,
         onConnectedHandlerSpy,
         connectCallStub;
 
@@ -1230,7 +1230,7 @@ describe('Call', function () {
         call = new ATT.rtc.Call(optionsOutgoing);
 
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
-        setStateSpy = sinon.spy(call, 'setState');
+        setStateStub = sinon.stub(call, 'setState');
         onConnectedHandlerSpy = sinon.spy();
 
         connectCallStub = sinon.stub(rtcMgr, 'connectCall');
@@ -1242,7 +1242,7 @@ describe('Call', function () {
 
       afterEach(function () {
         setRemoteSdpSpy.restore();
-        setStateSpy.restore();
+        setStateStub.restore();
         connectCallStub.restore();
       });
 
@@ -1256,20 +1256,18 @@ describe('Call', function () {
 
         beforeEach(function () {
           modificationsHold = {
-            remoteDescription: 'abc recvonly',
+            remoteSdp: 'abc recvonly',
             modificationId: '123'
           };
           modificationsResume = {
-            remoteDescription: 'abc sendrecv',
+            remoteSdp: 'abc sendrecv',
             modificationId: '123'
           };
 
+          setMediaModificationsStub = sinon.stub(rtcMgr, 'setMediaModifications');
+
           disableMediaStreamStub = sinon.stub(rtcMgr, 'disableMediaStream');
           enableMediaStreamStub = sinon.stub(rtcMgr, 'enableMediaStream');
-
-          call.setRemoteSdp(modificationsHold.remoteDescription);
-
-          setMediaModificationsStub = sinon.stub(rtcMgr, 'setMediaModifications');
         });
 
         afterEach(function () {
@@ -1296,7 +1294,7 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setRemoteSdpSpy.calledWith(modificationsHold.remoteDescription)).to.equal(true);
+              expect(setRemoteSdpSpy.calledWith(modificationsHold.remoteSdp)).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1311,7 +1309,7 @@ describe('Call', function () {
 
             setTimeout(function () {
               try {
-                expect(setStateSpy.calledWith('held')).to.equal(true);
+                expect(setStateStub.calledWith('held')).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -1335,13 +1333,29 @@ describe('Call', function () {
 
         describe('Resume modification', function () {
 
+          var codec,
+            getCodecStub;
+
+          beforeEach(function () {
+            codec = ['a', 'b'],
+            getCodecStub = sinon.stub(ATT.sdpFilter.getInstance(), 'getCodecfromSDP', function () {
+              return codec;
+            });
+
+            call.setRemoteSdp(modificationsHold.remoteSdp);
+          });
+
+          afterEach(function () {
+            getCodecStub.restore();
+          });
+
           it('should execute setState with `resumed` state if the new remoteDescription contains `sendrecv` '
             + '&& the current remoteDescription contains `recvonly`', function (done) {
             emitterEM.publish('media-modifications', modificationsResume);
 
             setTimeout(function () {
               try {
-                expect(setStateSpy.calledWith('resumed')).to.equal(true);
+                expect(setStateStub.calledWith('resumed')).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -1444,7 +1458,7 @@ describe('Call', function () {
 
             setTimeout(function () {
               try {
-                expect(setStateSpy.calledWith('held')).to.equal(true);
+                expect(setStateStub.calledWith('held')).to.equal(true);
                 expect(disableMediaStreamStub.called).to.equal(true);
                 done();
               } catch (e) {
@@ -1461,7 +1475,7 @@ describe('Call', function () {
 
             setTimeout(function () {
               try {
-                expect(setStateSpy.calledWith('resumed')).to.equal(true);
+                expect(setStateStub.calledWith('resumed')).to.equal(true);
                 expect(enableMediaStreamStub.called).to.equal(true);
                 done();
               } catch (e) {
@@ -1499,7 +1513,7 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setStateSpy.calledWith('connected')).to.equal(true);
+              expect(setStateStub.calledWith('connected')).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1513,7 +1527,7 @@ describe('Call', function () {
           setTimeout(function () {
             try {
               expect(setRemoteSdpSpy.calledWith(eventData.remoteDescription)).to.equal(true);
-              expect(setRemoteSdpSpy.calledAfter(setStateSpy)).to.equal(true);
+              expect(setRemoteSdpSpy.calledAfter(setStateStub)).to.equal(true);
               done();
             } catch (e) {
               done(e);

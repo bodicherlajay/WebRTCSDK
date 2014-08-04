@@ -71,31 +71,34 @@
       emitter.publish(state, createEventData.call(this));
     }
 
-    function onMediaModifications(modifications) {
+    function onMediaModifications(data) {
       if ('call' === breed) {
-        rtcManager.setMediaModifications(modifications);
-        if (modifications.remoteDescription
-            && modifications.remoteDescription.indexOf('recvonly') !== -1) {
+        rtcManager.setMediaModifications(data);
+        console.log(data.remoteSdp);
+        console.log(remoteSdp);
+        if (data.remoteSdp
+            && data.remoteSdp.indexOf('recvonly') !== -1) {
           that.setState('held');
           rtcManager.disableMediaStream();
-        }
-        if (modifications.remoteDescription
+        } else if (data.remoteSdp
             && remoteSdp
             && remoteSdp.indexOf
             && remoteSdp.indexOf('recvonly') !== -1
-            && modifications.remoteDescription.indexOf('sendrecv') !== -1) {
+            && data.remoteSdp.indexOf('sendrecv') !== -1) {
           that.setState('resumed');
           rtcManager.enableMediaStream();
         }
-        that.setRemoteSdp(modifications.remoteDescription);
+        that.setRemoteSdp(data.remoteSdp);
         return;
       }
 
       if ('conference' === breed) {
-        peerConnection.setRemoteDescription({
-          sdp: modifications.remoteSdp,
-          type: 'offer'
-        });
+        if (undefined !== data.remoteSdp) {
+          peerConnection.setRemoteDescription({
+            sdp: data.remoteSdp,
+            type: 'offer'
+          });
+        }
       }
     }
 
@@ -248,10 +251,10 @@
 
           if ('conference' === breed) {
             if (undefined !== data.remoteSdp) {
-            peerConnection.setRemoteDescription({
-              sdp: data.remoteSdp,
-              type: 'offer'
-            });
+              peerConnection.setRemoteDescription({
+                sdp: data.remoteSdp,
+                type: 'offer'
+              });
             }
             return;
           }
