@@ -813,7 +813,7 @@ describe('Call [Conference]', function () {
       createPeerConnectionStub.restore();
     });
 
-    describe.only('call-connected', function () {
+    describe('call-connected', function () {
       it('should set the remote description', function (done) {
         var setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
 
@@ -834,6 +834,7 @@ describe('Call [Conference]', function () {
         }, 100);
       });
     });
+
     describe('invitation-accepted', function () {
         var modifications;
 
