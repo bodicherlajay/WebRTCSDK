@@ -236,6 +236,12 @@
             }
 
             rtcManager.playStream('remote');
+            return;
+          }
+
+          if ('conference' === breed) {
+            peerConnection.setRemoteDescription(data.remoteDescription);
+            return;
           }
         });
 

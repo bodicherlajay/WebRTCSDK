@@ -477,27 +477,29 @@ describe('PeerConnection', function () {
         expect(peerConnection.getRemoteDescription()).to.equal(rtcPC.remoteDescription);
       });
     });
-    // TODO: review is this method is needed at all
-    describe('setLocalDescription', function () {
+
+    describe('setRemoteDescription', function () {
       it('should exist', function () {
-        expect(peerConnection.setLocalSDP).to.be.a('function');
+        expect(peerConnection.setRemoteDescription).to.be.a('function');
       });
-      it('should set the `localDescription` of its RTCPeerConnection', function () {
-        var someSDP,
-          setLocalDescriptionStub;
-        someSDP = 'adsfa';
-        setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription');
 
-        peerConnection.setLocalSDP(someSDP);
+      it('should set the remote desiption on the peer connection object', function () {
+        var setRemoteDescriptionStub = sinon.stub(rtcPC,  'setRemoteDescription'),
+          description = {
+            sdp: 'abcd',
+            type: 'offer'
+          };
 
-        expect(setLocalDescriptionStub.called).to.equal(true);
-        expect(setLocalDescriptionStub.getCall(0).args[0]).to.equal(someSDP);
-        expect(setLocalDescriptionStub.getCall(0).args[1]).to.be.a('function');
-        expect(setLocalDescriptionStub.getCall(0).args[2]).to.be.a('function');
+        peerConnection.setRemoteDescription(description);
 
-        setLocalDescriptionStub.restore();
+        expect(setRemoteDescriptionStub.calledWith(description)).to.equal(true);
+        expect(setRemoteDescriptionStub.getCall(0).args[1]).to.be.a('function');
+        expect(setRemoteDescriptionStub.getCall(0).args[2]).to.be.a('function');
+
+        setRemoteDescriptionStub.restore();
       });
     });
+
     describe('getLocalDescription', function () {
       var createOfferStub,
         localSDP;

@@ -121,7 +121,8 @@ describe('Call [Conference]', function () {
 
       beforeEach(function () {
         peerConnection = {
-          getRemoteDescription: function () { return; }
+          getRemoteDescription: function () { return; },
+          setRemoteDescription: function () {}
         };
         createPeerConnctionStub = sinon.stub(factories, 'createPeerConnection', function () {
           return peerConnection;
@@ -796,7 +797,8 @@ describe('Call [Conference]', function () {
       peerConnection = {
         getRemoteDescription: function () {
           return remoteDesc;
-        }
+        },
+        setRemoteDescription: function () {}
       };
 
       createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
@@ -811,6 +813,27 @@ describe('Call [Conference]', function () {
       createPeerConnectionStub.restore();
     });
 
+    describe.only('call-connected', function () {
+      it('should set the remote description', function (done) {
+        var setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
+
+        emitterEM.publish('call-connected', {
+          type: 'conference',
+          remoteDescription: {
+            sdp: 'asd',
+            type: 'offer'
+          }
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(true);
+          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('asd');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+          setRemoteDescriptionStub.restore();
+          done();
+        }, 100);
+      });
+    });
     describe('invitation-accepted', function () {
         var modifications;
 
