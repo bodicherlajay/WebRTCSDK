@@ -158,16 +158,6 @@ describe('Call [Conference]', function () {
       it('should exist', function () {
         expect(outgoingConference.addParticipant).to.be.a('function');
       });
-
-      it('should add a participant to the list with status `pending`', function () {
-        var participant
-
-        outgoingConference.addParticipant('john123');
-
-        participant = outgoingConference.participants()['john123'];
-        expect(participant.status).to.equal('pending');
-      });
-
       it('should call rtcManager.addParticipant', function () {
         addParticipantStub = sinon.stub(rtcMgr, 'addParticipant');
 
@@ -184,7 +174,7 @@ describe('Call [Conference]', function () {
       });
 
       describe('Success on rtcManager.addParticipant', function () {
-        var setParticipantStub,
+        var setInviteStub,
           onSuccessSpy;
 
         beforeEach(function () {
@@ -196,22 +186,21 @@ describe('Call [Conference]', function () {
         });
         afterEach(function () {
           addParticipantStub.restore();
-        })
+        });
 
-        it('should call `setParticipant`', function () {
-          setParticipantStub = sinon.stub(outgoingConference, 'setParticipant');
+        it('should call `setInvite`', function () {
+          setInviteStub = sinon.stub(outgoingConference, 'setInvite');
 
           outgoingConference.addParticipant('4250001');
 
-          expect(setParticipantStub.called).to.equal(true);
-          expect(setParticipantStub.calledWith('4250001', 'invited', modId)).to.equal(true);
+          expect(setInviteStub.called).to.equal(true);
+          expect(setInviteStub.calledWith('4250001', 'invited', modId)).to.equal(true);
         });
 
-        it('should publish `participant-pending` when rtcMgr invokes `onParticipantPending` callback', function () {
+        it.only('should publish `response-pending` when rtcMgr invokes `onSuccess` callback', function () {
           outgoingConference.addParticipant('12345');
-
-          expect(setStateStub.calledOnce).to.equal(true);
-          expect(setStateStub.calledWith('participant-pending')).to.equal(true);
+          expect(publishStub.calledWith('response-pending')).to.equal(true);
+          expect(publishStub.getCall(0).args[1].id).to.equal(modId);
         });
       });
 

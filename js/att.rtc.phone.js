@@ -130,10 +130,12 @@
         && 'session-disconnected' !== event
         && 'dialing' !== event
         && 'answering' !== event
+        && 'inviting' !== event
         && 'conference-joining' !== event
         && 'call-incoming' !== event
         && 'conference-invite' !== event
         && 'call-connecting' !== event
+        && 'conference:response-pending' !== event
         && 'conference-connecting' !== event
         && 'participant-pending' !== event
         && 'call-disconnecting' !== event
@@ -412,7 +414,7 @@
           call.on('connecting', function (data) {
             /**
              * Call connecting event.
-             * @desc Indicates succesful creation of the call.
+             * @desc Indicates successful creation of the call.
              * @event Phone#call-connecting
              * @type {object}
              * @property {Date} timestamp - Event fire time.
@@ -1348,7 +1350,7 @@
      var phone = ATT.rtc.Phone.getPhone();
      phone.addParticipant('4250000001');
      */
-    function addParticipant(participant) {
+    function addParticipant(invitee) {
 
       var conference;
 
@@ -1368,22 +1370,26 @@
           return;
         }
 
-        if (undefined === participant) {
+        if (undefined === invitee) {
           publishError(19002);
           return;
         }
 
-        conference.on('participant-pending', function (data) {
+        emitter.publish('inviting', {
+          to: invitee,
+          timestamp: new Date()
+        });
+
+        conference.on('response-pending', function (data) {
           /**
            * Participant pending event.
-           * @desc An invitation has been sent.
+           * @desc An invitation has been successfully sent.
            *
-           * @event Phone#participant-pending
+           * @event Phone#response-pending
            * @type {object}
            * @property {Date} timestamp - Event fire time
-           * @property {Object} participants - Participants list
            */
-          emitter.publish('participant-pending', data);
+          emitter.publish('conference:response-pending', data);
         });
 
         try {

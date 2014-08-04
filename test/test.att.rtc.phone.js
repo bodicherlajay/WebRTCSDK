@@ -1566,28 +1566,41 @@ describe('Phone', function () {
           expect(phone.addParticipant).to.be.a('function');
         });
 
-        it('should register for `participant-pending` event on the conference object', function () {
+        it('should publish `inviting` immediately', function (done) {
+
+          phone.addParticipant('1234');
+
+          setTimeout(function() {
+            try {
+              expect(publishStub.calledWith('inviting')).to.equal(true);
+              expect(publishStub.getCall(0).args[1].to).to.equal('1234');
+              done();
+            } catch(e) {
+              done(e);
+            }
+          }, 200);
+        });
+
+        it('should register for `response-pending` event on the conference object', function () {
           expect(onSpy.called).to.equal(true);
-          expect(onSpy.calledWith('participant-pending')).to.equal(true);
+          expect(onSpy.calledWith('response-pending')).to.equal(true);
         });
 
         describe('addParticipant events', function () {
 
-          describe('participant-pending', function () {
+          describe('conference:response-pending', function () {
 
-            it('should publish `participant-pending` with event data on getting a `participant-pending`', function (done) {
-              emitterConference.publish('participant-pending', eventData);
+            it('should publish `conference:response-pending` with event data on getting a `response-pending`', function (done) {
+              emitterConference.publish('response-pending', eventData);
 
               setTimeout(function() {
                 try {
-                  expect(publishStub.calledOnce).to.equal(true);
-                  expect(publishStub.calledWith('participant-pending')).to.equal(true);
-                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  expect(publishStub.calledWith('conference:response-pending', eventData)).to.equal(true);
                   done();
                 } catch(e) {
                   done(e);
                 }
-              }, 200);
+              }, 50);
             });
           });
         });

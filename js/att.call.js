@@ -25,6 +25,7 @@
       mediaType,
       type,
       breed,
+      invitations = {},
       participants = {},
       sessionInfo,
       localMedia,
@@ -168,8 +169,8 @@
     function on(event, handler) {
 
       if ('connecting' !== event &&
+          'response-pending' !== event &&
           'rejected' !== event &&
-          'participant-pending' !== event &&
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
@@ -343,28 +344,28 @@
       }
     }
 
-    function setParticipant (name, status, modId) {
-      that.participants()[name] = {
-        status: status,
-        modId: modId
-      }
+    function setInvite (invitee, modId) {
+//      that.participants()[name] = {
+//        status: status,
+//        modId: modId
+//      }
     }
 
-    function addParticipant(participant) {
-      logger.logInfo('Inviting participant...');
-
-      participants[participant] = {
-        status: 'pending'
-      };
+    function addParticipant(invitee) {
+      logger.logInfo('Sending invitation...');
 
       try {
         rtcManager.addParticipant({
           sessionInfo: sessionInfo,
-          participant: participant,
+          invitee: invitee,
           confId: id,
           onSuccess: function (modId) {
-            that.setParticipant(participant, 'invited', modId);
-            that.setState('participant-pending');
+            that.setInvite(invitee, 'invited', modId);
+            emitter.publish('response-pending', {
+              id: modId,
+              invitee: invitee,
+              timestamp: new Date()
+            });
           },
           onError: function (err) {
             logger.logError(err);
@@ -614,7 +615,7 @@
     this.connect = connect;
     this.disconnect = disconnect;
     this.addParticipant = addParticipant;
-    this.setParticipant = setParticipant;
+    this.setInvite = setInvite;
     this.updateParticipant = updateParticipant;
     this.mute = mute;
     this.unmute = unmute;
