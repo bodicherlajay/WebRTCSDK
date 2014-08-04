@@ -1317,6 +1317,15 @@
 
         conference.on('connected', function (data) {
           logger.logInfo('connected conference event published to UI');
+          /**
+           * conference connecetd event.
+           * @desc A conference has been created.
+           *
+           * @event Phone#conference-connected
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - data
+           */
           emitter.publish('conference-connected', data);
         });
 
@@ -1386,11 +1395,13 @@
         conference = session.currentCall;
 
         if (null === conference || 'conference' !== conference.breed()) {
+          logger.logError('Conference not initiated ');
           publishError(19001);
           return;
         }
 
         if (undefined === participant) {
+          logger.logError('Parameter missing');
           publishError(19002);
           return;
         }
@@ -1405,6 +1416,7 @@
            * @property {Date} timestamp - Event fire time
            * @property {Object} participants - Participants list
            */
+          logger.logInfo('Conference not initiated ');
           emitter.publish('participant-pending', data);
         });
 
