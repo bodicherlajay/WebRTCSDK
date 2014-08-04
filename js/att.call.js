@@ -347,7 +347,7 @@
       }
     }
 
-    function setInvite (invitee, modId) {
+    function setInvitee (invitee, modId) {
 //      that.participants()[name] = {
 //        status: status,
 //        modId: modId
@@ -363,7 +363,7 @@
           invitee: invitee,
           confId: id,
           onSuccess: function (modId) {
-            that.setInvite(invitee, 'invited', modId);
+            that.setInvitee(invitee, 'invited', modId);
             emitter.publish('response-pending', {
               id: modId,
               invitee: invitee,
@@ -618,7 +618,7 @@
     this.connect = connect;
     this.disconnect = disconnect;
     this.addParticipant = addParticipant;
-    this.setInvite = setInvite;
+    this.setInvitee = setInvitee;
     this.updateParticipant = updateParticipant;
     this.mute = mute;
     this.unmute = unmute;

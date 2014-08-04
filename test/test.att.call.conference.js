@@ -174,7 +174,7 @@ describe('Call [Conference]', function () {
       });
 
       describe('Success on rtcManager.addParticipant', function () {
-        var setInviteStub,
+        var setInviteeStub,
           onSuccessSpy;
 
         beforeEach(function () {
@@ -188,16 +188,16 @@ describe('Call [Conference]', function () {
           addParticipantStub.restore();
         });
 
-        it('should call `setInvite`', function () {
-          setInviteStub = sinon.stub(outgoingConference, 'setInvite');
+        it('should call `setInvitee`', function () {
+          setInviteeStub = sinon.stub(outgoingConference, 'setInvitee');
 
           outgoingConference.addParticipant('4250001');
 
-          expect(setInviteStub.called).to.equal(true);
-          expect(setInviteStub.calledWith('4250001', 'invited', modId)).to.equal(true);
+          expect(setInviteeStub.called).to.equal(true);
+          expect(setInviteeStub.calledWith('4250001', 'invited', modId)).to.equal(true);
         });
 
-        it.only('should publish `response-pending` when rtcMgr invokes `onSuccess` callback', function () {
+        it('should publish `response-pending` when rtcMgr invokes `onSuccess` callback', function () {
           outgoingConference.addParticipant('12345');
           expect(publishStub.calledWith('response-pending')).to.equal(true);
           expect(publishStub.getCall(0).args[1].id).to.equal(modId);

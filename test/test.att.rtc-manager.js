@@ -1015,7 +1015,7 @@ describe('RTC Manager', function () {
         });
       });
 
-      describe('addParticipant', function () {
+      describe.only('addParticipant', function () {
 
         it('should exist', function () {
           expect(rtcManager.addParticipant).to.be.a('function');
