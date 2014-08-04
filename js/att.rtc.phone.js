@@ -1242,9 +1242,11 @@
      *   - 18000 - Parameters missing
      *   - 18001 - Invalid localmedia passed
      *   - 18002 - Invalid remotemedia passed
-     *   - 18002 - Invalid mediatype passed
-     *   - 18002 - Failed to get usermedia
-     *   - 18002 - Internal error occurred
+     *   - 18003 - Invalid mediatype passed
+     *   - 18004 - Failed to get usermedia
+     *   - 18005 - Internal error occurred
+     *   - 18006 - Cannot make second conference when first in progress
+     *   - 18007 - Please login before you make a conference
      *
      * @memberOf Phone
      * @instance
@@ -1273,20 +1275,35 @@
       try {
         if (undefined === options
             || 0 === Object.keys(options).length) {
+          logger.logError(' parameters not found');
           publishError('18000');
           return;
         }
+        if (undefined === session || null === session.getId()) {
+          logger.logError('no session to start  conference');
+          publishError('18007');
+          return;
+        }
+        if (session.currentCall !== null && session.currentCall.breed() === 'conference') {
+          logger.logError('Please End your current Conference');
+          publishError('18006');
+          return;
+        }
+
         if (undefined === options.localMedia) {
+          logger.logError('localmedia not passed');
           publishError('18001');
           return;
         }
         if (undefined === options.remoteMedia) {
+          logger.logError('remotemedia not passed');
           publishError('18002');
           return;
         }
         if ((undefined === options.mediaType)
             || ('audio' !== options.mediaType
             && 'video' !== options.mediaType)) {
+          logger.logError('mediatype not passed');
           publishError('18003');
           return;
         }
@@ -1296,10 +1313,12 @@
         conference = session.createCall(options);
 
         conference.on('error', function (data) {
+          logger.logInfo('published error to user om start conference');
           emitter.publish('error', data);
         });
 
         conference.on('connected', function (data) {
+          logger.logInfo('connected conference event published to UI');
           emitter.publish('conference-connected', data);
         });
 
@@ -1312,15 +1331,18 @@
             conference.addStream(userMedia.localStream);
             conference.connect();
           },
-          onMediaEstablished: function () {
+          onMediaEstablished: function (data) {
             logger.logInfo('onMediaEstablished');
-            logger.logInfo('Media Established');
+            emitter.publish('media-established', data);
           },
           onUserMediaError: function (error) {
+            logger.logError('getUserMedia Failed ');
             publishError('18004', error);
           }
         });
       } catch (err) {
+
+        logger.logError('error while start conference , check logs');
         publishError('18005', err);
       }
 

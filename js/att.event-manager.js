@@ -74,7 +74,7 @@
       case ATT.RTCCallEvents.SESSION_OPEN:
         emitter.publish('call-connected', {
           type: type,
-          remoteDescription: event.sdp
+          remoteSdp: event.sdp
         });
         break;
       case ATT.RTCCallEvents.SESSION_TERMINATED:

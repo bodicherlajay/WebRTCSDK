@@ -568,6 +568,22 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "startConference",
+      ErrorCode: "18006",
+      ErrorMessage: "Cannot make second conference when first in progress",
+      Cause: "conference already exists",
+      Resolution: "Please End your current Conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "startConference",
+      ErrorCode: "18007",
+      ErrorMessage: "User not login to make conference",
+      Cause: "User not logged In",
+      Resolution: "Please login before you make a conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "addParticipant",
       ErrorCode: "19000",
       ErrorMessage: "User is not logged in",

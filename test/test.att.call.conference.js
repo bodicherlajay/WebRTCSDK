@@ -808,15 +808,12 @@ describe('Call [Conference]', function () {
 
         emitterEM.publish('call-connected', {
           type: 'conference',
-          remoteDescription: {
-            sdp: 'asd',
-            type: 'offer'
-          }
+          remoteSdp: 'remoteSdp'
         });
 
         setTimeout(function () {
           expect(setRemoteDescriptionStub.called).to.equal(true);
-          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('asd');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('remoteSdp');
           expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
           setRemoteDescriptionStub.restore();
           done();
@@ -825,37 +822,37 @@ describe('Call [Conference]', function () {
     });
 
     describe('invitation-accepted', function () {
-        var modifications;
+      var modifications;
 
-        beforeEach(function () {
-          modifications = {
-            from: 'me@myplace.com',
-            type: 'conference',
-            modificationId: 'abc321',
-            reason: 'success'
-          };
-        });
-
-        it('should call updateParticipant with `active`', function (done) {
-
-          var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
-
-          outgoingVideoConf.addParticipant(modifications.from);
-
-          emitterEM.publish('media-mod-terminations', modifications);
-
-          setTimeout(function () {
-            try {
-              var participantInfo = outgoingVideoConf.participants()[modifications.from];
-              expect(participantInfo.status).to.equal('active');
-              rtcMgrAddParticipantStub.restore();
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 10);
-        });
+      beforeEach(function () {
+        modifications = {
+          from: 'me@myplace.com',
+          type: 'conference',
+          modificationId: 'abc321',
+          reason: 'success'
+        };
       });
+
+      it('should call updateParticipant with `active`', function (done) {
+
+        var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
+
+        outgoingVideoConf.addParticipant(modifications.from);
+
+        emitterEM.publish('media-mod-terminations', modifications);
+
+        setTimeout(function () {
+          try {
+            var participantInfo = outgoingVideoConf.participants()[modifications.from];
+            expect(participantInfo.status).to.equal('active');
+            rtcMgrAddParticipantStub.restore();
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+    });
 
     describe('invitation-rejected', function () {
       var modifications;

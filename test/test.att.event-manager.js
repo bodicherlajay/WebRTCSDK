@@ -476,7 +476,7 @@ describe('Event Manager', function () {
         setTimeout(function () {
           expect(publishSpy.calledWith('call-connected', {
             type: 'call',
-            remoteDescription: event.sdp
+            remoteSdp: event.sdp
           })).to.equal(true);
           done();
         }, 100);
@@ -497,7 +497,7 @@ describe('Event Manager', function () {
         setTimeout(function () {
           expect(publishSpy.calledWith('call-connected', {
             type: 'conference',
-            remoteDescription: event.sdp
+            remoteSdp: event.sdp
           })).to.equal(true);
           done();
         }, 100);

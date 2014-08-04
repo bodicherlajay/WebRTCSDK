@@ -22,6 +22,7 @@ describe('Phone [Conference]', function () {
     Session = ATT.rtc.Session;
 
     session = new Session();
+    session.setId('123');
     sessionStub = sinon.stub(ATT.rtc, 'Session', function () {
       return session;
     });
@@ -154,6 +155,38 @@ describe('Phone [Conference]', function () {
           }, 100);
         });
 
+        it('[18007] should publish error when user not logged In ', function (done) {
+          var sessionGetIdStub = sinon.stub(session, 'getId', function () {
+            return null;
+          });
+          phone.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+          setTimeout(function () {
+            expect(onErrorSpy.calledOnce).to.equal(true);
+            expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18007');
+            sessionGetIdStub.restore();
+            done();
+          }, 100);
+        });
+        it('[18006] should publish error when tried to make second conference call ', function (done) {
+
+          session.currentCall = conference;
+          phone.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+
+          setTimeout(function () {
+            expect(onErrorSpy.calledOnce).to.equal(true);
+            expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18006');
+            done();
+          }, 100);
+        });
+
         // WARNING: This test is dangerous, it will break so many other test that you will wish ...
         it.skip('[18005] should publish error if there\'s an uncaught exception', function (done) {
 
@@ -265,7 +298,7 @@ describe('Phone [Conference]', function () {
             remoteMedia : {},
             mediaType : 'video'
           });
-          expect(loggerStub.calledWith('Media Established')).to.equal(true);
+          expect(loggerStub.calledWith('onMediaEstablished')).to.equal(true);
           getUserMediaStub.restore();
           loggerStub.restore();
         });
@@ -538,6 +571,34 @@ describe('Phone [Conference]', function () {
         });
 
         outgoingAudioConference.setState('connected');
+
+        setTimeout(function () {
+          try {
+            expect(connectedSpy.called).to.equal(true);
+            expect(connectedSpy.calledOnce).to.equal(true);
+            getUserMediaStub.restore();
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 200);
+
+      });
+
+      it('should publish `media-established` when mediaestablished  is success', function (done) {
+        var connectedSpy = sinon.spy(),
+          getUserMediaStub;
+        userMediaService = ATT.UserMediaService;
+
+        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+          options.onMediaEstablished();
+        });
+        phone.on('media-established', connectedSpy);
+        phone.startConference({
+          localMedia : {},
+          remoteMedia : {},
+          mediaType : 'video'
+        });
 
         setTimeout(function () {
           try {
