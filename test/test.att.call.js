@@ -1166,37 +1166,6 @@ describe('Call', function () {
       });
     });
 
-    describe('setLocalSdp', function () {
-
-      it('should exist', function () {
-        expect(outgoingConf.setLocalSdp).to.be.a('function');
-      });
-
-      it('should set the local description for its PeerConnection', function (done) {
-        var localSdp = 'localSdp',
-          onErrorSpy = sinon.spy(),
-          setLocalSDPStub = sinon.stub(peerConnection, 'setLocalSDP');
-        outgoingConf.on('error', onErrorSpy);
-
-        outgoingConf.setLocalSdp(localSdp);
-
-        setTimeout(function () {
-          // trying to set the local SDP before connecting
-          // should give you an error
-          expect(onErrorSpy.called).to.equal(true);
-
-          // setting the SDP after connecting is allowed
-          outgoingConf.connect();
-          outgoingConf.setLocalSdp(localSdp);
-          expect(setLocalSDPStub.called).to.equal(true);
-          expect(setLocalSDPStub.calledWith(localSdp)).to.equal(true);
-          setLocalSDPStub.restore();
-          done();
-        }, 100);
-      });
-
-    });
-
     describe('remoteSdp', function () {
       it('should exist', function () {
         expect(outgoingCall.remoteSdp).to.be.a('function');

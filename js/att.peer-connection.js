@@ -105,10 +105,10 @@
       getLocalDescription: function () {
         return pc.localDescription;
       },
-      setLocalSDP: function (sdp) {
-        pc.setLocalDescription(sdp, function () {// SUCCESS
-          logger.logInfo('Successfully set the local SDP.');
-        }, function (error) {// ERROR
+      setRemoteDescription: function (description) {
+        pc.setRemoteDescription(description, function () {
+          logger.logInfo('Remote Description set.');
+        }, function (error) {
           logger.logError(error);
         });
       },

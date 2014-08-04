@@ -158,25 +158,6 @@
       }
     }
 
-    function setLocalSdp(sdp) {
-      if ('call' === breed) {
-        localSdp = sdp;
-        return;
-      }
-
-      if ('conference' === breed) {
-        if (undefined === peerConnection) {
-          logger.logError('PeerConnection is undefined.');
-          emitter.publish('error', {
-            error: 'PeerConnection is undefined.'
-          });
-          return;
-        }
-        peerConnection.setLocalSDP(sdp);
-        return;
-      }
-    }
-
     function setRemoteSdp(sdp) {
       remoteSdp = sdp;
       if (null !== sdp) {
@@ -618,7 +599,6 @@
       return localStream;
     };
 
-    this.setLocalSdp = setLocalSdp;
     this.setRemoteSdp  = setRemoteSdp;
     this.getState = getState;
     this.setState = setState;
