@@ -131,9 +131,6 @@
           }
           remoteSdp = modifications.remoteSdp;
         }
-        if ('rejected' === modifications.reason) {
-          thisCall.updateParticipant(modifications.modificationId, 'rejected');
-        }
       }
     }
 
