@@ -640,6 +640,14 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20003",
+      ErrorMessage: "onUserMediaError  occured",
+      Cause: "failed to get userMedia",
+      Resolution: "Cannot join conference before getting userMedia failed "
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "rejectConference",
       ErrorCode: "22000",
       ErrorMessage: "Internal error occurred",

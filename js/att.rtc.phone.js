@@ -627,6 +627,7 @@
      *   - 20000 - Internal error occurred
      *   - 20001 - User is not logged in
      *   - 20002 - No conference invite
+     *   - 20003 - getUserMedia failed
      *
      * @memberOf Phone
      * @instance
@@ -730,9 +731,15 @@
                 });
               }
             },
-            onMediaEstablished: function () {
+            onMediaEstablished: function (data) {
+              logger.logInfo('onMediaEstablished');
+              emitter.publish('media-established', data);
             },
-            onUserMediaError: function () {
+            onUserMediaError: function (err) {
+              logger.logError(err);
+              emitter.publish('error', {
+                error: ATT.errorDictionary.getSDKError('20003')
+              });
             }
           });
 

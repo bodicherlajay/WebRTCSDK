@@ -1379,6 +1379,79 @@ describe('Phone', function () {
             });
 
           });
+          describe('onUserMediaError', function () {
+
+            var onUserMediaErrorSpy, getUserMediaStub;
+
+            beforeEach(function () {
+              getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+                onUserMediaErrorSpy = sinon.spy(options, 'onUserMediaError');
+                setTimeout(function () {
+                  options.onUserMediaError();
+                }, 0);
+              });
+
+            });
+
+            afterEach(function () {
+              onUserMediaErrorSpy.restore();
+              getUserMediaStub.restore();
+            });
+
+            it('[20003] should be published with `error` event if there is an uncaught exception', function (done) {
+
+              phone.joinConference(options);
+
+              setTimeout(function () {
+                try {
+                  expect(ATT.errorDictionary.getSDKError('20003')).to.be.an('object');
+                  expect(onErrorHandlerSpy.called).to.equal(true);
+                  expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('20003');
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+
+            });
+
+          });
+          describe('onMediaEstablished', function () {
+
+            var onMediaEstablishedSpy, getUserMediaStub, onPublishStub;
+
+            beforeEach(function () {
+              getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+                onMediaEstablishedSpy = sinon.spy(options, 'onMediaEstablished');
+                setTimeout(function () {
+                  options.onMediaEstablished();
+                }, 0);
+              });
+
+            });
+
+            afterEach(function () {
+              onMediaEstablishedSpy.restore();
+              getUserMediaStub.restore();
+            });
+
+            it('should be published with `media-established` event if there is a onMediaEstablished  callback', function (done) {
+            onPublishStub = sinon.stub(emitter, 'publish');
+              phone.joinConference(options);
+
+              setTimeout(function () {
+                try {
+                  expect(onPublishStub.calledWith('media-established')).to.equal(true);
+                  onPublishStub.restore();
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 100);
+
+            });
+
+          });
         });
 
         describe('joinConference events', function () {
