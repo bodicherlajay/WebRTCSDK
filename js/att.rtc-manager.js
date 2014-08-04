@@ -192,7 +192,13 @@
 
           eventManager.setup({
             sessionId: sessionInfo.sessionId,
-            token: options.token
+            token: options.token,
+            onError: function (event) {
+              // TODO: test this
+              options.onError({
+                error: event
+              });
+            }
           });
 
         } catch(err) {

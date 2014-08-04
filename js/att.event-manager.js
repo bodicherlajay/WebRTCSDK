@@ -10,18 +10,6 @@
     logManager = ATT.logManager.getInstance(),
     logger = logManager.getLoggerByName("EventManager");
 
-//  function handleError(operation, errHandler, err) {
-//    logger.logDebug('handleError: ' + operation);
-//
-//    logger.logInfo('There was an error performing operation ' + operation);
-//
-//    var error = errMgr.create(err, operation);
-//
-//    if (typeof errHandler === 'function') {
-//      errHandler(error);
-//    }
-//  }
-
   function createEventManager(options) {
 
     var channelConfig,

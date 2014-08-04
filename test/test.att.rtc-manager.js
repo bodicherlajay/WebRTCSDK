@@ -319,12 +319,14 @@ describe('RTC Manager', function () {
               setTimeout(function () {
                 try {
                   expect(setupStub.called).to.equal(true);
+                  expect(setupStub.getCall(0).args[0].sessionId).to.equal('123');
+                  expect(setupStub.getCall(0).args[0].token).to.equal('123');
+                  expect(setupStub.getCall(0).args[0].onError).to.be.a('function');
                   done();
                 } catch (e) {
                   done(e);
                 }
               }, 100);
-
             });
 
             it('should execute onSessionReady with data containing `sessionId` on receiving a `listening` event', function (done) {
@@ -386,13 +388,17 @@ describe('RTC Manager', function () {
 
           beforeEach(function () {
             doOperationStub.restore();
+            setupStub.restore();
 
             doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
               setTimeout(function () {
                 options.success(error);
               }, 0);
             });
+          });
 
+          afterEach(function () {
+            setupStub.restore();
           });
 
           it('[2004] should be published with error event if unexpected exception is thrown', function(done) {
@@ -415,7 +421,6 @@ describe('RTC Manager', function () {
               }
             }, 100);
           });
-
         });
 
       });
