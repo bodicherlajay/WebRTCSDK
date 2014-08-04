@@ -1240,9 +1240,11 @@
      *   - 18000 - Parameters missing
      *   - 18001 - Invalid localmedia passed
      *   - 18002 - Invalid remotemedia passed
-     *   - 18002 - Invalid mediatype passed
-     *   - 18002 - Failed to get usermedia
-     *   - 18002 - Internal error occurred
+     *   - 18003 - Invalid mediatype passed
+     *   - 18004 - Failed to get usermedia
+     *   - 18005 - Internal error occurred
+     *   - 18006 - Cannot make second conference when first in progress
+     *   - 18007 - Please login before you make a conference
      *
      * @memberOf Phone
      * @instance

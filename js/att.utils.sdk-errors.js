@@ -580,7 +580,7 @@
       ErrorCode: "18007",
       ErrorMessage: "User not login to make conference",
       Cause: "User not logged In",
-      Resolution: "please login before you make a conference"
+      Resolution: "Please login before you make a conference"
     },
     {
       JSObject: "ATT.rtc.Phone",
