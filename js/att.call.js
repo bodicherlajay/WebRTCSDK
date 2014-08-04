@@ -408,46 +408,44 @@
 
       setState('disconnecting');
 
-      if(breed === 'call') {
-        if (null === remoteSdp) {
-          logger.logInfo('Canceling...');
+      if (null === remoteSdp) {
+        logger.logInfo('Canceling...');
 
-          rtcManager.cancelCall({
-            callId: id,
-            sessionId: sessionInfo.sessionId,
-            token: sessionInfo.token,
-            onSuccess: function () {
-              logger.logInfo('Canceled successfully.');
+        rtcManager.cancelCall({
+          callId: id,
+          sessionId: sessionInfo.sessionId,
+          token: sessionInfo.token,
+          onSuccess: function () {
+            logger.logInfo('Canceled successfully.');
 
-              rtcManager.resetPeerConnection();
-            },
-            onError : function (error) {
-              logger.logError(error);
+            rtcManager.resetPeerConnection();
+          },
+          onError: function (error) {
+            logger.logError(error);
 
-              emitter.publish('error', {
-                error: error
-              });
-            }
-          });
-        } else if (null !== id && null !== this.remoteSdp()) {
-          logger.logInfo('Disconnecting...');
+            emitter.publish('error', {
+              error: error
+            });
+          }
+        });
+      } else if (null !== id && null !== this.remoteSdp()) {
+        logger.logInfo('Disconnecting...');
 
-          rtcManager.disconnectCall({
-            sessionId: sessionInfo.sessionId,
-            token: sessionInfo.token,
-            callId: id,
-            breed: breed,
-            onSuccess: function () {
-              logger.logInfo('Successfully disconnected.');
-            },
-            onError: function (error) {
-              logger.logError(error);
-              emitter.publish('error', {
-                error: error
-              });
-            }
-          });
-        }
+        rtcManager.disconnectCall({
+          sessionId: sessionInfo.sessionId,
+          token: sessionInfo.token,
+          callId: id,
+          breed: breed,
+          onSuccess: function () {
+            logger.logInfo('Successfully disconnected.');
+          },
+          onError: function (error) {
+            logger.logError(error);
+            emitter.publish('error', {
+              error: error
+            });
+          }
+        });
       }
     }
 
