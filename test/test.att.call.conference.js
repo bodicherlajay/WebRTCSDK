@@ -918,8 +918,16 @@ describe('Call [Conference]', function () {
     });
 
     describe('media-modifications', function () {
+      var setRemoteDescriptionStub;
+
+      beforeEach(function () {
+        setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
+      });
+      afterEach(function () {
+        setRemoteDescriptionStub.restore();
+      });
+
       it('should set the remote description', function (done) {
-        var setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
 
         emitterEM.publish('media-modifications', {
           remoteSdp: 'abdc',
@@ -930,7 +938,18 @@ describe('Call [Conference]', function () {
           expect(setRemoteDescriptionStub.called).to.equal(true);
           expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('abdc');
           expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
-          setRemoteDescriptionStub.restore();
+          done();
+        }, 100);
+      });
+      it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
+
+        emitterEM.publish('media-modifications', {
+          remoteSdp: undefined,
+          modificationId: 'ID'
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(false);
           done();
         }, 100);
       });

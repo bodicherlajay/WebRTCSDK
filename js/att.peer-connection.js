@@ -106,6 +106,7 @@
         return pc.localDescription;
       },
       setRemoteDescription: function (description) {
+        logger.logInfo(description.sdp);
         pc.setRemoteDescription(new RTCSessionDescription(description), function () {
           logger.logInfo('Remote Description set.');
         }, function (error) {
