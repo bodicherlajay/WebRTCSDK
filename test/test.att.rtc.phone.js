@@ -540,7 +540,8 @@ describe('Phone', function () {
             breed: 'call',
             mediaType: 'video',
             localMedia: localVideo,
-            remoteMedia: remoteVideo
+            remoteMedia: remoteVideo,
+            holdCurrentCall: true
           };
 
           onSpy = sinon.spy(call, 'on');
@@ -1641,6 +1642,21 @@ describe('Phone', function () {
           expect(onSpy.calledWith('participant-pending')).to.equal(true);
         });
 
+        it('should register for `invite-accepted` event on the conference object', function () {
+          expect(onSpy.calledWith('invite-accepted')).to.equal(true);
+          expect(onSpy.called).to.equal(true);
+        });
+
+        it('should register for `rejected` event on the conference object', function () {
+          expect(onSpy.calledWith('rejected')).to.equal(true);
+          expect(onSpy.called).to.equal(true);
+        });
+
+        it('should execute call.addParticipant', function () {
+          phone.addParticipant('1234');
+          expect(addParticipantStub.calledWith('1234')).to.equal(true);
+        });
+
         describe('addParticipant events', function () {
 
           describe('participant-pending', function () {
@@ -1660,10 +1676,38 @@ describe('Phone', function () {
               }, 50);
             });
           });
-        });
 
-        it('should execute call.addParticipant', function () {
-          expect(addParticipantStub.calledWith('1234')).to.equal(true);
+          describe('conference:invite-accepted', function () {
+
+            it('should publish `conference:invite-accepted` with event data on getting a `invite-accepted`', function (done) {
+              emitterConference.publish('invite-accepted', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledWith('conference:invite-accepted', eventData)).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
+
+          describe('conference:invite-rejected', function () {
+
+            it('should publish `conference:invite-rejected` with event data on getting a `rejected`', function (done) {
+              emitterConference.publish('rejected', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledWith('conference:invite-rejected', eventData)).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
         });
 
         describe('Error Handling', function () {
@@ -1720,7 +1764,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('[US233244] getParticipants', function () {
+      describe.skip('[US233244] getParticipants', function () {
 
         var publishStub;
 
@@ -1783,6 +1827,19 @@ describe('Phone', function () {
         });
 
         describe('Error Handling', function () {
+          it('[21002] should be thrown if User not Logged In', function () {
+            var sessiongetIdStub = sinon.stub(session , 'getId', function () {
+              return null;
+            });
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21002')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21002')
+            })).to.equal(true);
+            sessiongetIdStub.restore();
+          });
           it('[21000] should be thrown if conference has not been started', function () {
             session.currentCall = null;
 

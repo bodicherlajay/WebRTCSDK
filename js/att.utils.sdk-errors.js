@@ -231,6 +231,14 @@
       Resolution: "Please include the required parameters"
     },
     {
+        JSObject: "ATT.rtc.Phone",
+        JSMethod: "dial",
+        ErrorCode: "4010",
+        ErrorMessage: "Cannot have more than 2 calls at same time",
+        Cause: "Only one foreground call and one background call is supported",
+        Resolution: "Please hangup current or background call before making another call"
+    },
+    {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
       ErrorCode: "5000",
@@ -685,6 +693,14 @@
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "getParticipants",
+      ErrorCode: "21002",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking endConference"
     },
     {
       JSObject: "ATT.rtc.Phone",

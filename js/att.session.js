@@ -125,6 +125,7 @@
     // public attributes
     this.timeout = null;
     this.e911Id = null;
+    this.backgroundCall = null;
     this.currentCall = null;
     this.timer = null;
 
@@ -315,6 +316,12 @@
 
     this.getCall = function (callId) {
       return calls[callId];
+    };
+
+    this.switchCall = function () {
+        var call = this.currentCall;
+        this.currentCall = this.backgroundCall;
+        this.backgroundCall = call;
     };
 
     this.deleteCurrentCall = function () {
