@@ -104,10 +104,13 @@
 
     function onMediaModTerminations(modifications) {
 
+      logger.logDebug('onMediaModTerminations');
+      logger.logDebug (modifications);
+
       if (breed === 'conference') {
         if ('conference' === modifications.type
             && undefined !== modifications.modificationId) {
-          logger.logInfo('onMediaModTerminations:conference');
+          logger.logDebug('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
             that.updateParticipant(modifications.from, 'active');
           }
@@ -116,6 +119,7 @@
           }
         }
       } else if (breed === 'call') {
+        logger.logDebug('onMediaModTerminations:call');
         if (modifications.remoteSdp) {
           rtcManager.setRemoteDescription({
             remoteDescription: modifications.remoteSdp,

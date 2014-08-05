@@ -388,7 +388,7 @@ describe('Event Manager', function () {
 
           setTimeout(function () {
             expect(publishSpy.calledWith('media-modifications', {
-              remoteDescription: 'abc',
+              remoteSdp: 'abc',
               modificationId: '12345'
             })).to.equal(true);
             done();
