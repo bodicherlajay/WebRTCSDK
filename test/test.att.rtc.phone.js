@@ -1971,7 +1971,7 @@ describe('Phone', function () {
 
               callMuteStub = sinon.stub(call, 'mute', function () {
                 throw error;
-              })
+              });
 
             });
 

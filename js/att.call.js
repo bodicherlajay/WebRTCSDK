@@ -226,8 +226,35 @@
      * @param {Object} The call config
     */
     function connect(connectOpts) {
-      var pcOptions,
-        connectOptions;
+      var pcOptions;
+
+      function onPeerConnectionSuccess(description) {
+
+        var connectOptions = {
+          sessionId: sessionInfo.sessionId,
+          token: sessionInfo.token,
+          description: description,
+          sessionInfo: sessionInfo,
+          onSuccess: function (responsedata) {
+            if (ATT.CallTypes.INCOMING === type) {
+              setState('connecting');
+            } else {
+              setId(responsedata.id);
+            }
+          },
+          onError: function (error) {
+            emitter.publish('error', {
+              error: error
+            });
+          }
+        };
+
+        if (undefined !== id && null !== id) {
+          connectOptions.conferenceId = id;
+        }
+
+        rtcManager.connectConference(connectOptions);
+      }
 
       try {
 
@@ -322,34 +349,7 @@
           pcOptions = {
             mediaType: mediaType,
             stream: localStream,
-            onSuccess: function (description) {
-
-              connectOptions = {
-                sessionId: sessionInfo.sessionId,
-                token: sessionInfo.token,
-                description: description,
-                sessionInfo: sessionInfo,
-                onSuccess: function (responsedata) {
-                  if (ATT.CallTypes.INCOMING === type) {
-                    setState('connecting');
-                  } else {
-                    id = responsedata.id;
-                    setState('connected');
-                  }
-                },
-                onError: function (error) {
-                  emitter.publish('error', {
-                    error: error
-                  });
-                }
-              };
-
-              if (undefined !== id && null !== id) {
-                connectOptions.conferenceId = id;
-              }
-
-              rtcManager.connectConference(connectOptions);
-            },
+            onSuccess: onPeerConnectionSuccess,
             onError: function (error) {
               emitter.publish('error', {
                 error: error
@@ -363,9 +363,7 @@
             }
           };
 
-          if (ATT.CallTypes.INCOMING === type) {
-            pcOptions.remoteSdp = remoteSdp;
-          }
+          pcOptions.remoteSdp = remoteSdp;
 
           peerConnection = factories.createPeerConnection(pcOptions);
         }
@@ -636,15 +634,14 @@
     this.remoteSdp = function () {
       var description;
 
-      if (breed === 'conference') {
-        if (undefined === peerConnection) {
-          return null;
-        }
-        description = peerConnection.getRemoteDescription();
-        return description.sdp;
+      // TODO: Remove comment when every call has its own PeerConnection
+      // Only calls of `breed` 'conference' have a private
+      // peerconnection, but it's only created after you call conf.connect
+      if (undefined === peerConnection) {
+        return remoteSdp;
       }
-
-      return remoteSdp;
+      description = peerConnection.getRemoteDescription();
+      return description.sdp;
     };
     this.localStream = function () {
       return localStream;

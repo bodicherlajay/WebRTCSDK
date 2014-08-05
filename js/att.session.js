@@ -26,7 +26,9 @@
       id = null,
       token = null,
       calls = {},
-	    logger = logManager.getLoggerByName("Session");
+      logger;
+
+    logger = logManager.getLoggerByName("Session");
 
     // instantiate event emitter
     emitter = factories.createEventEmitter();
@@ -41,8 +43,7 @@
           id: callInfo.id,
           peer: callInfo.from,
           type: ATT.CallTypes.INCOMING,
-          mediaType: callInfo.mediaType,
-          remoteSdp: callInfo.sdp
+          mediaType: callInfo.mediaType
         });
 
       if (undefined !== call) {

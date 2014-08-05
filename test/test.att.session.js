@@ -1162,7 +1162,6 @@ describe('Session', function () {
             expect(createCallSpyStub.getCall(0).args[0].id).to.equal(callInfo.id);
             expect(createCallSpyStub.getCall(0).args[0].peer).to.equal(callInfo.from);
             expect(createCallSpyStub.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
-            expect(createCallSpyStub.getCall(0).args[0].remoteSdp).to.equal(callInfo.sdp);
             done();
           } catch (e) {
             done(e);

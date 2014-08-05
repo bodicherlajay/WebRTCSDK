@@ -6,8 +6,7 @@
 
   function createPeerConnection(options) {
 
-    var peerConnection,
-      pc,
+    var pc,
       localDescription,
       sdpFilter = ATT.sdpFilter.getInstance(),
       onSuccess,
@@ -111,7 +110,7 @@
 
     } else if (undefined !== options.remoteSdp){
       pc.setRemoteDescription(new RTCSessionDescription({
-        sdp:options.remoteSdp,
+        sdp: options.remoteSdp,
         type: 'offer'
       }), function () {
         pc.createAnswer(function (description) {// SUCCESS
