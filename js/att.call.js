@@ -389,24 +389,6 @@
       }
     }
 
-    function updateParticipant(name, status) {
-
-      logger.logDebug('updateParticipant');
-
-      if (undefined !== that.participants()[name]) {
-        logger.logDebug(name + ':' + status);
-        this.participants()[name]['status'] = status;
-
-        if ('accepted' === status) {
-          that.setState('connected');
-        }
-
-        if ('rejected' === status) {
-          that.setState('rejected');
-        }
-      }
-    }
-
     function disconnect() {
 
       setState('disconnecting');
