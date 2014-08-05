@@ -25,6 +25,7 @@
       mediaType,
       type,
       breed,
+      invitations = {},
       participants = {},
       sessionInfo,
       localMedia,
