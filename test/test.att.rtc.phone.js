@@ -1532,6 +1532,7 @@ describe('Phone', function () {
                 expect(ATT.errorDictionary.getSDKError('20000')).to.be.an('object');
                 expect(onErrorHandlerSpy.called).to.equal(true);
                 expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('20000');
+                getUserMediaStub.restore();
                 done();
               } catch (e) {
                 done(e);
