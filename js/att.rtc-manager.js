@@ -20,7 +20,8 @@
     apiConfigs = ATT.private.config.api,
     appConfig = ATT.private.config.app,
     logManager = ATT.logManager.getInstance(),
-    logger = logManager.getLoggerByName("RTCManager");
+    logger = logManager.getLoggerByName("RTCManager"),
+    utils = ATT.utils;
 
   /**
   * Create a new RTC Manager
@@ -49,11 +50,11 @@
     });
 
     function setMediaModifications(modifications) {
-      peerConnSvc.setRemoteAndCreateAnswer(modifications.remoteSdp, modifications.modificationId);
+      peerConnSvc.setRemoteAndCreateAnswer(modifications.remoteDescription, modifications.modificationId);
     }
 
     function setRemoteDescription(modifications) {
-      peerConnSvc.setTheRemoteDescription(modifications.remoteSdp, modifications.type);
+      peerConnSvc.setTheRemoteDescription(modifications.remoteDescription, modifications.type);
     }
 
     function resetPeerConnection() {
@@ -191,7 +192,13 @@
 
           eventManager.setup({
             sessionId: sessionInfo.sessionId,
-            token: options.token
+            token: options.token,
+            onError: function (event) {
+              // TODO: test this
+              options.onError({
+                error: event
+              });
+            }
           });
 
         } catch(err) {
@@ -303,7 +310,7 @@
             type: options.type,
             mediaConstraints: userMedia.mediaConstraints,
             localStream: userMedia.localStream,
-            remoteSdp: options.remoteSdp,
+            remoteDescription: options.remoteDescription,
             sessionInfo: options.sessionInfo,
             onPeerConnectionInitiated: function (callInfo) {
               if (undefined !== callInfo.xState
@@ -316,8 +323,8 @@
             },
             onRemoteStream: function (stream) {
               userMediaSvc.showStream({
-                localOrRemote: 'remote',
-                stream: stream
+//                localOrRemote: 'remote',
+//                stream: stream
               });
             },
             onPeerConnectionError: function(error) {
@@ -333,39 +340,59 @@
     }
 
     function connectConference(options) {
-      var responseData, joinConfig, createConfig, params;
+      var responseData,
+          joinConfig,
+          createConfig,
+          commonParams,
+          joinParams;
 
-      params = {
+      commonParams = {
         url: [options.sessionInfo.sessionId],
         headers: {
           'Authorization': 'Bearer ' + options.sessionInfo.token
         }
       };
 
+      // If you DON'T have a conference ID, then CREATE the conference
+      if (undefined === options.conferenceId) {
+
+        createConfig = {
+          params: commonParams,
+          data: {
+            conference: {
+              sdp: options.description.sdp
+            }
+          },
+          success: function (response) {
+            responseData = {
+              id: response.getResponseHeader('Location').split('/')[6],
+              state: response.getResponseHeader('x-state')
+            };
+            options.onSuccess(responseData);
+          },
+          error: options.onError
+        };
+
+        resourceManager.doOperation('createConference', createConfig);
+        return;
+      }
+
+      // If you DO have a conference ID, then JOIN
+      joinParams = {
+        url: [options.sessionInfo.sessionId, options.conferenceId],
+        headers: commonParams.headers
+      };
+      joinParams.headers['x-conference-action'] = 'call-answer';
+
       joinConfig = {
+        params: joinParams,
         data: {
           conferenceModifications: {
-            sdp: options.localSdp
-          }
-        },
-        success: function (response) {
-          responseData = {
-            state: response.getResponseHeader('x-conference-action')
-          };
-          options.onSuccess(responseData);
-        },
-        error: options.onError
-      };
-      createConfig = {
-        params: params,
-        data: {
-          conference: {
             sdp: options.description.sdp
           }
         },
         success: function (response) {
           responseData = {
-            id: response.getResponseHeader('Location').split('/')[6],
             state: response.getResponseHeader('x-state')
           };
           options.onSuccess(responseData);
@@ -373,11 +400,8 @@
         error: options.onError
       };
 
-      if (undefined !== options.conferenceId) {
-        resourceManager.doOperation('acceptConference', joinConfig);
-      } else {
-        resourceManager.doOperation('createConference', createConfig);
-      }
+      resourceManager.doOperation('acceptConference', joinConfig);
+      return;
     }
 
     function addParticipant(options) {
@@ -395,9 +419,8 @@
         throw new Error('No `confId` passed');
       }
 
-      if (undefined === options.onParticipantPending
-        || typeof options.onParticipantPending !== 'function') {
-        throw new Error('No `onParticipantPending` callback passed');
+      if (typeof options.onSuccess !== 'function') {
+        throw new Error('No `onSuccess` callback passed');
       }
 
       participant = options.participant;
@@ -425,7 +448,7 @@
 
           if ('add-pending' === response.getResponseHeader('x-state')) {
             modId = response.getResponseHeader('x-modId');
-            options.onParticipantPending(modId);
+            options.onSuccess(modId);
           }
         },
         error: function (error) {
@@ -724,7 +747,6 @@
     this.resumeCall = resumeCall.bind(this);
     this.rejectCall = rejectCall.bind(this);
     this.updateSessionE911Id = updateSessionE911Id.bind(this);
-    this.connectConference = connectConference;
   }
 
   if (undefined === ATT.private) {

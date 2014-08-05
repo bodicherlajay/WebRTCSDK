@@ -118,10 +118,10 @@
             errResp.errorDetail = errorDictionary.getSDKError('0003');
             errResp.errorDetail.HttpStatusCode = errResp.getResponseStatus();
             errResp.errorDetail.ResourceMethod = errResp.getResourceURL();
-            errorCB.call(this, errResp);
+            errorCB.call(this, errResp.errorDetail);
           } else {
             errResp.errorDetail = ATT.Error.parseAPIErrorResponse(errResp);
-            errorCB.call(this, errResp);
+            errorCB.call(this, errResp.errorDetail);
           }
         };
         restConfig.ontimeout = function (errResp) {
@@ -130,9 +130,9 @@
           error.errorDetail.HttpStatusCode = 0;
           error.errorDetail.ResourceMethod = restConfig.url;
           if (!onTimeout) {
-            errorCB.call(this,error);
+            errorCB.call(this, error.errorDetail);
           } else {
-            onTimeout.call(this,error);
+            onTimeout.call(this, error.errorDetail);
           }
         }
 

@@ -61,7 +61,7 @@
        * @type {object}
        * @property {String} from - The ID of the caller.
        * @property {String} mediaType - The type of call.
-       * @property {String} codec - The codec of the call
+       * @property {String} codec - The codec of the call.
        * @property {Date} timestamp - Event fire time.
        */
       emitter.publish('call-disconnected', data);
@@ -237,7 +237,7 @@
          * @property {String} error.JSMethod
          * @property {String} error.ErrorCode
          * @property {String} error.ErrorMessage
-         * @property {String} error.PosibleCauses
+         * @property {String} error.PossibleCauses
          * @property {String} error.PossibleResolution
          * @property {String} error.APIError
          * @property {String} error.ResourceMethod
@@ -660,6 +660,7 @@
      *   - 20000 - Internal error occurred
      *   - 20001 - User is not logged in
      *   - 20002 - No conference invite
+     *   - 20003 - getUserMedia failed
      *
      * @memberOf Phone
      * @instance
@@ -703,16 +704,29 @@
             timestamp: new Date()
           });
 
+          conference.on('error', function (data) {
+            /**
+             * Conference error event
+             * @desc An error occurred during conferencing
+             * @event Phone#error
+             * @type {object}
+             * @property {Date} timestamp - Event fire time
+             * @property {Object} data - Available error detail
+             */
+            emitter.publish('error', data);
+          });
+
           conference.on('connecting', function (data) {
             /**
              * Conference connecting event.
              * @desc Trying to connecting to a conference after accepting the invite.
              * @event Phone#conference-connecting
              * @type {object}
-             * @property {Date} timestamp - Event fire time.
+             * @property {Date} timestamp - Event fire time
              */
             emitter.publish('conference-connecting', data);
           });
+
           conference.on('connected', function (data) {
             /**
              * Conference connected event.
@@ -751,8 +765,18 @@
               }
             },
             onMediaEstablished: function () {
+              logger.logInfo('onMediaEstablished');
+
+              emitter.publish('media-established', {
+                timestamp: new Date(),
+                mediaType: conference.mediaType(),
+                codec: conference.codec(),
+                from: conference.peer()
+              });
             },
-            onUserMediaError: function () {
+            onUserMediaError: function (error) {
+              logger.logError('getUserMedia Failed ');
+              publishError('20002', error);
             }
           });
 
@@ -1270,9 +1294,11 @@
      *   - 18000 - Parameters missing
      *   - 18001 - Invalid localmedia passed
      *   - 18002 - Invalid remotemedia passed
-     *   - 18002 - Invalid mediatype passed
-     *   - 18002 - Failed to get usermedia
-     *   - 18002 - Internal error occurred
+     *   - 18003 - Invalid mediatype passed
+     *   - 18004 - Failed to get usermedia
+     *   - 18005 - Internal error occurred
+     *   - 18006 - Cannot make second conference when first in progress
+     *   - 18007 - Please login before you make a conference
      *
      * @memberOf Phone
      * @instance
@@ -1297,23 +1323,39 @@
       logger.logInfo('startConference');
 
       var conference;
+
       try {
         if (undefined === options
             || 0 === Object.keys(options).length) {
+          logger.logError(' parameters not found');
           publishError('18000');
           return;
         }
+        if (undefined === session || null === session.getId()) {
+          logger.logError('no session to start  conference');
+          publishError('18007');
+          return;
+        }
+        if (session.currentCall !== null && session.currentCall.breed() === 'conference') {
+          logger.logError('Please End your current Conference');
+          publishError('18006');
+          return;
+        }
+
         if (undefined === options.localMedia) {
+          logger.logError('localmedia not passed');
           publishError('18001');
           return;
         }
         if (undefined === options.remoteMedia) {
+          logger.logError('remotemedia not passed');
           publishError('18002');
           return;
         }
         if ((undefined === options.mediaType)
             || ('audio' !== options.mediaType
             && 'video' !== options.mediaType)) {
+          logger.logError('mediatype not passed');
           publishError('18003');
           return;
         }
@@ -1322,8 +1364,30 @@
         options.type = ATT.CallTypes.OUTGOING;
         conference = session.createCall(options);
 
+        conference.on('error', function (data) {
+          logger.logInfo('published error to user om start conference');
+          emitter.publish('error', data);
+        });
+
         conference.on('connected', function (data) {
+          logger.logInfo('connected conference event published to UI');
+          /**
+           * conference connecetd event.
+           * @desc A conference has been created.
+           *
+           * @event Phone#conference-connected
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - data
+           */
           emitter.publish('conference-connected', data);
+        });
+
+        conference.on('stream-added', function (data) {
+          userMediaSvc.showStream({
+            stream: data.stream,
+            localOrRemote: 'remote'
+          });
         });
 
         userMediaSvc.getUserMedia({
@@ -1335,15 +1399,18 @@
             conference.addStream(userMedia.localStream);
             conference.connect();
           },
-          onMediaEstablished: function () {
+          onMediaEstablished: function (data) {
             logger.logInfo('onMediaEstablished');
-            logger.logInfo('Media Established');
+            emitter.publish('media-established', data);
           },
           onUserMediaError: function (error) {
+            logger.logError('getUserMedia Failed ');
             publishError('18004', error);
           }
         });
       } catch (err) {
+
+        logger.logError('error while start conference , check logs');
         publishError('18005', err);
       }
 
@@ -1352,7 +1419,10 @@
     /**
      * @summary
      * Add participant
-     * @desc Add description here
+     * @desc
+     * Add a participant to a conference
+     *
+     * @param {String} participant
      *
      * **Error Codes**
      *
@@ -1364,17 +1434,19 @@
      * @instance
 
      * @fires Phone#participant-pending
+     * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
      phone.addParticipant('4250000001');
      */
     function addParticipant(participant) {
-      logger.logDebug('Phone.addParticipant');
 
       var conference;
 
       try {
+
+        logger.logDebug('Phone.addParticipant');
 
         if (null === session.getId()) {
           publishError(19000);
@@ -1384,43 +1456,39 @@
         conference = session.currentCall;
 
         if (null === conference || 'conference' !== conference.breed()) {
+          logger.logError('Conference not initiated ');
           publishError(19001);
           return;
         }
 
         if (undefined === participant) {
+          logger.logError('Parameter missing');
           publishError(19002);
           return;
         }
 
-        try {
-          conference.on('participant-pending', function (data) {
-            /**
-             * Participant pending event.
-             * @desc An invitation has been sent to a participant
-             *
-             * @event Phone#participant-pending
-             * @type {object}
-             */
-            emitter.publish('participant-pending', data);
-          });
+        conference.on('participant-pending', function (data) {
+          /**
+           * Participant pending event.
+           * @desc An invitation has been sent.
+           *
+           * @event Phone#participant-pending
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} participants - Participants list
+           */
+          logger.logInfo('Conference not initiated ');
+          emitter.publish('participant-pending', data);
+        });
 
-          conference.on('error', function (data) {
-            /**
-             * Call Error event.
-             * @desc Indicates an error condition during a call's flow
-             *
-             * @event Phone#error
-             * @type {object}
-             * @property {Object} error - error detail
-             */
-            emitter.publish('error', data);
-          });
+        try {
           conference.addParticipant(participant);
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError(19003);
         }
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });
@@ -1431,7 +1499,13 @@
      * @summary
      * End Conference
      * @desc
+     * End an ongoing conference
+     *
      * **Error Codes**
+     *
+     *   - 23001 - User is not logged in
+     *   - 23002 - Conference not initiated
+     *   - 23000 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -1460,15 +1534,25 @@
         }
 
         conference.on('disconnecting', function (data) {
+          /**
+           * Conference disconnecting event.
+           * @desc The conference is being disconnected
+           *
+           * @event Phone#conference-disconnecting
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           */
           emitter.publish('conference-disconnecting', data);
         });
 
         try {
-          conference.disconnect();
+          conference.disconnectConference();
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError(23000);
         }
       } catch(err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });
@@ -1485,6 +1569,7 @@
      *
      *   - 21000 - Conference not initiated
      *   - 21001 - Internal error occurred
+     *   - 21002 - User not Logged in
      *
      * @memberOf Phone
      * @instance
@@ -1503,6 +1588,11 @@
         key;
 
       try {
+
+        if (null === session.getId()) {
+          publishError(21002);
+          return;
+        }
         conference = session.currentCall;
 
         if (null === conference
@@ -1515,16 +1605,20 @@
           active = {};
 
           for (key in participants) {
-            if ('accepted' === participants[key].status) {
-              active[key] = participants[key];
+            if (participants.hasOwnProperty(key)) {
+              if ('active' === participants[key].status) {
+                active[key] = participants[key];
+              }
             }
           }
 
           return active;
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError(21001);
         }
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });

@@ -160,16 +160,16 @@
       } else if (this.callType === ATT.CallTypes.INCOMING) {
         logger.logInfo('Responding to incoming call');
 
-        if (undefined === config.remoteSdp) {
+        if (undefined === config.remoteDescription) {
           throw new Error('Cannot set the remote description. The remote SDP is undefined');
         }
 
         //Check if invite is an announcement
-        if (config.remoteSdp && config.remoteSdp.indexOf('sendonly') !== -1) {
-          config.remoteSdp = config.remoteSdp.replace(/sendonly/g, 'sendrecv');
+        if (config.remoteDescription && config.remoteDescription.indexOf('sendonly') !== -1) {
+          config.remoteDescription = config.remoteDescription.replace(/sendonly/g, 'sendrecv');
         }
 
-        this.setTheRemoteDescription(config.remoteSdp, 'offer');
+        this.setTheRemoteDescription(config.remoteDescription, 'offer');
         this.createAnswer();
       }
     },

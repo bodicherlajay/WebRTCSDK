@@ -132,12 +132,12 @@
     function retry(config, error) {
       logger.logDebug(config);
       logger.logInfo("Repolling again...");
-      if ((error.errorDetail.HttpStatusCode !== 204 )) { //&& error.errorDetail.HttpStatusCode > 0)) {
+      if ((error.HttpStatusCode !== 204 )) { //&& error.errorDetail.HttpStatusCode > 0)) {
         logger.logError("[FATAL] Response code was:" + error + " repolling again...");
         //stopListening();
         //emitter.publish('channel-error',ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","events","RTC"));
         //return;
-      } else if (error.errorDetail.HttpStatusCode == 0) {
+      } else if (error.HttpStatusCode == 0) {
         logger.logInfo("Request timed out, repolling again");
       } else {
         logger.logError("Response code was:" + error + " repolling again...");

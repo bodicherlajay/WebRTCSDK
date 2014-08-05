@@ -34,7 +34,7 @@
     // get the RTC Manager
     rtcManager = ATT.private.rtcManager.getRTCManager();
 
-    rtcManager.on('call-incoming', function (callInfo) {
+    rtcManager.on('invitation-received', function (callInfo) {
       var eventName,
         call = session.createCall({
           breed: callInfo.type,
@@ -45,8 +45,8 @@
         });
 
       if (undefined !== call) {
-        if (callInfo.remoteSdp) {
-          call.setRemoteSdp(callInfo.remoteSdp);
+        if (callInfo.remoteDescription) {
+          call.setRemoteSdp(callInfo.remoteDescription);
         }
 
         if (call.breed() === 'call') {

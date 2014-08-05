@@ -102,7 +102,7 @@ describe('APIConfig', function () {
     it('should have a valid method acceptConference', function () {
       var params = ['sessionId', 'confId'];
       expect(currentConfiguration.acceptConference).to.be.an('object');
-      expect(currentConfiguration.acceptConference.method).to.equal('put');
+      expect(currentConfiguration.acceptConference.method).to.equal('PUT');
       expect(currentConfiguration.acceptConference.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/confId');
       expect(currentConfiguration.acceptConference.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
       expect(currentConfiguration.acceptConference.headers).to.be.an('object');

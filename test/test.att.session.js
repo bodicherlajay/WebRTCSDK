@@ -99,8 +99,8 @@ describe('Session', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
-    it('should register for `call-incoming` event on RTCManager', function () {
-      expect(rtcManagerOnSpy.calledWith('call-incoming')).to.equal(true);
+    it('should register for `invitation-received` event on RTCManager', function () {
+      expect(rtcManagerOnSpy.calledWith('invitation-received')).to.equal(true);
     });
 
     it('should register for `call-disconnected` event on RTCManager', function () {
@@ -262,7 +262,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
       it('should call connectSession on RTC Manager', function () {
@@ -306,7 +306,7 @@ describe('Session', function () {
             setTimeout(function () {
               expect(setIdStub.calledWith('sessionid')).to.equal(true);
               done();
-            }, 100);
+            }, 10);
           });
 
           it('Should execute the update on session with newly created timeout', function (done) {
@@ -317,7 +317,7 @@ describe('Session', function () {
                 timeout: 120000
               })).to.equal(true);
               done();
-            }, 100);
+            }, 10);
 
           });
 
@@ -349,7 +349,7 @@ describe('Session', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
         });
 
@@ -378,7 +378,7 @@ describe('Session', function () {
             setTimeout(function () {
               expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
               done();
-            }, 100);
+            }, 10);
           });
 
         });
@@ -463,7 +463,7 @@ describe('Session', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 10);
 
         });
 
@@ -503,7 +503,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
       it('Should execute RTCManager.disconnectSession', function () {
@@ -533,7 +533,7 @@ describe('Session', function () {
               expect(setIdStub.called).to.equal(true);
               expect(setIdStub.calledWith(null)).to.equal(true);
               done();
-            }, 100);
+            }, 10);
           });
 
           it('should publish `error` with error data if there is an error in any operation', function (done) {
@@ -548,7 +548,7 @@ describe('Session', function () {
             setTimeout(function () {
               expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
               done();
-            }, 100);
+            }, 10);
           });
         });
 
@@ -568,7 +568,7 @@ describe('Session', function () {
           setTimeout(function () {
             expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
             done();
-          }, 100);
+          }, 10);
         });
 
       });
@@ -611,7 +611,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
       it('Should publish `disconnected` event if id is null', function (done) {
@@ -624,7 +624,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
 
       });
 
@@ -640,7 +640,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
 
         stopUserMediaStub.restore();
       });
@@ -696,7 +696,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
       describe('timeout', function () {
@@ -715,7 +715,7 @@ describe('Session', function () {
 
         it('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function (done) {
           var onNeedsRefreshSpy = sinon.spy();
-          options.timeout = 60200;
+          options.timeout = 60020;
           session.on('needs-refresh', onNeedsRefreshSpy);
           session.update(options);
           expect(session.timer).to.be.a('number');
@@ -726,7 +726,7 @@ describe('Session', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 30);
 
         });
 
@@ -789,7 +789,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 300);
+        }, 30);
 
       });
     });
@@ -929,7 +929,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
 
       });
 
@@ -981,7 +981,7 @@ describe('Session', function () {
         session2.setId('123');
         session2.on('needs-refresh', onNeedsRefreshSpy);
 
-        options.timeout = 60200;
+        options.timeout = 60020;
 
         session2.update(options);
 
@@ -992,7 +992,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 300);
+        }, 30);
 
         setTimeout(function () {
           try {
@@ -1001,7 +1001,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 600);
+        }, 60);
 
       });
 
@@ -1012,7 +1012,7 @@ describe('Session', function () {
 
         session3.setId('123');
         session3.on('needs-refresh', onNeedsRefreshSpy);
-        options.timeout = 500;
+        options.timeout = 50;
 
         session3.update(options);
 
@@ -1023,7 +1023,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 600);
+        }, 60);
       });
 
       it('clear the old value for the timeout and only use the new value to publish', function (done) {
@@ -1033,10 +1033,10 @@ describe('Session', function () {
         session3.setId('123');
         session3.on('needs-refresh', onNeedsRefreshSpy);
 
-        options.timeout = 200;
+        options.timeout = 20;
         session3.update(options);
 
-        options.timeout = 500;
+        options.timeout = 50;
         session3.update(options);
 
         setTimeout(function () {
@@ -1046,7 +1046,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 300);
+        }, 30);
 
         setTimeout(function () {
           try {
@@ -1055,7 +1055,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 600);
+        }, 60);
       });
 
       it('should call rtcManager.refreshSession', function (done) {
@@ -1064,7 +1064,7 @@ describe('Session', function () {
         session4.update({
           token: 'bogus',
           e911Id: 'e911Bogus',
-          timeout: 500
+          timeout: 50
         });
 
         setTimeout(function () {
@@ -1081,7 +1081,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 600);
+        }, 60);
 
       });
 
@@ -1107,7 +1107,7 @@ describe('Session', function () {
           id: '123',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteDescription: 'abc'
         };
 
         conferenceInfo = {
@@ -1115,7 +1115,7 @@ describe('Session', function () {
           id: '123',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteDescription: 'abc'
         };
 
         emitterEM = ATT.private.factories.createEventEmitter();
@@ -1152,7 +1152,7 @@ describe('Session', function () {
 
       it('should execute session.createCall with breed as the type received in event data from event manager', function (done) {
 
-        emitterEM.publish('call-incoming', callInfo);
+        emitterEM.publish('invitation-received', callInfo);
 
         setTimeout(function () {
           try {
@@ -1165,10 +1165,10 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
-      it('should execute call.setRemoteSdp with remoteSdp on the newly created call', function (done) {
+      it('should execute call.setRemoteSdp with remoteDescription on the newly created call', function (done) {
 
         var call = new ATT.rtc.Call({
           breed: 'call',
@@ -1185,11 +1185,11 @@ describe('Session', function () {
 
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
 
-        emitterEM.publish('call-incoming', callInfo);
+        emitterEM.publish('invitation-received', callInfo);
 
         setTimeout(function () {
           try {
-            expect(setRemoteSdpSpy.calledWith(callInfo.remoteSdp)).to.equal(true);
+            expect(setRemoteSdpSpy.calledWith(callInfo.remoteDescription)).to.equal(true);
             createCallSpyStub.restore();
             setRemoteSdpSpy.restore();
             done();
@@ -1198,12 +1198,12 @@ describe('Session', function () {
             setRemoteSdpSpy.restore();
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
       it('should trigger `call-incoming` with relevant data on creating the new call', function (done) {
 
-        emitterEM.publish('call-incoming', callInfo);
+        emitterEM.publish('invitation-received', callInfo);
 
         setTimeout(function () {
           try {
@@ -1217,12 +1217,12 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 300);
+        }, 30);
       });
 
       it('should trigger `conference-invite` with relevant data on creating the new conference', function (done) {
 
-        emitterEM.publish('call-incoming', conferenceInfo);
+        emitterEM.publish('invitation-received', conferenceInfo);
 
         setTimeout(function () {
           try {
@@ -1236,7 +1236,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 300);
+        }, 30);
       });
     });
 
@@ -1258,7 +1258,7 @@ describe('Session', function () {
           type: 'call',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteDescription: 'abc'
         };
 
         conferenceInfo = {
@@ -1266,7 +1266,7 @@ describe('Session', function () {
           id: '123',
           from: '1234',
           mediaType: 'video',
-          remoteSdp: 'abc'
+          remoteDescription: 'abc'
         };
 
         emitterEM = ATT.private.factories.createEventEmitter();

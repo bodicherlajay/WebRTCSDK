@@ -80,7 +80,13 @@
   createAPIErrorCode = function(response, jsObject, methodName, moduleId) {
     logger.logTrace('raw error', response);
 
-    var apiError, errorResponse = response.errorDetail;
+    var apiError, errorResponse;
+
+    if (undefined !== response.HttpStatusCode) {
+      errorResponse = response;
+    } else if (undefined !== response.errorDetail.HttpStatusCode) {
+      errorResponse = response.errorDetail;
+    }
     methodName = methodName || 'GeneralOperation';
     moduleId = moduleId || 'RTC';
 
@@ -106,7 +112,7 @@
         JSObject: jsObject,
         ErrorCode: moduleId + "-UNKNOWN",
         JSMethod: methodName,
-        HttpStatusCode: response.getResponseStatus(),
+        HttpStatusCode: response.HttpStatusCode || 'Unknown',
         ErrorMessage: methodName + ' failed',
         APIError:  errorResponse.APIError || response.responseText,
         PossibleCauses:"Please look into APIError",

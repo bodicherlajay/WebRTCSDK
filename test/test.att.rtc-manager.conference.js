@@ -35,7 +35,7 @@ describe('RTCManager [Conference]', function () {
     });
 
 
-    describe('connectConference', function () {
+    describe('connectConference [CREATE]', function () {
       var  connectConfOpts,
         onSuccessSpy,
         onRemoteStreamSpy,
@@ -126,7 +126,7 @@ describe('RTCManager [Conference]', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 10);
 
         });
       });
@@ -153,7 +153,7 @@ describe('RTCManager [Conference]', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 10);
 
         });
       });

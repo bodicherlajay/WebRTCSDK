@@ -14,9 +14,12 @@ describe('Phone', function () {
     remoteVideo,
     getRTCManagerStub,
     createPeerConnectionStub,
-    restClientStub;
+    restClientStub,
+    ums,
+    Phone;
 
   before(function () {
+    ums = ATT.UserMediaService;
     factories = ATT.private.factories;
     confOpts = {
       breed: 'conference',
@@ -36,6 +39,7 @@ describe('Phone', function () {
   });
 
   beforeEach(function () {
+    Phone = ATT.private.Phone;
     restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
 
     localVideo = document.createElement('video');
@@ -319,12 +323,13 @@ describe('Phone', function () {
 
           setTimeout(function () {
             try {
+              expect(onSessionReadySpy.called).to.equal(true);
               expect(onSessionReadySpy.calledWith(data)).to.equal(true);
               done();
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 50);
         });
 
         describe('Error Handling', function () {
@@ -455,7 +460,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 50);
         });
 
         it('should delete the current session object', function () {
@@ -585,7 +590,7 @@ describe('Phone', function () {
             expect(onDialingSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(typeof onDialingSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('should call session.createCall', function () {
@@ -659,6 +664,15 @@ describe('Phone', function () {
         });
 
         describe('Events for Dial', function () {
+          var getUserMediaStub;
+
+          beforeEach(function () {
+            getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+          });
+
+          afterEach(function (){
+            getUserMediaStub.restore();
+          });
 
           it('should trigger `call-connecting` with relevant data when call publishes `connecting` event', function (done) {
             phone.dial(options);
@@ -672,7 +686,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
@@ -686,7 +700,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `media-established` with relevant data when call publishes `media-established` event', function (done) {
@@ -701,7 +715,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `call-held` with relevant data when call publishes `call-held` event', function (done) {
@@ -716,7 +730,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
           it('should trigger `call-resumed` with relevant data when call publishes `call-resumed` event', function (done) {
@@ -731,7 +745,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
         });
@@ -939,7 +953,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
             done();
-          }, 100);
+          }, 50);
 
         });
 
@@ -953,7 +967,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
-          }, 100);
+          }, 50);
 
         });
 
@@ -967,7 +981,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('[5003] should publish `error` event with data if the user is not logged in', function (done) {
@@ -981,7 +995,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('[5000] should publish `error` event with error data if there is no current call', function (done) {
@@ -994,7 +1008,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
             done();
-          }, 100);
+          }, 50);
 
         });
 
@@ -1008,7 +1022,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('should trigger `answering` with event data', function (done) {
@@ -1022,7 +1036,7 @@ describe('Phone', function () {
             expect(onAnsweringSpy.getCall(0).args[0].codec).to.be.an('array');
             expect(typeof onAnsweringSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('should register for the `connecting` event on the call object', function () {
@@ -1081,7 +1095,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
@@ -1096,7 +1110,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `media-established` with relevant data when call publishes `media-established` event', function (done) {
@@ -1111,7 +1125,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `call-held` with relevant data when call publishes `call-held` event', function (done) {
@@ -1126,7 +1140,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
           it('should trigger `call-resumed` with relevant data when call publishes `call-resumed` event', function (done) {
@@ -1141,7 +1155,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
           it('[5002] should trigger `error` with relevant data when call publishes `error` event', function (done) {
@@ -1159,7 +1173,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
 
           });
 
@@ -1204,7 +1218,6 @@ describe('Phone', function () {
 
           onSpy = sinon.spy(conference, 'on');
 
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function () {});
 
           conferenceJoiningSpy = sinon.spy();
 
@@ -1216,7 +1229,6 @@ describe('Phone', function () {
         });
 
         afterEach(function () {
-          getUserMediaStub.restore();
           onSpy.restore();
         });
 
@@ -1240,13 +1252,19 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 50);
         });
 
         it('should register for `connecting` event from call', function () {
           phone.joinConference(options);
 
           expect(onSpy.calledWith('connecting')).to.equal(true);
+        });
+
+        it('should register for `error` event from call', function () {
+          phone.joinConference(options);
+
+          expect(onSpy.calledWith('error')).to.equal(true);
         });
 
         it('should register for `connected` event from call', function () {
@@ -1256,6 +1274,8 @@ describe('Phone', function () {
         });
 
         it('should execute userMedia.getUserMedia with correct input params', function () {
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+
           phone.joinConference(options);
 
           expect(getUserMediaStub.called).to.equal(true);
@@ -1266,6 +1286,8 @@ describe('Phone', function () {
           expect(getUserMediaStub.getCall(0).args[0].onUserMedia).to.be.a('function');
           expect(getUserMediaStub.getCall(0).args[0].onMediaEstablished).to.be.a('function');
           expect(getUserMediaStub.getCall(0).args[0].onUserMediaError).to.be.a('function');
+
+          getUserMediaStub.restore();
         });
 
         describe('getUserMedia Callbacks', function () {
@@ -1291,7 +1313,6 @@ describe('Phone', function () {
               connectStub = sinon.stub(conference, 'connect', function() {});
               addStreamStub = sinon.stub(conference, 'addStream', function () {});
 
-              getUserMediaStub.restore();
 
               getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
                 onUserMediaSpy = sinon.spy(options, 'onUserMedia');
@@ -1306,6 +1327,7 @@ describe('Phone', function () {
               addStreamStub.restore();
               connectStub.restore();
               onUserMediaSpy.restore();
+              getUserMediaStub.restore();
             });
 
             it('should execute Call.addStream with local stream', function (done) {
@@ -1320,7 +1342,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
             });
 
             it('should execute Call.connect', function (done) {
@@ -1334,7 +1356,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
             });
 
             it('[20000] should be published with `error` event if there is an uncaught exception', function (done) {
@@ -1356,24 +1378,94 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
 
             });
 
           });
+
+          describe('getUserMedia: onMediaEstablished', function () {
+
+            it('should publish `media-established` when onMediaEstablished  is invoked', function (done) {
+              var mediaEstablishedSpy = sinon.spy(),
+                getUserMediaStub,
+                userMediaService = ATT.UserMediaService;
+
+              getUserMediaStub = sinon.stub(userMediaService, 'getUserMedia', function (options) {
+                options.onMediaEstablished();
+              });
+
+              phone.on('media-established', mediaEstablishedSpy);
+
+              phone.joinConference({
+                localMedia : {},
+                remoteMedia : {}
+              });
+
+              setTimeout(function () {
+                try {
+                  expect(mediaEstablishedSpy.calledOnce).to.equal(true);
+                  expect(mediaEstablishedSpy.getCall(0).args[0].from).to.be.a('string');
+                  expect(mediaEstablishedSpy.getCall(0).args[0].mediaType).to.be.a('string');
+                  expect(mediaEstablishedSpy.getCall(0).args[0].codec).to.be.a('array');
+                  expect(mediaEstablishedSpy.getCall(0).args[0].timestamp).to.be.a('date');
+                  getUserMediaStub.restore();
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 50);
+
+            });
+          });
+
+          describe('[20002] getUserMedia: onUserMediaError', function () {
+            var getUserMediaStub, phone3,
+              onErrorSpy;
+
+            beforeEach(function () {
+              onErrorSpy = sinon.spy();
+              getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+                options.onUserMediaError();
+              });
+              phone3 = new Phone();
+              phone3.on('error', onErrorSpy);
+
+            });
+
+            afterEach(function () {
+              getUserMediaStub.restore();
+            });
+
+            it('should publish error', function (done) {
+              phone3.joinConference({
+                localMedia : {},
+                remoteMedia : {}
+              });
+              setTimeout(function () {
+                expect(onErrorSpy.called).to.equal(true);
+                expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('20002');
+                done();
+              }, 50);
+            });
+          });
+
         });
 
         describe('joinConference events', function () {
 
           var onConfConnectingHandlerSpy,
-            conferenceConnectedSpy;
+            conferenceConnectedSpy,
+            conferenceErrorSpy;
 
           beforeEach(function () {
             onConfConnectingHandlerSpy = sinon.spy();
             conferenceConnectedSpy = sinon.spy();
+            conferenceErrorSpy = sinon.spy();
 
             phone.on('conference-connecting', onConfConnectingHandlerSpy);
             phone.on('conference-connected', conferenceConnectedSpy);
+            phone.on('error', conferenceErrorSpy);
 
             phone.joinConference(options);
           });
@@ -1390,7 +1482,7 @@ describe('Phone', function () {
                 } catch(e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
             });
 
             it('should publish `conference-connected` when call publishes `connected` event', function (done) {
@@ -1403,12 +1495,24 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
-
+              }, 50);
             });
-
           });
 
+          describe('error', function () {
+            it('should publish `error` when call publishes `error` event', function (done) {
+              emitterConference.publish('error', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(conferenceErrorSpy.calledWith(eventData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
         });
 
         describe('Error Handling', function () {
@@ -1432,7 +1536,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
 
@@ -1450,7 +1554,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
 
@@ -1468,7 +1572,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
 
@@ -1481,6 +1585,7 @@ describe('Phone', function () {
           addParticipantStub,
           conference,
           onSpy,
+          onErrorSpy,
           emitterConference,
           onParticipantPendingSpy;
 
@@ -1506,6 +1611,7 @@ describe('Phone', function () {
 
           onSpy = sinon.spy(conference, 'on');
           onParticipantPendingSpy = sinon.spy();
+          onErrorSpy = sinon.spy();
 
           addParticipantStub = sinon.stub(conference, 'addParticipant');
           publishStub = sinon.stub(emitter, 'publish');
@@ -1536,11 +1642,6 @@ describe('Phone', function () {
           expect(onSpy.calledWith('participant-pending')).to.equal(true);
         });
 
-        it('should register for `error` event on the conference object', function () {
-          expect(onSpy.called).to.equal(true);
-          expect(onSpy.calledWith('error')).to.equal(true);
-        });
-
         describe('addParticipant events', function () {
 
           describe('participant-pending', function () {
@@ -1557,32 +1658,13 @@ describe('Phone', function () {
                 } catch(e) {
                   done(e);
                 }
-              }, 200);
-            });
-          });
-
-          describe('error', function () {
-
-            it('should publish `error` with event data on getting an `error` from conf', function (done) {
-              emitterConference.publish('error', eventData);
-
-              setTimeout(function() {
-                try {
-                  expect(publishStub.calledOnce).to.equal(true);
-                  expect(publishStub.calledWith('error')).to.equal(true);
-                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
-                  done();
-                } catch(e) {
-                  done(e);
-                }
-              }, 200);
+              }, 50);
             });
           });
         });
 
         it('should execute call.addParticipant', function () {
-          expect(addParticipantStub.called).to.equal(true);
-          expect(addParticipantStub.getCall(0).args[0]).to.equal('1234');
+          expect(addParticipantStub.calledWith('1234')).to.equal(true);
         });
 
         describe('Error Handling', function () {
@@ -1689,25 +1771,32 @@ describe('Phone', function () {
         });
 
         it('should return active `participants` list', function () {
-          conference.setParticipant('456', 'invitee', '123');
-          conference.setParticipant('454', 'accepted', '124');
-          conference.setParticipant('455', 'accepted', '125');
+          conference.setParticipant('456', 'invited', '123');
+          conference.setParticipant('454', 'active', '124');
 
           var participants = phone.getParticipants();
 
           expect(participants).to.be.an('object');
-          expect(participants['124']).to.be.an('object');
-          expect(participants['124'].status).to.equal('accepted');
-          expect(participants['124'].participant).to.equal('454');
-          expect(participants['124'].id).to.equal('124');
+          expect(participants['454']).to.be.an('object');
+          expect(participants['454'].status).to.equal('active');
 
-          expect(participants['125']).to.be.an('object');
-          expect(participants['125'].status).to.equal('accepted');
-          expect(participants['125'].participant).to.equal('455');
-          expect(participants['125'].id).to.equal('125');
+          expect(participants['456']).to.equal(undefined);
         });
 
         describe('Error Handling', function () {
+          it('[21002] should be thrown if User not Logged In', function () {
+            var sessiongetIdStub = sinon.stub(session , 'getId', function () {
+              return null;
+            });
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21002')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21002')
+            })).to.equal(true);
+            sessiongetIdStub.restore();
+          });
           it('[21000] should be thrown if conference has not been started', function () {
             session.currentCall = null;
 
@@ -1822,7 +1911,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           describe('Error Handling', function () {
@@ -1906,7 +1995,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
 
@@ -2015,7 +2104,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 50);
         });
 
         describe('Error Handling', function () {
@@ -2207,7 +2296,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 50);
         });
         describe('Error Handling', function () {
 
@@ -2327,7 +2416,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
           });
 
           it('[22001] should be published with `error` event if the user is not logged in', function (done) {
@@ -2344,7 +2433,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
 
@@ -2362,7 +2451,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
         });
@@ -2595,7 +2684,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 50);
         });
 
         describe('Error Handling', function () {
@@ -2721,7 +2810,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2738,7 +2827,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2755,7 +2844,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
           });
 
           it('should also execute session.deleteCurrentCall', function (done) {
@@ -2769,7 +2858,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2786,7 +2875,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
           it('should also execute session.deleteCurrentCall', function (done) {
@@ -2800,7 +2889,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2820,7 +2909,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2887,7 +2976,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
 
           });
 
@@ -2974,7 +3063,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
         });
 

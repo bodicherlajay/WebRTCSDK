@@ -10,18 +10,6 @@
     logManager = ATT.logManager.getInstance(),
     logger = logManager.getLoggerByName("EventManager");
 
-//  function handleError(operation, errHandler, err) {
-//    logger.logDebug('handleError: ' + operation);
-//
-//    logger.logInfo('There was an error performing operation ' + operation);
-//
-//    var error = errMgr.create(err, operation);
-//
-//    if (typeof errHandler === 'function') {
-//      errHandler(error);
-//    }
-//  }
-
   function createEventManager(options) {
 
     var channelConfig,
@@ -34,7 +22,8 @@
      * @param {Object} event The event object
      */
     function processEvent(event) {
-      var codec;
+      var codec,
+        type;
 
       if (!event) {
         logger.logError('Not able to consume null event...');
@@ -43,16 +32,28 @@
 
       logger.logDebug('Consumed event from event channel', JSON.stringify(event));
 
+      // TODO: Remove this hack to make conference management work:
+      // Defect ID : 65423
+      // BF_R3.9 PROD Deployment_SIT_VTN/NoTN_F4 : Getting "calls"
+      // instead of "conferences" in type parameter and resource url
+      // parameter of Get Events after Add Participant request for
+      // both noTN and VTN.
+      if (event.from.indexOf('conf-factory') > 0) {
+        type = 'conference';
+      } else {
+        type = event.type === 'calls' ? 'call' : 'conference';
+      }
+
       switch (event.state) {
       case ATT.RTCCallEvents.INVITATION_RECEIVED:
         codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
 
-        emitter.publish('call-incoming', {
-          type: event.type === 'calls' ? 'call' : 'conference',
+        emitter.publish('invitation-received', {
+          type: type,
           id: event.resourceURL.split('/')[6],
           from: event.from.split('@')[0].split(':')[1],
           mediaType: (codec.length === 1) ? 'audio' : 'video',
-          remoteSdp: event.sdp
+          sdp: event.sdp
         });
         break;
       case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
@@ -63,21 +64,22 @@
         break;
       case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
         emitter.publish('media-mod-terminations', {
-          type: event.type === 'calls' ? 'call' : 'conference',
+          type: type,
           remoteSdp: event.sdp,
           modificationId: event.modId,
-          reason: event.reason
+          reason: event.reason,
+          from: event.from
         });
         break;
       case ATT.RTCCallEvents.SESSION_OPEN:
         emitter.publish('call-connected', {
-          type: event.type === 'calls' ? 'call' : 'conference',
+          type: type,
           remoteSdp: event.sdp
         });
         break;
       case ATT.RTCCallEvents.SESSION_TERMINATED:
         emitter.publish('call-disconnected', {
-          type: event.type === 'calls' ? 'call' : 'conference',
+          type: type,
           id: event.resourceURL.split('/')[6],
           from: event.from.split('@')[0].split(':')[1],
           reason: event.reason
@@ -142,7 +144,7 @@
     function on(event, handler) {
       if ('listening' !== event
           && 'stop-listening' !== event
-          && 'call-incoming' !== event
+          && 'invitation-received' !== event
           && 'call-disconnected' !== event
           && 'remote-sdp' !== event
           && 'call-connected' !== event

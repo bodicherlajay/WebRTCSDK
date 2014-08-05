@@ -576,6 +576,22 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "startConference",
+      ErrorCode: "18006",
+      ErrorMessage: "Cannot make second conference when first in progress",
+      Cause: "conference already exists",
+      Resolution: "Please End your current Conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "startConference",
+      ErrorCode: "18007",
+      ErrorMessage: "User not login to make conference",
+      Cause: "User not logged In",
+      Resolution: "Please login before you make a conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "addParticipant",
       ErrorCode: "19000",
       ErrorMessage: "User is not logged in",
@@ -632,6 +648,14 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20003",
+      ErrorMessage: "onUserMediaError  occured",
+      Cause: "failed to get userMedia",
+      Resolution: "Cannot join conference before getting userMedia failed "
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "rejectConference",
       ErrorCode: "22000",
       ErrorMessage: "Internal error occurred",
@@ -669,6 +693,14 @@
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "getParticipants",
+      ErrorCode: "21002",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking endConference"
     },
     {
       JSObject: "ATT.rtc.Phone",

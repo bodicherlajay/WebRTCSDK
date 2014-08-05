@@ -196,7 +196,7 @@ describe('Event Manager', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
 
       });
 
@@ -240,7 +240,7 @@ describe('Event Manager', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
     });
 
@@ -344,54 +344,37 @@ describe('Event Manager', function () {
         codecStub.restore();
       });
 
-      it('should publish `call-incoming` with call information extracted from the calls event', function (done) {
+      it('should publish `invitation-received` with call information extracted from the event', function (done) {
 
-        event.type = 'calls';
+        var invitationReceivedSpy = sinon.spy();
 
-        emitterEC.publish('api-event', event);
-
-        setTimeout(function () {
-          try {
-            expect(publishSpy.calledWith('call-incoming')).to.equal(true);
-            expect(publishSpy.getCall(1).args[1].type).to.equal('call');
-            expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
-            expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
-            expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
-            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal(event.sdp);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
-      });
-
-      it('should publish `call-incoming` with conference information extracted from the conferences event', function (done) {
-
+        eventManager.on('invitation-received', invitationReceivedSpy);
         event.type = 'conferences';
 
         emitterEC.publish('api-event', event);
 
         setTimeout(function () {
           try {
-            expect(publishSpy.calledWith('call-incoming')).to.equal(true);
-            expect(publishSpy.getCall(1).args[1].type).to.equal('conference');
-            expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
-            expect(publishSpy.getCall(1).args[1].from).to.equal('1111');
-            expect(publishSpy.getCall(1).args[1].mediaType).to.equal('video');
-            expect(publishSpy.getCall(1).args[1].remoteSdp).to.equal(event.sdp);
+            expect(invitationReceivedSpy.called).to.equal(true);
+            expect(invitationReceivedSpy.getCall(0).args[0].type).to.equal('conference');
+            expect(invitationReceivedSpy.getCall(0).args[0].id).to.equal('1234');
+            expect(invitationReceivedSpy.getCall(0).args[0].from).to.equal('1111');
+            expect(invitationReceivedSpy.getCall(0).args[0].mediaType).to.equal('video');
+            expect(invitationReceivedSpy.getCall(0).args[0].sdp).to.equal(event.sdp);
             done();
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
+
     });
 
     describe('mod-received', function () {
       var event;
 
       describe('media-modifications', function () {
-        it('should publish event `media-modifications` with `remoteSdp` and `modificationId`', function (done) {
+        it('should publish event `media-modifications` with `remoteDescription` and `modificationId`', function (done) {
           event = {
             'type': 'calls',
             'from': 'sip:1234@icmn.api.att.net',
@@ -409,7 +392,7 @@ describe('Event Manager', function () {
               modificationId: '12345'
             })).to.equal(true);
             done();
-          }, 100);
+          }, 10);
         });
       });
     });
@@ -417,33 +400,8 @@ describe('Event Manager', function () {
     describe('mod-terminated', function () {
       var event;
 
-      describe('media-mod-terminations', function () {
-
-        it('should publish event `media-mod-terminations` with `type` call and `remoteSdp` and `modificationId` for calls event', function (done) {
-          event = {
-            'type': 'calls',
-            'from': 'sip:1234@icmn.api.att.net',
-            'resourceURL': '/RTC/v1/sessions/00000/calls/1111',
-            'modId': '12345',
-            'state': 'mod-terminated',
-            'sdp': 'abcdefg',
-            'reason': 'success'
-          };
-
-          emitterEC.publish('api-event', event);
-
-          setTimeout(function () {
-            expect(publishSpy.calledWith('media-mod-terminations', {
-              type: 'call',
-              remoteSdp: 'abcdefg',
-              modificationId: '12345',
-              reason: 'success'
-            })).to.equal(true);
-            done();
-          }, 100);
-        });
-
-        it('should publish event `media-mod-terminations` with `type` conference and `remoteSdp` and `modificationId` for conference event', function (done) {
+      describe('media-mod-terminations [Conference]', function () {
+        it('should publish event `media-mod-terminations` with `type` conference and `remoteDescription` and `modificationId` for conference event', function (done) {
           event = {
             'type': 'conferences',
             'from': 'sip:1234@icmn.api.att.net',
@@ -461,10 +419,40 @@ describe('Event Manager', function () {
               type: 'conference',
               remoteSdp: 'abcdefg',
               modificationId: '12345',
-              reason: 'success'
+              reason: 'success',
+              from: event.from
             })).to.equal(true);
             done();
-          }, 100);
+          }, 10);
+        });
+      });
+      describe('media-mod-terminations [Call]', function () {
+
+        it('should publish event `media-mod-terminations` with `type` call and `remoteDescription` and `modificationId` for calls event', function (done) {
+          event = {
+            'type': 'calls',
+            'from': 'sip:1234@icmn.api.att.net',
+            'resourceURL': '/RTC/v1/sessions/00000/calls/1111',
+            'modId': '12345',
+            'state': 'mod-terminated',
+            'sdp': 'abcdefg',
+            'reason': 'success'
+          };
+
+          emitterEC.publish('api-event', event);
+
+          setTimeout(function () {
+            expect(publishSpy.called).to.equal(true);
+            expect(publishSpy.calledWith('media-mod-terminations', {
+                type: 'call',
+                remoteSdp: 'abcdefg',
+                modificationId: '12345',
+                reason: 'success',
+                from: event.from
+              }
+            )).to.equal(true);
+            done();
+          }, 10);
         });
 
       });
@@ -473,7 +461,7 @@ describe('Event Manager', function () {
     describe('session-open', function () {
       var event;
 
-      it('should publish `call-connected` event with type `call` and remoteSdp for a calls event', function (done) {
+      it('should publish `call-connected` event with type `call` and remoteDescription for a calls event', function (done) {
 
         event = {
           type:'calls',
@@ -491,10 +479,10 @@ describe('Event Manager', function () {
             remoteSdp: event.sdp
           })).to.equal(true);
           done();
-        }, 100);
+        }, 10);
       });
 
-      it('should publish `call-connected` event with type `conferences` and remoteSdp for a conferences event', function (done) {
+      it('should publish `call-connected` event with type `conferences` and remoteDescription for a conferences event', function (done) {
 
         event = {
           type:'conferences',
@@ -512,7 +500,7 @@ describe('Event Manager', function () {
             remoteSdp: event.sdp
           })).to.equal(true);
           done();
-        }, 100);
+        }, 10);
       });
     });
 
@@ -540,7 +528,7 @@ describe('Event Manager', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
     });
   });
