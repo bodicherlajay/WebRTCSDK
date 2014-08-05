@@ -250,7 +250,7 @@ describe('Event Channel', function () {
             eventChannel.stopListening();
             done(e);
           }
-        }, 100);
+        }, 10);
 
       });
 
@@ -297,7 +297,7 @@ describe('Event Channel', function () {
             eventChannel.stopListening();
             done(e);
           }
-        }, 100);
+        }, 10);
 
       });
 
@@ -392,7 +392,7 @@ describe('Event Channel', function () {
             eventChannel.stopListening();
             done(e);
           }
-        }, 100);
+        }, 10);
       });
     });
 

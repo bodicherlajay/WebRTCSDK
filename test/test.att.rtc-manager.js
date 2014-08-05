@@ -283,7 +283,7 @@ describe('RTC Manager', function () {
               doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
                 setTimeout(function () {
                   options.success(webRTCSessionResponse);
-                }, 0);
+                }, 10);
               });
             });
 
@@ -297,7 +297,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 20);
             });
 
             it('Should subscribe to event listening from the event manager', function (done) {
@@ -310,7 +310,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 20);
             });
 
             it('should call EventManager.setup with the session id', function (done) {
@@ -326,7 +326,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 20);
             });
 
             it('should execute onSessionReady with data containing `sessionId` on receiving a `listening` event', function (done) {
@@ -341,7 +341,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 20);
             });
 
           });
@@ -377,7 +377,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
 
           });
@@ -419,7 +419,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
         });
 
@@ -538,7 +538,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
 
           });
         });
@@ -643,7 +643,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
 
           });
         });
@@ -733,7 +733,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
 
             });
 
@@ -769,7 +769,7 @@ describe('RTC Manager', function () {
                 } catch(err) {
                   done(err);
                 }
-              }, 100);
+              }, 10);
             });
           });
         });
@@ -985,7 +985,7 @@ describe('RTC Manager', function () {
                 } catch(e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
           });
 
@@ -1009,7 +1009,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
           });
         });
@@ -1026,21 +1026,21 @@ describe('RTC Manager', function () {
             sessionInfo: {},
             confId: '123',
             onSuccess: function () {},
-            participant: '12345'
+            invitee: '12345'
           });
 
           expect(doOperationStub.called).to.equal(true);
         });
 
         describe('Success on doOperation', function () {
-          var onParticipantPendingSpy,
+          var onSuccessSpy,
             response;
 
           beforeEach(function () {
-            onParticipantPendingSpy = sinon.spy();
+            onSuccessSpy = sinon.spy();
           });
 
-          it('should call `options.onParticipantPending` if response.getResponseHeader() === `add-pending`', function (done) {
+          it('should call `options.onSuccess` if response.getResponseHeader() === `add-pending`', function (done) {
 
             // ==== Positive case
             response = {
@@ -1048,8 +1048,6 @@ describe('RTC Manager', function () {
                 switch(name) {
                   case 'x-state':
                     return 'add-pending';
-                  case 'x-modId':
-                    return 'abc123';
                 }
               }
             };
@@ -1065,18 +1063,18 @@ describe('RTC Manager', function () {
             rtcManager.addParticipant({
               sessionInfo: {},
               confId: '123',
-              onSuccess: onParticipantPendingSpy,
-              participant: '12345'
+              onSuccess: onSuccessSpy,
+              invitee: '12345'
             });
 
             setTimeout(function () {
               try {
-                expect(onParticipantPendingSpy.calledWith('abc123')).to.equal(true);
+                expect(onSuccessSpy.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
         });
 
@@ -1085,21 +1083,21 @@ describe('RTC Manager', function () {
             expect(rtcManager.addParticipant.bind(rtcManager)).to.throw('No `options` passed');
             expect(rtcManager.addParticipant.bind(rtcManager, {
               confId: {},
-              participant: '12345'
+              invitee: '12345'
             })).to.throw('No `sessionInfo` passed');
             expect(rtcManager.addParticipant.bind(rtcManager, {
               sessionInfo: {},
-              participant: '12345'
+              invitee: '12345'
             })).to.throw('No `confId` passed');
             expect(rtcManager.addParticipant.bind(rtcManager, {
               sessionInfo: {},
-              participant: '12345',
+              invitee: '12345',
               confId: '1234'
             })).to.throw('No `onSuccess` callback passed');
             expect(rtcManager.addParticipant.bind(rtcManager, {
               sessionInfo: {},
               confId: '123',
-              participant: '12345',
+              invitee: '12345',
               onSuccess: function () {}
             })).to.not.throw(Error);
           });
@@ -1139,7 +1137,7 @@ describe('RTC Manager', function () {
               confId: '123',
               onSuccess: function () { },
               onError: onErrorSpy,
-              participant: '12345'
+              invitee: '12345'
             });
 
             expect(onErrorSpy.calledWith(error)).to.equal(true);
@@ -1406,7 +1404,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
 
           it('should execute createAPIErrorCode with operation `endConference` for breed `conference`', function (done) {
@@ -1421,7 +1419,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
 
           it('should call `options.onError` callback with the error object', function (done) {
@@ -1435,7 +1433,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
         });
 

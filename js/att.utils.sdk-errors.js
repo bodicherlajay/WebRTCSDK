@@ -231,6 +231,14 @@
       Resolution: "Please include the required parameters"
     },
     {
+        JSObject: "ATT.rtc.Phone",
+        JSMethod: "dial",
+        ErrorCode: "4010",
+        ErrorMessage: "Cannot have more than 2 calls at same time",
+        Cause: "Only one foreground call and one background call is supported",
+        Resolution: "Please hangup current or background call before making another call"
+    },
+    {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
       ErrorCode: "5000",
@@ -568,6 +576,22 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "startConference",
+      ErrorCode: "18006",
+      ErrorMessage: "Cannot make second conference when first in progress",
+      Cause: "conference already exists",
+      Resolution: "Please End your current Conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "startConference",
+      ErrorCode: "18007",
+      ErrorMessage: "User not login to make conference",
+      Cause: "User not logged In",
+      Resolution: "Please login before you make a conference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "addParticipant",
       ErrorCode: "19000",
       ErrorMessage: "participant parameter missing",
@@ -608,6 +632,14 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "joinConference",
+      ErrorCode: "20003",
+      ErrorMessage: "onUserMediaError  occured",
+      Cause: "failed to get userMedia",
+      Resolution: "Cannot join conference before getting userMedia failed "
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "rejectConference",
       ErrorCode: "22000",
       ErrorMessage: "Internal error occurred",
@@ -645,6 +677,14 @@
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "getParticipants",
+      ErrorCode: "21002",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking endConference"
     },
     {
       JSObject: "ATT.rtc.Phone",

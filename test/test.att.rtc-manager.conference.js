@@ -126,7 +126,7 @@ describe('RTCManager [Conference]', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 10);
 
         });
       });
@@ -153,7 +153,7 @@ describe('RTCManager [Conference]', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 10);
 
         });
       });

@@ -405,7 +405,7 @@
     }
 
     function addParticipant(options) {
-      var participant;
+      var invitee;
 
       if (undefined === options) {
         throw new Error('No `options` passed');
@@ -423,12 +423,12 @@
         throw new Error('No `onSuccess` callback passed');
       }
 
-      participant = options.participant;
+      invitee = options.invitee;
 
-      if (participant.indexOf('@') > 0) {
-        participant = 'sip:' + participant;
+      if (invitee.indexOf('@') > 0) {
+        invitee = 'sip:' + invitee;
       } else {
-        participant = 'tel:+' + participant;
+        invitee = 'tel:+' + invitee;
       }
 
       resourceManager.doOperation('addParticipant', {
@@ -436,7 +436,7 @@
           url: [
             options.sessionInfo.sessionId,
             options.confId,
-            participant
+            invitee
           ],
           headers: {
             'Authorization': 'Bearer ' + options.sessionInfo.token
@@ -444,11 +444,9 @@
         },
         success: function (response) {
           logger.logInfo('addParticipant Request success');
-          var modId;
 
           if ('add-pending' === response.getResponseHeader('x-state')) {
-            modId = response.getResponseHeader('x-modId');
-            options.onSuccess(modId);
+            options.onSuccess();
           }
         },
         error: function (error) {

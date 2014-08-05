@@ -13,15 +13,18 @@ describe('Phone [Conference]', function () {
     logger,
     phone,
     session,
+    factories,
     sessionStub;
 
   beforeEach(function () {
 
+    factories = ATT.private.factories;
     Phone = ATT.private.Phone;
     Call = ATT.rtc.Call;
     Session = ATT.rtc.Session;
 
     session = new Session();
+    session.setId('123');
     sessionStub = sinon.stub(ATT.rtc, 'Session', function () {
       return session;
     });
@@ -100,7 +103,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.called).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18000');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18000] should publish error when the parameters are invalid ', function (done) {
@@ -111,7 +114,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.called).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18000');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18001] should publish error when no `localMedia` is passed ', function (done) {
@@ -124,7 +127,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.calledOnce).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18001');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18002] should publish error when no `remoteMedia` is Invalid ', function (done) {
@@ -137,7 +140,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.calledOnce).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18002');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18003] should publish error when `Media Type` is invalid  ', function (done) {
@@ -151,7 +154,39 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.calledOnce).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18003');
             done();
-          }, 100);
+          }, 10);
+        });
+
+        it('[18007] should publish error when user not logged In ', function (done) {
+          var sessionGetIdStub = sinon.stub(session, 'getId', function () {
+            return null;
+          });
+          phone.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+          setTimeout(function () {
+            expect(onErrorSpy.calledOnce).to.equal(true);
+            expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18007');
+            sessionGetIdStub.restore();
+            done();
+          }, 10);
+        });
+        it('[18006] should publish error when tried to make second conference call ', function (done) {
+
+          session.currentCall = conference;
+          phone.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+
+          setTimeout(function () {
+            expect(onErrorSpy.calledOnce).to.equal(true);
+            expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18006');
+            done();
+          }, 10);
         });
 
         // WARNING: This test is dangerous, it will break so many other test that you will wish ...
@@ -174,7 +209,7 @@ describe('Phone [Conference]', function () {
             // DON'T forget to restore it :)
             ATT.CallTypes = bkpOutgoing;
             done();
-          }, 300);
+          }, 30);
         });
 
         it('should publish `connecting` immediately');
@@ -227,6 +262,20 @@ describe('Phone [Conference]', function () {
           expect(conferenceOnStub.calledWith('error')).to.equal(true);
         });
 
+        it('should subscribe to the `stream-added` event on conference', function () {
+          var phone3;
+
+          conferenceOnStub = sinon.stub(conference, 'on');
+          phone3 = new Phone();
+
+          phone3.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+          expect(conferenceOnStub.calledWith('stream-added')).to.equal(true);
+        });
+
       });
 
       it('should get the local userMedia', function () {
@@ -265,7 +314,7 @@ describe('Phone [Conference]', function () {
             remoteMedia : {},
             mediaType : 'video'
           });
-          expect(loggerStub.calledWith('Media Established')).to.equal(true);
+          expect(loggerStub.calledWith('onMediaEstablished')).to.equal(true);
           getUserMediaStub.restore();
           loggerStub.restore();
         });
@@ -287,7 +336,7 @@ describe('Phone [Conference]', function () {
               onUserMediaSpy = sinon.spy(options, 'onUserMedia');
               options.onUserMedia(userMedia);
               onUserMediaSpy.restore();
-            }, 100);
+            }, 10);
           });
           phone2 = new Phone();
         });
@@ -306,7 +355,7 @@ describe('Phone [Conference]', function () {
             expect(addStreamStub.calledWith(userMedia.localStream)).to.equal(true);
             addStreamStub.restore();
             done();
-          }, 200);
+          }, 20);
         });
 
         it('should execute `conference.connect`', function (done) {
@@ -324,12 +373,43 @@ describe('Phone [Conference]', function () {
             expect(connectStub.calledAfter(onUserMediaSpy)).to.equal(true);
             connectStub.restore();
             done();
-          }, 200);
+          }, 20);
         });
 
       });
 
-      describe('[18004] getUserMedia: onMediaError', function () {
+      describe('getUserMedia: onMediaEstablished', function () {
+
+        it('should publish `media-established` when onMediaEstablished  is invoked', function (done) {
+          var connectedSpy = sinon.spy(),
+            getUserMediaStub;
+          userMediaService = ATT.UserMediaService;
+
+          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+            options.onMediaEstablished();
+          });
+          phone.on('media-established', connectedSpy);
+          phone.startConference({
+            localMedia : {},
+            remoteMedia : {},
+            mediaType : 'video'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(connectedSpy.called).to.equal(true);
+              expect(connectedSpy.calledOnce).to.equal(true);
+              getUserMediaStub.restore();
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 20);
+
+        });
+      });
+
+      describe('[18004] getUserMedia: onUserMediaError', function () {
         var getUserMediaStub, phone3;
         beforeEach(function () {
 
@@ -352,7 +432,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.called).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18004');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -403,7 +483,7 @@ describe('Phone [Conference]', function () {
 
         phone = new ATT.private.Phone();
 
-        conferenceDisconnectStub  = sinon.stub(conference, 'disconnect');
+        conferenceDisconnectStub  = sinon.stub(conference, 'disconnectConference');
 
         onSpy = sinon.spy(conference, 'on');
         conferenceDisconnectingHandlerSpy = sinon.spy();
@@ -430,7 +510,7 @@ describe('Phone [Conference]', function () {
         expect(onSpy.calledWith('disconnecting')).to.equal(true);
       });
 
-      it('should execute conference.disconnect', function () {
+      it('should execute conference.disconnectConference', function () {
         phone.endConference();
 
         expect(conferenceDisconnectStub.called).to.equal(true);
@@ -448,7 +528,7 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
       describe('Error handling', function () {
@@ -489,7 +569,7 @@ describe('Phone [Conference]', function () {
         });
 
         it('[23000] should be thrown if an internal error occurs', function () {
-          conferenceDisconnectStub  = sinon.stub(conference, 'disconnect', function () {
+          conferenceDisconnectStub  = sinon.stub(conference, 'disconnectConference', function () {
             throw error;
           });
 
@@ -505,9 +585,15 @@ describe('Phone [Conference]', function () {
 
     describe('Events', function () {
       var outgoingAudioConference,
-        createCallStub;
+        createCallStub,
+        emitterConf,
+        createEventEmitterStub;
 
       beforeEach(function () {
+        emitterConf = factories.createEventEmitter();
+        createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+          return emitterConf;
+        });
         outgoingAudioConference = new Call({
           breed: 'conference',
           mediaType: 'audio',
@@ -521,6 +607,7 @@ describe('Phone [Conference]', function () {
       });
 
       afterEach(function () {
+        createEventEmitterStub.restore();
         createCallStub.restore();
       });
 
@@ -548,8 +635,42 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 200);
+        }, 20);
 
+      });
+
+      it('should execute userMediaSvc.showStream when conference publishes `stream-added`', function (done) {
+        var data,
+          showStreamStub = sinon.stub(ATT.UserMediaService, 'showStream');
+
+        data = {
+          stream: {
+            abc: 'stream'
+          }
+        };
+
+        phone.startConference({
+          localMedia : {},
+          remoteMedia : {},
+          mediaType : 'video'
+        });
+
+        emitterConf.publish('stream-added', data);
+
+        setTimeout(function () {
+          try {
+//            console.log(showStreamStub.getCall(0).args);
+            expect(showStreamStub.calledWith({
+              localOrRemote: 'remote',
+              stream: {
+                abc: 'stream'
+              }
+            })).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
       });
 
       it('should publish `error` when conference publishes `error`', function (done) {
@@ -575,7 +696,7 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 200);
+        }, 20);
 
       });
     });
