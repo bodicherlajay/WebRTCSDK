@@ -27,11 +27,14 @@
         logger.logInfo('Fixing the SDP');
         fixedSDP = sdpFilter.processChromeSDPOffer(description);
       } catch (err) {
+        logger.logTrace(err);
         throw new Error('Could not process Chrome offer SDP.');
       }
       pc.setLocalDescription(fixedSDP, function () {
         success(fixedSDP);
-      }, function () { // ERROR setLocal
+      }, function (error) { // ERROR setLocal
+        logger.logError('setLocalDescription: error');
+        logger.logTrace(error);
         throw new Error('Could not set the localDescription.');
       });
     }
@@ -87,18 +90,19 @@
         if (event.candidate) {
           logger.logInfo('Candidate: ' + event.candidate);
           console.log(event.candidate);
-        }else {
+        } else {
           logger.logInfo('End of candidates');
           processDescription(pc.localDescription, onSuccess);
         }
-      }
+      };
 
       pc.createOffer(function (description) {
         logger.logInfo('createOffer: success');
         pc.setLocalDescription(description, function () {
-          console.log('success');
+          logger.logInfo('setLocalDescription: success');
         }, function (error) {
-          console.log(error);
+          logger.logError('setLocalDescription: error');
+          logger.logTrace(error);
         });
       }, function () { // ERROR createOffer
         logger.logInfo('createOffer: success');
