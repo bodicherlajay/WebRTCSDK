@@ -492,6 +492,7 @@ describe('Call', function () {
 
               setTimeout(function () {
                 try {
+                  expect(onErrorHandlerSpy.called).to.equal(true);
                   expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
                   done();
                 } catch (e) {
