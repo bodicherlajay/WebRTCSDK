@@ -108,6 +108,14 @@
       logger.logDebug (modifications);
 
       if (breed === 'conference') {
+
+        if (undefined !== modifications.remoteSdp) {
+          peerConnection.setRemoteDescription({
+            sdp: modifications.remoteSdp,
+            type: 'offer'
+          });
+        }
+
         if ('conference' === modifications.type
             && undefined !== modifications.modificationId) {
           logger.logDebug('onMediaModTerminations:conference');

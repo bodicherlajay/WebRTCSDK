@@ -1007,5 +1007,36 @@ describe('Call [Conference]', function () {
       });
     });
 
+    describe('media-mod-terminations', function () {
+
+      var setRemoteDescriptionStub;
+
+      beforeEach(function () {
+        setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
+      });
+      afterEach(function () {
+        setRemoteDescriptionStub.restore();
+      });
+
+      it('should set the remoteSdp if it comes in the event', function (done) {
+
+        emitterEM.publish('media-mod-terminations', {
+          remoteSdp: 'abdcX',
+          type: 'conference',
+          modificationId: 'ID',
+          reason: 'abdc',
+          from: 'me'
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(true);
+          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('abdcX');
+          // TODO: when should this be offer/answer???
+          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+          done();
+        }, 10);
+      })
+    });
+
   });
 });
