@@ -597,7 +597,7 @@ describe('PeerConnection', function () {
       it('should call `onRemoteStream` callback with the remote stream', function () {
 
         expect(onRemoteStreamSpy.calledAfter(onaddstreamSpy)).to.equal(true);
-        expect(onRemoteStreamSpy.calledWith(event.remoteStream)).to.equal(true);
+        expect(onRemoteStreamSpy.calledWith(event.stream)).to.equal(true);
 
       });
     });

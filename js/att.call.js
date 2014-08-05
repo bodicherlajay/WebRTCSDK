@@ -265,7 +265,7 @@
             if (undefined !== data.remoteSdp) {
               peerConnection.setRemoteDescription({
                 sdp: data.remoteSdp,
-                type: 'offer'
+                type: 'answer'
               });
             }
             return;

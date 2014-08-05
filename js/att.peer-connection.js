@@ -80,7 +80,7 @@
     pc.addStream(options.stream);
     pc.onaddstream = function (event) {
       if ('function' === typeof options.onRemoteStream) {
-        options.onRemoteStream(event.remoteStream);
+        options.onRemoteStream(event.stream);
       }
     };
 
