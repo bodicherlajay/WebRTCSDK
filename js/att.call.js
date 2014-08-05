@@ -394,14 +394,10 @@
     function addParticipant(invitee) {
       logger.logInfo('Sending invitation...');
 
-      participants[participant] = {
-        status: 'pending'
-      };
-
       try {
         rtcManager.addParticipant({
           sessionInfo: sessionInfo,
-          participant: participant,
+          invitee: invitee,
           confId: id,
           onSuccess: function () {
             setInvitee(invitee, 'invited');
