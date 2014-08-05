@@ -127,30 +127,30 @@
     */
     function on(event, handler) {
       if ('session-ready' !== event
-        && 'session-disconnected' !== event
-        && 'dialing' !== event
-        && 'answering' !== event
-        && 'conference-joining' !== event
-        && 'call-incoming' !== event
-        && 'conference-invite' !== event
-        && 'call-connecting' !== event
-        && 'conference-connecting' !== event
-        && 'participant-pending' !== event
-        && 'call-disconnecting' !== event
-        && 'conference-disconnecting' !== event
-        && 'call-disconnected' !== event
-        && 'conference-disconnected' !== event
-        && 'call-canceled' !== event
-        && 'call-rejected' !== event
-        && 'call-connected' !== event
-        && 'conference-connected' !== event
-        && 'call-muted' !== event
-        && 'call-unmuted' !== event
-        && 'call-held' !== event
-        && 'call-resumed' !== event
-        && 'address-updated' !== event
-        && 'media-established' !== event
-        && 'error' !== event) {
+          && 'session-disconnected' !== event
+          && 'dialing' !== event
+          && 'answering' !== event
+          && 'conference-joining' !== event
+          && 'call-incoming' !== event
+          && 'conference-invite' !== event
+          && 'call-connecting' !== event
+          && 'conference-connecting' !== event
+          && 'participant-pending' !== event
+          && 'call-disconnecting' !== event
+          && 'conference-disconnecting' !== event
+          && 'call-disconnected' !== event
+          && 'conference-disconnected' !== event
+          && 'call-canceled' !== event
+          && 'call-rejected' !== event
+          && 'call-connected' !== event
+          && 'conference-connected' !== event
+          && 'call-muted' !== event
+          && 'call-unmuted' !== event
+          && 'call-held' !== event
+          && 'call-resumed' !== event
+          && 'address-updated' !== event
+          && 'media-established' !== event
+          && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
