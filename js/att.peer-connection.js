@@ -80,11 +80,11 @@
     pc.addStream(options.stream);
     pc.onaddstream = function (event) {
       if ('function' === typeof options.onRemoteStream) {
-        options.onRemoteStream(event.remoteStream);
+        options.onRemoteStream(event.stream);
       }
     };
 
-    if (undefined === options.remoteDescription) {
+    if (undefined === options.remoteSdp) {
 
       pc.createOffer(function (description) {
         logger.logInfo('createOffer: success');
@@ -93,19 +93,26 @@
         logger.logInfo('createOffer: success');
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
-    } else {
-      pc.setRemoteDescription(options.remoteDescription);
-      pc.createAnswer(function (description) {// SUCCESS
-        processDescription(description, onSuccess);
-      }, function () {// ERROR createAnswer
-        throw new Error('Failed to create answer.');
-      }, { mandatory: mediaConstraint});
+    } else if (undefined !== options.remoteSdp){
+      pc.setRemoteDescription(new RTCSessionDescription({
+        sdp:options.remoteSdp,
+        type: 'offer'
+      }), function () {
+        pc.createAnswer(function (description) {// SUCCESS
+          processDescription(description, onSuccess);
+        }, function () {// ERROR createAnswer
+          throw new Error('Failed to create answer.');
+        }, { mandatory: mediaConstraint});
+      }, function () {
+
+      });
     }
     return {
       getLocalDescription: function () {
         return pc.localDescription;
       },
       setRemoteDescription: function (description) {
+        logger.logInfo(description.sdp);
         pc.setRemoteDescription(new RTCSessionDescription(description), function () {
           logger.logInfo('Remote Description set.');
         }, function (error) {

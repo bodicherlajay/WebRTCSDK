@@ -25,7 +25,6 @@
       mediaType,
       type,
       breed,
-      invitations = {},
       participants = {},
       sessionInfo,
       localMedia,
@@ -75,30 +74,54 @@
       emitter.publish(state, createEventData.call(this));
     }
 
-    function onMediaModifications(modifications) {
-      rtcManager.setMediaModifications(modifications);
-      if (modifications.remoteDescription
-        && modifications.remoteDescription.indexOf('recvonly') !== -1) {
-        that.setState('held');
-        rtcManager.disableMediaStream();
+    function onMediaModifications(data) {
+      if ('call' === breed) {
+        rtcManager.setMediaModifications(data);
+        console.log(data.remoteSdp);
+        console.log(remoteSdp);
+        if (data.remoteSdp
+            && data.remoteSdp.indexOf('recvonly') !== -1) {
+          that.setState('held');
+          rtcManager.disableMediaStream();
+        } else if (data.remoteSdp
+            && remoteSdp
+            && remoteSdp.indexOf
+            && remoteSdp.indexOf('recvonly') !== -1
+            && data.remoteSdp.indexOf('sendrecv') !== -1) {
+          that.setState('resumed');
+          rtcManager.enableMediaStream();
+        }
+        that.setRemoteSdp(data.remoteSdp);
+        return;
       }
-      if (modifications.remoteDescription
-        && remoteSdp
-        && remoteSdp.indexOf
-        && remoteSdp.indexOf('recvonly') !== -1
-        && modifications.remoteDescription.indexOf('sendrecv') !== -1) {
-        that.setState('resumed');
-        rtcManager.enableMediaStream();
+
+      if ('conference' === breed) {
+        if (undefined !== data.remoteSdp) {
+          peerConnection.setRemoteDescription({
+            sdp: data.remoteSdp,
+            type: 'offer'
+          });
+        }
       }
-      that.setRemoteSdp(modifications.remoteDescription);
     }
 
     function onMediaModTerminations(modifications) {
 
+      logger.logDebug('onMediaModTerminations');
+      logger.logDebug (modifications);
+
       if (breed === 'conference') {
+
+        if (undefined !== modifications.remoteSdp) {
+          peerConnection.setRemoteDescription({
+            sdp: modifications.remoteSdp,
+            type: 'offer'
+          });
+        }
+
         if ('conference' === modifications.type
-          && undefined !== modifications.modificationId) {
-          logger.logInfo('onMediaModTerminations:conference');
+            && undefined !== modifications.modificationId) {
+          logger.logDebug('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
             setParticipant(modifications.from, 'active');
             emitter.publish('invite-accepted', createEventData());
@@ -109,19 +132,20 @@
           }
         }
       } else if (breed === 'call') {
+        logger.logDebug('onMediaModTerminations:call');
         if (modifications.remoteSdp) {
           rtcManager.setRemoteDescription({
             remoteDescription: modifications.remoteSdp,
             type: 'answer'
           });
           if (modifications.reason === 'success'
-            && modifications.remoteSdp.indexOf('sendonly') !== -1
-            && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+              && modifications.remoteSdp.indexOf('sendonly') !== -1
+              && modifications.remoteSdp.indexOf('sendrecv') === -1) {
             that.setState('held');
             rtcManager.disableMediaStream();
           }
           if (modifications.reason === 'success'
-            && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
             that.setState('resumed');
             rtcManager.enableMediaStream();
           }
@@ -231,12 +255,12 @@
           that.setState('connected');
 
           if ('call' === that.breed()) {
-            if (data.remoteDescription) {
+            if (data.remoteSdp) {
               rtcManager.setRemoteDescription({
-                remoteDescription: data.remoteDescription,
+                remoteDescription: data.remoteSdp,
                 type: 'answer'
               });
-              that.setRemoteSdp(data.remoteDescription);
+              that.setRemoteSdp(data.remoteSdp);
             }
 
             rtcManager.playStream('remote');
@@ -244,10 +268,12 @@
           }
 
           if ('conference' === breed) {
-            peerConnection.setRemoteDescription({
-              sdp: data.remoteSdp,
-              type: 'offer'
-            });
+            if (undefined !== data.remoteSdp) {
+              peerConnection.setRemoteDescription({
+                sdp: data.remoteSdp,
+                type: 'answer'
+              });
+            }
             return;
           }
         });
@@ -367,10 +393,14 @@
     function addParticipant(invitee) {
       logger.logInfo('Sending invitation...');
 
+      participants[participant] = {
+        status: 'pending'
+      };
+
       try {
         rtcManager.addParticipant({
           sessionInfo: sessionInfo,
-          invitee: invitee,
+          participant: participant,
           confId: id,
           onSuccess: function () {
             setInvitee(invitee, 'invited');
@@ -393,47 +423,67 @@
 
       setState('disconnecting');
 
-      if(breed === 'call') {
-        if (null === remoteSdp) {
-          logger.logInfo('Canceling...');
+      if (null === remoteSdp) {
+        logger.logInfo('Canceling...');
 
-          rtcManager.cancelCall({
-            callId: id,
-            sessionId: sessionInfo.sessionId,
-            token: sessionInfo.token,
-            onSuccess: function () {
-              logger.logInfo('Canceled successfully.');
+        rtcManager.cancelCall({
+          callId: id,
+          sessionId: sessionInfo.sessionId,
+          token: sessionInfo.token,
+          onSuccess: function () {
+            logger.logInfo('Canceled successfully.');
 
-              rtcManager.resetPeerConnection();
-            },
-            onError : function (error) {
-              logger.logError(error);
+            rtcManager.resetPeerConnection();
+          },
+          onError: function (error) {
+            logger.logError(error);
 
-              emitter.publish('error', {
-                error: error
-              });
-            }
-          });
-        } else if (null !== id && null !== this.remoteSdp()) {
-          logger.logInfo('Disconnecting...');
+            emitter.publish('error', {
+              error: error
+            });
+          }
+        });
+      } else if (null !== id && null !== remoteSdp) {
+        logger.logInfo('Disconnecting...');
 
-          rtcManager.disconnectCall({
-            sessionId: sessionInfo.sessionId,
-            token: sessionInfo.token,
-            callId: id,
-            breed: breed,
-            onSuccess: function () {
-              logger.logInfo('Successfully disconnected.');
-            },
-            onError: function (error) {
-              logger.logError(error);
-              emitter.publish('error', {
-                error: error
-              });
-            }
+        rtcManager.disconnectCall({
+          sessionId: sessionInfo.sessionId,
+          token: sessionInfo.token,
+          callId: id,
+          breed: breed,
+          onSuccess: function () {
+            logger.logInfo('Successfully disconnected.');
+          },
+          onError: function (error) {
+            logger.logError(error);
+            emitter.publish('error', {
+              error: error
+            });
+          }
+        });
+      }
+    }
+
+    function disconnectConference () {
+      logger.logInfo('Disconnecting...');
+
+      setState('disconnecting');
+
+      rtcManager.disconnectCall({
+        sessionId: sessionInfo.sessionId,
+        token: sessionInfo.token,
+        breed: 'conference',
+        callId: id,
+        onSuccess: function () {
+          logger.logInfo('Successfully disconnected.');
+        },
+        onError: function (error) {
+          logger.logError(error);
+          emitter.publish('error', {
+            error: error
           });
         }
-      }
+      });
     }
 
     function mute() {
@@ -611,6 +661,7 @@
     this.addStream = addStream;
     this.connect = connect;
     this.disconnect = disconnect;
+    this.disconnectConference = disconnectConference ;
     this.addParticipant = addParticipant;
     this.mute = mute;
     this.unmute = unmute;

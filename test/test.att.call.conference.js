@@ -160,6 +160,15 @@ describe('Call [Conference]', function () {
         expect(outgoingConference.addParticipant).to.be.a('function');
       });
 
+      it('should add a participant to the list with status `pending`', function () {
+        var participant;
+
+        outgoingConference.addParticipant('john123');
+
+        participant = outgoingConference.participants()['john123'];
+        expect(participant.status).to.equal('pending');
+      });
+
       it('should call rtcManager.addParticipant', function () {
         addParticipantStub = sinon.stub(rtcMgr, 'addParticipant');
 
@@ -189,7 +198,7 @@ describe('Call [Conference]', function () {
 
         afterEach(function () {
           addParticipantStub.restore();
-        });
+        })
 
         it('should set the invitee to `invited`', function () {
           outgoingConference.addParticipant('johnny');
@@ -234,7 +243,7 @@ describe('Call [Conference]', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 10);
         });
 
         it('should publish `error` if rtcMgr throws an error', function (done) {
@@ -341,7 +350,7 @@ describe('Call [Conference]', function () {
                 pcOnSuccessSpy = sinon.spy(options, 'onSuccess');
                 options.onSuccess(localDescription);
                 pcOnSuccessSpy.restore();
-              }, 100);
+              }, 10);
             });
           });
 
@@ -365,7 +374,7 @@ describe('Call [Conference]', function () {
               expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
               connectConferenceStub.restore();
               done();
-            }, 200);
+            }, 20);
           });
 
           describe('connectConference: Success', function () {
@@ -396,7 +405,7 @@ describe('Call [Conference]', function () {
               setTimeout(function () {
                 expect(outgoingVideoConference.id()).to.equal(response.id);
                 done();
-              }, 200);
+              }, 20);
 
             });
             it('should execute `conf.setState` with state `connected` ', function (done) {
@@ -409,7 +418,7 @@ describe('Call [Conference]', function () {
                 expect(publishStub.calledOnce).to.equal(true);
                 expect(publishStub.getCall(0).args[0]).to.equal('connected');
                 done();
-              }, 200);
+              }, 20);
             });
           });
 
@@ -424,7 +433,7 @@ describe('Call [Conference]', function () {
                   onErrorSpy = sinon.spy(options, 'onError');
                   options.onError(cruelError);
                   onErrorSpy.restore();
-                }, 50);
+                }, 0);
               });
             });
 
@@ -442,7 +451,7 @@ describe('Call [Conference]', function () {
                 expect(publishStub.getCall(0).args[0]).to.equal('error');
                 expect(publishStub.getCall(0).args[1].error).to.equal(cruelError);
                 done();
-              }, 200);
+              }, 20);
             });
           });
         });
@@ -520,7 +529,7 @@ describe('Call [Conference]', function () {
                   onSuccessSpy = sinon.spy(options, 'onSuccess');
                   options.onSuccess(localDescription);
                   onSuccessSpy.restore();
-                }, 50);
+                }, 0);
               });
             });
 
@@ -547,7 +556,7 @@ describe('Call [Conference]', function () {
                 expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
                 connectConferenceStub.restore();
                 done();
-              }, 100);
+              }, 10);
 
             });
 
@@ -647,7 +656,7 @@ describe('Call [Conference]', function () {
                 expect(publishStub.getCall(0).args[0]).to.equal('stream-added');
                 expect(publishStub.getCall(0).args[1].stream).to.equal(myStream);
                 done();
-              }, 100);
+              }, 10);
 
             });
           });
@@ -680,10 +689,59 @@ describe('Call [Conference]', function () {
                   error: error
                 })).to.equal(true);
                 done();
-              }, 100);
+              }, 10);
             });
           });
         });
+      });
+    });
+
+    describe('disconnectConference', function () {
+
+      var onSpy,
+        confCall;
+
+      beforeEach(function () {
+        onSpy = sinon.spy(rtcMgr, 'on');
+        confCall = new ATT.rtc.Call({
+          breed: 'conference',
+          peer: '12345',
+          mediaType: 'audio',
+          type: ATT.CallTypes.OUTGOING,
+          sessionInfo : {sessionId : '12345', token : '123'}
+        });
+      });
+
+      afterEach(function () {
+        onSpy.restore();
+      });
+
+      it('Should exist', function () {
+        expect(confCall.disconnectConference).to.be.a('function');
+      });
+
+      it('should execute confCall.setState with `disconnecting`', function () {
+
+        confCall.disconnectConference();
+
+        expect(confCall.getState()).to.equal('disconnecting');
+
+      });
+
+      it('should call rtcManager.disconnectCall', function () {
+        var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
+
+        confCall.disconnectConference();
+
+        expect(disconnectCallStub.called).to.equal(true);
+        expect(disconnectCallStub.getCall(0).args[0].callId).to.equal(confCall.id());
+        expect(disconnectCallStub.getCall(0).args[0].breed).to.equal(confCall.breed());
+        expect(disconnectCallStub.getCall(0).args[0].sessionId).not.to.be.a('undefined');
+        expect(disconnectCallStub.getCall(0).args[0].token).not.to.be.a('undefined');
+        expect(disconnectCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
+        expect(disconnectCallStub.getCall(0).args[0].onError).to.be.a('function');
+
+        disconnectCallStub.restore();
       });
     });
   });
@@ -750,8 +808,16 @@ describe('Call [Conference]', function () {
     });
 
     describe('call-connected', function () {
+      var setRemoteDescriptionStub;
+      beforeEach(function () {
+        setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
+      });
+
+      afterEach(function () {
+        setRemoteDescriptionStub.restore();
+      });
+
       it('should set the remote description', function (done) {
-        var setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
 
         emitterEM.publish('call-connected', {
           type: 'conference',
@@ -762,9 +828,21 @@ describe('Call [Conference]', function () {
           expect(setRemoteDescriptionStub.called).to.equal(true);
           expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('remoteSdp');
           expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
-          setRemoteDescriptionStub.restore();
           done();
-        }, 100);
+        }, 10);
+      });
+
+      it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
+
+        emitterEM.publish('call-connected', {
+          type: 'conference',
+          remoteSdp: undefined
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(false);
+          done();
+        }, 10);
       });
     });
 
@@ -791,7 +869,9 @@ describe('Call [Conference]', function () {
         setTimeout(function () {
           try {
             var participantInfo = outgoingVideoConf.participants()[modifications.from];
+
             expect(participantInfo.status).to.equal('active');
+
             rtcMgrAddParticipantStub.restore();
             done();
           } catch (e) {
@@ -886,6 +966,75 @@ describe('Call [Conference]', function () {
           }
         }, 10);
       });
+    });
+
+    describe('media-modifications', function () {
+      var setRemoteDescriptionStub;
+
+      beforeEach(function () {
+        setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
+      });
+      afterEach(function () {
+        setRemoteDescriptionStub.restore();
+      });
+
+      it('should set the remote description', function (done) {
+
+        emitterEM.publish('media-modifications', {
+          remoteSdp: 'abdc',
+          modificationId: 'ID'
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(true);
+          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('abdc');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+          done();
+        }, 10);
+      });
+      it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
+
+        emitterEM.publish('media-modifications', {
+          remoteSdp: undefined,
+          modificationId: 'ID'
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(false);
+          done();
+        }, 10);
+      });
+    });
+
+    describe('media-mod-terminations', function () {
+
+      var setRemoteDescriptionStub;
+
+      beforeEach(function () {
+        setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
+      });
+      afterEach(function () {
+        setRemoteDescriptionStub.restore();
+      });
+
+      it('should set the remoteSdp if it comes in the event', function (done) {
+
+        emitterEM.publish('media-mod-terminations', {
+          remoteSdp: 'abdcX',
+          type: 'conference',
+          modificationId: 'ID',
+          reason: 'abdc',
+          from: 'me'
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(true);
+          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('abdcX');
+          // TODO: when should this be offer/answer???
+          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+          done();
+        }, 10);
+      })
     });
 
   });

@@ -58,7 +58,7 @@
         break;
       case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
         emitter.publish('media-modifications', {
-          remoteDescription: event.sdp,
+          remoteSdp: event.sdp,
           modificationId: event.modId
         });
         break;

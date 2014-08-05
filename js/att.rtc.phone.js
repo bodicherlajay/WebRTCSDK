@@ -130,12 +130,10 @@
         && 'session-disconnected' !== event
         && 'dialing' !== event
         && 'answering' !== event
-        && 'inviting' !== event
         && 'conference-joining' !== event
         && 'call-incoming' !== event
         && 'conference-invite' !== event
         && 'call-connecting' !== event
-        && 'conference:response-pending' !== event
         && 'conference-connecting' !== event
         && 'participant-pending' !== event
         && 'call-disconnecting' !== event
@@ -414,7 +412,7 @@
           call.on('connecting', function (data) {
             /**
              * Call connecting event.
-             * @desc Indicates successful creation of the call.
+             * @desc Indicates succesful creation of the call.
              * @event Phone#call-connecting
              * @type {object}
              * @property {Date} timestamp - Event fire time.
@@ -629,6 +627,7 @@
      *   - 20000 - Internal error occurred
      *   - 20001 - User is not logged in
      *   - 20002 - No conference invite
+     *   - 20003 - getUserMedia failed
      *
      * @memberOf Phone
      * @instance
@@ -733,8 +732,18 @@
               }
             },
             onMediaEstablished: function () {
+              logger.logInfo('onMediaEstablished');
+
+              emitter.publish('media-established', {
+                timestamp: new Date(),
+                mediaType: conference.mediaType(),
+                codec: conference.codec(),
+                from: conference.peer()
+              });
             },
-            onUserMediaError: function () {
+            onUserMediaError: function (error) {
+              logger.logError('getUserMedia Failed ');
+              publishError('20002', error);
             }
           });
 
@@ -1319,7 +1328,23 @@
 
         conference.on('connected', function (data) {
           logger.logInfo('connected conference event published to UI');
+          /**
+           * conference connecetd event.
+           * @desc A conference has been created.
+           *
+           * @event Phone#conference-connected
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - data
+           */
           emitter.publish('conference-connected', data);
+        });
+
+        conference.on('stream-added', function (data) {
+          userMediaSvc.showStream({
+            stream: data.stream,
+            localOrRemote: 'remote'
+          });
         });
 
         userMediaSvc.getUserMedia({
@@ -1372,7 +1397,7 @@
      var phone = ATT.rtc.Phone.getPhone();
      phone.addParticipant('4250000001');
      */
-    function addParticipant(invitee) {
+    function addParticipant(participant) {
 
       var conference;
 
@@ -1388,30 +1413,29 @@
         conference = session.currentCall;
 
         if (null === conference || 'conference' !== conference.breed()) {
+          logger.logError('Conference not initiated ');
           publishError(19001);
           return;
         }
 
-        if (undefined === invitee) {
+        if (undefined === participant) {
+          logger.logError('Parameter missing');
           publishError(19002);
           return;
         }
 
-        emitter.publish('inviting', {
-          to: invitee,
-          timestamp: new Date()
-        });
-
-        conference.on('response-pending', function (data) {
+        conference.on('participant-pending', function (data) {
           /**
            * Participant pending event.
-           * @desc An invitation has been successfully sent.
+           * @desc An invitation has been sent.
            *
            * @event Phone#conference:response-pending
            * @type {object}
            * @property {Date} timestamp - Event fire time
+           * @property {Object} participants - Participants list
            */
-          emitter.publish('conference:response-pending', data);
+          logger.logInfo('Conference not initiated ');
+          emitter.publish('participant-pending', data);
         });
 
         conference.on('invite-accepted', function (data) {
@@ -1503,7 +1527,7 @@
         });
 
         try {
-          conference.disconnect();
+          conference.disconnectConference();
         } catch (err) {
           logger.logError(err);
           throw ATT.errorDictionary.getSDKError(23000);

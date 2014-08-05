@@ -73,7 +73,7 @@ describe('Call', function () {
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.INCOMING,
-      remoteDescription: 'abc',
+      remoteSdp: 'abc',
       sessionInfo : {sessionId : '12345'}
     };
 
@@ -82,7 +82,7 @@ describe('Call', function () {
       peer: '12345',
       mediaType: 'video',
       type: ATT.CallTypes.INCOMING,
-      remoteDescription: 'abc'
+      remoteSdp: 'abc'
     };
 
     optionsOutgoingConf = {
@@ -286,7 +286,7 @@ describe('Call', function () {
       outgoingConf = new ATT.rtc.Call(optionsOutgoingConf);
       incomingConf = new ATT.rtc.Call(optionsIncomingConf);
 
-      incomingCall.setRemoteSdp(optionsIncoming.remoteDescription);
+      incomingCall.setRemoteSdp(optionsIncoming.remoteSdp);
 
       onConnectingSpy = sinon.spy();
       onConnectedSpy = sinon.spy();
@@ -412,7 +412,7 @@ describe('Call', function () {
         it('should execute RTCManager.connectCall with `remoteDescription` for incoming calls', function () {
           incomingCall.connect(connectOptions);
 
-          expect(connectCallStub.getCall(0).args[0].remoteDescription).to.equal(optionsIncoming.remoteDescription);
+          expect(connectCallStub.getCall(0).args[0].remoteDescription).to.equal(optionsIncoming.remoteSdp);
         });
 
         it('should not execute RTCManager.connectCall for breed `conference`', function () {
@@ -454,7 +454,7 @@ describe('Call', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
 
             it('should set the state for incoming calls', function (done) {
@@ -467,7 +467,7 @@ describe('Call', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
 
             it('should set the newly created LocalSdp on the call', function (done) {
@@ -480,7 +480,7 @@ describe('Call', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
 
             it('Should publish `error` with error data if there is an error in operation', function (done) {
@@ -499,7 +499,7 @@ describe('Call', function () {
                 } finally {
                   setIdStub.restore();
                 }
-              }, 100);
+              }, 10);
 
             });
           });
@@ -531,7 +531,7 @@ describe('Call', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
 
             });
           });
@@ -552,7 +552,7 @@ describe('Call', function () {
             setTimeout(function () {
               expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
               done();
-            }, 100);
+            }, 10);
           });
 
         });
@@ -706,7 +706,7 @@ describe('Call', function () {
 
       });
 
-      describe('Cancel Call [call.remoteDescription === null]', function () {
+      describe('Cancel Call [call.remoteSdp === null]', function () {
 
         it('should call `rtcManager.cancelCall` if the remoteDescription is null', function () {
           var cancelCallStub = sinon.stub(rtcMgr, 'cancelCall');
@@ -751,7 +751,7 @@ describe('Call', function () {
         });
       });
 
-      describe('Disconnect Call [call.remoteDescription !== null] && [call.id !== null]', function () {
+      describe('Disconnect Call [call.remoteSdp !== null] && [call.id !== null]', function () {
         it('should call rtcManager.disconnectCall', function () {
           var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
 
@@ -856,7 +856,7 @@ describe('Call', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 30);
           });
 
           it('should publish `disconnected` with data when rtcManager publishes `call-disconnected`', function (done) {
@@ -876,7 +876,7 @@ describe('Call', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 30);
           });
 
           it('should execute rtcMgr.resetPeerConnection', function (done) {
@@ -893,7 +893,7 @@ describe('Call', function () {
                 resetPeerConnectionStub.restore();
                 done(e);
               }
-            }, 200);
+            }, 20);
           });
 
           it('should de-register from the `call-disconnected` event from `rtcManager`', function (done) {
@@ -907,7 +907,7 @@ describe('Call', function () {
               expect(offSpy.called).to.equal(true);
               offSpy.restore();
               done();
-            }, 100);
+            }, 10);
           });
         });
       });
@@ -949,7 +949,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -971,7 +971,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -993,7 +993,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('should trigger the `unmuted` event with relevant data', function (done) {
@@ -1013,7 +1013,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1035,7 +1035,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1057,7 +1057,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('should trigger the `resumed` event with relevant data', function (done) {
@@ -1077,7 +1077,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1099,7 +1099,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1121,7 +1121,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1221,7 +1221,7 @@ describe('Call', function () {
 
       var call,
         setRemoteSdpSpy,
-        setStateSpy,
+        setStateStub,
         onConnectedHandlerSpy,
         connectCallStub;
 
@@ -1230,7 +1230,7 @@ describe('Call', function () {
         call = new ATT.rtc.Call(optionsOutgoing);
 
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
-        setStateSpy = sinon.spy(call, 'setState');
+        setStateStub = sinon.stub(call, 'setState');
         onConnectedHandlerSpy = sinon.spy();
 
         connectCallStub = sinon.stub(rtcMgr, 'connectCall');
@@ -1242,7 +1242,7 @@ describe('Call', function () {
 
       afterEach(function () {
         setRemoteSdpSpy.restore();
-        setStateSpy.restore();
+        setStateStub.restore();
         connectCallStub.restore();
       });
 
@@ -1256,20 +1256,18 @@ describe('Call', function () {
 
         beforeEach(function () {
           modificationsHold = {
-            remoteDescription: 'abc recvonly',
+            remoteSdp: 'abc recvonly',
             modificationId: '123'
           };
           modificationsResume = {
-            remoteDescription: 'abc sendrecv',
+            remoteSdp: 'abc sendrecv',
             modificationId: '123'
           };
 
+          setMediaModificationsStub = sinon.stub(rtcMgr, 'setMediaModifications');
+
           disableMediaStreamStub = sinon.stub(rtcMgr, 'disableMediaStream');
           enableMediaStreamStub = sinon.stub(rtcMgr, 'enableMediaStream');
-
-          call.setRemoteSdp(modificationsHold.remoteDescription);
-
-          setMediaModificationsStub = sinon.stub(rtcMgr, 'setMediaModifications');
         });
 
         afterEach(function () {
@@ -1296,7 +1294,7 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setRemoteSdpSpy.calledWith(modificationsHold.remoteDescription)).to.equal(true);
+              expect(setRemoteSdpSpy.calledWith(modificationsHold.remoteSdp)).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1311,7 +1309,7 @@ describe('Call', function () {
 
             setTimeout(function () {
               try {
-                expect(setStateSpy.calledWith('held')).to.equal(true);
+                expect(setStateStub.calledWith('held')).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -1335,13 +1333,29 @@ describe('Call', function () {
 
         describe('Resume modification', function () {
 
+          var codec,
+            getCodecStub;
+
+          beforeEach(function () {
+            codec = ['a', 'b'],
+            getCodecStub = sinon.stub(ATT.sdpFilter.getInstance(), 'getCodecfromSDP', function () {
+              return codec;
+            });
+
+            call.setRemoteSdp(modificationsHold.remoteSdp);
+          });
+
+          afterEach(function () {
+            getCodecStub.restore();
+          });
+
           it('should execute setState with `resumed` state if the new remoteDescription contains `sendrecv` '
             + '&& the current remoteDescription contains `recvonly`', function (done) {
             emitterEM.publish('media-modifications', modificationsResume);
 
             setTimeout(function () {
               try {
-                expect(setStateSpy.calledWith('resumed')).to.equal(true);
+                expect(setStateStub.calledWith('resumed')).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -1444,7 +1458,7 @@ describe('Call', function () {
 
             setTimeout(function () {
               try {
-                expect(setStateSpy.calledWith('held')).to.equal(true);
+                expect(setStateStub.calledWith('held')).to.equal(true);
                 expect(disableMediaStreamStub.called).to.equal(true);
                 done();
               } catch (e) {
@@ -1461,7 +1475,7 @@ describe('Call', function () {
 
             setTimeout(function () {
               try {
-                expect(setStateSpy.calledWith('resumed')).to.equal(true);
+                expect(setStateStub.calledWith('resumed')).to.equal(true);
                 expect(enableMediaStreamStub.called).to.equal(true);
                 done();
               } catch (e) {
@@ -1481,7 +1495,7 @@ describe('Call', function () {
         beforeEach(function () {
           eventData = {
             type: 'call',
-            remoteDescription: 'abcdefg'
+            remoteSdp: 'abcdefg'
           };
 
           setRemoteDescriptionStub = sinon.stub(rtcMgr, 'setRemoteDescription');
@@ -1499,7 +1513,7 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setStateSpy.calledWith('connected')).to.equal(true);
+              expect(setStateStub.calledWith('connected')).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1512,8 +1526,8 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setRemoteSdpSpy.calledWith(eventData.remoteDescription)).to.equal(true);
-              expect(setRemoteSdpSpy.calledAfter(setStateSpy)).to.equal(true);
+              expect(setRemoteSdpSpy.calledWith(eventData.remoteSdp)).to.equal(true);
+              expect(setRemoteSdpSpy.calledAfter(setStateStub)).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1528,7 +1542,7 @@ describe('Call', function () {
             try {
               expect(setRemoteDescriptionStub.calledWith({
                 type: 'answer',
-                remoteDescription: eventData.remoteDescription
+                remoteDescription: eventData.remoteSdp
               })).to.equal(true);
               done();
             } catch (e) {
@@ -1578,7 +1592,7 @@ describe('Call', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 30);
         });
 
 
@@ -1612,7 +1626,7 @@ describe('Call', function () {
           setTimeout(function () {
             expect(rejectedSpy.calledOnce).to.equal(true);
             done();
-          }, 10);
+          }, 100);
 
         });
 
@@ -1626,7 +1640,7 @@ describe('Call', function () {
             } catch (e) {
               done(e);
             }
-          }, 200);
+          }, 20);
         });
 
       });
