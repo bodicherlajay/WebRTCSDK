@@ -103,7 +103,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.called).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18000');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18000] should publish error when the parameters are invalid ', function (done) {
@@ -114,7 +114,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.called).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18000');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18001] should publish error when no `localMedia` is passed ', function (done) {
@@ -127,7 +127,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.calledOnce).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18001');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18002] should publish error when no `remoteMedia` is Invalid ', function (done) {
@@ -140,7 +140,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.calledOnce).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18002');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18003] should publish error when `Media Type` is invalid  ', function (done) {
@@ -154,7 +154,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.calledOnce).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18003');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('[18007] should publish error when user not logged In ', function (done) {
@@ -171,7 +171,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18007');
             sessionGetIdStub.restore();
             done();
-          }, 100);
+          }, 10);
         });
         it('[18006] should publish error when tried to make second conference call ', function (done) {
 
@@ -186,7 +186,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.calledOnce).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18006');
             done();
-          }, 100);
+          }, 10);
         });
 
         // WARNING: This test is dangerous, it will break so many other test that you will wish ...
@@ -209,7 +209,7 @@ describe('Phone [Conference]', function () {
             // DON'T forget to restore it :)
             ATT.CallTypes = bkpOutgoing;
             done();
-          }, 300);
+          }, 30);
         });
 
         it('should publish `connecting` immediately');
@@ -336,7 +336,7 @@ describe('Phone [Conference]', function () {
               onUserMediaSpy = sinon.spy(options, 'onUserMedia');
               options.onUserMedia(userMedia);
               onUserMediaSpy.restore();
-            }, 100);
+            }, 10);
           });
           phone2 = new Phone();
         });
@@ -355,7 +355,7 @@ describe('Phone [Conference]', function () {
             expect(addStreamStub.calledWith(userMedia.localStream)).to.equal(true);
             addStreamStub.restore();
             done();
-          }, 200);
+          }, 20);
         });
 
         it('should execute `conference.connect`', function (done) {
@@ -373,7 +373,7 @@ describe('Phone [Conference]', function () {
             expect(connectStub.calledAfter(onUserMediaSpy)).to.equal(true);
             connectStub.restore();
             done();
-          }, 200);
+          }, 20);
         });
 
       });
@@ -404,7 +404,7 @@ describe('Phone [Conference]', function () {
             } catch (e) {
               done(e);
             }
-          }, 200);
+          }, 20);
 
         });
       });
@@ -432,7 +432,7 @@ describe('Phone [Conference]', function () {
             expect(onErrorSpy.called).to.equal(true);
             expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18004');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -528,7 +528,7 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
       describe('Error handling', function () {
@@ -635,7 +635,7 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 200);
+        }, 20);
 
       });
 
@@ -696,7 +696,7 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 200);
+        }, 20);
 
       });
     });

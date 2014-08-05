@@ -283,7 +283,7 @@ describe('RTC Manager', function () {
               doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
                 setTimeout(function () {
                   options.success(webRTCSessionResponse);
-                }, 0);
+                }, 10);
               });
             });
 
@@ -297,7 +297,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 20);
             });
 
             it('Should subscribe to event listening from the event manager', function (done) {
@@ -310,7 +310,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 20);
             });
 
             it('should call EventManager.setup with the session id', function (done) {
@@ -326,7 +326,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 20);
             });
 
             it('should execute onSessionReady with data containing `sessionId` on receiving a `listening` event', function (done) {
@@ -341,7 +341,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 20);
             });
 
           });
@@ -377,7 +377,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
 
           });
@@ -419,7 +419,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
         });
 
@@ -538,7 +538,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
 
           });
         });
@@ -643,7 +643,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
 
           });
         });
@@ -733,7 +733,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
 
             });
 
@@ -769,7 +769,7 @@ describe('RTC Manager', function () {
                 } catch(err) {
                   done(err);
                 }
-              }, 100);
+              }, 10);
             });
           });
         });
@@ -985,7 +985,7 @@ describe('RTC Manager', function () {
                 } catch(e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
           });
 
@@ -1009,7 +1009,7 @@ describe('RTC Manager', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
           });
         });
@@ -1076,7 +1076,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
         });
 
@@ -1406,7 +1406,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
 
           it('should execute createAPIErrorCode with operation `endConference` for breed `conference`', function (done) {
@@ -1421,7 +1421,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
 
           it('should call `options.onError` callback with the error object', function (done) {
@@ -1435,7 +1435,7 @@ describe('RTC Manager', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 10);
           });
         });
 

@@ -196,7 +196,7 @@ describe('Event Manager', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
 
       });
 
@@ -240,7 +240,7 @@ describe('Event Manager', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
     });
 
@@ -365,7 +365,7 @@ describe('Event Manager', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
 
     });
@@ -392,7 +392,7 @@ describe('Event Manager', function () {
               modificationId: '12345'
             })).to.equal(true);
             done();
-          }, 100);
+          }, 10);
         });
       });
     });
@@ -423,7 +423,7 @@ describe('Event Manager', function () {
               from: event.from
             })).to.equal(true);
             done();
-          }, 100);
+          }, 10);
         });
       });
       describe('media-mod-terminations [Call]', function () {
@@ -452,7 +452,7 @@ describe('Event Manager', function () {
               }
             )).to.equal(true);
             done();
-          }, 100);
+          }, 10);
         });
 
       });
@@ -479,7 +479,7 @@ describe('Event Manager', function () {
             remoteSdp: event.sdp
           })).to.equal(true);
           done();
-        }, 100);
+        }, 10);
       });
 
       it('should publish `call-connected` event with type `conferences` and remoteDescription for a conferences event', function (done) {
@@ -500,7 +500,7 @@ describe('Event Manager', function () {
             remoteSdp: event.sdp
           })).to.equal(true);
           done();
-        }, 100);
+        }, 10);
       });
     });
 
@@ -528,7 +528,7 @@ describe('Event Manager', function () {
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 10);
       });
     });
   });

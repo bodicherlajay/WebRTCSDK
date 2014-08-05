@@ -454,7 +454,7 @@ describe('Call', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
 
             it('should set the state for incoming calls', function (done) {
@@ -467,7 +467,7 @@ describe('Call', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
 
             it('should set the newly created LocalSdp on the call', function (done) {
@@ -480,7 +480,7 @@ describe('Call', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
             });
 
             it('Should publish `error` with error data if there is an error in operation', function (done) {
@@ -499,7 +499,7 @@ describe('Call', function () {
                 } finally {
                   setIdStub.restore();
                 }
-              }, 100);
+              }, 10);
 
             });
           });
@@ -531,7 +531,7 @@ describe('Call', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 10);
 
             });
           });
@@ -552,7 +552,7 @@ describe('Call', function () {
             setTimeout(function () {
               expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
               done();
-            }, 100);
+            }, 10);
           });
 
         });
@@ -856,7 +856,7 @@ describe('Call', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 30);
           });
 
           it('should publish `disconnected` with data when rtcManager publishes `call-disconnected`', function (done) {
@@ -876,7 +876,7 @@ describe('Call', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 30);
           });
 
           it('should execute rtcMgr.resetPeerConnection', function (done) {
@@ -893,7 +893,7 @@ describe('Call', function () {
                 resetPeerConnectionStub.restore();
                 done(e);
               }
-            }, 200);
+            }, 20);
           });
 
           it('should de-register from the `call-disconnected` event from `rtcManager`', function (done) {
@@ -907,7 +907,7 @@ describe('Call', function () {
               expect(offSpy.called).to.equal(true);
               offSpy.restore();
               done();
-            }, 100);
+            }, 10);
           });
         });
       });
@@ -949,7 +949,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -971,7 +971,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -993,7 +993,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('should trigger the `unmuted` event with relevant data', function (done) {
@@ -1013,7 +1013,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1035,7 +1035,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1057,7 +1057,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
 
         it('should trigger the `resumed` event with relevant data', function (done) {
@@ -1077,7 +1077,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1099,7 +1099,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1121,7 +1121,7 @@ describe('Call', function () {
             expect(onEventHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(onEventHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
-          }, 100);
+          }, 10);
         });
       });
 
@@ -1592,7 +1592,7 @@ describe('Call', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 30);
         });
 
 
@@ -1626,7 +1626,7 @@ describe('Call', function () {
           setTimeout(function () {
             expect(rejectedSpy.calledOnce).to.equal(true);
             done();
-          }, 10);
+          }, 100);
 
         });
 
@@ -1640,7 +1640,7 @@ describe('Call', function () {
             } catch (e) {
               done(e);
             }
-          }, 200);
+          }, 20);
         });
 
       });

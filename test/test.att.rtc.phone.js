@@ -323,12 +323,13 @@ describe('Phone', function () {
 
           setTimeout(function () {
             try {
+              expect(onSessionReadySpy.called).to.equal(true);
               expect(onSessionReadySpy.calledWith(data)).to.equal(true);
               done();
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 50);
         });
 
         describe('Error Handling', function () {
@@ -459,7 +460,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 50);
         });
 
         it('should delete the current session object', function () {
@@ -588,7 +589,7 @@ describe('Phone', function () {
             expect(onDialingSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(typeof onDialingSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('should call session.createCall', function () {
@@ -684,7 +685,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
@@ -698,7 +699,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `media-established` with relevant data when call publishes `media-established` event', function (done) {
@@ -713,7 +714,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `call-held` with relevant data when call publishes `call-held` event', function (done) {
@@ -728,7 +729,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
           it('should trigger `call-resumed` with relevant data when call publishes `call-resumed` event', function (done) {
@@ -743,7 +744,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
         });
@@ -951,7 +952,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5004');
             done();
-          }, 100);
+          }, 50);
 
         });
 
@@ -965,7 +966,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
-          }, 100);
+          }, 50);
 
         });
 
@@ -979,7 +980,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5001');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('[5003] should publish `error` event with data if the user is not logged in', function (done) {
@@ -993,7 +994,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5003');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('[5000] should publish `error` event with error data if there is no current call', function (done) {
@@ -1006,7 +1007,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
             done();
-          }, 100);
+          }, 50);
 
         });
 
@@ -1020,7 +1021,7 @@ describe('Phone', function () {
             expect(onErrorHandlerSpy.calledOnce).to.equal(true);
             expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('should trigger `answering` with event data', function (done) {
@@ -1034,7 +1035,7 @@ describe('Phone', function () {
             expect(onAnsweringSpy.getCall(0).args[0].codec).to.be.an('array');
             expect(typeof onAnsweringSpy.getCall(0).args[0].timestamp).to.equal('object');
             done();
-          }, 100);
+          }, 50);
         });
 
         it('should register for the `connecting` event on the call object', function () {
@@ -1093,7 +1094,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
@@ -1108,7 +1109,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `media-established` with relevant data when call publishes `media-established` event', function (done) {
@@ -1123,7 +1124,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           it('should trigger `call-held` with relevant data when call publishes `call-held` event', function (done) {
@@ -1138,7 +1139,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
           it('should trigger `call-resumed` with relevant data when call publishes `call-resumed` event', function (done) {
@@ -1153,7 +1154,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
           it('[5002] should trigger `error` with relevant data when call publishes `error` event', function (done) {
@@ -1171,7 +1172,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
 
           });
 
@@ -1250,7 +1251,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 100);
+          }, 50);
         });
 
         it('should register for `connecting` event from call', function () {
@@ -1340,7 +1341,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
             });
 
             it('should execute Call.connect', function (done) {
@@ -1354,7 +1355,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
             });
 
             it('[20000] should be published with `error` event if there is an uncaught exception', function (done) {
@@ -1376,7 +1377,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
 
             });
 
@@ -1412,7 +1413,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 200);
+              }, 50);
 
             });
           });
@@ -1444,7 +1445,7 @@ describe('Phone', function () {
                 expect(onErrorSpy.called).to.equal(true);
                 expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('20002');
                 done();
-              }, 100);
+              }, 50);
             });
           });
 
@@ -1480,7 +1481,7 @@ describe('Phone', function () {
                 } catch(e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
             });
 
             it('should publish `conference-connected` when call publishes `connected` event', function (done) {
@@ -1493,7 +1494,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
             });
           });
 
@@ -1508,7 +1509,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 50);
             });
           });
         });
@@ -1534,7 +1535,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
 
@@ -1552,7 +1553,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
 
@@ -1570,7 +1571,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
 
@@ -1656,7 +1657,7 @@ describe('Phone', function () {
                 } catch(e) {
                   done(e);
                 }
-              }, 200);
+              }, 50);
             });
           });
         });
@@ -1896,7 +1897,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
           describe('Error Handling', function () {
@@ -1980,7 +1981,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
 
 
@@ -2089,7 +2090,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 50);
         });
 
         describe('Error Handling', function () {
@@ -2281,7 +2282,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 50);
         });
         describe('Error Handling', function () {
 
@@ -2401,7 +2402,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
           });
 
           it('[22001] should be published with `error` event if the user is not logged in', function (done) {
@@ -2418,7 +2419,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
 
@@ -2436,7 +2437,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
 
           });
         });
@@ -2669,7 +2670,7 @@ describe('Phone', function () {
             } catch (e) {
               done(e);
             }
-          }, 300);
+          }, 50);
         });
 
         describe('Error Handling', function () {
@@ -2795,7 +2796,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2812,7 +2813,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2829,7 +2830,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 100);
+            }, 50);
           });
 
           it('should also execute session.deleteCurrentCall', function (done) {
@@ -2843,7 +2844,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2860,7 +2861,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
 
           it('should also execute session.deleteCurrentCall', function (done) {
@@ -2874,7 +2875,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2894,7 +2895,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 300);
+            }, 50);
           });
         });
 
@@ -2961,7 +2962,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
 
           });
 
@@ -3048,7 +3049,7 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 200);
+            }, 50);
           });
         });
 
