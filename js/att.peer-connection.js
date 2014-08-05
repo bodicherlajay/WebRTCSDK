@@ -84,6 +84,10 @@
     };
 
     if (undefined === options.remoteSdp) {
+      options.remoteSdp = null;
+    }
+
+    if (null === options.remoteSdp) {
 
       pc.onicecandidate = function (event) {
         if (event.candidate) {
@@ -108,7 +112,7 @@
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
 
-    } else if (undefined !== options.remoteSdp){
+    } else {
       pc.setRemoteDescription(new RTCSessionDescription({
         sdp: options.remoteSdp,
         type: 'offer'

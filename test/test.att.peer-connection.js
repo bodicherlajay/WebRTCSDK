@@ -20,6 +20,7 @@ describe('PeerConnection', function () {
       type: 'offer'
     };
     createOptionsOutgoing = {
+      remoteSdp: null,
       stream : {},
       mediaType: 'video',
       onSuccess : function () {},
@@ -171,7 +172,15 @@ describe('PeerConnection', function () {
         expect(rtcPC.onaddstream).to.be.a('function');
       });
 
-      describe('Creating Offer [remoteSdp === undefined]', function () {
+      it('should set remoteSdp to null if it is undefined', function () {
+        createOptionsOutgoing.remoteSdp = undefined;
+
+        factories.createPeerConnection(createOptionsOutgoing);
+
+        expect(createOptionsOutgoing.remoteSdp).to.equal(null);
+      });
+
+      describe('Creating Offer [remoteSdp === null]', function () {
         var createOfferStub;
 
         it('should set the pc.onicecandidate', function () {
@@ -352,7 +361,7 @@ describe('PeerConnection', function () {
         });
       });
 
-      describe('Set Remote Description [remoteSdp !== undefined]', function () {
+      describe('Set Remote Description [remoteSdp !== null]', function () {
 
         var setRemoteDescriptionStub,
           rtcSessionDescription;
