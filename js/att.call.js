@@ -249,12 +249,12 @@
           that.setState('connected');
 
           if ('call' === that.breed()) {
-            if (data.remoteDescription) {
+            if (data.remoteSdp) {
               rtcManager.setRemoteDescription({
-                remoteDescription: data.remoteDescription,
+                remoteDescription: data.remoteSdp,
                 type: 'answer'
               });
-              that.setRemoteSdp(data.remoteDescription);
+              that.setRemoteSdp(data.remoteSdp);
             }
 
             rtcManager.playStream('remote');

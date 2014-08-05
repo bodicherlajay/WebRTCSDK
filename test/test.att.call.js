@@ -73,7 +73,7 @@ describe('Call', function () {
       peer: '12345',
       mediaType: 'audio',
       type: ATT.CallTypes.INCOMING,
-      remoteDescription: 'abc',
+      remoteSdp: 'abc',
       sessionInfo : {sessionId : '12345'}
     };
 
@@ -82,7 +82,7 @@ describe('Call', function () {
       peer: '12345',
       mediaType: 'video',
       type: ATT.CallTypes.INCOMING,
-      remoteDescription: 'abc'
+      remoteSdp: 'abc'
     };
 
     optionsOutgoingConf = {
@@ -286,7 +286,7 @@ describe('Call', function () {
       outgoingConf = new ATT.rtc.Call(optionsOutgoingConf);
       incomingConf = new ATT.rtc.Call(optionsIncomingConf);
 
-      incomingCall.setRemoteSdp(optionsIncoming.remoteDescription);
+      incomingCall.setRemoteSdp(optionsIncoming.remoteSdp);
 
       onConnectingSpy = sinon.spy();
       onConnectedSpy = sinon.spy();
@@ -412,7 +412,7 @@ describe('Call', function () {
         it('should execute RTCManager.connectCall with `remoteDescription` for incoming calls', function () {
           incomingCall.connect(connectOptions);
 
-          expect(connectCallStub.getCall(0).args[0].remoteDescription).to.equal(optionsIncoming.remoteDescription);
+          expect(connectCallStub.getCall(0).args[0].remoteDescription).to.equal(optionsIncoming.remoteSdp);
         });
 
         it('should not execute RTCManager.connectCall for breed `conference`', function () {
@@ -706,7 +706,7 @@ describe('Call', function () {
 
       });
 
-      describe('Cancel Call [call.remoteDescription === null]', function () {
+      describe('Cancel Call [call.remoteSdp === null]', function () {
 
         it('should call `rtcManager.cancelCall` if the remoteDescription is null', function () {
           var cancelCallStub = sinon.stub(rtcMgr, 'cancelCall');
@@ -751,7 +751,7 @@ describe('Call', function () {
         });
       });
 
-      describe('Disconnect Call [call.remoteDescription !== null] && [call.id !== null]', function () {
+      describe('Disconnect Call [call.remoteSdp !== null] && [call.id !== null]', function () {
         it('should call rtcManager.disconnectCall', function () {
           var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
 
@@ -1495,7 +1495,7 @@ describe('Call', function () {
         beforeEach(function () {
           eventData = {
             type: 'call',
-            remoteDescription: 'abcdefg'
+            remoteSdp: 'abcdefg'
           };
 
           setRemoteDescriptionStub = sinon.stub(rtcMgr, 'setRemoteDescription');
@@ -1526,7 +1526,7 @@ describe('Call', function () {
 
           setTimeout(function () {
             try {
-              expect(setRemoteSdpSpy.calledWith(eventData.remoteDescription)).to.equal(true);
+              expect(setRemoteSdpSpy.calledWith(eventData.remoteSdp)).to.equal(true);
               expect(setRemoteSdpSpy.calledAfter(setStateStub)).to.equal(true);
               done();
             } catch (e) {
@@ -1542,7 +1542,7 @@ describe('Call', function () {
             try {
               expect(setRemoteDescriptionStub.calledWith({
                 type: 'answer',
-                remoteDescription: eventData.remoteDescription
+                remoteDescription: eventData.remoteSdp
               })).to.equal(true);
               done();
             } catch (e) {
