@@ -153,6 +153,7 @@ describe('Call [Conference]', function () {
 
       });
     });
+
     describe('addParticipant', function () {
 
       it('should exist', function () {
@@ -160,7 +161,7 @@ describe('Call [Conference]', function () {
       });
 
       it('should add a participant to the list with status `pending`', function () {
-        var participant
+        var participant;
 
         outgoingConference.addParticipant('john123');
 
@@ -271,7 +272,7 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe('[US233244] participants', function () {
+    describe('participants', function () {
 
       it('should exist', function () {
         expect(outgoingConference.participants).to.be.a('function');
@@ -748,6 +749,55 @@ describe('Call [Conference]', function () {
             });
           });
         });
+      });
+    });
+
+    describe('disconnectConference', function () {
+
+      var onSpy,
+        confCall;
+
+      beforeEach(function () {
+        onSpy = sinon.spy(rtcMgr, 'on');
+        confCall = new ATT.rtc.Call({
+          breed: 'conference',
+          peer: '12345',
+          mediaType: 'audio',
+          type: ATT.CallTypes.OUTGOING,
+          sessionInfo : {sessionId : '12345', token : '123'}
+        });
+      });
+
+      afterEach(function () {
+        onSpy.restore();
+      });
+
+      it('Should exist', function () {
+        expect(confCall.disconnectConference).to.be.a('function');
+      });
+
+      it('should execute confCall.setState with `disconnecting`', function () {
+
+        confCall.disconnectConference();
+
+        expect(confCall.getState()).to.equal('disconnecting');
+
+      });
+
+      it('should call rtcManager.disconnectCall', function () {
+        var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
+
+        confCall.disconnectConference();
+
+        expect(disconnectCallStub.called).to.equal(true);
+        expect(disconnectCallStub.getCall(0).args[0].callId).to.equal(confCall.id());
+        expect(disconnectCallStub.getCall(0).args[0].breed).to.equal(confCall.breed());
+        expect(disconnectCallStub.getCall(0).args[0].sessionId).not.to.be.a('undefined');
+        expect(disconnectCallStub.getCall(0).args[0].token).not.to.be.a('undefined');
+        expect(disconnectCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
+        expect(disconnectCallStub.getCall(0).args[0].onError).to.be.a('function');
+
+        disconnectCallStub.restore();
       });
     });
   });

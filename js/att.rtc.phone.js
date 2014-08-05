@@ -1503,7 +1503,7 @@
         });
 
         try {
-          conference.disconnect();
+          conference.disconnectConference();
         } catch (err) {
           logger.logError(err);
           throw ATT.errorDictionary.getSDKError(23000);
