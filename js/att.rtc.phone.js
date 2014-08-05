@@ -1334,10 +1334,8 @@
      *
      * **Error Codes**
      *
-     *   - 19000 - User is not logged in
-     *   - 19001 - Conference not initiated
-     *   - 19002 - Participant parameter missing
-     *   - 19003 - Internal error occurred
+     *   - 19000 - Participant parameter missing
+     *   - 19001 - Internal error occurred
      * @memberOf Phone
      * @instance
 
@@ -1350,26 +1348,81 @@
      */
     function addParticipant(participant) {
 
-      var conference;
+      try {
+        try {
+          logger.logDebug('Phone.addParticipant');
+
+          if (undefined === participant) {
+            publishError(19000);
+            return;
+          }
+
+          this.addParticipants([participant]);
+        } catch (err) {
+          publishError('19001');
+          return;
+        }
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
+    /**
+     * @summary
+     * Add participants
+     * @desc
+     * Add a list of participants to a conference
+     *
+     * **Error Codes**
+     *
+     *   - 24000 - Participants parameter missing
+     *   - 24001 - Participants is null or empty
+     *   - 24002 - User is not logged in
+     *   - 24003 - Conference not initiated
+     *   - 24004 - Internal error occurred
+     *
+     * @param {Array} participants List of participant-ids
+     *
+     * @memberOf Phone
+     * @instance
+
+     * @fires Phone#participant-pending
+     * @fires Phone#error
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.addParticipants(['4250000001','4250000002']);
+     */
+    function addParticipants(participants) {
+      var conference,
+        counter;
 
       try {
+        logger.logDebug('Phone.addParticipants');
 
-        logger.logDebug('Phone.addParticipant');
+        if (undefined === participants) {
+          publishError('24000');
+          return;
+        }
+
+        if (typeof participants !== 'object'
+            || null === participants
+            || Object.keys(participants).length === 0) {
+          publishError('24001');
+          return;
+        }
 
         if (null === session.getId()) {
-          publishError(19000);
+          publishError('24002');
           return;
         }
 
         conference = session.currentCall;
-
         if (null === conference || 'conference' !== conference.breed()) {
-          publishError(19001);
-          return;
-        }
-
-        if (undefined === participant) {
-          publishError(19002);
+          publishError('24003');
           return;
         }
 
@@ -1387,11 +1440,14 @@
         });
 
         try {
-          conference.addParticipant(participant);
+          for (counter = 0; counter < participants.length; counter += 1) {
+            conference.addParticipant(participants[counter]);
+          }
         } catch (err) {
-          logger.logError(err);
-          throw ATT.errorDictionary.getSDKError(19003);
+          publishError('24004');
+          return;
         }
+
       } catch (err) {
         logger.logError(err);
         emitter.publish('error', {
@@ -1553,6 +1609,7 @@
     this.joinConference = joinConference;
     this.rejectConference = rejectConference;
     this.addParticipant = addParticipant;
+    this.addParticipants = addParticipants;
     this.getParticipants = getParticipants;
   }
 
