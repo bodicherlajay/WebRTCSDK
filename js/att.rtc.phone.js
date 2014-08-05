@@ -1481,7 +1481,6 @@
      * @memberOf Phone
      * @instance
 
-<<<<<<< HEAD
      * @fires Phone#participant-pending
      * @fires Phone#error
 
@@ -1497,6 +1496,7 @@
         logger.logDebug('Phone.addParticipants');
 
         if (undefined === participants) {
+          logger.logError('Parameter missing');
           publishError('24000');
           return;
         }
@@ -1515,11 +1515,12 @@
 
         conference = session.currentCall;
         if (null === conference || 'conference' !== conference.breed()) {
+          logger.logError('Conference not initiated ');
           publishError('24003');
           return;
         }
 
-        conference.on('participant-pending', function (data) {
+        conference.on('response-pending', function (data) {
           /**
            * Participant pending event.
            * @desc An invitation has been sent.
@@ -1529,8 +1530,7 @@
            * @property {Date} timestamp - Event fire time
            * @property {Object} participants - Participants list
            */
-          logger.logInfo('Conference not initiated ');
-          emitter.publish('participant-pending', data);
+          emitter.publish('response-pending', data);
         });
 
         conference.on('invite-accepted', function (data) {
