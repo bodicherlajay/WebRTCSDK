@@ -127,30 +127,30 @@
     */
     function on(event, handler) {
       if ('session-ready' !== event
-        && 'session-disconnected' !== event
-        && 'dialing' !== event
-        && 'answering' !== event
-        && 'conference-joining' !== event
-        && 'call-incoming' !== event
-        && 'conference-invite' !== event
-        && 'call-connecting' !== event
-        && 'conference-connecting' !== event
-        && 'participant-pending' !== event
-        && 'call-disconnecting' !== event
-        && 'conference-disconnecting' !== event
-        && 'call-disconnected' !== event
-        && 'conference-disconnected' !== event
-        && 'call-canceled' !== event
-        && 'call-rejected' !== event
-        && 'call-connected' !== event
-        && 'conference-connected' !== event
-        && 'call-muted' !== event
-        && 'call-unmuted' !== event
-        && 'call-held' !== event
-        && 'call-resumed' !== event
-        && 'address-updated' !== event
-        && 'media-established' !== event
-        && 'error' !== event) {
+          && 'session-disconnected' !== event
+          && 'dialing' !== event
+          && 'answering' !== event
+          && 'conference-joining' !== event
+          && 'call-incoming' !== event
+          && 'conference-invite' !== event
+          && 'call-connecting' !== event
+          && 'conference-connecting' !== event
+          && 'participant-pending' !== event
+          && 'call-disconnecting' !== event
+          && 'conference-disconnecting' !== event
+          && 'call-disconnected' !== event
+          && 'conference-disconnected' !== event
+          && 'call-canceled' !== event
+          && 'call-rejected' !== event
+          && 'call-connected' !== event
+          && 'conference-connected' !== event
+          && 'call-muted' !== event
+          && 'call-unmuted' !== event
+          && 'call-held' !== event
+          && 'call-resumed' !== event
+          && 'address-updated' !== event
+          && 'media-established' !== event
+          && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -342,6 +342,7 @@
       mediaType: 'video',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
+      holdCurrentCall
     };
     @example
     // Start audio call with a NoTN/VTN User
@@ -351,6 +352,7 @@
       mediaType: 'audio',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
+      holdCurrentCall
     };
    */
     function dial(options) {
@@ -381,6 +383,22 @@
               && 'video' !== options.mediaType) {
             throw ATT.errorDictionary.getSDKError('4002');
           }
+        }
+
+        if (null !== session.backgroundCall) {
+            if (options.holdCurrentCall === true) {
+                throw ATT.errorDictionary.getSDKError('4010');
+            }
+        }
+
+        if (null !== session.currentCall) {
+            if (options.holdCurrentCall === true) {
+                session.currentCall.hold();
+            } else {
+                session.currentCall.hangup();
+            }
+            session.backgroundCall = session.currentCall;
+            session.currentCall = null;
         }
 
         try {
@@ -429,6 +447,11 @@
              */
             emitter.publish('call-rejected', data);
             session.deleteCurrentCall();
+            session.switchCall();
+
+            if (session.currentCall !== null) {
+                session.currentCall.resume();
+            }
           });
           call.on('connected', function (data) {
             /**
@@ -481,6 +504,11 @@
              */
             emitter.publish('call-disconnected', data);
             session.deleteCurrentCall();
+            session.switchCall();
+
+            if (session.currentCall !== null) {
+                session.currentCall.resume();
+            }
           });
           call.on('error', function (data) {
             /**
@@ -604,6 +632,11 @@
         call.on('disconnected', function (data) {
           emitter.publish('call-disconnected', data);
           session.deleteCurrentCall();
+          session.switchCall();
+
+          if (session.currentCall !== null) {
+              session.currentCall.resume();
+          }
         });
         call.on('error', function (data) {
           publishError(5002, data);
@@ -984,7 +1017,12 @@
               timestamp: new Date()
             });
             session.deleteCurrentCall();
-          }
+            session.switchCall();
+
+            if (session.currentCall !== null) {
+                session.currentCall.resume();
+            }
+        }
           call.disconnect();
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('11001');
@@ -1029,6 +1067,11 @@
           call.on('disconnected', function (data) {
             emitter.publish('call-disconnected', data);
             session.deleteCurrentCall();
+            session.switchCall();
+
+            if (session.currentCall !== null) {
+                session.currentCall.resume();
+            }
           });
           call.reject();
         } catch (err) {
@@ -1550,6 +1593,7 @@
      *
      *   - 21000 - Conference not initiated
      *   - 21001 - Internal error occurred
+     *   - 21002 - User not Logged in
      *
      * @memberOf Phone
      * @instance
@@ -1568,6 +1612,11 @@
         key;
 
       try {
+
+        if (null === session.getId()) {
+          publishError(21002);
+          return;
+        }
         conference = session.currentCall;
 
         if (null === conference

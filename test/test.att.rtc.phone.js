@@ -540,7 +540,8 @@ describe('Phone', function () {
             breed: 'call',
             mediaType: 'video',
             localMedia: localVideo,
-            remoteMedia: remoteVideo
+            remoteMedia: remoteVideo,
+            holdCurrentCall: true
           };
 
           onSpy = sinon.spy(call, 'on');
@@ -1826,6 +1827,19 @@ describe('Phone', function () {
         });
 
         describe('Error Handling', function () {
+          it('[21002] should be thrown if User not Logged In', function () {
+            var sessiongetIdStub = sinon.stub(session , 'getId', function () {
+              return null;
+            });
+
+            phone.getParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('21002')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('21002')
+            })).to.equal(true);
+            sessiongetIdStub.restore();
+          });
           it('[21000] should be thrown if conference has not been started', function () {
             session.currentCall = null;
 
