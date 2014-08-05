@@ -73,14 +73,14 @@
        * Conference disconnected event.
        * @desc Indicates a conference has been disconnected
        *
-       * @event Phone#conference-disconnected
+       * @event Phone#conference:disconnected
        * @type {object}
        * @property {String} from - The ID of the conference.
        * @property {String} mediaType - The type of conference.
        * @property {String} codec - The codec of the conference
        * @property {Date} timestamp - Event fire time.
        */
-      emitter.publish('conference-disconnected', data);
+      emitter.publish('conference:disconnected', data);
       session.deleteCurrentCall();
     });
 
@@ -126,30 +126,35 @@
       });
     */
     function on(event, handler) {
+
       if ('session-ready' !== event
           && 'session-disconnected' !== event
           && 'dialing' !== event
           && 'answering' !== event
-          && 'conference-joining' !== event
           && 'call-incoming' !== event
-          && 'conference-invite' !== event
           && 'call-connecting' !== event
-          && 'conference-connecting' !== event
-          && 'participant-pending' !== event
-          && 'call-disconnecting' !== event
-          && 'conference-disconnecting' !== event
-          && 'call-disconnected' !== event
-          && 'conference-disconnected' !== event
-          && 'call-canceled' !== event
-          && 'call-rejected' !== event
           && 'call-connected' !== event
-          && 'conference-connected' !== event
+          && 'call-disconnecting' !== event
+          && 'call-disconnected' !== event
           && 'call-muted' !== event
           && 'call-unmuted' !== event
           && 'call-held' !== event
           && 'call-resumed' !== event
+          && 'call-canceled' !== event
+          && 'call-rejected' !== event
           && 'address-updated' !== event
           && 'media-established' !== event
+          && 'conference-invite' !== event
+          && 'conference-joining' !== event
+          && 'conference:inviting' !== event
+          && 'conference:invite-rejected' !== event
+          && 'conference-connecting' !== event
+          && 'conference:response-pending' !== event
+          && 'conference:invite-accepted' !== event
+          && 'conference:disconnecting' !== event
+          && 'conference:disconnected' !== event
+          && 'conference-connected' !== event
+
           && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
@@ -1440,7 +1445,7 @@
      var phone = ATT.rtc.Phone.getPhone();
      phone.addParticipant('4250000001');
      */
-    function addParticipant(participant) {
+    function addParticipant(invitee) {
 
       var conference;
 
@@ -1461,24 +1466,23 @@
           return;
         }
 
-        if (undefined === participant) {
+        if (undefined === invitee) {
           logger.logError('Parameter missing');
           publishError(19002);
           return;
         }
 
-        conference.on('participant-pending', function (data) {
+        conference.on('response-pending', function (data) {
           /**
-           * Participant pending event.
+           * Response pending event.
            * @desc An invitation has been sent.
            *
            * @event Phone#conference:response-pending
            * @type {object}
            * @property {Date} timestamp - Event fire time
-           * @property {Object} participants - Participants list
+           * @property {Object} Invitations - Invitations list
            */
-          logger.logInfo('Conference not initiated ');
-          emitter.publish('participant-pending', data);
+          emitter.publish('conference:response-pending', data);
         });
 
         conference.on('invite-accepted', function (data) {
@@ -1503,6 +1507,11 @@
            * @property {Date} timestamp - Event fire time
            */
           emitter.publish('conference:invite-rejected', data);
+        });
+
+        emitter.publish('conference:inviting', {
+          invitee: invitee,
+          timestamp: new Date()
         });
 
         try {
@@ -1562,11 +1571,11 @@
            * Conference disconnecting event.
            * @desc The conference is being disconnected
            *
-           * @event Phone#conference-disconnecting
+           * @event Phone#conference:disconnecting
            * @type {object}
            * @property {Date} timestamp - Event fire time
            */
-          emitter.publish('conference-disconnecting', data);
+          emitter.publish('conference:disconnecting', data);
         });
 
         try {

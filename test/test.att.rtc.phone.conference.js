@@ -488,7 +488,7 @@ describe('Phone [Conference]', function () {
         onSpy = sinon.spy(conference, 'on');
         conferenceDisconnectingHandlerSpy = sinon.spy();
 
-        phone.on('conference-disconnecting', conferenceDisconnectingHandlerSpy);
+        phone.on('conference:disconnecting', conferenceDisconnectingHandlerSpy);
 
         session.currentCall = conference;
         session.setId('1234');
@@ -516,7 +516,7 @@ describe('Phone [Conference]', function () {
         expect(conferenceDisconnectStub.called).to.equal(true);
       });
 
-      it('should trigger `conference-disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
+      it('should trigger `conference:disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
         phone.endConference();
 
         emitterConf.publish('disconnecting', eventData);

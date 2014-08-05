@@ -160,15 +160,6 @@ describe('Call [Conference]', function () {
         expect(outgoingConference.addParticipant).to.be.a('function');
       });
 
-      it('should add a participant to the list with status `pending`', function () {
-        var participant;
-
-        outgoingConference.addParticipant('john123');
-
-        participant = outgoingConference.participants()['john123'];
-        expect(participant.status).to.equal('pending');
-      });
-
       it('should call rtcManager.addParticipant', function () {
         addParticipantStub = sinon.stub(rtcMgr, 'addParticipant');
 
@@ -198,7 +189,7 @@ describe('Call [Conference]', function () {
 
         afterEach(function () {
           addParticipantStub.restore();
-        })
+        });
 
         it('should set the invitee to `invited`', function () {
           outgoingConference.addParticipant('johnny');
@@ -827,7 +818,7 @@ describe('Call [Conference]', function () {
         setTimeout(function () {
           expect(setRemoteDescriptionStub.called).to.equal(true);
           expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('remoteSdp');
-          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('answer');
           done();
         }, 10);
       });
@@ -902,7 +893,7 @@ describe('Call [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 100);
       });
     });
 
