@@ -483,7 +483,7 @@ describe('Phone [Conference]', function () {
 
         phone = new ATT.private.Phone();
 
-        conferenceDisconnectStub  = sinon.stub(conference, 'disconnect');
+        conferenceDisconnectStub  = sinon.stub(conference, 'disconnectConference');
 
         onSpy = sinon.spy(conference, 'on');
         conferenceDisconnectingHandlerSpy = sinon.spy();
@@ -510,7 +510,7 @@ describe('Phone [Conference]', function () {
         expect(onSpy.calledWith('disconnecting')).to.equal(true);
       });
 
-      it('should execute conference.disconnect', function () {
+      it('should execute conference.disconnectConference', function () {
         phone.endConference();
 
         expect(conferenceDisconnectStub.called).to.equal(true);
@@ -569,7 +569,7 @@ describe('Phone [Conference]', function () {
         });
 
         it('[23000] should be thrown if an internal error occurs', function () {
-          conferenceDisconnectStub  = sinon.stub(conference, 'disconnect', function () {
+          conferenceDisconnectStub  = sinon.stub(conference, 'disconnectConference', function () {
             throw error;
           });
 

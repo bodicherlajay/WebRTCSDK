@@ -433,7 +433,7 @@
             });
           }
         });
-      } else if (null !== id && null !== this.remoteSdp()) {
+      } else if (null !== id && null !== remoteSdp) {
         logger.logInfo('Disconnecting...');
 
         rtcManager.disconnectCall({
@@ -452,6 +452,28 @@
           }
         });
       }
+    }
+
+    function disconnectConference () {
+      logger.logInfo('Disconnecting...');
+
+      setState('disconnecting');
+
+      rtcManager.disconnectCall({
+        sessionId: sessionInfo.sessionId,
+        token: sessionInfo.token,
+        breed: 'conference',
+        callId: id,
+        onSuccess: function () {
+          logger.logInfo('Successfully disconnected.');
+        },
+        onError: function (error) {
+          logger.logError(error);
+          emitter.publish('error', {
+            error: error
+          });
+        }
+      });
     }
 
     function mute() {
@@ -626,6 +648,7 @@
     this.addStream = addStream;
     this.connect = connect;
     this.disconnect = disconnect;
+    this.disconnectConference = disconnectConference ;
     this.addParticipant = addParticipant;
     this.setParticipant = setParticipant;
     this.updateParticipant = updateParticipant;
