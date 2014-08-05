@@ -893,7 +893,7 @@ describe('Call [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 100);
       });
     });
 
