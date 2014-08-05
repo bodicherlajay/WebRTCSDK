@@ -688,6 +688,14 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "getParticipants",
+      ErrorCode: "21002",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking endConference"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "endConference",
       ErrorCode: "23000",
       ErrorMessage: "Internal error occurred",

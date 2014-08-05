@@ -1526,6 +1526,7 @@
      *
      *   - 21000 - Conference not initiated
      *   - 21001 - Internal error occurred
+     *   - 21002 - User not Logged in
      *
      * @memberOf Phone
      * @instance
@@ -1544,6 +1545,11 @@
         key;
 
       try {
+
+        if (null === session.getId()) {
+          publishError(21002);
+          return;
+        }
         conference = session.currentCall;
 
         if (null === conference
