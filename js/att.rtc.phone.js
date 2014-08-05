@@ -1440,7 +1440,7 @@
      var phone = ATT.rtc.Phone.getPhone();
      phone.addParticipant('4250000001');
      */
-    function addParticipant(participant) {
+    function addParticipant(invitee) {
 
       var conference;
 
@@ -1461,24 +1461,23 @@
           return;
         }
 
-        if (undefined === participant) {
+        if (undefined === invitee) {
           logger.logError('Parameter missing');
           publishError(19002);
           return;
         }
 
-        conference.on('participant-pending', function (data) {
+        conference.on('response-pending', function (data) {
           /**
-           * Participant pending event.
+           * Response pending event.
            * @desc An invitation has been sent.
            *
            * @event Phone#conference:response-pending
            * @type {object}
            * @property {Date} timestamp - Event fire time
-           * @property {Object} participants - Participants list
+           * @property {Object} Invitations - Invitations list
            */
-          logger.logInfo('Conference not initiated ');
-          emitter.publish('participant-pending', data);
+          emitter.publish('response-pending', data);
         });
 
         conference.on('invite-accepted', function (data) {

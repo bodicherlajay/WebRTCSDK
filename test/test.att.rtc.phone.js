@@ -1637,9 +1637,9 @@ describe('Phone', function () {
           expect(phone.addParticipant).to.be.a('function');
         });
 
-        it('should register for `participant-pending` event on the conference object', function () {
+        it('should register for `response-pending` event on the conference object', function () {
           expect(onSpy.called).to.equal(true);
-          expect(onSpy.calledWith('participant-pending')).to.equal(true);
+          expect(onSpy.calledWith('response-pending')).to.equal(true);
         });
 
         it('should register for `invite-accepted` event on the conference object', function () {
@@ -1659,15 +1659,15 @@ describe('Phone', function () {
 
         describe('addParticipant events', function () {
 
-          describe('participant-pending', function () {
+          describe('conference:response-pending', function () {
 
-            it('should publish `participant-pending` with event data on getting a `participant-pending`', function (done) {
-              emitterConference.publish('participant-pending', eventData);
+            it('should publish `response-pending` with event data on getting a `response-pending`', function (done) {
+              emitterConference.publish('response-pending', eventData);
 
               setTimeout(function() {
                 try {
                   expect(publishStub.calledOnce).to.equal(true);
-                  expect(publishStub.calledWith('participant-pending')).to.equal(true);
+                  expect(publishStub.calledWith('response-pending')).to.equal(true);
                   expect(publishStub.getCall(0).args[1]).to.equal(eventData);
                   done();
                 } catch(e) {
