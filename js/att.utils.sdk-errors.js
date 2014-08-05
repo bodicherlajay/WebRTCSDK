@@ -232,6 +232,14 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "dial",
+      ErrorCode: "4011",
+      ErrorMessage: "onUserMediaError",
+      Cause: "Failed to get the UserMedia",
+      Resolution: "Please enable Media for the browser "
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
       ErrorCode: "5000",
       ErrorMessage: "Answer failed- No incoming call",

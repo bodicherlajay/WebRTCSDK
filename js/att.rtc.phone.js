@@ -315,6 +315,7 @@
    *  - 4002 - Invalid Media Type
    *  - 4003 - Internal error occurred
    *  - 4004 - User is not logged in
+   *  - 4005 - onUserMediaError occured
    *
    * @param {Object} options
    * @memberOf Phone
@@ -494,7 +495,31 @@
             emitter.publish('error', data);
           });
 
-          call.connect(options);
+          if (options.destination === '123') {
+            userMediaSvc.getUserMedia({
+              mediaType : options.mediaType,
+              localMedia : options.localMedia,
+              remoteMedia : options.remoteMedia,
+              onUserMedia : function (media) {
+                call.addStream(media.localStream);
+                call.connect();
+              },
+              onMediaEstablished : function () {
+                emitter.publish('media-established', {
+                  timestamp: new Date(),
+                  mediaType: call.mediaType(),
+                  codec: call.codec()
+                });
+              },
+              onUserMediaError : function (error) {
+                logger.logError('getUserMedia Failed ');
+                publishError('4011', error);
+              }
+            });
+
+          } else {
+            call.connect(options);
+          }
 
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('4003');
