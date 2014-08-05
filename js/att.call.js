@@ -100,7 +100,7 @@
             that.updateParticipant(modifications.from, 'active');
           }
           if ('rejected' === modifications.reason) {
-            that.updateParticipant(modifications.from, 'rejected');
+            that.invitations(modifications.modificationId)['status'] = status;
           }
         }
       } else if (breed === 'call') {
@@ -121,9 +121,6 @@
             rtcManager.enableMediaStream();
           }
           remoteSdp = modifications.remoteSdp;
-        }
-        if ('rejected' === modifications.reason) {
-          thisCall.updateParticipant(modifications.modificationId, 'rejected');
         }
       }
     }
@@ -347,11 +344,11 @@
       }
     }
 
-    function setInvitee (invitee, modId) {
-//      that.participants()[name] = {
-//        status: status,
-//        modId: modId
-//      }
+    function setInvitee (invitee, status) {
+      invitations[invitee] = {
+        invitee: invitee,
+        status: status
+      }
     }
 
     function addParticipant(invitee) {
@@ -362,10 +359,9 @@
           sessionInfo: sessionInfo,
           invitee: invitee,
           confId: id,
-          onSuccess: function (modId) {
-            that.setInvitee(invitee, 'invited', modId);
+          onSuccess: function () {
+            setInvitee(invitee, 'invited');
             emitter.publish('response-pending', {
-              id: modId,
               invitee: invitee,
               timestamp: new Date()
             });
@@ -568,6 +564,9 @@
     this.participants = function () {
       return participants;
     };
+    this.invitations = function () {
+      return invitations;
+    };
     this.sessionInfo = function () {
       return sessionInfo;
     };
@@ -618,8 +617,6 @@
     this.connect = connect;
     this.disconnect = disconnect;
     this.addParticipant = addParticipant;
-    this.setInvitee = setInvitee;
-    this.updateParticipant = updateParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

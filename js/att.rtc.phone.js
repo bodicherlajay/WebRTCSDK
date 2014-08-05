@@ -1415,7 +1415,7 @@
         });
 
         try {
-          conference.addParticipant(participant);
+          conference.addParticipant(invitee);
         } catch (err) {
           logger.logError(err);
           throw ATT.errorDictionary.getSDKError(19003);
