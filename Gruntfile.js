@@ -81,7 +81,7 @@ module.exports = function (grunt) {
       }
     },
     karmaConfigUnit = {
-      reporters: ['spec'],
+      reporters: ['failed'],
       colors: true,
       singleRun: false,
       usePolling: true  // This is required on linux/mac. See bug: https://github.com/karma-runner/karma/issues/895

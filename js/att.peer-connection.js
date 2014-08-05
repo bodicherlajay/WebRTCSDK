@@ -94,12 +94,15 @@
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
     } else {
-      pc.setRemoteDescription(options.remoteDescription);
-      pc.createAnswer(function (description) {// SUCCESS
-        processDescription(description, onSuccess);
-      }, function () {// ERROR createAnswer
-        throw new Error('Failed to create answer.');
-      }, { mandatory: mediaConstraint});
+      pc.setRemoteDescription(new RTCSessionDescription(options.remoteDescription), function () {
+        pc.createAnswer(function (description) {// SUCCESS
+          processDescription(description, onSuccess);
+        }, function () {// ERROR createAnswer
+          throw new Error('Failed to create answer.');
+        }, { mandatory: mediaConstraint});
+      }, function () {
+
+      });
     }
     return {
       getLocalDescription: function () {
