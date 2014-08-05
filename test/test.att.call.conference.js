@@ -827,7 +827,7 @@ describe('Call [Conference]', function () {
         setTimeout(function () {
           expect(setRemoteDescriptionStub.called).to.equal(true);
           expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('remoteSdp');
-          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('answer');
           done();
         }, 10);
       });
