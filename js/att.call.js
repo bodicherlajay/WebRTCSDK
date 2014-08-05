@@ -25,6 +25,7 @@
       mediaType,
       type,
       breed,
+      invitations = {},
       participants = {},
       sessionInfo,
       localMedia,
@@ -54,6 +55,9 @@
         data.to = peer;
       } else if (type === ATT.CallTypes.INCOMING) {
         data.from = peer;
+      }
+      if (Object.keys(invitations).length > 0) {
+        data.invitations = invitations;
       }
       if (Object.keys(participants).length > 0) {
         data.participants = participants;
@@ -120,10 +124,12 @@
             && undefined !== modifications.modificationId) {
           logger.logDebug('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
-            that.updateParticipant(modifications.from, 'active');
+            setParticipant(modifications.from, 'active');
+            emitter.publish('invite-accepted', createEventData());
           }
           if ('rejected' === modifications.reason) {
-            that.updateParticipant(modifications.from, 'rejected');
+            setInvitee(modifications.from, 'rejected');
+            emitter.publish('rejected', createEventData());
           }
         }
       } else if (breed === 'call') {
@@ -190,8 +196,9 @@
     function on(event, handler) {
 
       if ('connecting' !== event &&
+          'response-pending' !== event &&
+          'invite-accepted' !== event &&
           'rejected' !== event &&
-          'participant-pending' !== event &&
           'connected' !== event &&
           'muted' !== event &&
           'unmuted' !== event &&
@@ -370,28 +377,34 @@
       }
     }
 
-    function setParticipant (name, status, modId) {
-      that.participants()[name] = {
-        status: status,
-        modId: modId
+    function setParticipant(participant, status) {
+      participants[participant] = {
+        participant: participant,
+        status: status
       }
     }
 
-    function addParticipant(participant) {
-      logger.logInfo('Inviting participant...');
+    function setInvitee (invitee, status) {
+      invitations[invitee] = {
+        invitee: invitee,
+        status: status
+      }
+    }
 
-      participants[participant] = {
-        status: 'pending'
-      };
+    function addParticipant(invitee) {
+      logger.logInfo('Sending invitation...');
 
       try {
         rtcManager.addParticipant({
           sessionInfo: sessionInfo,
-          participant: participant,
+          invitee: invitee,
           confId: id,
-          onSuccess: function (modId) {
-            that.setParticipant(participant, 'invited', modId);
-            that.setState('participant-pending');
+          onSuccess: function () {
+            setInvitee(invitee, 'invited');
+            emitter.publish('response-pending', {
+              invitee: invitee,
+              timestamp: new Date()
+            });
           },
           onError: function (err) {
             logger.logError(err);
@@ -400,24 +413,6 @@
         });
       } catch (err) {
         emitter.publish('error', err);
-      }
-    }
-
-    function updateParticipant(name, status) {
-
-      logger.logDebug('updateParticipant');
-
-      if (undefined !== that.participants()[name]) {
-        logger.logDebug(name + ':' + status);
-        this.participants()[name]['status'] = status;
-
-        if ('accepted' === status) {
-          that.setState('connected');
-        }
-
-        if ('rejected' === status) {
-          that.setState('rejected');
-        }
       }
     }
 
@@ -611,6 +606,9 @@
     this.participants = function () {
       return participants;
     };
+    this.invitations = function () {
+      return invitations;
+    };
     this.sessionInfo = function () {
       return sessionInfo;
     };
@@ -662,8 +660,6 @@
     this.disconnect = disconnect;
     this.disconnectConference = disconnectConference ;
     this.addParticipant = addParticipant;
-    this.setParticipant = setParticipant;
-    this.updateParticipant = updateParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;

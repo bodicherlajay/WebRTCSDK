@@ -41,12 +41,13 @@
           id: callInfo.id,
           peer: callInfo.from,
           type: ATT.CallTypes.INCOMING,
-          mediaType: callInfo.mediaType
+          mediaType: callInfo.mediaType,
+          remoteSdp: callInfo.sdp
         });
 
       if (undefined !== call) {
-        if (callInfo.remoteDescription) {
-          call.setRemoteSdp(callInfo.remoteDescription);
+        if (callInfo.sdp) {
+          call.setRemoteSdp(callInfo.sdp);
         }
 
         if (call.breed() === 'call') {
@@ -124,6 +125,7 @@
     // public attributes
     this.timeout = null;
     this.e911Id = null;
+    this.backgroundCall = null;
     this.currentCall = null;
     this.timer = null;
 
@@ -314,6 +316,12 @@
 
     this.getCall = function (callId) {
       return calls[callId];
+    };
+
+    this.switchCall = function () {
+        var call = this.currentCall;
+        this.currentCall = this.backgroundCall;
+        this.backgroundCall = call;
     };
 
     this.deleteCurrentCall = function () {

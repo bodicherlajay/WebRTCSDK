@@ -540,7 +540,8 @@ describe('Phone', function () {
             breed: 'call',
             mediaType: 'video',
             localMedia: localVideo,
-            remoteMedia: remoteVideo
+            remoteMedia: remoteVideo,
+            holdCurrentCall: true
           };
 
           onSpy = sinon.spy(call, 'on');
@@ -1636,23 +1637,56 @@ describe('Phone', function () {
           expect(phone.addParticipant).to.be.a('function');
         });
 
-        it('should register for `participant-pending` event on the conference object', function () {
+        it('should register for `response-pending` event on the conference object', function () {
           expect(onSpy.called).to.equal(true);
-          expect(onSpy.calledWith('participant-pending')).to.equal(true);
+          expect(onSpy.calledWith('response-pending')).to.equal(true);
+        });
+
+        it('should register for `invite-accepted` event on the conference object', function () {
+          expect(onSpy.calledWith('invite-accepted')).to.equal(true);
+          expect(onSpy.called).to.equal(true);
+        });
+
+        it('should register for `rejected` event on the conference object', function () {
+          expect(onSpy.calledWith('rejected')).to.equal(true);
+          expect(onSpy.called).to.equal(true);
+        });
+
+        it('should publish `conference:inviting` immediately', function () {
+          expect(publishStub.calledWith('conference:inviting')).to.equal(true);
+        });
+
+        it('should execute call.addParticipant', function () {
+          phone.addParticipant('1234');
+          expect(addParticipantStub.calledWith('1234')).to.equal(true);
         });
 
         describe('addParticipant events', function () {
 
-          describe('participant-pending', function () {
+          describe('conference:response-pending', function () {
 
-            it('should publish `participant-pending` with event data on getting a `participant-pending`', function (done) {
-              emitterConference.publish('participant-pending', eventData);
+            it('should publish `response-pending` with event data on getting a `response-pending`', function (done) {
+              emitterConference.publish('response-pending', eventData);
 
               setTimeout(function() {
                 try {
-                  expect(publishStub.calledOnce).to.equal(true);
-                  expect(publishStub.calledWith('participant-pending')).to.equal(true);
-                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  expect(publishStub.calledWith('conference:response-pending', eventData)).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 100);
+            });
+          });
+
+          describe('conference:invite-accepted', function () {
+
+            it('should publish `conference:invite-accepted` with event data on getting a `invite-accepted`', function (done) {
+              emitterConference.publish('invite-accepted', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledWith('conference:invite-accepted', eventData)).to.equal(true);
                   done();
                 } catch(e) {
                   done(e);
@@ -1660,10 +1694,22 @@ describe('Phone', function () {
               }, 50);
             });
           });
-        });
 
-        it('should execute call.addParticipant', function () {
-          expect(addParticipantStub.calledWith('1234')).to.equal(true);
+          describe('conference:invite-rejected', function () {
+
+            it('should publish `conference:invite-rejected` with event data on getting a `rejected`', function (done) {
+              emitterConference.publish('rejected', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledWith('conference:invite-rejected', eventData)).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
         });
 
         describe('Error Handling', function () {
@@ -1720,7 +1766,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('[US233244] getParticipants', function () {
+      describe.skip('[US233244] getParticipants', function () {
 
         var publishStub;
 
@@ -2377,7 +2423,7 @@ describe('Phone', function () {
           session.currentCall = conference;
 
           onConfDisconnectedHandlerSpy = sinon.spy();
-          phone.on('conference-disconnected', onConfDisconnectedHandlerSpy);
+          phone.on('conference:disconnected', onConfDisconnectedHandlerSpy);
         });
 
         afterEach(function () {
@@ -2786,7 +2832,7 @@ describe('Phone', function () {
           phone.on('call-incoming', onCallIncomingHandlerSpy);
           phone.on('conference-invite', onConferenceInviteHandlerSpy);
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
-          phone.on('conference-disconnected', onConferenceDisconnectedHandlerSpy);
+          phone.on('conference:disconnected', onConferenceDisconnectedHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
         });
@@ -2861,9 +2907,9 @@ describe('Phone', function () {
           });
         });
 
-        describe('conference-disconnected', function () {
+        describe('conference:disconnected', function () {
 
-          it('should trigger `conference-disconnected` if session publishes `conference-disconnected`', function (done) {
+          it('should trigger `conference:disconnected` if session publishes `conference-disconnected`', function (done) {
 
             emitterSession.publish('conference-disconnected', eventData);
 
