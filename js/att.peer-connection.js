@@ -84,7 +84,7 @@
       }
     };
 
-    if (undefined === options.remoteDescription) {
+    if (undefined === options.remoteSdp) {
 
       pc.createOffer(function (description) {
         logger.logInfo('createOffer: success');
@@ -93,8 +93,11 @@
         logger.logInfo('createOffer: success');
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
-    } else {
-      pc.setRemoteDescription(new RTCSessionDescription(options.remoteDescription), function () {
+    } else if (undefined !== options.remoteSdp){
+      pc.setRemoteDescription(new RTCSessionDescription({
+        sdp:options.remoteSdp,
+        type: 'offer'
+      }), function () {
         pc.createAnswer(function (description) {// SUCCESS
           processDescription(description, onSuccess);
         }, function () {// ERROR createAnswer

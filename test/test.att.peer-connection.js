@@ -25,7 +25,7 @@ describe('PeerConnection', function () {
     createOptionsIncoming = {
       stream : {},
       mediaType: 'video',
-      remoteDescription: {
+      remoteSdp: {
         sdp : '123',
         type: 'offer'
       },
@@ -171,6 +171,7 @@ describe('PeerConnection', function () {
 
           createOfferStub = sinon.stub(rtcPC, 'createOffer');
           createOptionsOutgoing.mediaType = 'video';
+          createOptionsOutgoing.remoteSdp = undefined;
 
           expectedConstraints.audio = true;
           expectedConstraints.video = (createOptionsOutgoing.mediaType === 'video');
@@ -309,14 +310,24 @@ describe('PeerConnection', function () {
 
       describe('Set Remote Description [remoteSdp !== undefined]', function () {
 
-        var setRemoteDescriptionStub;
+        var setRemoteDescriptionStub,
+            rtcSessionDescription;
+
+        beforeEach(function () {
+          rtcSessionDescription = sinon.stub(window, 'RTCSessionDescription');
+        });
+
+        afterEach(function () {
+          rtcSessionDescription.restore();
+        });
 
         it('should set the `pc.remoteDescription` if we have a remoteDescription', function () {
           var setRemoteDescriptionStub = sinon.stub(rtcPC, 'setRemoteDescription');
 
           factories.createPeerConnection(createOptionsIncoming);
 
-          expect(setRemoteDescriptionStub.getCall(0).args[0]).to.eql(createOptionsIncoming.remoteDescription);
+          expect(rtcSessionDescription.getCall(0).args[0].sdp).to.equal(createOptionsIncoming.remoteSdp);
+          expect(rtcSessionDescription.getCall(0).args[0].type).to.equal('offer');
           expect(setRemoteDescriptionStub.getCall(0).args[0] instanceof RTCSessionDescription).to.equal(true);
           expect(setRemoteDescriptionStub.getCall(0).args[1]).to.be.a('function');
           expect(setRemoteDescriptionStub.getCall(0).args[2]).to.be.a('function');
@@ -339,7 +350,7 @@ describe('PeerConnection', function () {
             setRemoteDescriptionStub.restore();
           });
 
-          it('should call `pc.createAnswer` if we have a remoteDescription', function () {
+          it('should call `pc.createAnswer` if we have a remoteSdp', function () {
             var expectedConstraints = {};
 
             createAnswerStub = sinon.stub(rtcPC, 'createAnswer');
