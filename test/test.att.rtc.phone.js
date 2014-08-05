@@ -15,7 +15,8 @@ describe('Phone', function () {
     getRTCManagerStub,
     createPeerConnectionStub,
     restClientStub,
-    ums;
+    ums,
+    Phone;
 
   before(function () {
     ums = ATT.UserMediaService;
@@ -38,6 +39,7 @@ describe('Phone', function () {
   });
 
   beforeEach(function () {
+    Phone = ATT.private.Phone;
     restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
 
     localVideo = document.createElement('video');
@@ -1379,79 +1381,73 @@ describe('Phone', function () {
             });
 
           });
-          describe('onUserMediaError', function () {
 
-            var onUserMediaErrorSpy, getUserMediaStub;
+          describe('getUserMedia: onMediaEstablished', function () {
 
-            beforeEach(function () {
-              getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
-                onUserMediaErrorSpy = sinon.spy(options, 'onUserMediaError');
-                setTimeout(function () {
-                  options.onUserMediaError();
-                }, 0);
+            it('should publish `media-established` when onMediaEstablished  is invoked', function (done) {
+              var mediaEstablishedSpy = sinon.spy(),
+                getUserMediaStub,
+                userMediaService = ATT.UserMediaService;
+
+              getUserMediaStub = sinon.stub(userMediaService, 'getUserMedia', function (options) {
+                options.onMediaEstablished();
               });
 
-            });
+              phone.on('media-established', mediaEstablishedSpy);
 
-            afterEach(function () {
-              onUserMediaErrorSpy.restore();
-              getUserMediaStub.restore();
-            });
-
-            it('[20003] should be published with `error` event if there is an uncaught exception', function (done) {
-
-              phone.joinConference(options);
+              phone.joinConference({
+                localMedia : {},
+                remoteMedia : {}
+              });
 
               setTimeout(function () {
                 try {
-                  expect(ATT.errorDictionary.getSDKError('20003')).to.be.an('object');
-                  expect(onErrorHandlerSpy.called).to.equal(true);
-                  expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('20003');
+                  expect(mediaEstablishedSpy.calledOnce).to.equal(true);
+                  expect(mediaEstablishedSpy.getCall(0).args[0].from).to.be.a('string');
+                  expect(mediaEstablishedSpy.getCall(0).args[0].mediaType).to.be.a('string');
+                  expect(mediaEstablishedSpy.getCall(0).args[0].codec).to.be.a('array');
+                  expect(mediaEstablishedSpy.getCall(0).args[0].timestamp).to.be.a('date');
+                  getUserMediaStub.restore();
                   done();
                 } catch (e) {
                   done(e);
                 }
-              }, 100);
+              }, 200);
 
             });
-
           });
-          describe('onMediaEstablished', function () {
 
-            var onMediaEstablishedSpy, getUserMediaStub, onPublishStub;
+          describe('[20002] getUserMedia: onUserMediaError', function () {
+            var getUserMediaStub, phone3,
+              onErrorSpy;
 
             beforeEach(function () {
+              onErrorSpy = sinon.spy();
               getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
-                onMediaEstablishedSpy = sinon.spy(options, 'onMediaEstablished');
-                setTimeout(function () {
-                  options.onMediaEstablished();
-                }, 0);
+                options.onUserMediaError();
               });
+              phone3 = new Phone();
+              phone3.on('error', onErrorSpy);
 
             });
 
             afterEach(function () {
-              onMediaEstablishedSpy.restore();
               getUserMediaStub.restore();
             });
 
-            it('should be published with `media-established` event if there is a onMediaEstablished  callback', function (done) {
-            onPublishStub = sinon.stub(emitter, 'publish');
-              phone.joinConference(options);
-
+            it('should publish error', function (done) {
+              phone3.joinConference({
+                localMedia : {},
+                remoteMedia : {}
+              });
               setTimeout(function () {
-                try {
-                  expect(onPublishStub.calledWith('media-established')).to.equal(true);
-                  onPublishStub.restore();
-                  done();
-                } catch (e) {
-                  done(e);
-                }
+                expect(onErrorSpy.called).to.equal(true);
+                expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('20002');
+                done();
               }, 100);
-
             });
-
           });
+
         });
 
         describe('joinConference events', function () {

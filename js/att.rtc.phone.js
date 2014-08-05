@@ -731,15 +731,19 @@
                 });
               }
             },
-            onMediaEstablished: function (data) {
+            onMediaEstablished: function () {
               logger.logInfo('onMediaEstablished');
-              emitter.publish('media-established', data);
-            },
-            onUserMediaError: function (err) {
-              logger.logError(err);
-              emitter.publish('error', {
-                error: ATT.errorDictionary.getSDKError('20003')
+
+              emitter.publish('media-established', {
+                timestamp: new Date(),
+                mediaType: conference.mediaType(),
+                codec: conference.codec(),
+                from: conference.peer()
               });
+            },
+            onUserMediaError: function (error) {
+              logger.logError('getUserMedia Failed ');
+              publishError('20002', error);
             }
           });
 
@@ -1334,6 +1338,13 @@
            * @property {Object} data - data
            */
           emitter.publish('conference-connected', data);
+        });
+
+        conference.on('stream-added', function (data) {
+          userMediaSvc.showStream({
+            stream: data.stream,
+            localOrRemote: 'remote'
+          });
         });
 
         userMediaSvc.getUserMedia({
