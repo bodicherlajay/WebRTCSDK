@@ -56,6 +56,9 @@
       } else if (type === ATT.CallTypes.INCOMING) {
         data.from = peer;
       }
+      if (Object.keys(invitations).length > 0) {
+        data.invitations = invitations;
+      }
       if (Object.keys(participants).length > 0) {
         data.participants = participants;
       }
@@ -97,10 +100,12 @@
           && undefined !== modifications.modificationId) {
           logger.logInfo('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
-            that.updateParticipant(modifications.from, 'active');
+            setParticipant(modifications.from, 'active');
+            emitter.publish('invite-accepted', createEventData());
           }
           if ('rejected' === modifications.reason) {
-            that.invitations(modifications.modificationId)['status'] = status;
+            setInvitee(modifications.from, 'rejected');
+            emitter.publish('rejected', createEventData());
           }
         }
       } else if (breed === 'call') {
@@ -167,6 +172,7 @@
 
       if ('connecting' !== event &&
           'response-pending' !== event &&
+          'invite-accepted' !== event &&
           'rejected' !== event &&
           'connected' !== event &&
           'muted' !== event &&
@@ -341,6 +347,13 @@
         emitter.publish('error', {
           error: err
         });
+      }
+    }
+
+    function setParticipant(participant, status) {
+      participants[participant] = {
+        participant: participant,
+        status: status
       }
     }
 

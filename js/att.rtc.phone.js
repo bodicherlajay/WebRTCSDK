@@ -1407,11 +1407,35 @@
            * Participant pending event.
            * @desc An invitation has been successfully sent.
            *
-           * @event Phone#response-pending
+           * @event Phone#conference:response-pending
            * @type {object}
            * @property {Date} timestamp - Event fire time
            */
           emitter.publish('conference:response-pending', data);
+        });
+
+        conference.on('invite-accepted', function (data) {
+          /**
+           * Invite accepted event.
+           * @desc An invitation has been successfully accepted.
+           *
+           * @event Phone#conference:invite-accepted
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           */
+          emitter.publish('conference:invite-accepted', data);
+        });
+
+        conference.on('rejected', function (data) {
+          /**
+           * Invite rejected event.
+           * @desc An invitation has been rejected.
+           *
+           * @event Phone#conference:invite-rejected
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           */
+          emitter.publish('conference:invite-rejected', data);
         });
 
         try {

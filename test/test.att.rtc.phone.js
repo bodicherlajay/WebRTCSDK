@@ -1586,6 +1586,16 @@ describe('Phone', function () {
           expect(onSpy.calledWith('response-pending')).to.equal(true);
         });
 
+        it('should register for `invite-accepted` event on the conference object', function () {
+          expect(onSpy.calledWith('invite-accepted')).to.equal(true);
+          expect(onSpy.called).to.equal(true);
+        });
+
+        it('should register for `rejected` event on the conference object', function () {
+          expect(onSpy.calledWith('rejected')).to.equal(true);
+          expect(onSpy.called).to.equal(true);
+        });
+
         it('should execute call.addParticipant', function () {
           phone.addParticipant('1234');
           expect(addParticipantStub.calledWith('1234')).to.equal(true);
@@ -1601,6 +1611,38 @@ describe('Phone', function () {
               setTimeout(function() {
                 try {
                   expect(publishStub.calledWith('conference:response-pending', eventData)).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
+
+          describe('conference:invite-accepted', function () {
+
+            it('should publish `conference:invite-accepted` with event data on getting a `invite-accepted`', function (done) {
+              emitterConference.publish('invite-accepted', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledWith('conference:invite-accepted', eventData)).to.equal(true);
+                  done();
+                } catch(e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
+
+          describe('conference:invite-rejected', function () {
+
+            it('should publish `conference:invite-rejected` with event data on getting a `rejected`', function (done) {
+              emitterConference.publish('rejected', eventData);
+
+              setTimeout(function() {
+                try {
+                  expect(publishStub.calledWith('conference:invite-rejected', eventData)).to.equal(true);
                   done();
                 } catch(e) {
                   done(e);
@@ -1664,7 +1706,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('[US233244] getParticipants', function () {
+      describe.skip('[US233244] getParticipants', function () {
 
         var publishStub;
 
@@ -1713,7 +1755,7 @@ describe('Phone', function () {
           getParticipantsSpy.restore();
         });
 
-        it.skip('should return active `participants` list', function () {
+        it('should return active `participants` list', function () {
           conference.setParticipant('456', 'invited', '123');
           conference.setParticipant('454', 'active', '124');
 
