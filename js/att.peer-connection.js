@@ -24,6 +24,7 @@
       var fixedSDP;
       //description is the new SDP Which needs to processed
       try {
+        logger.logInfo('Fixing the SDP');
         fixedSDP = sdpFilter.processChromeSDPOffer(description);
       } catch (err) {
         throw new Error('Could not process Chrome offer SDP.');
@@ -33,10 +34,6 @@
       }, function () { // ERROR setLocal
         throw new Error('Could not set the localDescription.');
       });
-    }
-
-    function setRemoteDescription(sdp) {
-      pc.setRemoteDescription(sdp);
     }
 
     logger.setLevel(logManager.logLevel.DEBUG);
@@ -86,13 +83,28 @@
 
     if (undefined === options.remoteSdp) {
 
+      pc.onicecandidate = function (event) {
+        if (event.candidate) {
+          logger.logInfo('Candidate: ' + event.candidate);
+          console.log(event.candidate);
+        }else {
+          logger.logInfo('End of candidates');
+          processDescription(pc.localDescription, onSuccess);
+        }
+      }
+
       pc.createOffer(function (description) {
         logger.logInfo('createOffer: success');
-        processDescription(description, onSuccess);
+        pc.setLocalDescription(description, function () {
+          console.log('success');
+        }, function (error) {
+          console.log(error);
+        });
       }, function () { // ERROR createOffer
         logger.logInfo('createOffer: success');
         throw new Error('Failed to create offer.');
       }, {mandatory: mediaConstraint});
+
     } else if (undefined !== options.remoteSdp){
       pc.setRemoteDescription(new RTCSessionDescription({
         sdp:options.remoteSdp,
@@ -114,7 +126,7 @@
       setRemoteDescription: function (description) {
         logger.logInfo(description.sdp);
         pc.setRemoteDescription(new RTCSessionDescription(description), function () {
-          logger.logInfo('Remote Description set.');
+          logger.logInfo('setRemoteDescription: Remote Description set.');
         }, function (error) {
           logger.logError(error);
         });
