@@ -664,7 +664,7 @@
     this.mediaType = function () {
       return mediaType;
     };
-    this.type = function (){
+    this.type = function () {
       return type;
     };
     this.breed = function () {
@@ -725,7 +725,7 @@
     this.connect = connect;
     this.connect2 = connect2;
     this.disconnect = disconnect;
-    this.disconnectConference = disconnectConference ;
+    this.disconnectConference = disconnectConference;
     this.addParticipant = addParticipant;
     this.removeParticipant = removeParticipant;
     this.mute = mute;
