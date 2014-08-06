@@ -394,19 +394,19 @@
         }
 
         if (null !== session.backgroundCall) {
-            if (options.holdCurrentCall === true) {
-                throw ATT.errorDictionary.getSDKError('4010');
-            }
+          if (options.holdCurrentCall === true) {
+            throw ATT.errorDictionary.getSDKError('4010');
+          }
         }
 
         if (null !== session.currentCall) {
-            if (options.holdCurrentCall === true) {
-                session.currentCall.hold();
-            } else {
-                session.currentCall.hangup();
-            }
-            session.backgroundCall = session.currentCall;
-            session.currentCall = null;
+          if (options.holdCurrentCall === true) {
+            session.currentCall.hold();
+          } else {
+            session.currentCall.hangup();
+          }
+          session.backgroundCall = session.currentCall;
+          session.currentCall = null;
         }
 
         try {
@@ -458,7 +458,7 @@
             session.switchCall();
 
             if (session.currentCall !== null) {
-                session.currentCall.resume();
+              session.currentCall.resume();
             }
           });
           call.on('connected', function (data) {
@@ -1701,9 +1701,7 @@
       logger.logDebug('Phone.getParticipant');
 
       var conference,
-        participants,
-        active,
-        key;
+        participants;
 
       try {
 
@@ -1720,17 +1718,7 @@
         }
         try {
           participants = conference.participants();
-          active = {};
-
-          for (key in participants) {
-            if (participants.hasOwnProperty(key)) {
-              if ('active' === participants[key].status) {
-                active[key] = participants[key];
-              }
-            }
-          }
-
-          return active;
+          return participants;
         } catch (err) {
           logger.logError(err);
           throw ATT.errorDictionary.getSDKError(21001);
