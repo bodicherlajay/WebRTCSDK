@@ -75,11 +75,23 @@
       emitter.publish(state, createEventData.call(this));
     }
 
-    function setParticipant(participant, status) {
-      participants[participant] = {
-        participant: participant,
-        status: status
+    function setParticipant(modId, status) {
+      var key,
+        username,
+        participant,
+        invites = that.invitations();
+
+      for (key in invites) {
+        username = invites[key];
+        if (modId === username['id']) {
+          participant = username['invitee'];
+          participants[participant] = {
+            participant: participant,
+            status: status
+          }
+        }
       }
+
     }
 
     function setInvitee (invitee, modId, status) {
@@ -149,11 +161,10 @@
             && undefined !== modifications.modificationId) {
           logger.logDebug('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
-            //setParticipant(extractUser(modifications.from), 'active');
+            setParticipant(modifications.modificationId, 'active');
             emitter.publish('invite-accepted', createEventData());
           }
           if ('Call rejected' === modifications.reason) {
-            //setInvitee(extractUser(modifications.from), 'rejected');
             emitter.publish('rejected', createEventData());
           }
         }
@@ -674,7 +685,7 @@
     this.mediaType = function () {
       return mediaType;
     };
-    this.type = function (){
+    this.type = function () {
       return type;
     };
     this.breed = function () {
@@ -735,7 +746,7 @@
     this.connect = connect;
     this.connect2 = connect2;
     this.disconnect = disconnect;
-    this.disconnectConference = disconnectConference ;
+    this.disconnectConference = disconnectConference;
     this.addParticipant = addParticipant;
     this.removeParticipant = removeParticipant;
     this.mute = mute;

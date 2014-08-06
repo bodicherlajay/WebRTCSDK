@@ -670,7 +670,7 @@ describe('Phone', function () {
             getUserMediaStub = sinon.stub(ums, 'getUserMedia');
           });
 
-          afterEach(function (){
+          afterEach(function () {
             getUserMediaStub.restore();
           });
 
@@ -1755,7 +1755,6 @@ describe('Phone', function () {
 
               setTimeout(function () {
                 try {
-                  console.log(publishStub.getCall(0).args[0]);
                   expect(publishStub.called).to.equal(true);
                   expect(publishStub.calledWith('conference:response-pending', eventData)).to.equal(true);
                   done();
@@ -1889,7 +1888,7 @@ describe('Phone', function () {
         });
       });
 
-      describe.skip('[US233244] getParticipants', function () {
+      describe('[US233244] getParticipants', function () {
 
         var publishStub;
 
@@ -1938,22 +1937,35 @@ describe('Phone', function () {
           getParticipantsSpy.restore();
         });
 
-        it('should return active `participants` list', function () {
-          conference.setParticipant('456', 'invited', '123');
-          conference.setParticipant('454', 'active', '124');
+        it('should return `participants` list', function () {
+          var getParticipantsConfStub,
+            participantsMock,
+            participants;
 
-          var participants = phone.getParticipants();
+          participantsMock = {
+            johnny: {
+              participant: 'johnny',
+              status: 'active'
+            },
+            sally: {
+              participant: 'sally',
+              status: 'active'
+            }
+          };
+          getParticipantsConfStub = sinon.stub(conference, 'participants', function () {
+            return participantsMock;
+          });
 
-          expect(participants).to.be.an('object');
-          expect(participants['454']).to.be.an('object');
-          expect(participants['454'].status).to.equal('active');
+          participants = phone.getParticipants();
 
-          expect(participants['456']).to.equal(undefined);
+          expect(participants).to.equal(conference.participants());
+
+          getParticipantsConfStub.restore();
         });
 
         describe('Error Handling', function () {
           it('[21002] should be thrown if User not Logged In', function () {
-            var sessiongetIdStub = sinon.stub(session , 'getId', function () {
+            var sessiongetIdStub = sinon.stub(session, 'getId', function () {
               return null;
             });
 
