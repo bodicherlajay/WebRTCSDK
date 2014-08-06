@@ -975,17 +975,30 @@ describe('Call [Conference]', function () {
         };
       });
 
-      it.skip('should create a participant with `active` status', function (done) {
+      it('should create a participant with `active` status', function (done) {
 
         var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
 
-        outgoingVideoConf.addParticipant(modifications.from);
+        outgoingVideoConf.invitations = function () {
+          return {
+            johnny: {
+              invitee: 'johnny',
+              status: 'invited',
+              id: 'abc321'
+            },
+            sally: {
+              invitee: 'sally',
+              status: 'invited',
+              id: '123abc'
+            }
+          }
+        };
 
         emitterEM.publish('media-mod-terminations', modifications);
 
         setTimeout(function () {
           try {
-            var participantInfo = outgoingVideoConf.participants()['1234'];
+            var participantInfo = outgoingVideoConf.participants()['johnny'];
             expect(participantInfo.status).to.equal('active');
 
             rtcMgrAddParticipantStub.restore();
@@ -993,7 +1006,7 @@ describe('Call [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 50);
       });
 
       it('should publish `invite-accepted`', function (done) {
