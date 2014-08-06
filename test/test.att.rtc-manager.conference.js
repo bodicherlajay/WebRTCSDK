@@ -31,7 +31,6 @@ describe('RTCManager [Conference]', function () {
         peerConnSvc: peerConnSvc
       };
       rtcManager = new ATT.private.RTCManager(optionsForRTCM);
-
     });
 
 
@@ -158,5 +157,65 @@ describe('RTCManager [Conference]', function () {
         });
       });
     });
+
+    describe('removeParticipant', function () {
+      var onSuccessSpy,
+        onErrorSpy;
+
+      beforeEach(function () {
+        doOperationStub = sinon.stub(resourceManager, 'doOperation');
+
+        onSuccessSpy = sinon.spy();
+        onErrorSpy = sinon.spy();
+
+        rtcManager.removeParticipant({
+          sessionInfo: {},
+          confId: '123',
+          onSuccess: onSuccessSpy,
+          onError: onErrorSpy,
+          participant: 'jobs@apple.com'
+        });
+      });
+
+      afterEach(function () {
+        doOperationStub.restore();
+      });
+
+      it('should exist', function () {
+        expect(rtcManager.removeParticipant).to.be.a('function');
+      });
+
+      it('should call resourceManager.doOperation', function () {
+        expect(doOperationStub.calledWith('removeParticipant')).to.equal(true);
+        expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+        expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
+        expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
+      });
+
+      describe('Invalid parameters', function () {
+        it('should throw an error if invalid `options` are passed', function () {
+          expect(rtcManager.removeParticipant.bind(rtcManager)).to.throw('No `options` passed');
+          expect(rtcManager.removeParticipant.bind(rtcManager, {
+            confId: {},
+            participant: 'joe'
+          })).to.throw('No `sessionInfo` passed');
+          expect(rtcManager.removeParticipant.bind(rtcManager, {
+            sessionInfo: {},
+            participant: 'joe'
+          })).to.throw('No `confId` passed');
+          expect(rtcManager.removeParticipant.bind(rtcManager, {
+            sessionInfo: {},
+            participant: 'joe',
+            confId: '1234'
+          })).to.throw('No `onSuccess` callback passed');
+          expect(rtcManager.removeParticipant.bind(rtcManager, {
+            sessionInfo: {},
+            confId: '123',
+            participant: 'joe',
+            onSuccess: function () {}
+          })).to.not.throw(Error);
+        });
+      });
+    })
   });
 });
