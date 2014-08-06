@@ -602,22 +602,6 @@
       JSObject: "ATT.rtc.Phone",
       JSMethod: "addParticipant",
       ErrorCode: "19000",
-      ErrorMessage: "User is not logged in",
-      Cause: "Invalid operation",
-      Resolution: "Please login first before invoking addParticipant"
-    },
-    {
-      JSObject: "ATT.rtc.Phone",
-      JSMethod: "addParticipant",
-      ErrorCode: "19001",
-      ErrorMessage: "Conference is not initiated before invoking addParticipant",
-      Cause: "Invalid operation",
-      Resolution: "Please initiate conference first before invoking addParticipant"
-    },
-    {
-      JSObject: "ATT.rtc.Phone",
-      JSMethod: "addParticipant",
-      ErrorCode: "19002",
       ErrorMessage: "participant parameter missing",
       Cause: "One or more required input parameter(s) are missing",
       Resolution: "Please provide participant parameter"
@@ -625,7 +609,7 @@
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "addParticipant",
-      ErrorCode: "19003",
+      ErrorCode: "19001",
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
@@ -736,6 +720,46 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24000",
+      ErrorMessage: "participants parameter missing",
+      Cause: "One or more required input parameter(s) are missing",
+      Resolution: "Please provide participants parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24001",
+      ErrorMessage: "User is not logged in",
+      Cause: "One or more required input parameter(s) are not correct",
+      Resolution: "Please provide participants parameter of type array"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24002",
+      ErrorMessage: "participants parameter incorrect",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking addParticipants"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24003",
+      ErrorMessage: "Conference not initiated",
+      Cause: "Invalid operation",
+      Resolution: "Please invoke conference first before invoking addParticipants"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24004",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "removeParticipant",
       ErrorCode: "25000",
       ErrorMessage: "User is not logged in",
@@ -766,6 +790,7 @@
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
     }
+
   ];
 
   // freezes a list of objects

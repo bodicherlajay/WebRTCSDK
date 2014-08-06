@@ -1582,16 +1582,68 @@ describe('Phone', function () {
 
       describe('[US225737] addParticipant', function () {
 
-        var publishStub,
-          addParticipantStub,
-          conference,
-          onSpy,
-          onErrorSpy,
-          emitterConference,
-          onParticipantPendingSpy;
+        var publishStub;
 
         beforeEach(function () {
+          publishStub = sinon.stub(emitter, 'publish');
+        });
 
+        afterEach(function () {
+          publishStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.addParticipant).to.be.a('function');
+        });
+
+        it('should call `phone.addParticipants` with correct data', function () {
+          var addParticipantsSpy;
+
+          addParticipantsSpy = sinon.spy(phone, 'addParticipants');
+
+          phone.addParticipant('4250000001');
+
+          expect(addParticipantsSpy.called).to.equal(true);
+          expect(addParticipantsSpy.calledWith(['4250000001'])).to.equal(true);
+
+          addParticipantsSpy.restore();
+        });
+
+        describe('Error Handling', function () {
+          it('[19000] should be thrown if parameter `participant` is not passed in', function () {
+            phone.addParticipant();
+
+            expect(ATT.errorDictionary.getSDKError('19000')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('19000')
+            })).to.equal(true);
+          });
+
+          it('[19001] should be thrown if internal error occurred', function () {
+            var addParticipantsStub = sinon.stub(phone, 'addParticipants', function () {
+              throw error;
+            });
+
+            phone.addParticipant('4250000001');
+
+            expect(ATT.errorDictionary.getSDKError('19001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('19001')
+            })).to.equal(true);
+
+            addParticipantsStub.restore();
+          });
+        });
+
+      });
+
+      describe('[US288156] addParticipants', function () {
+
+        var onSpy,
+          addParticipantStub;
+
+        beforeEach(function () {
+          callConstructorStub.restore();
           createEventEmitterStub.restore();
 
           emitterConference = ATT.private.factories.createEventEmitter();
@@ -1599,8 +1651,6 @@ describe('Phone', function () {
           createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
             return emitterConference;
           });
-
-          callConstructorStub.restore();
 
           conference = new ATT.rtc.Call({
             breed: 'conference',
@@ -1610,70 +1660,106 @@ describe('Phone', function () {
             id: '1234'
           });
 
-          onSpy = sinon.spy(conference, 'on');
-          onParticipantPendingSpy = sinon.spy();
-          onErrorSpy = sinon.spy();
+          session.setId('1234');
+          session.currentCall = conference;
 
+          onSpy = sinon.spy(conference, 'on');
           addParticipantStub = sinon.stub(conference, 'addParticipant');
-          publishStub = sinon.stub(emitter, 'publish');
 
           callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
             return conference;
           });
-
-          session.currentCall = conference;
-
-          session.setId('123456');
-
-          phone.addParticipant('1234');
         });
 
         afterEach(function () {
-          publishStub.restore();
-          addParticipantStub.restore();
+          createEventEmitterStub.restore();
           onSpy.restore();
+          addParticipantStub.restore();
+          callConstructorStub.restore();
         });
 
         it('should exist', function () {
-          expect(phone.addParticipant).to.be.a('function');
+          expect(phone.addParticipants).to.be.a('function');
         });
 
         it('should register for `response-pending` event on the conference object', function () {
+          phone.addParticipants(['4250000001']);
+
           expect(onSpy.called).to.equal(true);
           expect(onSpy.calledWith('response-pending')).to.equal(true);
         });
 
         it('should register for `invite-accepted` event on the conference object', function () {
-          expect(onSpy.calledWith('invite-accepted')).to.equal(true);
+          phone.addParticipants(['4250000001']);
+
           expect(onSpy.called).to.equal(true);
+          expect(onSpy.calledWith('invite-accepted')).to.equal(true);
         });
 
         it('should register for `rejected` event on the conference object', function () {
+          phone.addParticipants(['4250000001']);
+
           expect(onSpy.calledWith('rejected')).to.equal(true);
           expect(onSpy.called).to.equal(true);
         });
 
         it('should publish `conference:inviting` immediately', function () {
+          var publishStub = sinon.stub(emitter, 'publish');
+
+          phone.addParticipants(['4250000001']);
+
           expect(publishStub.calledWith('conference:inviting')).to.equal(true);
+
+          publishStub.restore();
         });
 
         it('should execute call.addParticipant', function () {
-          phone.addParticipant('1234');
-          expect(addParticipantStub.calledWith('1234')).to.equal(true);
+          phone.addParticipants(['4250000001']);
+
+          expect(addParticipantStub.calledWith('4250000001')).to.equal(true);
         });
 
-        describe('addParticipant events', function () {
+        it('should call `conference.addParticipant` with relevant parameters', function () {
+          var participants = [
+            '4250000001',
+            '4250000002',
+            '4250000003'
+          ];
+
+          phone.addParticipants(participants);
+
+          expect(addParticipantStub.callCount).to.equal(participants.length);
+        });
+
+        describe('addParticipants Events', function () {
+          var publishStub;
+
+          beforeEach(function () {
+            eventData = {
+              abc: 'abc'
+            };
+
+            publishStub = sinon.stub(emitter, 'publish');
+          });
+
+          afterEach(function () {
+            publishStub.restore();
+          });
 
           describe('conference:response-pending', function () {
 
             it('should publish `response-pending` with event data on getting a `response-pending`', function (done) {
+              phone.addParticipants(['4250000001']);
+
               emitterConference.publish('response-pending', eventData);
 
-              setTimeout(function() {
+              setTimeout(function () {
                 try {
+                  console.log(publishStub.getCall(0).args[0]);
+                  expect(publishStub.called).to.equal(true);
                   expect(publishStub.calledWith('conference:response-pending', eventData)).to.equal(true);
                   done();
-                } catch(e) {
+                } catch (e) {
                   done(e);
                 }
               }, 100);
@@ -1683,13 +1769,15 @@ describe('Phone', function () {
           describe('conference:invite-accepted', function () {
 
             it('should publish `conference:invite-accepted` with event data on getting a `invite-accepted`', function (done) {
+              phone.addParticipants(['4250000001']);
+
               emitterConference.publish('invite-accepted', eventData);
 
-              setTimeout(function() {
+              setTimeout(function () {
                 try {
                   expect(publishStub.calledWith('conference:invite-accepted', eventData)).to.equal(true);
                   done();
-                } catch(e) {
+                } catch (e) {
                   done(e);
                 }
               }, 50);
@@ -1699,13 +1787,15 @@ describe('Phone', function () {
           describe('conference:invite-rejected', function () {
 
             it('should publish `conference:invite-rejected` with event data on getting a `rejected`', function (done) {
+              phone.addParticipants(['4250000001']);
+
               emitterConference.publish('rejected', eventData);
 
-              setTimeout(function() {
+              setTimeout(function () {
                 try {
                   expect(publishStub.calledWith('conference:invite-rejected', eventData)).to.equal(true);
                   done();
-                } catch(e) {
+                } catch (e) {
                   done(e);
                 }
               }, 50);
@@ -1715,51 +1805,83 @@ describe('Phone', function () {
 
         describe('Error Handling', function () {
 
-          it('[19000] should be thrown if the user is not logged in', function () {
-            session.setId(null);
-            phone.addParticipant();
+          var publishStub;
 
-            expect(ATT.errorDictionary.getSDKError('19000')).to.be.an('object');
+          beforeEach(function () {
+            conference = new ATT.rtc.Call({
+              breed: 'conference',
+              peer: '1234567',
+              type: 'abc',
+              mediaType: 'video',
+              id: '1234'
+            });
+            publishStub = sinon.stub(emitter, 'publish');
+          });
+
+          afterEach(function () {
+            publishStub.restore();
+          });
+
+          it('[24000] should throw an error if parameter `participants` is not passed in', function () {
+            phone.addParticipants();
+
+            expect(ATT.errorDictionary.getSDKError('24000')).to.be.an('object');
             expect(publishStub.calledWith('error', {
-              error: ATT.errorDictionary.getSDKError('19000')
+              error: ATT.errorDictionary.getSDKError('24000')
             })).to.equal(true);
           });
 
-          it('[19001] should be thrown if conference has not been started', function () {
+          it('[24001] should throw an error if parameter `participants` is incorrect', function () {
+            phone.addParticipants([]);
 
+            expect(ATT.errorDictionary.getSDKError('24001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('24001')
+            })).to.equal(true);
+
+            phone.addParticipants(null);
+
+            expect(ATT.errorDictionary.getSDKError('24001')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('24001')
+            })).to.equal(true);
+          });
+
+          it('[24002] should be thrown if the user is not logged in', function () {
+            session.setId(null);
+            phone.addParticipants(['4250000001']);
+
+            expect(ATT.errorDictionary.getSDKError('24002')).to.be.an('object');
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('24002')
+            })).to.equal(true);
+
+          });
+
+          it('[24003] should be thrown if conference has not been started', function () {
             conference.breed = function () {
               return 'call';
             };
 
-            phone.addParticipant('1234');
+            phone.addParticipants(['4250000001']);
 
-            expect(ATT.errorDictionary.getSDKError('19001')).to.be.an('object');
+            expect(ATT.errorDictionary.getSDKError('24003')).to.be.an('object');
             expect(publishStub.calledWith('error', {
-              error: ATT.errorDictionary.getSDKError('19001')
+              error: ATT.errorDictionary.getSDKError('24003')
             })).to.equal(true);
           });
 
-          it('[19002] should be thrown if parameter `participant` is not passed in', function () {
-
-            phone.addParticipant();
-
-            expect(ATT.errorDictionary.getSDKError('19002')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
-              error: ATT.errorDictionary.getSDKError('19002')
-            })).to.equal(true);
-          });
-
-          it('[19003] should be thrown if internal error occurred', function () {
+          it('[24004] should be thrown if internal error occurred', function () {
             addParticipantStub.restore();
-            addParticipantStub = sinon.stub(conference, 'addParticipant', function() {
+            addParticipantStub = sinon.stub(conference, 'addParticipant', function () {
               throw error;
             });
 
-            phone.addParticipant('12345');
+            phone.addParticipants(['4250000001']);
 
-            expect(ATT.errorDictionary.getSDKError('19003')).to.be.an('object');
+            expect(ATT.errorDictionary.getSDKError('24004')).to.be.an('object');
             expect(publishStub.calledWith('error', {
-              error: ATT.errorDictionary.getSDKError('19003')
+              error: ATT.errorDictionary.getSDKError('24004')
             })).to.equal(true);
 
             addParticipantStub.restore();
