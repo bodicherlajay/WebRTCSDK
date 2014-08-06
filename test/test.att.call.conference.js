@@ -261,6 +261,29 @@ describe('Call [Conference]', function () {
       });
     });
 
+    describe('removeParticipant', function () {
+      var removeParticipantStub;
+
+      it('should exist', function () {
+        expect(outgoingConference.removeParticipant).to.be.a('function');
+      });
+
+      it('should call rtcManager.removeParticipant', function () {
+        removeParticipantStub = sinon.stub(rtcMgr, 'removeParticipant');
+
+        outgoingConference.removeParticipant('12345');
+
+        expect(removeParticipantStub.called).to.equal(true);
+        expect(removeParticipantStub.getCall(0).args[0].sessionInfo).to.be.an('object');
+        expect(removeParticipantStub.getCall(0).args[0].participant).to.equal('12345');
+        expect(removeParticipantStub.getCall(0).args[0].confId).to.equal(outgoingConference.id());
+        expect(removeParticipantStub.getCall(0).args[0].onSuccess).to.be.a('function');
+        expect(removeParticipantStub.getCall(0).args[0].onError).to.be.a('function');
+
+        removeParticipantStub.restore();
+      });
+    });
+
     describe.skip('participants', function () {
 
       it('should exist', function () {

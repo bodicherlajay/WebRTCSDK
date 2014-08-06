@@ -532,23 +532,23 @@
       ErrorCode: "18000",
       ErrorMessage: "parameters missing",
       Cause: "no parameter passed ",
-      Resolution: "Please pass paramters to startConference"
+      Resolution: "Please pass parameters to startConference"
     },
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "startConference",
       ErrorCode: "18001",
-      ErrorMessage: "Invalid localmedia passed ",
-      Cause: "localmedia parameter missing",
-      Resolution: "please pass localmedia as a parameter for start conference"
+      ErrorMessage: "Invalid localMedia passed ",
+      Cause: "localMedia parameter missing",
+      Resolution: "Please pass localMedia as a parameter for start conference"
     },
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "startConference",
       ErrorCode: "18002",
-      ErrorMessage: "Invalid remotemedia passed ",
-      Cause: "remotemedia parameter missing",
-      Resolution: "please pass remotemedia as a parameter for start conference"
+      ErrorMessage: "Invalid remoteMedia passed",
+      Cause: "remoteMedia parameter missing",
+      Resolution: "Please pass remoteMedia as a parameter for start conference"
     },
     {
       JSObject: "ATT.rtc.Phone",
@@ -725,6 +725,38 @@
       ErrorMessage: "endConference failed - Conference is not in progress",
       Cause: "Cannot end Conference before the conference is established",
       Resolution: "Allow conference to be established before trying to end"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "removeParticipant",
+      ErrorCode: "25000",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking removeParticipant"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "removeParticipant",
+      ErrorCode: "25001",
+      ErrorMessage: "removeParticipant failed - Conference is not in progress",
+      Cause: "Cannot remove participant before the conference is established",
+      Resolution: "Allow conference to be established before trying to remove participant"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "removeParticipant",
+      ErrorCode: "25002",
+      ErrorMessage: "participant parameter missing",
+      Cause: "One or more required input parameter(s) are missing",
+      Resolution: "Please provide participant parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "removeParticipant",
+      ErrorCode: "25003",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
     }
   ];
 
