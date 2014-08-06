@@ -1643,6 +1643,13 @@ describe('Phone', function () {
 
         beforeEach(function () {
           callConstructorStub.restore();
+          createEventEmitterStub.restore();
+
+          emitterConference = ATT.private.factories.createEventEmitter();
+
+          createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+            return emitterConference;
+          });
 
           conference = new ATT.rtc.Call({
             breed: 'conference',
@@ -1664,6 +1671,7 @@ describe('Phone', function () {
         });
 
         afterEach(function () {
+          createEventEmitterStub.restore();
           onSpy.restore();
           addParticipantStub.restore();
           callConstructorStub.restore();
@@ -1695,12 +1703,19 @@ describe('Phone', function () {
         });
 
         it('should publish `conference:inviting` immediately', function () {
+          var publishStub = sinon.stub(emitter, 'publish');
+
+          phone.addParticipants(['4250000001']);
+
           expect(publishStub.calledWith('conference:inviting')).to.equal(true);
+
+          publishStub.restore();
         });
 
         it('should execute call.addParticipant', function () {
-          phone.addParticipant('1234');
-          expect(addParticipantStub.calledWith('1234')).to.equal(true);
+          phone.addParticipants(['4250000001']);
+
+          expect(addParticipantStub.calledWith('4250000001')).to.equal(true);
         });
 
         it('should call `conference.addParticipant` with relevant parameters', function () {
@@ -1710,16 +1725,19 @@ describe('Phone', function () {
             '4250000003'
           ];
 
-          describe('conference:response-pending', function () {
+          phone.addParticipants(participants);
 
-            it('should publish `response-pending` with event data on getting a `response-pending`', function (done) {
-              emitterConference.publish('response-pending', eventData);
+          expect(addParticipantStub.callCount).to.equal(participants.length);
+        });
 
-        describe('addParticipants events', function () {
+        describe('addParticipants Events', function () {
           var publishStub;
 
           beforeEach(function () {
-            emitterConference = ATT.private.factories.createEventEmitter();
+            eventData = {
+              abc: 'abc'
+            };
+
             publishStub = sinon.stub(emitter, 'publish');
           });
 
@@ -1727,13 +1745,17 @@ describe('Phone', function () {
             publishStub.restore();
           });
 
-          describe('response-pending', function () {
+          describe('conference:response-pending', function () {
 
             it('should publish `response-pending` with event data on getting a `response-pending`', function (done) {
+              phone.addParticipants(['4250000001']);
+
               emitterConference.publish('response-pending', eventData);
 
               setTimeout(function () {
                 try {
+                  console.log(publishStub.getCall(0).args[0]);
+                  expect(publishStub.called).to.equal(true);
                   expect(publishStub.calledWith('conference:response-pending', eventData)).to.equal(true);
                   done();
                 } catch (e) {
@@ -1746,13 +1768,13 @@ describe('Phone', function () {
           describe('conference:invite-accepted', function () {
 
             it('should publish `conference:invite-accepted` with event data on getting a `invite-accepted`', function (done) {
+              phone.addParticipants(['4250000001']);
+
               emitterConference.publish('invite-accepted', eventData);
 
               setTimeout(function () {
                 try {
-                  expect(publishStub.calledOnce).to.equal(true);
-                  //expect(publishStub.calledWith('conference:invite-accepted')).to.equal(true);
-                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  expect(publishStub.calledWith('conference:invite-accepted', eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
@@ -1764,13 +1786,13 @@ describe('Phone', function () {
           describe('conference:invite-rejected', function () {
 
             it('should publish `conference:invite-rejected` with event data on getting a `rejected`', function (done) {
+              phone.addParticipants(['4250000001']);
+
               emitterConference.publish('rejected', eventData);
 
               setTimeout(function () {
                 try {
-                  expect(publishStub.calledOnce).to.equal(true);
-                  //expect(publishStub.calledWith('conference:invite-rejected')).to.equal(true);
-                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  expect(publishStub.calledWith('conference:invite-rejected', eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);

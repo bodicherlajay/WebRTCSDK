@@ -1449,12 +1449,12 @@
         try {
           logger.logDebug('Phone.addParticipant');
 
-          if (undefined === participant) {
+          if (undefined === invitee) {
             publishError(19000);
             return;
           }
 
-          this.addParticipants([participant]);
+          this.addParticipants([invitee]);
         } catch (err) {
           publishError('19001');
           return;
@@ -1495,7 +1495,8 @@
      */
     function addParticipants(participants) {
       var conference,
-        counter;
+        counter,
+        invitee;
 
       try {
         logger.logDebug('Phone.addParticipants');
@@ -1562,14 +1563,16 @@
           emitter.publish('conference:invite-rejected', data);
         });
 
-        emitter.publish('conference:inviting', {
-          invitee: invitee,
-          timestamp: new Date()
-        });
-
         try {
           for (counter = 0; counter < participants.length; counter += 1) {
-            conference.addParticipant(participants[counter]);
+            invitee = participants[counter];
+
+            emitter.publish('conference:inviting', {
+              invitee: invitee,
+              timestamp: new Date()
+            });
+
+            conference.addParticipant(invitee);
           }
         } catch (err) {
           publishError('24004');
