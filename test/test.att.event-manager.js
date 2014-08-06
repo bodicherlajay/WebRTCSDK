@@ -365,7 +365,7 @@ describe('Event Manager', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 50);
       });
 
     });
