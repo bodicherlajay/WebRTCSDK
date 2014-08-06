@@ -11,9 +11,12 @@ describe('PeerConnection', function () {
     rtcpcStub,
     createOptionsOutgoing,
     createOptionsIncoming,
-    description;
+    description,
+    rtcSessionDescription;
 
   beforeEach(function () {
+
+    rtcSessionDescription = sinon.stub(window, 'RTCSessionDescription');
 
     description = {
       sdp: 'sdp',
@@ -54,6 +57,9 @@ describe('PeerConnection', function () {
     sdpFilter = ATT.sdpFilter.getInstance();
     factories = ATT.private.factories;
 
+  });
+  afterEach(function () {
+    rtcSessionDescription.restore();
   });
 
 
@@ -363,16 +369,7 @@ describe('PeerConnection', function () {
 
       describe('Set Remote Description [remoteSdp !== null]', function () {
 
-        var setRemoteDescriptionStub,
-          rtcSessionDescription;
-
-        beforeEach(function () {
-          rtcSessionDescription = sinon.stub(window, 'RTCSessionDescription');
-        });
-
-        afterEach(function () {
-          rtcSessionDescription.restore();
-        });
+        var setRemoteDescriptionStub;
 
         it('should set the `pc.remoteDescription` if we have a remoteDescription', function () {
           setRemoteDescriptionStub = sinon.stub(rtcPC, 'setRemoteDescription');
@@ -586,7 +583,23 @@ describe('PeerConnection', function () {
         expect(peerConnection.setRemoteDescription).to.be.a('function');
       });
 
-      it('should execute the success callback', function () {
+      it('should call pc.setRemoteDescription', function () {
+        var setRemoteDescriptionStub = sinon.stub(rtcPC, 'setRemoteDescription');
+
+        peerConnection.setRemoteDescription({
+          sdp: 'ABD',
+          type: 'offer'
+        });
+
+        expect(setRemoteDescriptionStub.called).to.equal(true);
+        expect(setRemoteDescriptionStub.getCall(0).args[0] instanceof RTCSessionDescription).to.equal(true);
+        expect(setRemoteDescriptionStub.getCall(0).args[1]).to.be.a('function');
+        expect(setRemoteDescriptionStub.getCall(0).args[2]).to.be.a('function');
+
+        setRemoteDescriptionStub.restore();
+      });
+
+      it.skip('should execute the success callback', function () {
         var setRemoteDescriptionStub = sinon.stub(rtcPC, 'setRemoteDescription', function (description, success) {
             success();
           }),

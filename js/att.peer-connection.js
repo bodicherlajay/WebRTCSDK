@@ -147,8 +147,14 @@
       getLocalDescription: function () {
         return pc.localDescription;
       },
-      setRemoteDescription: function (options) {
-        acceptSdpOffer(options.remoteSdp, options.onSuccess);
+      setRemoteDescription: function (description) {
+//        acceptSdpOffer(options.remoteSdp, options.onSuccess);
+        pc.setRemoteDescription(new RTCSessionDescription(description), function () {
+          logger.logInfo('setRemoteDescription: success');
+        }, function (error) {
+          logger.logError('setRemoteDescription: error');
+          logger.logTrace(error);
+        });
       },
       getRemoteDescription: function () {
         return pc.remoteDescription;
