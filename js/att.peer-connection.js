@@ -18,6 +18,8 @@
         ]
       };
 
+    logger.setLevel(logManager.logLevel.TRACE);
+
     function processDescription(description, success) {
       var fixedSDP;
       //description is the new SDP Which needs to processed
@@ -57,8 +59,6 @@
         logger.logTrace(error);
       });
     }
-
-    logger.setLevel(logManager.logLevel.TRACE);
 
     if (undefined === options || Object.keys(options).length === 0) {
       throw new Error('No options passed.');
@@ -138,7 +138,6 @@
         return pc.localDescription;
       },
       setRemoteDescription: function (options) {
-        logger.logInfo(options.remoteSdp);
         acceptSdpOffer(options.remoteSdp, options.onSuccess);
       },
       getRemoteDescription: function () {
