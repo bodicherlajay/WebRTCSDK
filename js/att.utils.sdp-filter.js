@@ -18,60 +18,67 @@ if (!ATT) {
   logger = logMgr.getLoggerByName('SDPFilterModule');
 
   /**
-  * Remote an attribute from SDP
-  * @param {String} attributeValue
-  * @param {Object} sdp
-  * returns {Object} sdp
+  * Remove video from sdp
+  * @param {String} sdp
+  * returns {String} sdp
   */
-  function removeSDPAttribute(attributeValue, sdp) {
-    logger.logTrace('removing sdp attribute');
-    logger.logTrace('attribute', attributeValue);
-    logger.logTrace('sdp', sdp);
-    //remove attribute from the middle.
-    var attribute = 'a=' + attributeValue + '\r\n',
-      index = sdp.indexOf(attribute),
-      prefix,
-      rest;
-
-    if (index > 0) {
-      prefix = sdp.substr(0, index);
-      rest = sdp.substr(index + attribute.length);
-      sdp = prefix + rest;
-    }
-    logger.logTrace('modified sdp', sdp);
-    return sdp;
-  }
+  function removeVideoMediaPartFromSdp(sdp) {
+      var indexof = sdp.indexOf("m=video");
+      if (indexof > 0) {
+          sdp = sdp.substr(0, indexof);
+      }
+      return sdp;
+  };
 
   /**
-  *
-  * Modify and SDP attribute
-  * @param {String} originalValue
-  * @param {String} newValue
-  * @param {Object} sdp
-  * @returns {Object} sdp
+  * Change video port to 0 in sdp
+  * @param {String} sdp
+  * returns {String} sdp
   */
-  // function modifySDPAttribute(originalValue, newValue, sdp) {
-  //   logger.logTrace('modifySDPAttribute');
-  //   logger.logTrace('original value', originalValue);
-  //   logger.logTrace('new value', newValue);
-  //   logger.logTrace('sdp', sdp);
-  //   var index = 0,
-  //     attribute = 'a=' + originalValue + '\r\n',
-  //     prefix,
-  //     rest;
+  function changeVideoPortToZero(sdp) {
+      var nth = 0;
+      var replaced = sdp.replace(/m=video(.+)RTP/g, function (match, i, original) {
+          nth++;
+          return (nth === 1) ? "m=video 0 RTP" : match;
+      });
 
-  //   while (index > -1) {
-  //     index = sdp.indexOf(attribute, index);
+      nth = 0;
+      var replaced = replaced.replace(/a=rtcp:(.+)IN/g, function (match, i, original) {
+          nth++;
+          return (nth === 2) ? "a=rtcp:0 IN" : match;
+      });
 
-  //     if (index > 0) {
-  //       prefix = sdp.substr(0, index);
-  //       rest = sdp.substr(index + attribute.length);
-  //       sdp = prefix + 'a=' + newValue + '\n' + rest;
-  //     }
-  //   }
-  //   logger.logTrace('modified sdp', sdp);
-  //   return sdp;
-  // }
+      return replaced;
+  };
+
+  /**
+  * Remote an attribute from SDP
+  * @param {String} attributeValue
+  * @param {String} sdp
+  * returns {String} sdp
+  */
+  function removeSDPAttribute(attributeValue, sdp) {
+      //remove attribute from the middle.
+      var attribute = "a=" + attributeValue + "\r\n"
+      var index = sdp.indexOf(attribute);
+      if (index > 0) {
+          sdp = sdp.replace(attribute, "");
+      }
+      return sdp;
+  };
+
+  /**
+  * Modify SDP
+  * @param {String} sdp
+  * @param {String} oldString
+  * @param {String} newString
+  * returns {String} sdp
+  */
+  function updateSdp(sdp, oldString, newString) {
+      var regex = new RegExp(oldString, 'g');
+      sdp = sdp.replace(regex, newString);
+      return sdp;
+  };
 
   /**
   * Function to increment SDP
