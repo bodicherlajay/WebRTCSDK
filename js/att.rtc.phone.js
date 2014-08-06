@@ -18,7 +18,8 @@
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
       userMediaSvc = ATT.UserMediaService,
-      logger = logManager.addLoggerForModule('Phone');
+      logger = logManager.addLoggerForModule('Phone'),
+      nPC = false;
 
     logger.logInfo('Creating new instance of Phone');
 
@@ -529,14 +530,14 @@
             emitter.publish('error', data);
           });
 
-          if (options.destination === '123') {
+          if (nPC) {
             userMediaSvc.getUserMedia({
               mediaType : options.mediaType,
               localMedia : options.localMedia,
               remoteMedia : options.remoteMedia,
               onUserMedia : function (media) {
                 call.addStream(media.localStream);
-                call.connect();
+                call.connect2();
               },
               onMediaEstablished : function () {
                 emitter.publish('media-established', {
@@ -1814,6 +1815,9 @@
       }
     }
 
+    function useNewPeerConnection(value) {
+      nPC = value;
+    }
     // ===================
     // Call interface
     // ===================
@@ -1846,6 +1850,9 @@
     this.addParticipants = addParticipants;
     this.getParticipants = getParticipants;
     this.removeParticipant = removeParticipant;
+    this.useNewPeerConnection = useNewPeerConnection;
+
+
   }
 
   if (undefined === ATT.private) {

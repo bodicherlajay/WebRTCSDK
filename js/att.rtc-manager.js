@@ -339,6 +339,8 @@
       });
     }
 
+    function connectCall2() {}
+
     function connectConference(options) {
       var responseData,
           joinConfig,
@@ -780,6 +782,7 @@
     this.connectSession = connectSession.bind(this);
     this.disconnectSession = disconnectSession.bind(this);
     this.connectCall = connectCall.bind(this);
+    this.connectCall2 = connectCall2.bind(this);
     this.connectConference = connectConference;
     this.addParticipant = addParticipant.bind(this);
     this.removeParticipant = removeParticipant.bind(this);

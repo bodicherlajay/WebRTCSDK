@@ -56,6 +56,7 @@ describe('Phone [Call]', function () {
     });
 
     phone = new Phone();
+    phone.useNewPeerConnection(true);
 
   });
   afterEach(function () {
@@ -89,7 +90,7 @@ describe('Phone [Call]', function () {
         createCallStub = sinon.stub(session, 'createCall', function () {
           return call;
         });
-        callConnectStub = sinon.stub(call, 'connect');
+        callConnectStub = sinon.stub(call, 'connect2');
 
       });
 
@@ -227,8 +228,5 @@ describe('Phone [Call]', function () {
         });
       });
     });
-
-
-
   });
 });

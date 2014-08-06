@@ -400,6 +400,50 @@
       }
     }
 
+    function connect2() {
+      var connectOptions,
+        pcOptions = {
+          mediaType: mediaType,
+          stream: localStream,
+          onSuccess: function (description) {
+
+            connectOptions = {
+              peer : peer,
+              sessionId: sessionInfo.sessionId,
+              token: sessionInfo.token,
+              description: description,
+              sessionInfo: sessionInfo,
+              onSuccess: function (responsedata) {
+                if (ATT.CallTypes.INCOMING === type) {
+                  setState('connecting');
+                } else {
+                  id = responsedata.id;
+                  setState('connected');
+                }
+              },
+              onError: function (error) {
+                emitter.publish('error', {
+                  error: error
+                });
+              }
+            };
+            rtcManager.connectCall2(connectOptions);
+          },
+          onError: function (error) {
+            emitter.publish('error', {
+              error: error
+            });
+          },
+          onRemoteStream : function (stream) {
+            logger.logInfo('onRemoteStream');
+            emitter.publish('stream-added', {
+              stream: stream
+            });
+          }
+        };
+      peerConnection = factories.createPeerConnection(pcOptions);
+    }
+
     function addParticipant(invitee) {
 
       logger.logInfo('Call.addParticipant: ', invitee);
@@ -688,6 +732,7 @@
     this.on = on;
     this.addStream = addStream;
     this.connect = connect;
+    this.connect2 = connect2;
     this.disconnect = disconnect;
     this.disconnectConference = disconnectConference ;
     this.addParticipant = addParticipant;
