@@ -407,7 +407,8 @@
     }
 
     function addParticipant(options) {
-      var invitee;
+      var invitee,
+        modId;
 
       if (undefined === options) {
         throw new Error('No `options` passed');
@@ -427,7 +428,7 @@
 
       invitee = options.invitee;
 
-      if (invitee.indexOf('@') > 0) {
+      if (invitee.indexOf('@') > -1) {
         invitee = 'sip:' + invitee;
       } else {
         invitee = 'tel:+' + invitee;
@@ -448,7 +449,8 @@
           logger.logInfo('addParticipant Request success');
 
           if ('add-pending' === response.getResponseHeader('x-state')) {
-            options.onSuccess();
+            modId = response.getResponseHeader('x-modId');
+            options.onSuccess(modId);
           }
         },
         error: function (error) {
@@ -479,7 +481,7 @@
 
       participant = options.participant;
 
-      if (participant.indexOf('@') > 0) {
+      if (participant.indexOf('@') > -1) {
         participant = 'sip:' + participant;
       } else {
         participant = 'tel:+' + participant;

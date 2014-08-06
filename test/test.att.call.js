@@ -805,6 +805,7 @@ describe('Call', function () {
         expect(args.token).to.equal(outgoingCall.sessionInfo().token);
         expect(args.callId).to.equal(outgoingCall.id());
         expect(args.onSuccess).to.be.a('function');
+        expect(args.breed).to.equal(outgoingCall.breed());
         expect(args.onError).to.be.a('function');
 
         rejectCallStub.restore();

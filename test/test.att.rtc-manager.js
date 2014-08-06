@@ -1048,6 +1048,8 @@ describe('RTC Manager', function () {
                 switch(name) {
                   case 'x-state':
                     return 'add-pending';
+                  case 'x-modId':
+                    return 'abc321';
                 }
               }
             };
@@ -1069,7 +1071,7 @@ describe('RTC Manager', function () {
 
             setTimeout(function () {
               try {
-                expect(onSuccessSpy.called).to.equal(true);
+                expect(onSuccessSpy.calledWith('abc321')).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
