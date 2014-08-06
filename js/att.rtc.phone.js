@@ -1471,14 +1471,13 @@
     function addParticipant(invitee) {
 
       try {
+        logger.logDebug('Phone.addParticipant');
+
+        if (undefined === invitee) {
+          publishError('19000');
+          return;
+        }
         try {
-          logger.logDebug('Phone.addParticipant');
-
-          if (undefined === invitee) {
-            publishError(19000);
-            return;
-          }
-
           this.addParticipants([invitee]);
         } catch (err) {
           publishError('19001');
