@@ -23,7 +23,9 @@
       //description is the new SDP Which needs to processed
       try {
         logger.logInfo('Fixing the SDP');
+        logger.logTrace(description);
         fixedSDP = sdpFilter.processChromeSDPOffer(description);
+        logger.logTrace(fixedSDP);
       } catch (err) {
         logger.logError('processChromeSDPOffer: error');
         logger.logTrace(err);
@@ -56,7 +58,7 @@
       });
     }
 
-    logger.setLevel(logManager.logLevel.DEBUG);
+    logger.setLevel(logManager.logLevel.TRACE);
 
     if (undefined === options || Object.keys(options).length === 0) {
       throw new Error('No options passed.');
@@ -68,7 +70,6 @@
     if (undefined === options.mediaType) {
       throw new Error('No `mediaType` passed.');
     }
-
 
     mediaConstraint =  {
       'OfferToReceiveAudio': true,
