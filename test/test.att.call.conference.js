@@ -1046,19 +1046,33 @@ describe('Call [Conference]', function () {
         };
       });
 
+      // Not a requirement
       it.skip('should set invitee with `rejected` status', function (done) {
 
         var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant', function (options) {
           options.onSuccess();
         });
 
-        outgoingVideoConf.addParticipant(modifications.from);
+        outgoingVideoConf.invitations = function () {
+          return {
+            johnny: {
+              invitee: 'johnny',
+              status: 'invited',
+              id: 'abc321'
+            },
+            sally: {
+              invitee: 'sally',
+              status: 'invited',
+              id: '123abc'
+            }
+          }
+        };
 
         emitterEM.publish('media-mod-terminations', modifications);
 
         setTimeout(function () {
           try {
-            var invitationInfo = outgoingVideoConf.invitations()['crockford'];
+            var invitationInfo = outgoingVideoConf.invitations()['sally'];
             expect(invitationInfo.status).to.equal('rejected');
             rtcMgrAddParticipantStub.restore();
             done();

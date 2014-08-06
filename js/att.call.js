@@ -165,7 +165,6 @@
             emitter.publish('invite-accepted', createEventData());
           }
           if ('Call rejected' === modifications.reason) {
-            //setInvitee(extractUser(modifications.from), 'rejected');
             emitter.publish('rejected', createEventData());
           }
         }
