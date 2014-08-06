@@ -78,8 +78,6 @@
     function onMediaModifications(data) {
       if ('call' === breed) {
         rtcManager.setMediaModifications(data);
-        console.log(data.remoteSdp);
-        console.log(remoteSdp);
         if (data.remoteSdp
             && data.remoteSdp.indexOf('recvonly') !== -1) {
           that.setState('held');
@@ -99,8 +97,11 @@
       if ('conference' === breed) {
         if (undefined !== data.remoteSdp) {
           peerConnection.setRemoteDescription({
-            sdp: data.remoteSdp,
-            type: 'offer'
+            remoteSdp: data.remoteSdp,
+            onSuccess: function () {
+            },
+            onError: function () {
+            }
           });
         }
       }

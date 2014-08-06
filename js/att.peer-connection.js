@@ -7,7 +7,6 @@
   function createPeerConnection(options) {
 
     var pc,
-      localDescription,
       sdpFilter = ATT.sdpFilter.getInstance(),
       onSuccess,
       onError,
@@ -26,6 +25,7 @@
         logger.logInfo('Fixing the SDP');
         fixedSDP = sdpFilter.processChromeSDPOffer(description);
       } catch (err) {
+        logger.logError('processChromeSDPOffer: error');
         logger.logTrace(err);
         throw new Error('Could not process Chrome offer SDP.');
       }
@@ -35,6 +35,24 @@
         logger.logError('setLocalDescription: error');
         logger.logTrace(error);
         throw new Error('Could not set the localDescription.');
+      });
+    }
+
+    function acceptSdpOffer(remoteSdp, success) {
+      pc.setRemoteDescription(new RTCSessionDescription({
+        sdp: remoteSdp,
+        type: 'offer'
+      }), function () {
+        pc.createAnswer(function (description) {// SUCCESS
+          processDescription(description, success);
+        }, function (error) {// ERROR createAnswer
+          logger.logError('createAnswer: error');
+          logger.logTrace(error);
+          throw new Error('Failed to create answer.');
+        }, { mandatory: mediaConstraint});
+      }, function (error) {
+        logger.logError('setRemoteDescription: error');
+        logger.logTrace(error);
       });
     }
 
@@ -92,7 +110,6 @@
       pc.onicecandidate = function (event) {
         if (event.candidate) {
           logger.logInfo('Candidate: ' + event.candidate);
-          console.log(event.candidate);
         } else {
           logger.logInfo('End of candidates');
           processDescription(pc.localDescription, onSuccess);
@@ -113,30 +130,15 @@
       }, {mandatory: mediaConstraint});
 
     } else {
-      pc.setRemoteDescription(new RTCSessionDescription({
-        sdp: options.remoteSdp,
-        type: 'offer'
-      }), function () {
-        pc.createAnswer(function (description) {// SUCCESS
-          processDescription(description, onSuccess);
-        }, function () {// ERROR createAnswer
-          throw new Error('Failed to create answer.');
-        }, { mandatory: mediaConstraint});
-      }, function () {
-
-      });
+      acceptSdpOffer(options.remoteSdp, onSuccess);
     }
     return {
       getLocalDescription: function () {
         return pc.localDescription;
       },
-      setRemoteDescription: function (description) {
-        logger.logInfo(description.sdp);
-        pc.setRemoteDescription(new RTCSessionDescription(description), function () {
-          logger.logInfo('setRemoteDescription: Remote Description set.');
-        }, function (error) {
-          logger.logError(error);
-        });
+      setRemoteDescription: function (options) {
+        logger.logInfo(options.remoteSdp);
+        acceptSdpOffer(options.remoteSdp, options.onSuccess);
       },
       getRemoteDescription: function () {
         return pc.remoteDescription;

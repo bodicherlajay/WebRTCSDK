@@ -586,21 +586,31 @@ describe('PeerConnection', function () {
         expect(peerConnection.setRemoteDescription).to.be.a('function');
       });
 
-      it('should set the remote description on the peer connection object', function () {
-        var setRemoteDescriptionStub = sinon.stub(rtcPC,  'setRemoteDescription'),
-          description = {
-            sdp: 'abcd',
-            type: 'offer'
-          };
+      it('should execute the success callback', function () {
+        var setRemoteDescriptionStub = sinon.stub(rtcPC, 'setRemoteDescription', function (description, success) {
+            success();
+          }),
+          createAnswerStub = sinon.stub(rtcPC, 'createAnswer', function (success) {
+            success();
+          }),
+          processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer'),
+          setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function (desc, success) {
+            success();
+          });
 
-        peerConnection.setRemoteDescription(description);
+        onSuccessSpy = sinon.spy();
 
-        expect(setRemoteDescriptionStub.called).to.equal(true);
-        expect(setRemoteDescriptionStub.getCall(0).args[0] instanceof RTCSessionDescription).to.equal(true);
-        expect(setRemoteDescriptionStub.getCall(0).args[1]).to.be.a('function');
-        expect(setRemoteDescriptionStub.getCall(0).args[2]).to.be.a('function');
+        peerConnection.setRemoteDescription({
+          remoteSdp: 'ABD',
+          onSuccess: onSuccessSpy
+        });
+
+        expect(onSuccessSpy.called).to.equal(true);
 
         setRemoteDescriptionStub.restore();
+        createAnswerStub.restore();
+        processChromeSDPOfferStub.restore();
+        setLocalDescriptionStub.restore();
       });
     });
 
