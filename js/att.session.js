@@ -26,7 +26,9 @@
       id = null,
       token = null,
       calls = {},
-	    logger = logManager.getLoggerByName("Session");
+      logger;
+
+    logger = logManager.getLoggerByName("Session");
 
     // instantiate event emitter
     emitter = factories.createEventEmitter();
@@ -45,8 +47,8 @@
         });
 
       if (undefined !== call) {
-        if (callInfo.remoteDescription) {
-          call.setRemoteSdp(callInfo.remoteDescription);
+        if (callInfo.sdp) {
+          call.setRemoteSdp(callInfo.sdp);
         }
 
         if (call.breed() === 'call') {

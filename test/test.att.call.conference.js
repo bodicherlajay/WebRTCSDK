@@ -399,15 +399,17 @@ describe('Call [Conference]', function () {
               }, 20);
 
             });
-            it('should execute `conf.setState` with state `connected` ', function (done) {
+
+            it('should execute `conf.setId` with the newly created conference id ', function (done) {
 
               outgoingVideoConference.connect();
 
               setTimeout(function () {
                 expect(onSuccessSpy.called).to.equal(true);
-                expect(outgoingVideoConference.getState()).to.equal('connected');
+                expect(outgoingVideoConference.id()).to.equal(response.id);
+                expect(outgoingVideoConference.getState()).to.equal('connecting');
                 expect(publishStub.calledOnce).to.equal(true);
-                expect(publishStub.getCall(0).args[0]).to.equal('connected');
+                expect(publishStub.getCall(0).args[0]).to.equal('connecting');
                 done();
               }, 20);
             });
@@ -476,14 +478,16 @@ describe('Call [Conference]', function () {
 
           createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
 
+          incomingConf.setRemoteSdp('ABDC');
           incomingConf.connect();
 
           expect(createPeerConnectionStub.called).to.equal(true);
           expect(createPeerConnectionStub.getCall(0).args[0]).to.be.an('object');
           expect(createPeerConnectionStub.getCall(0).args[0].mediaType).to.equal(incomingConf.mediaType());
           expect(createPeerConnectionStub.getCall(0).args[0].stream).to.equal(incomingConf.localStream());
-          expect(createPeerConnectionStub.getCall(0).args[0].remoteSdp)
-            .to.equal(incomingConf.remoteSdp());
+          expect(createPeerConnectionStub.getCall(0).args[0].remoteSdp).to.not.equal(null);
+          expect(createPeerConnectionStub.getCall(0).args[0].remoteSdp).to.not.equal(undefined);
+          expect(createPeerConnectionStub.getCall(0).args[0].remoteSdp).to.equal(incomingConf.remoteSdp());
           expect(createPeerConnectionStub.getCall(0).args[0].onSuccess).to.be.a('function');
           expect(createPeerConnectionStub.getCall(0).args[0].onError).to.be.a('function');
           expect(createPeerConnectionStub.getCall(0).args[0].onRemoteStream).to.be.a('function');
@@ -495,8 +499,7 @@ describe('Call [Conference]', function () {
 
           describe('onSuccess', function () {
 
-            var setLocalSdpStub,
-              connectConferenceStub,
+            var connectConferenceStub,
               rtcPCStub,
               localDescription,
               peerConnection,
@@ -554,8 +557,6 @@ describe('Call [Conference]', function () {
             describe('RTCManager.connectConference callbacks', function () {
 
               describe('onSuccess', function () {
-
-                var setStateStub;
 
                 beforeEach(function () {
 

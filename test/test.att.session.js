@@ -1103,6 +1103,7 @@ describe('Session', function () {
 
       beforeEach(function () {
         callInfo = {
+          sdp: 'asdf',
           type: 'call',
           id: '123',
           from: '1234',
@@ -1174,7 +1175,8 @@ describe('Session', function () {
           breed: 'call',
           peer: callInfo.from,
           type: ATT.CallTypes.INCOMING,
-          mediaType: callInfo.mediaType
+          mediaType: callInfo.mediaType,
+          remoteSdp: 'ABD'
         });
 
         createCallSpyStub.restore();
@@ -1189,7 +1191,7 @@ describe('Session', function () {
 
         setTimeout(function () {
           try {
-            expect(setRemoteSdpSpy.calledWith(callInfo.remoteDescription)).to.equal(true);
+            expect(setRemoteSdpSpy.calledWith(callInfo.sdp)).to.equal(true);
             createCallSpyStub.restore();
             setRemoteSdpSpy.restore();
             done();
@@ -1232,6 +1234,7 @@ describe('Session', function () {
             expect(conferenceInviteHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
             expect(conferenceInviteHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
             expect(conferenceInviteHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+
             done();
           } catch (e) {
             done(e);
