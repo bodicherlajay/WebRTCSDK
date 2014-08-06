@@ -82,9 +82,10 @@
       }
     }
 
-    function setInvitee (invitee, status) {
+    function setInvitee (invitee, modId, status) {
       invitations[invitee] = {
         invitee: invitee,
+        id: modId,
         status: status
       }
     }
@@ -148,11 +149,11 @@
             && undefined !== modifications.modificationId) {
           logger.logDebug('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
-            setParticipant(extractUser(modifications.from), 'active');
+            //setParticipant(extractUser(modifications.from), 'active');
             emitter.publish('invite-accepted', createEventData());
           }
           if ('Call rejected' === modifications.reason) {
-            setInvitee(extractUser(modifications.from), 'rejected');
+            //setInvitee(extractUser(modifications.from), 'rejected');
             emitter.publish('rejected', createEventData());
           }
         }
@@ -453,8 +454,8 @@
           sessionInfo: sessionInfo,
           invitee: invitee,
           confId: id,
-          onSuccess: function () {
-            setInvitee(extractUser(invitee), 'invited');
+          onSuccess: function (modId) {
+            setInvitee(extractUser(invitee), modId, 'invited');
             emitter.publish('response-pending', createEventData());
           },
           onError: function (err) {

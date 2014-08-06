@@ -407,7 +407,8 @@
     }
 
     function addParticipant(options) {
-      var invitee;
+      var invitee,
+        modId;
 
       if (undefined === options) {
         throw new Error('No `options` passed');
@@ -448,7 +449,8 @@
           logger.logInfo('addParticipant Request success');
 
           if ('add-pending' === response.getResponseHeader('x-state')) {
-            options.onSuccess();
+            modId = response.getResponseHeader('x-modId');
+            options.onSuccess(modId);
           }
         },
         error: function (error) {
