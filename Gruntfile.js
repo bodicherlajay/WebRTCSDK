@@ -15,6 +15,7 @@ module.exports = function (grunt) {
       'test/test.att.rtc-manager.conference.js',
       'test/test.att.peer-connection.js',
       'test/test.att.call.js',
+      'test/test.att.callV2.js',
       'test/test.att.call.conference.js',
       'test/test.att.session.js',
       'test/test.att.utils.event-channel.js',
