@@ -1396,15 +1396,15 @@
         conference = session.createCall(options);
 
         conference.on('error', function (data) {
-          logger.logInfo('published error to user om start conference');
+          logger.logError(data);
           emitter.publish('error', data);
         });
 
         conference.on('connected', function (data) {
           logger.logInfo('connected conference event published to UI');
           /**
-           * conference connecetd event.
-           * @desc A conference has been created.
+           * conference connected event.
+           * @desc A conference has been connected.
            *
            * @event Phone#conference-connected
            * @type {object}
@@ -1730,22 +1730,20 @@
           publishError(25002);
         }
 
+        conference.on('participant-removed', function (data) {
+          /**
+           * Participant removed event.
+           * @desc The participant has been removed from the conference
+           *
+           * @event Phone#conference:participant-removed
+           * @type {object}
+           * @property {Object} Data - Event object
+           */
+          emitter.publish('conference:participant-removed', data);
+        });
+
         try {
-
-          conference.on('participant-removed', function (data) {
-            /**
-             * Participant removed event.
-             * @desc The participant has been removed from the conference
-             *
-             * @event Phone#conference:participant-removed
-             * @type {object}
-             * @property {Object} Data - Event object
-             */
-            emitter.publish('conference:participant-removed', data);
-          });
-
-          conference.removeParticipant();
-
+          conference.removeParticipant(participant);
         } catch (err) {
           logger.logError(err);
           throw ATT.errorDictionary.getSDKError(25003);

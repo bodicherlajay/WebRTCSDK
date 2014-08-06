@@ -201,7 +201,7 @@ describe('Call [Conference]', function () {
         it('should publish `response-pending` when rtcMgr invokes `onSuccess` callback', function () {
           outgoingConference.addParticipant('johnny');
           expect(publishStub.calledWith('response-pending')).to.equal(true);
-          expect(publishStub.getCall(0).args[1].invitee).to.equal('johnny');
+          expect(publishStub.getCall(0).args[1]).to.be.an('object');
         });
       });
 
@@ -281,6 +281,107 @@ describe('Call [Conference]', function () {
         expect(removeParticipantStub.getCall(0).args[0].onError).to.be.a('function');
 
         removeParticipantStub.restore();
+      });
+
+      describe('Success on rtcManager.removeParticipant', function () {
+        var onSuccessSpy,
+          removeParticipantStub,
+          participants;
+
+        beforeEach(function () {
+          removeParticipantStub = sinon.stub(rtcMgr, 'removeParticipant', function (options) {
+            onSuccessSpy = sinon.spy(options, 'onSuccess');
+            options.onSuccess();
+            onSuccessSpy.restore();
+          });
+        });
+
+        afterEach(function () {
+          removeParticipantStub.restore();
+        });
+
+        it('should delete that participant', function () {
+          participants = {
+            johnny: {
+              participant: 'johnny',
+              status: 'active'
+            },
+            sally: {
+              participant: 'sally',
+              status: 'active'
+            }
+          };
+
+          outgoingConference.participants = function () {
+            return participants;
+          };
+
+          outgoingConference.removeParticipant('johnny');
+
+          expect(outgoingConference.participants()['johnny']).to.equal(undefined);
+          expect(outgoingConference.participants()['sally'].status).to.equal('active');
+        });
+
+        it('should publish `participant-removed` when rtcMgr invokes `onSuccess` callback', function () {
+          outgoingConference.removeParticipant('johnny');
+          expect(publishStub.calledWith('participant-removed')).to.equal(true);
+          expect(publishStub.getCall(0).args[1]).to.be.an('object');
+        });
+      });
+
+      describe('Error on rtcManager.removeParticipant', function () {
+        var error;
+
+        beforeEach(function () {
+          error = {
+            message: 'error'
+          };
+        });
+
+        afterEach(function () {
+          removeParticipantStub.restore();
+        });
+
+        it('should publish `error` when rtcMgr invokes `onError` callback', function (done) {
+
+          removeParticipantStub = sinon.stub(rtcMgr, 'removeParticipant', function (options) {
+            options.onError(error);
+          });
+
+          outgoingConference.removeParticipant('12345');
+
+          setTimeout(function () {
+            try {
+              expect(publishStub.calledOnce).to.equal(true);
+              expect(publishStub.calledWith('error', error)).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        });
+
+        it('should publish `error` if rtcMgr throws an error', function (done) {
+          var error = {
+            message: 'thrown!'
+          };
+
+          removeParticipantStub = sinon.stub(rtcMgr, 'removeParticipant', function () {
+            throw error;
+          });
+
+          outgoingConference.removeParticipant('johnny');
+
+          setTimeout(function () {
+            try {
+              expect(publishStub.calledOnce).to.equal(true);
+              expect(publishStub.calledWith('error', error)).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 50);
+        });
       });
     });
 

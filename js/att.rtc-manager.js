@@ -497,13 +497,13 @@
         success: function (response) {
           logger.logInfo('removeParticipant Request success');
 
-//          if ('add-pending' === response.getResponseHeader('x-state')) {
-//            options.onSuccess();
-//          }
+          if ('remove-pending' === response.getResponseHeader('x-state')) {
+            options.onSuccess();
+          }
         },
         error: function (error) {
           logger.logError(error);
-          //options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'removeParticipant', 'RTC'));
+          options.onError(error);
         }
       });
 

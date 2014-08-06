@@ -216,6 +216,93 @@ describe('RTCManager [Conference]', function () {
           })).to.not.throw(Error);
         });
       });
+
+      describe('Success on doOperation', function () {
+        var onSuccessSpy,
+          response;
+
+        beforeEach(function () {
+          onSuccessSpy = sinon.spy();
+        });
+
+        it('should call `options.onSuccess` if response.getResponseHeader() === `remove-pending`', function (done) {
+
+          // ==== Positive case
+          response = {
+            getResponseHeader: function (name) {
+              switch(name) {
+                case 'x-state':
+                  return 'remove-pending';
+              }
+            }
+          };
+
+          doOperationStub.restore();
+
+          doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
+            setTimeout(function () {
+              options.success(response);
+            }, 0);
+          });
+
+          rtcManager.removeParticipant({
+            sessionInfo: {},
+            confId: '123',
+            onSuccess: onSuccessSpy,
+            participant: 'waldo'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(onSuccessSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        });
+      });
+
+      describe('Error on doOperation', function () {
+        var onErrorSpy,
+          error,
+          createAPIErrorCodeStub;
+
+        beforeEach(function () {
+          onErrorSpy = sinon.spy();
+        });
+
+        afterEach(function () {
+          createAPIErrorCodeStub.restore();
+        });
+
+        it('should call `options.onError` if resourceManager returns an error', function () {
+          error = {
+            message: 'error',
+            HttpStatusCode: '400'
+          };
+
+          createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
+            return error;
+          });
+
+          doOperationStub.restore();
+
+          doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
+            options.error(error);
+          });
+
+          rtcManager.removeParticipant({
+            sessionInfo: {},
+            confId: '123',
+            onSuccess: function () { },
+            onError: onErrorSpy,
+            participant: 'waldo'
+          });
+
+          expect(onErrorSpy.calledWith(error)).to.equal(true);
+        });
+      });
     })
   });
 });

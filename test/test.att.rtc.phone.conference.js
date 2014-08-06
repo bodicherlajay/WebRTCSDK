@@ -660,7 +660,7 @@ describe('Phone [Conference]', function () {
       it('should execute conference.removeParticipant', function () {
         phone.removeParticipant('joe');
 
-        expect(removeParticipantStub.called).to.equal(true);
+        expect(removeParticipantStub.calledWith('joe')).to.equal(true);
       });
 
       it('should trigger `conference:participant-removed` with relevant data when call publishes `participant-removed` event', function (done) {
@@ -675,7 +675,7 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 100);
       });
 
       describe('Error handling', function () {

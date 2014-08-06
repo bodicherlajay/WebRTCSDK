@@ -117,6 +117,15 @@ describe('APIConfig', function () {
       expect(currentConfiguration.addParticipant.headers).to.be.an('object');
     });
 
+    it('should have a valid method removeParticipant', function () {
+      var params = ['sessionId', 'confId', 'participantId'];
+      expect(currentConfiguration.removeParticipant).to.be.an('object');
+      expect(currentConfiguration.removeParticipant.method).to.equal('delete');
+      expect(currentConfiguration.removeParticipant.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/confId/participants/participantId');
+      expect(currentConfiguration.removeParticipant.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
+      expect(currentConfiguration.removeParticipant.headers).to.be.an('object');
+    });
+
     it('should have a valid method acceptModifications method and returns Authorization and url', function () {
       var  params = ["param1", "param2"];
       expect(currentConfiguration.acceptModifications).to.be.an('object');

@@ -401,10 +401,7 @@
           confId: id,
           onSuccess: function () {
             setInvitee(invitee, 'invited');
-            emitter.publish('response-pending', {
-              invitee: invitee,
-              timestamp: new Date()
-            });
+            emitter.publish('response-pending', createEventData());
           },
           onError: function (err) {
             logger.logError(err);
@@ -426,19 +423,17 @@
           participant: participant,
           confId: id,
           onSuccess: function () {
-//            setInvitee(invitee, 'invited');
-//            emitter.publish('response-pending', {
-//              invitee: invitee,
-//              timestamp: new Date()
-//            });
+            delete that.participants()[participant];
+            emitter.publish('participant-removed', createEventData());
           },
           onError: function (err) {
             logger.logError(err);
-            //emitter.publish('error', err);
+            emitter.publish('error', err);
           }
         });
       } catch (err) {
-        //emitter.publish('error', err);
+        logger.logError(err);
+        emitter.publish('error', err);
       }
     }
 
