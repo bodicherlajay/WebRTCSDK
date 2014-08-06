@@ -75,6 +75,29 @@
       emitter.publish(state, createEventData.call(this));
     }
 
+    function setParticipant(participant, status) {
+      participants[participant] = {
+        participant: participant,
+        status: status
+      }
+    }
+
+    function setInvitee (invitee, status) {
+      invitations[invitee] = {
+        invitee: invitee,
+        status: status
+      }
+    }
+
+    function extractUser(username) {
+      if (username.indexOf('tel') > -1) {
+        return username.split('+')[1];
+      } else if (username.indexOf('sip') > -1) {
+        return username.split(':')[1].split('@')[0];
+      }
+      return username;
+    }
+
     function onMediaModifications(data) {
       if ('call' === breed) {
         rtcManager.setMediaModifications(data);
@@ -125,11 +148,11 @@
             && undefined !== modifications.modificationId) {
           logger.logDebug('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
-            setParticipant(modifications.from, 'active');
+            setParticipant(extractUser(modifications.from), 'active');
             emitter.publish('invite-accepted', createEventData());
           }
-          if ('rejected' === modifications.reason) {
-            setInvitee(modifications.from, 'rejected');
+          if ('Call rejected' === modifications.reason) {
+            setInvitee(extractUser(modifications.from), 'rejected');
             emitter.publish('rejected', createEventData());
           }
         }
@@ -377,20 +400,6 @@
       }
     }
 
-    function setParticipant(participant, status) {
-      participants[participant] = {
-        participant: participant,
-        status: status
-      }
-    }
-
-    function setInvitee (invitee, status) {
-      invitations[invitee] = {
-        invitee: invitee,
-        status: status
-      }
-    }
-
     function addParticipant(invitee) {
 
       logger.logInfo('Call.addParticipant: ', invitee);
@@ -401,7 +410,7 @@
           invitee: invitee,
           confId: id,
           onSuccess: function () {
-            setInvitee(invitee, 'invited');
+            setInvitee(extractUser(invitee), 'invited');
             emitter.publish('response-pending', createEventData());
           },
           onError: function (err) {
@@ -561,6 +570,7 @@
         callId : id,
         sessionId : sessionInfo.sessionId,
         token : sessionInfo.token,
+        breed: breed,
         onSuccess : function () {
           rtcManager.off('call-disconnected', onCallDisconnected);
         },

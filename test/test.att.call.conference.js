@@ -967,7 +967,7 @@ describe('Call [Conference]', function () {
 
       beforeEach(function () {
         modifications = {
-          from: 'me@myplace.com',
+          from: 'tel:+1234',
           type: 'conference',
           modificationId: 'abc321',
           reason: 'success'
@@ -984,8 +984,7 @@ describe('Call [Conference]', function () {
 
         setTimeout(function () {
           try {
-            var participantInfo = outgoingVideoConf.participants()[modifications.from];
-
+            var participantInfo = outgoingVideoConf.participants()['1234'];
             expect(participantInfo.status).to.equal('active');
 
             rtcMgrAddParticipantStub.restore();
@@ -1027,10 +1026,10 @@ describe('Call [Conference]', function () {
 
       beforeEach(function () {
         modifications = {
-          from: 'me@myplace.com',
+          from: 'sip:crockford@myplace.com',
           type: 'conference',
           modificationId: 'abc321',
-          reason: 'rejected'
+          reason: 'Call rejected'
         };
       });
 
@@ -1046,7 +1045,8 @@ describe('Call [Conference]', function () {
 
         setTimeout(function () {
           try {
-            var invitationInfo = outgoingVideoConf.invitations()[modifications.from];
+            console.log(outgoingVideoConf.invitations());
+            var invitationInfo = outgoingVideoConf.invitations()['crockford'];
             expect(invitationInfo.status).to.equal('rejected');
             rtcMgrAddParticipantStub.restore();
             done();

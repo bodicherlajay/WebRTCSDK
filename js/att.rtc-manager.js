@@ -425,7 +425,7 @@
 
       invitee = options.invitee;
 
-      if (invitee.indexOf('@') > 0) {
+      if (invitee.indexOf('@') > -1) {
         invitee = 'sip:' + invitee;
       } else {
         invitee = 'tel:+' + invitee;
@@ -477,7 +477,7 @@
 
       participant = options.participant;
 
-      if (participant.indexOf('@') > 0) {
+      if (participant.indexOf('@') > -1) {
         participant = 'sip:' + participant;
       } else {
         participant = 'tel:+' + participant;
