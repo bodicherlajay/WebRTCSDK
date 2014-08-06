@@ -42,18 +42,39 @@
       });
     }
 
+    function createSdpOffer() {
+      pc.createOffer(function (description) {
+        logger.logInfo('createOffer: success');
+        pc.setLocalDescription(description, function () {
+          logger.logInfo('setLocalDescription: success');
+        }, function (error) {
+          logger.logError('setLocalDescription: error');
+          logger.logTrace(error);
+        });
+      }, function (error) { // ERROR createOffer
+        logger.logError('createOffer: error');
+        logger.logTrace(error);
+        throw new Error('Failed to create offer.');
+      }, {
+        mandatory: mediaConstraint
+      });
+    }
+
     function acceptSdpOffer(remoteSdp, success) {
       pc.setRemoteDescription(new RTCSessionDescription({
         sdp: remoteSdp,
         type: 'offer'
       }), function () {
         pc.createAnswer(function (description) {// SUCCESS
+          logger.logInfo('createAnswer: success');
           processDescription(description, success);
         }, function (error) {// ERROR createAnswer
           logger.logError('createAnswer: error');
           logger.logTrace(error);
           throw new Error('Failed to create answer.');
-        }, { mandatory: mediaConstraint});
+        }, {
+          mandatory: mediaConstraint
+        });
       }, function (error) {
         logger.logError('setRemoteDescription: error');
         logger.logTrace(error);
@@ -117,18 +138,7 @@
         }
       };
 
-      pc.createOffer(function (description) {
-        logger.logInfo('createOffer: success');
-        pc.setLocalDescription(description, function () {
-          logger.logInfo('setLocalDescription: success');
-        }, function (error) {
-          logger.logError('setLocalDescription: error');
-          logger.logTrace(error);
-        });
-      }, function () { // ERROR createOffer
-        logger.logInfo('createOffer: success');
-        throw new Error('Failed to create offer.');
-      }, {mandatory: mediaConstraint});
+      createSdpOffer();
 
     } else {
       acceptSdpOffer(options.remoteSdp, onSuccess);
