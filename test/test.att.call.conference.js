@@ -261,6 +261,29 @@ describe('Call [Conference]', function () {
       });
     });
 
+    describe('removeParticipant', function () {
+      var removeParticipantStub;
+
+      it('should exist', function () {
+        expect(outgoingConference.removeParticipant).to.be.a('function');
+      });
+
+      it('should call rtcManager.removeParticipant', function () {
+        removeParticipantStub = sinon.stub(rtcMgr, 'removeParticipant');
+
+        outgoingConference.removeParticipant('12345');
+
+        expect(removeParticipantStub.called).to.equal(true);
+        expect(removeParticipantStub.getCall(0).args[0].sessionInfo).to.be.an('object');
+        expect(removeParticipantStub.getCall(0).args[0].participant).to.equal('12345');
+        expect(removeParticipantStub.getCall(0).args[0].confId).to.equal(outgoingConference.id());
+        expect(removeParticipantStub.getCall(0).args[0].onSuccess).to.be.a('function');
+        expect(removeParticipantStub.getCall(0).args[0].onError).to.be.a('function');
+
+        removeParticipantStub.restore();
+      });
+    });
+
     describe.skip('participants', function () {
 
       it('should exist', function () {
@@ -970,20 +993,6 @@ describe('Call [Conference]', function () {
         setRemoteDescriptionStub.restore();
       });
 
-      it('should set the remote description', function (done) {
-
-        emitterEM.publish('media-modifications', {
-          remoteSdp: 'abdc',
-          modificationId: 'ID'
-        });
-
-        setTimeout(function () {
-          expect(setRemoteDescriptionStub.called).to.equal(true);
-          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('abdc');
-          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
-          done();
-        }, 10);
-      });
       it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
 
         emitterEM.publish('media-modifications', {
@@ -995,6 +1004,26 @@ describe('Call [Conference]', function () {
           expect(setRemoteDescriptionStub.called).to.equal(false);
           done();
         }, 10);
+      });
+
+      it('should set the remote description', function (done) {
+
+        emitterEM.publish('media-modifications', {
+          remoteSdp: 'abdc',
+          modificationId: 'ID'
+        });
+
+        setTimeout(function () {
+          expect(setRemoteDescriptionStub.called).to.equal(true);
+          expect(setRemoteDescriptionStub.getCall(0).args[0].remoteSdp).to.equal('abdc');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].onSuccess).to.be.a('function');
+          expect(setRemoteDescriptionStub.getCall(0).args[0].onError).to.be.a('function');
+          done();
+        }, 10);
+      });
+
+      describe('setRemoteDescription: Success', function () {
+        it('should `rtcManager.acceptMediaModifications`');
       });
     });
 

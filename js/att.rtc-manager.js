@@ -456,6 +456,59 @@
       });
     }
 
+    function removeParticipant(options) {
+      var participant;
+
+      if (undefined === options) {
+        throw new Error('No `options` passed');
+      }
+
+      if (undefined === options.sessionInfo) {
+        throw new Error('No `sessionInfo` passed');
+      }
+
+      if (undefined === options.confId) {
+        throw new Error('No `confId` passed');
+      }
+
+      if (typeof options.onSuccess !== 'function') {
+        throw new Error('No `onSuccess` callback passed');
+      }
+
+      participant = options.participant;
+
+      if (participant.indexOf('@') > 0) {
+        participant = 'sip:' + participant;
+      } else {
+        participant = 'tel:+' + participant;
+      }
+
+      resourceManager.doOperation('removeParticipant', {
+        params: {
+          url: [
+            options.sessionInfo.sessionId,
+            options.confId,
+            participant
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + options.sessionInfo.token
+          }
+        },
+        success: function (response) {
+          logger.logInfo('removeParticipant Request success');
+
+//          if ('add-pending' === response.getResponseHeader('x-state')) {
+//            options.onSuccess();
+//          }
+        },
+        error: function (error) {
+          logger.logError(error);
+          //options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'removeParticipant', 'RTC'));
+        }
+      });
+
+    }
+
     // Reused for call & conference
     function disconnectCall (options) {
 
@@ -729,6 +782,7 @@
     this.connectCall = connectCall.bind(this);
     this.connectConference = connectConference;
     this.addParticipant = addParticipant.bind(this);
+    this.removeParticipant = removeParticipant.bind(this);
     this.disconnectCall = disconnectCall.bind(this);
     this.refreshSession = refreshSession.bind(this);
     this.cancelCall = cancelCall.bind(this);

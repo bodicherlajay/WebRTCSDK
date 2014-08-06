@@ -151,6 +151,7 @@
           && 'conference-connecting' !== event
           && 'conference:response-pending' !== event
           && 'conference:invite-accepted' !== event
+          && 'conference:participant-removed' !== event
           && 'conference:disconnecting' !== event
           && 'conference:disconnected' !== event
           && 'conference-connected' !== event
@@ -1741,6 +1742,80 @@
       }
     }
 
+    /**
+     * @summary
+     * Remove participant
+     * @desc
+     * Remove a participant from an ongoing conference
+     *
+     * **Error Codes**
+     *
+     *   - 25000 - User is not logged in
+     *   - 25001 - Conference not initiated
+     *   - 25002 - Participant parameter missing
+     *   - 25003 - Internal error occurred
+     *
+     * @memberOf Phone
+     * @instance
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.removeParticipant('johnny');
+     */
+
+    function removeParticipant(participant) {
+
+      var conference;
+
+      try {
+
+        logger.logDebug('Phone.removeParticipant');
+
+        if (null === session.getId()) {
+          publishError(25000);
+          return;
+        }
+
+        conference = session.currentCall;
+
+        if (null === conference
+          || 'conference' !== conference.breed()) {
+          publishError(25001);
+          return;
+        }
+
+        if (undefined === participant) {
+          publishError(25002);
+        }
+
+        try {
+
+          conference.on('participant-removed', function (data) {
+            /**
+             * Participant removed event.
+             * @desc The participant has been removed from the conference
+             *
+             * @event Phone#conference:participant-removed
+             * @type {object}
+             * @property {Object} Data - Event object
+             */
+            emitter.publish('conference:participant-removed', data);
+          });
+
+          conference.removeParticipant();
+
+        } catch (err) {
+          logger.logError(err);
+          throw ATT.errorDictionary.getSDKError(25003);
+        }
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
     // ===================
     // Call interface
     // ===================
@@ -1772,6 +1847,7 @@
     this.addParticipant = addParticipant;
     this.addParticipants = addParticipants;
     this.getParticipants = getParticipants;
+    this.removeParticipant = removeParticipant;
   }
 
   if (undefined === ATT.private) {

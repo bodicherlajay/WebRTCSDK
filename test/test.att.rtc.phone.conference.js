@@ -497,6 +497,7 @@ describe('Phone [Conference]', function () {
       afterEach(function () {
         onSpy.restore();
         callConstructorStub.restore();
+        conferenceDisconnectStub.restore();
         createEventEmitterStub.restore();
       });
 
@@ -578,6 +579,164 @@ describe('Phone [Conference]', function () {
           expect(ATT.errorDictionary.getSDKError('23000')).to.be.an('object');
           expect(publishStub.calledWith('error', {
             error: ATT.errorDictionary.getSDKError('23000')
+          })).to.equal(true);
+        });
+      });
+    });
+
+    describe('[US225739] removeParticipant', function () {
+      var eventData,
+        error,
+        errorData,
+        emitterConf,
+        conference,
+        onSpy,
+        callConstructorStub,
+        removeParticipantStub,
+        onParticipantRemovedHandlerSpy,
+        createEventEmitterStub;
+
+      beforeEach(function () {
+
+        eventData = {
+          abc: 'abc'
+        };
+
+        error = {
+          ErrorMessage: 'Test Error'
+        };
+
+        errorData = {
+          error: error
+        };
+
+        emitterConf = ATT.private.factories.createEventEmitter();
+
+        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+          return emitterConf;
+        });
+
+        conference = new Call({
+          breed: 'conference',
+          mediaType: 'audio',
+          type: ATT.CallTypes.OUTGOING,
+          sessionInfo : {sessionId : '12345', token : '123'}
+        });
+
+        callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+          return conference;
+        });
+
+        phone = new ATT.private.Phone();
+
+        removeParticipantStub  = sinon.stub(conference, 'removeParticipant');
+
+        onSpy = sinon.spy(conference, 'on');
+        onParticipantRemovedHandlerSpy = sinon.spy();
+
+        phone.on('conference:participant-removed', onParticipantRemovedHandlerSpy);
+
+        session.currentCall = conference;
+        session.setId('1234');
+      });
+
+      afterEach(function () {
+        onSpy.restore();
+        callConstructorStub.restore();
+        removeParticipantStub.restore();
+        createEventEmitterStub.restore();
+      });
+
+      it('should exist', function () {
+        expect(phone.removeParticipant).to.be.a('function');
+      });
+
+      it('should register for the `participant-removed` event on the conference object', function () {
+        phone.removeParticipant('waldo');
+
+        expect(onSpy.calledWith('participant-removed')).to.equal(true);
+      });
+
+      it('should execute conference.removeParticipant', function () {
+        phone.removeParticipant('joe');
+
+        expect(removeParticipantStub.called).to.equal(true);
+      });
+
+      it('should trigger `conference:participant-removed` with relevant data when call publishes `participant-removed` event', function (done) {
+        phone.removeParticipant('sally');
+
+        emitterConf.publish('participant-removed', eventData);
+
+        setTimeout(function () {
+          try {
+            expect(onParticipantRemovedHandlerSpy.calledWith(eventData)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+      describe('Error handling', function () {
+        var publishStub;
+
+        beforeEach(function () {
+          publishStub = sinon.stub(emitterConf, 'publish');
+          removeParticipantStub.restore();
+        });
+
+        afterEach(function () {
+          publishStub.restore();
+          removeParticipantStub.restore();
+        });
+
+        it('[25000] should be thrown if user is not logged in', function () {
+          session.setId(null);
+
+          phone.removeParticipant('barrysanders');
+
+          expect(ATT.errorDictionary.getSDKError('25000')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('25000')
+          })).to.equal(true);
+        });
+
+        it('[25001] should be thrown if a conference is not in progress', function () {
+
+          conference.breed = function () {
+            return 'call'
+          };
+
+          phone.removeParticipant('johnnymac');
+
+          expect(ATT.errorDictionary.getSDKError('25001')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('25001')
+          })).to.equal(true);
+        });
+
+        it('[25002] should be thrown if `participant` parameter is missing', function () {
+          phone.removeParticipant();
+
+          expect(ATT.errorDictionary.getSDKError('25002')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('25002')
+          })).to.equal(true);
+        });
+
+        it('[25003] should be thrown if an internal error occurs', function () {
+          removeParticipantStub.restore();
+
+          removeParticipantStub = sinon.stub(conference, 'removeParticipant', function () {
+            throw error;
+          });
+
+          phone.removeParticipant('sue');
+
+          expect(ATT.errorDictionary.getSDKError('25003')).to.be.an('object');
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('25003')
           })).to.equal(true);
         });
       });

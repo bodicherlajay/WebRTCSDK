@@ -78,8 +78,6 @@
     function onMediaModifications(data) {
       if ('call' === breed) {
         rtcManager.setMediaModifications(data);
-        console.log(data.remoteSdp);
-        console.log(remoteSdp);
         if (data.remoteSdp
             && data.remoteSdp.indexOf('recvonly') !== -1) {
           that.setState('held');
@@ -99,8 +97,11 @@
       if ('conference' === breed) {
         if (undefined !== data.remoteSdp) {
           peerConnection.setRemoteDescription({
-            sdp: data.remoteSdp,
-            type: 'offer'
+            remoteSdp: data.remoteSdp,
+            onSuccess: function () {
+            },
+            onError: function () {
+            }
           });
         }
       }
@@ -198,6 +199,7 @@
       if ('connecting' !== event &&
           'response-pending' !== event &&
           'invite-accepted' !== event &&
+          'participant-removed' !== event &&
           'rejected' !== event &&
           'connected' !== event &&
           'muted' !== event &&
@@ -390,7 +392,8 @@
     }
 
     function addParticipant(invitee) {
-      logger.logInfo('Sending invitation...');
+
+      logger.logInfo('Call.addParticipant: ', invitee);
 
       try {
         rtcManager.addParticipant({
@@ -411,6 +414,32 @@
         });
       } catch (err) {
         emitter.publish('error', err);
+      }
+    }
+
+    function removeParticipant (participant) {
+
+      logger.logInfo('Call.removeParticipant: ', participant);
+
+      try {
+        rtcManager.removeParticipant({
+          sessionInfo: sessionInfo,
+          participant: participant,
+          confId: id,
+          onSuccess: function () {
+//            setInvitee(invitee, 'invited');
+//            emitter.publish('response-pending', {
+//              invitee: invitee,
+//              timestamp: new Date()
+//            });
+          },
+          onError: function (err) {
+            logger.logError(err);
+            //emitter.publish('error', err);
+          }
+        });
+      } catch (err) {
+        //emitter.publish('error', err);
       }
     }
 
@@ -657,6 +686,7 @@
     this.disconnect = disconnect;
     this.disconnectConference = disconnectConference ;
     this.addParticipant = addParticipant;
+    this.removeParticipant = removeParticipant;
     this.mute = mute;
     this.unmute = unmute;
     this.hold = hold;
