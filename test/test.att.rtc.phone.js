@@ -1694,6 +1694,10 @@ describe('Phone', function () {
           expect(onSpy.called).to.equal(true);
         });
 
+        it('should publish `conference:inviting` immediately', function () {
+          expect(publishStub.calledWith('conference:inviting')).to.equal(true);
+        });
+
         it('should execute call.addParticipant', function () {
           phone.addParticipant('1234');
           expect(addParticipantStub.calledWith('1234')).to.equal(true);
@@ -1706,10 +1710,10 @@ describe('Phone', function () {
             '4250000003'
           ];
 
-          phone.addParticipants(participants);
+          describe('conference:response-pending', function () {
 
-          expect(addParticipantStub.callCount).to.equal(participants.length);
-        });
+            it('should publish `response-pending` with event data on getting a `response-pending`', function (done) {
+              emitterConference.publish('response-pending', eventData);
 
         describe('addParticipants events', function () {
           var publishStub;
@@ -1730,14 +1734,12 @@ describe('Phone', function () {
 
               setTimeout(function () {
                 try {
-                  expect(publishStub.calledOnce).to.equal(true);
-                  expect(publishStub.calledWith('response-pending')).to.equal(true);
-                  expect(publishStub.getCall(0).args[1]).to.equal(eventData);
+                  expect(publishStub.calledWith('conference:response-pending', eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
                 }
-              }, 50);
+              }, 100);
             });
           });
 
@@ -2521,7 +2523,7 @@ describe('Phone', function () {
           session.currentCall = conference;
 
           onConfDisconnectedHandlerSpy = sinon.spy();
-          phone.on('conference-disconnected', onConfDisconnectedHandlerSpy);
+          phone.on('conference:disconnected', onConfDisconnectedHandlerSpy);
         });
 
         afterEach(function () {
@@ -2930,7 +2932,7 @@ describe('Phone', function () {
           phone.on('call-incoming', onCallIncomingHandlerSpy);
           phone.on('conference-invite', onConferenceInviteHandlerSpy);
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
-          phone.on('conference-disconnected', onConferenceDisconnectedHandlerSpy);
+          phone.on('conference:disconnected', onConferenceDisconnectedHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
         });
@@ -3005,9 +3007,9 @@ describe('Phone', function () {
           });
         });
 
-        describe('conference-disconnected', function () {
+        describe('conference:disconnected', function () {
 
-          it('should trigger `conference-disconnected` if session publishes `conference-disconnected`', function (done) {
+          it('should trigger `conference:disconnected` if session publishes `conference-disconnected`', function (done) {
 
             emitterSession.publish('conference-disconnected', eventData);
 
