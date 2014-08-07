@@ -35,7 +35,9 @@
 //      }
 
       pc.setLocalDescription(description, function () {
-        success(description);
+        if (undefined !== success && 'function' !== typeof success) {
+          success(description);
+        }
       }, function (error) { // ERROR setLocal
         logger.logError('setLocalDescription: error');
         logger.logTrace(error);
@@ -161,7 +163,6 @@
         return pc.localDescription;
       },
       setRemoteDescription: function (description) {
-//        acceptSdpOffer(options.remoteSdp, options.onSuccess);
         pc.setRemoteDescription(new RTCSessionDescription(description), function () {
           logger.logInfo('setRemoteDescription: success');
         }, function (error) {

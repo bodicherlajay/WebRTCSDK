@@ -524,6 +524,16 @@ describe('PeerConnection', function () {
               expect(onSuccessSpy.called).to.equal(true);
 
             });
+
+            it.only('should NOT execute `onSucces` callback if NOT passed in', function () {
+
+              acceptOpts.onSuccess = undefined;
+
+              peerConnection.acceptSdpOffer(acceptOpts);
+
+              expect(onSuccessSpy.called).to.equal(false);
+
+            });
           });
 
           describe('pc.setLocalDesciription: Error', function () {
