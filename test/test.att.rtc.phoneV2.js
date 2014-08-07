@@ -58,6 +58,7 @@ describe('Phone [Call]', function () {
     phone = new Phone();
     phone.useNewPeerConnection(true);
 
+
   });
   afterEach(function () {
     sessionStub.restore();
@@ -65,41 +66,38 @@ describe('Phone [Call]', function () {
   });
 
   describe('Call Methods', function () {
+
+    var onErrorSpy, call, createCallStub, callConnectStub,
+      localVideo = document.createElement('video'),
+      remoteVideo = document.createElement('video');
+
     beforeEach(function () {
       userMediaService = ATT.UserMediaService;
       restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
       createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
         return {};
       });
+
+      onErrorSpy = sinon.spy();
+
+      phone.on('error', onErrorSpy);
+
+      call = new Call(createCallOptions);
+
+      createCallStub = sinon.stub(session, 'createCall', function () {
+        return call;
+      });
+      callConnectStub = sinon.stub(call, 'connect2');
+
     });
 
     afterEach(function () {
       restClientStub.restore();
       createPeerConnectionStub.restore();
+      callConnectStub.restore();
+      createCallStub.restore();
     });
     describe('dial', function () {
-      var onErrorSpy, call, createCallStub, callConnectStub;
-
-      beforeEach(function () {
-        onErrorSpy = sinon.spy();
-
-        phone.on('error', onErrorSpy);
-
-        call = new Call(createCallOptions);
-
-        createCallStub = sinon.stub(session, 'createCall', function () {
-          return call;
-        });
-        callConnectStub = sinon.stub(call, 'connect2');
-
-      });
-
-      afterEach(function () {
-        callConnectStub.restore();
-        createCallStub.restore();
-      });
-
-
       it('Should call `getUserMedia`', function () {
         getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
         phone.dial(options);
@@ -226,6 +224,84 @@ describe('Phone [Call]', function () {
             done();
           }, 50);
         });
+      });
+    });
+
+    describe('[US221924] Second call', function () {
+
+      var onSpy,
+        callDisconnectStub,
+        options;
+
+      beforeEach(function () {
+
+        onSpy = sinon.spy(call, 'on');
+        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+        callDisconnectStub = sinon.stub(call, 'disconnect', function () {
+          emitterCall.publish('disconnected');
+        });
+
+        session.setId('12345');
+        session.currentCall = call;
+
+        options = {
+          destination: 'johnny',
+          breed: 'call',
+          mediaType: 'video',
+          localMedia: localVideo,
+          remoteMedia: remoteVideo,
+          holdCurrentCall: false
+        };
+      });
+
+      afterEach(function () {
+        getUserMediaStub.restore();
+        callDisconnectStub.restore();
+      });
+
+      it('should register for `disconnected` on the current call object', function () {
+        phone.dial(options);
+        session.currentCall = call;
+        expect(onSpy.calledWith('disconnected')).to.equal(true);
+        expect(onSpy.calledBefore(callDisconnectStub)).to.equal(true);
+      });
+
+      it('should NOT execute call.disconnect() if [null === session.currentCall]', function () {
+
+        session.currentCall = null;
+
+        phone.dial(options);
+
+        expect(callDisconnectStub.called).to.equal(false);
+      });
+
+      it('should execute call.disconnect if [null !== session.currentCall]', function () {
+        phone.dial(options);
+
+        expect(callDisconnectStub.called).to.equal(true);
+      });
+
+      it('should call session.createCall on `disconnected` if [false === options.holdCurrentCall]', function (done) {
+
+        phone.dial(options);
+
+        emitterCall.publish('disconnected');
+
+        setTimeout(function () {
+          try {
+            expect(createCallStub.called).to.equal(true);
+            expect(createCallStub.getCall(0).args[0].peer).to.be.a('string');
+            expect(createCallStub.getCall(0).args[0].type).to.be.a('string');
+            expect(createCallStub.getCall(0).args[0].breed).to.be.a('string');
+            expect(createCallStub.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(createCallStub.getCall(0).args[0].localMedia).to.be.a('object');
+            expect(createCallStub.getCall(0).args[0].remoteMedia).to.be.a('object');
+
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 50);
       });
     });
   });
