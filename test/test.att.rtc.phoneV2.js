@@ -87,7 +87,7 @@ describe('Phone [Call]', function () {
       createCallStub = sinon.stub(session, 'createCall', function () {
         return call;
       });
-      callConnectStub = sinon.stub(call, 'connect2');
+      callConnectStub = sinon.stub(call, 'connect');
 
     });
 
@@ -145,12 +145,12 @@ describe('Phone [Call]', function () {
 
         });
 
-        it('should call `call.connect2` on userMedia Success', function (done) {
+        it('should call `call.connect` on userMedia Success', function (done) {
 
           phone.dial(options);
           setTimeout(function () {
             expect(onUserMediaSpy.called).to.equal(true);
-            expect(callConnectStub.called).to.equal(true);
+            expect(callConnectStub.getCall(0).args[0].newPeerConnection).to.be.an('boolean');
             expect(onUserMediaSpy.calledBefore(callConnectStub)).to.equal(true);
             expect(callConnectStub.calledAfter(onUserMediaSpy)).to.equal(true);
             done();
