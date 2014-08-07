@@ -137,8 +137,15 @@
               sdp: data.remoteSdp,
               type: 'offer'
             },
-            onSuccess: function () {
+            onSuccess: function (description) {
               logger.logInfo('acceptSdpOffer: success');
+              rtcManager.acceptMediaModifications({
+                sessionId: sessionInfo.sessionId,
+                token: sessionInfo.token,
+                callId: id,
+                breed: breed,
+                sdp: description.sdp
+              });
             }
           });
         }

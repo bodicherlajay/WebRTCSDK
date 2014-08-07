@@ -1114,14 +1114,8 @@ describe('Call [Conference]', function () {
     describe('media-modifications', function () {
       var acceptSdpOfferStub;
 
-      beforeEach(function () {
-        acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
-      });
-      afterEach(function () {
-        acceptSdpOfferStub.restore();
-      });
-
       it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
+        acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
 
         emitterEM.publish('media-modifications', {
           remoteSdp: undefined,
@@ -1130,11 +1124,13 @@ describe('Call [Conference]', function () {
 
         setTimeout(function () {
           expect(acceptSdpOfferStub.called).to.equal(false);
+          acceptSdpOfferStub.restore();
           done();
         }, 10);
       });
 
       it('should set the remote description', function (done) {
+        acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
 
         emitterEM.publish('media-modifications', {
           remoteSdp: 'abdc',
@@ -1146,12 +1142,48 @@ describe('Call [Conference]', function () {
           expect(acceptSdpOfferStub.getCall(0).args[0].description.sdp).to.equal('abdc');
           expect(acceptSdpOfferStub.getCall(0).args[0].description.type).to.equal('offer');
           expect(acceptSdpOfferStub.getCall(0).args[0].onSuccess).to.be.a('function');
+          acceptSdpOfferStub.restore();
           done();
         }, 10);
       });
 
       describe('setRemoteDescription: Success', function () {
-        it('should `rtcManager.acceptMediaModifications`');
+        var localDescription;
+        beforeEach(function () {
+          localDescription = {
+            sdp: 'sdf',
+            type: 'dfasf'
+          };
+          acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer', function (options) {
+            options.onSuccess(localDescription);
+          });
+        });
+
+        afterEach(function () {
+          acceptSdpOfferStub.restore();
+        });
+
+        it('should execute `rtcManager.acceptMediaModifications`', function (done) {
+
+          var acceptMediaModificationsStub = sinon.stub(rtcManager, 'acceptMediaModifications');
+
+          outgoingVideoConf.setId('123');
+          emitterEM.publish('media-modifications', {
+            remoteSdp: 'abdc',
+            modificationId: 'ID'
+          });
+
+          setTimeout(function () {
+            expect(acceptMediaModificationsStub.called).to.equal(true);
+            expect(acceptMediaModificationsStub.getCall(0).args[0].sessionId).to.be.a('string');
+            expect(acceptMediaModificationsStub.getCall(0).args[0].callId).to.be.a('string');
+            expect(acceptMediaModificationsStub.getCall(0).args[0].token).to.be.a('string');
+            expect(acceptMediaModificationsStub.getCall(0).args[0].sdp).to.be.a('string');
+            expect(acceptMediaModificationsStub.getCall(0).args[0].breed).to.be.a('string');
+            acceptMediaModificationsStub.restore();
+            done();
+          }, 10);
+        });
       });
     });
 
