@@ -324,6 +324,10 @@
       return calls[callId];
     };
 
+    this.moveToBackground = function (call) {
+
+    }
+
     this.switchCall = function () {
       var call = this.currentCall;
       this.currentCall = this.backgroundCall;

@@ -145,7 +145,7 @@ describe('Phone [Call]', function () {
 
         });
 
-        it('should call `call.connect` on userMedia Success', function (done) {
+        it('should call `call.connect2` on userMedia Success', function (done) {
 
           phone.dial(options);
           setTimeout(function () {
@@ -228,7 +228,7 @@ describe('Phone [Call]', function () {
       });
     });
 
-    describe('[US221924] Second call', function () {
+    describe('[US221924] Second call[end]', function () {
 
       var onSpy,
         callDisconnectStub,
@@ -251,7 +251,7 @@ describe('Phone [Call]', function () {
           mediaType: 'video',
           localMedia: localVideo,
           remoteMedia: remoteVideo,
-          endCurrentCall: true
+          holdCurrentCall: false
         };
       });
 
@@ -282,11 +282,84 @@ describe('Phone [Call]', function () {
         expect(callDisconnectStub.called).to.equal(true);
       });
 
-      it('should call session.createCall on `disconnected` if [true === options.endCurrentCall]', function (done) {
+      it('should call session.createCall on `disconnected` if [false === options.holdCurrentCall]', function (done) {
 
         phone.dial(options);
 
         emitterCall.publish('disconnected');
+
+        setTimeout(function () {
+          try {
+            expect(createCallStub.called).to.equal(true);
+            expect(createCallStub.getCall(0).args[0].peer).to.be.a('string');
+            expect(createCallStub.getCall(0).args[0].type).to.be.a('string');
+            expect(createCallStub.getCall(0).args[0].breed).to.be.a('string');
+            expect(createCallStub.getCall(0).args[0].mediaType).to.be.a('string');
+            expect(createCallStub.getCall(0).args[0].localMedia).to.be.a('object');
+            expect(createCallStub.getCall(0).args[0].remoteMedia).to.be.a('object');
+
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 50);
+      });
+    });
+
+    describe('[US221924] Second call[hold]', function () {
+
+      var onSpy,
+        callHoldStub,
+        options;
+
+      beforeEach(function () {
+
+        onSpy = sinon.spy(call, 'on');
+        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+        callHoldStub = sinon.stub(call, 'hold', function () {
+          emitterCall.publish('held');
+        });
+
+        session.setId('12345');
+        session.currentCall = call;
+
+        options = {
+          destination: 'johnny',
+          breed: 'call',
+          mediaType: 'video',
+          localMedia: localVideo,
+          remoteMedia: remoteVideo,
+          holdCurrentCall: true
+        };
+      });
+
+      afterEach(function () {
+        getUserMediaStub.restore();
+        callHoldStub.restore();
+      });
+
+      it('should register for `held` on the current call object', function () {
+        phone.dial(options);
+        session.currentCall = call;
+        expect(onSpy.calledWith('held')).to.equal(true);
+        expect(onSpy.calledBefore(callHoldStub)).to.equal(true);
+      });
+
+
+      it('should execute call.hold if [null !== session.currentCall] && [true === options.holdCurrentCall', function () {
+         phone.dial(options);
+         expect(callHoldStub.called).to.equal(true);
+      });
+
+      xit('should call session.moveToBackground', function () {
+        var moveToBkgStub = sinon.stub(session, 'moveToBackground');
+        phone.dial(options);
+        expect(moveToBkgStub.called).to.equal(true);
+      });
+
+      xit('should call session.createCall on `disconnected` if [false === options.holdCurrentCall]', function (done) {
+
+        phone.dial(options);
 
         setTimeout(function () {
           try {

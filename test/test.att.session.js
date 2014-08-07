@@ -575,6 +575,12 @@ describe('Session', function () {
 
     });
 
+    describe('moveToBackground', function () {
+      it('should exist', function () {
+        expect(session.moveToBackground).to.be.a('function');
+      });
+    });
+
     describe('getToken', function () {
       var sessionForGetToken;
 

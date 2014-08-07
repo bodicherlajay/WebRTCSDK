@@ -19,7 +19,7 @@
       errorDictionary = ATT.errorDictionary,
       userMediaSvc = ATT.UserMediaService,
       logger = logManager.addLoggerForModule('Phone'),
-      nPC = false;
+      newPeerConnection = false;
 
     logger.logInfo('Creating new instance of Phone');
 
@@ -314,7 +314,8 @@
     }
 
     function dialSetup(options) {
-    var call;
+      var call;
+
       try {
 
         logger.logDebug('Phone.dial');
@@ -429,7 +430,7 @@
         });
 
 
-        if (nPC) {
+        if (newPeerConnection) {
           userMediaSvc.getUserMedia({
             mediaType : options.mediaType,
             localMedia : options.localMedia,
@@ -498,7 +499,7 @@
       mediaType: 'video',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
-      endCurrentCall
+      holdCurrentCall
     };
     @example
     // Start audio call with a NoTN/VTN User
@@ -508,7 +509,7 @@
       mediaType: 'audio',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
-      endCurrentCall: true
+      holdCurrentCall: true
     };
    */
     function dial(options) {
@@ -545,8 +546,8 @@
         call = session.currentCall;
 
         if (null !== call) {
-          if (undefined === options.endCurrentCall
-              || true === options.endCurrentCall) {
+          if (undefined === options.holdCurrentCall
+              || false === options.holdCurrentCall) {
             call.on('disconnected', function (data) {
               /**
                * Call disconnected event.
@@ -558,6 +559,19 @@
               call = dialSetup(options);
             });
             call.disconnect();
+          } else if (true === options.holdCurrentCall) {
+            call.on('held', function (data) {
+              /**
+               * Call disconnected event.
+               * @desc Successfully disconnected the current call.
+               * @event Phone#call-disconnected
+               * @type {object}
+               * @property {Date} timestamp - Event fire time.
+               */
+              session.moveToBackground(call)
+             // call = dialSetup(options);
+            });
+            call.hold();
           }
         } else {
           call = dialSetup(options);
@@ -1808,7 +1822,7 @@
     }
 
     function useNewPeerConnection(value) {
-      nPC = value;
+      newPeerConnection = value;
     }
     // ===================
     // Call interface
