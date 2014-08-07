@@ -740,7 +740,7 @@ describe('Call [Conference]', function () {
                     })).to.equal(true);
                     done();
                   }, 100);
-                })
+                });
               });
             });
           });

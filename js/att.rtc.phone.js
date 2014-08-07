@@ -787,6 +787,12 @@
              */
             emitter.publish('conference-connected', data);
           });
+          conference.on('stream-added', function (data) {
+            userMediaSvc.showStream({
+              localOrRemote: 'remote',
+              stream: data.stream
+            });
+          });
 
           userMediaSvc.getUserMedia({
             localMedia: options.localMedia,

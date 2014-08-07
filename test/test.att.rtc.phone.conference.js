@@ -818,13 +818,13 @@ describe('Phone [Conference]', function () {
 
         setTimeout(function () {
           try {
-//            console.log(showStreamStub.getCall(0).args);
             expect(showStreamStub.calledWith({
               localOrRemote: 'remote',
               stream: {
                 abc: 'stream'
               }
             })).to.equal(true);
+            showStreamStub.restore();
             done();
           } catch (e) {
             done(e);

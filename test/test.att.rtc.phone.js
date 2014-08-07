@@ -1273,6 +1273,12 @@ describe('Phone', function () {
           expect(onSpy.calledWith('connected')).to.equal(true);
         });
 
+        it('should register for `stream-added` event from call', function () {
+          phone.joinConference(options);
+
+          expect(onSpy.calledWith('stream-added')).to.equal(true);
+        });
+
         it('should execute userMedia.getUserMedia with correct input params', function () {
           getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
 
@@ -1499,6 +1505,30 @@ describe('Phone', function () {
             });
           });
 
+          describe('stream-added', function () {
+
+            it('should execute `ums.showStream` with the stream', function (done) {
+              var stream = {},
+                showStreamStub = sinon.stub(ums, 'showStream');
+
+              emitterConference.publish('stream-added', {
+                stream: stream
+              });
+
+              setTimeout(function () {
+                try {
+                  expect(showStreamStub.calledWith({
+                    localOrRemote: 'remote',
+                    stream: stream
+                  })).to.equal(true);
+                  showStreamStub.restore();
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
           describe('error', function () {
             it('should publish `error` when call publishes `error` event', function (done) {
               emitterConference.publish('error', eventData);
