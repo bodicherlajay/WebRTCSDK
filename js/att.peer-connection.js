@@ -21,27 +21,26 @@
     logger.setLevel(logManager.logLevel.TRACE);
 
     function processDescription(description, success) {
-      var fixedSDP;
+//      var fixedSDP;
       //description is the new SDP Which needs to processed
-      try {
-        logger.logInfo('Fixing the SDP');
-        logger.logTrace(description);
-        fixedSDP = sdpFilter.processChromeSDPOffer(description);
-        logger.logTrace(fixedSDP);
-      } catch (err) {
-        logger.logError('processChromeSDPOffer: error');
-        logger.logTrace(err);
-        throw new Error('Could not process Chrome offer SDP.');
-      }
-      /*
-      pc.setLocalDescription(fixedSDP, function () {
-        success(fixedSDP);
+//      try {
+//        logger.logInfo('Fixing the SDP');
+//        logger.logTrace(description);
+//        fixedSDP = sdpFilter.processChromeSDPOffer(description);
+//        logger.logTrace(fixedSDP);
+//      } catch (err) {
+//        logger.logError('processChromeSDPOffer: error');
+//        logger.logTrace(err);
+//        throw new Error('Could not process Chrome offer SDP.');
+//      }
+
+      pc.setLocalDescription(description, function () {
+        success(description);
       }, function (error) { // ERROR setLocal
         logger.logError('setLocalDescription: error');
         logger.logTrace(error);
         throw new Error('Could not set the localDescription.');
       });
-      */
     }
 
     function createSdpOffer() {
