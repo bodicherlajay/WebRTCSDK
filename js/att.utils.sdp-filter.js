@@ -174,6 +174,10 @@ if (!ATT) {
       },
       getCodecfromSDP : function (sdp) {
         return getCodecfromSDP(sdp);
+      },
+      replaceSendOnlyWithSendRecv: function (sdp) {
+        // TODO: DON'T KNOW WHY, BUT THIS IS NEEDED
+        return sdp.replace(/sendonly/g, 'sendrecv');
       }
     };
   };
