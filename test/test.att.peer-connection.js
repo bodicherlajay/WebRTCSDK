@@ -525,7 +525,7 @@ describe('PeerConnection', function () {
 
             });
 
-            it.only('should NOT execute `onSucces` callback if NOT passed in', function () {
+            it('should NOT execute `onSucces` callback if NOT passed in', function () {
 
               acceptOpts.onSuccess = undefined;
 

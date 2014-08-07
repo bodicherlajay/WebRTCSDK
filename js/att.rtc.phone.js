@@ -498,7 +498,7 @@
       mediaType: 'video',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
-      holdCurrentCall
+      endCurrentCall
     };
     @example
     // Start audio call with a NoTN/VTN User
@@ -508,7 +508,7 @@
       mediaType: 'audio',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
-      holdCurrentCall
+      endCurrentCall: true
     };
    */
     function dial(options) {
@@ -545,8 +545,8 @@
         call = session.currentCall;
 
         if (null !== call) {
-          if (undefined === options.holdCurrentCall
-              || false === options.holdCurrentCall) {
+          if (undefined === options.endCurrentCall
+              || true === options.endCurrentCall) {
             call.on('disconnected', function (data) {
               /**
                * Call disconnected event.

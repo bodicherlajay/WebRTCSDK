@@ -144,6 +144,7 @@ describe('Phone [Call]', function () {
 
 
         });
+
         it('should call `call.connect` on userMedia Success', function (done) {
 
           phone.dial(options);
@@ -250,7 +251,7 @@ describe('Phone [Call]', function () {
           mediaType: 'video',
           localMedia: localVideo,
           remoteMedia: remoteVideo,
-          holdCurrentCall: false
+          endCurrentCall: true
         };
       });
 
@@ -281,7 +282,7 @@ describe('Phone [Call]', function () {
         expect(callDisconnectStub.called).to.equal(true);
       });
 
-      it('should call session.createCall on `disconnected` if [false === options.holdCurrentCall]', function (done) {
+      it('should call session.createCall on `disconnected` if [true === options.endCurrentCall]', function (done) {
 
         phone.dial(options);
 
