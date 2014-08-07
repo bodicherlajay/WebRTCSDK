@@ -18,60 +18,67 @@ if (!ATT) {
   logger = logMgr.getLoggerByName('SDPFilterModule');
 
   /**
-  * Remote an attribute from SDP
-  * @param {String} attributeValue
-  * @param {Object} sdp
-  * returns {Object} sdp
+  * Remove video from sdp
+  * @param {String} sdp
+  * returns {String} sdp
   */
-  function removeSDPAttribute(attributeValue, sdp) {
-    logger.logTrace('removing sdp attribute');
-    logger.logTrace('attribute', attributeValue);
-    logger.logTrace('sdp', sdp);
-    //remove attribute from the middle.
-    var attribute = 'a=' + attributeValue + '\r\n',
-      index = sdp.indexOf(attribute),
-      prefix,
-      rest;
-
-    if (index > 0) {
-      prefix = sdp.substr(0, index);
-      rest = sdp.substr(index + attribute.length);
-      sdp = prefix + rest;
-    }
-    logger.logTrace('modified sdp', sdp);
-    return sdp;
-  }
+  function removeVideoMediaPartFromSdp(sdp) {
+      var indexof = sdp.indexOf("m=video");
+      if (indexof > 0) {
+          sdp = sdp.substr(0, indexof);
+      }
+      return sdp;
+  };
 
   /**
-  *
-  * Modify and SDP attribute
-  * @param {String} originalValue
-  * @param {String} newValue
-  * @param {Object} sdp
-  * @returns {Object} sdp
+  * Change video port to 0 in sdp
+  * @param {String} sdp
+  * returns {String} sdp
   */
-  // function modifySDPAttribute(originalValue, newValue, sdp) {
-  //   logger.logTrace('modifySDPAttribute');
-  //   logger.logTrace('original value', originalValue);
-  //   logger.logTrace('new value', newValue);
-  //   logger.logTrace('sdp', sdp);
-  //   var index = 0,
-  //     attribute = 'a=' + originalValue + '\r\n',
-  //     prefix,
-  //     rest;
+  function changeVideoPortToZero(sdp) {
+      var nth = 0;
+      var replaced = sdp.replace(/m=video(.+)RTP/g, function (match, i, original) {
+          nth++;
+          return (nth === 1) ? "m=video 0 RTP" : match;
+      });
 
-  //   while (index > -1) {
-  //     index = sdp.indexOf(attribute, index);
+      nth = 0;
+      var replaced = replaced.replace(/a=rtcp:(.+)IN/g, function (match, i, original) {
+          nth++;
+          return (nth === 2) ? "a=rtcp:0 IN" : match;
+      });
 
-  //     if (index > 0) {
-  //       prefix = sdp.substr(0, index);
-  //       rest = sdp.substr(index + attribute.length);
-  //       sdp = prefix + 'a=' + newValue + '\n' + rest;
-  //     }
-  //   }
-  //   logger.logTrace('modified sdp', sdp);
-  //   return sdp;
-  // }
+      return replaced;
+  };
+
+  /**
+  * Remote an attribute from SDP
+  * @param {String} attributeValue
+  * @param {String} sdp
+  * returns {String} sdp
+  */
+  function removeSDPAttribute(attributeValue, sdp) {
+      //remove attribute from the middle.
+      var attribute = "a=" + attributeValue + "\r\n"
+      var index = sdp.indexOf(attribute);
+      if (index > 0) {
+          sdp = sdp.replace(attribute, "");
+      }
+      return sdp;
+  };
+
+  /**
+  * Modify SDP
+  * @param {String} sdp
+  * @param {String} oldString
+  * @param {String} newString
+  * returns {String} sdp
+  */
+  function updateSdp(sdp, oldString, newString) {
+      var regex = new RegExp(oldString, 'g');
+      sdp = sdp.replace(regex, newString);
+      return sdp;
+  };
 
   /**
   * Function to increment SDP
@@ -114,54 +121,50 @@ if (!ATT) {
   }
 
   /**
-   * Function to remove crypto & BUNDLE from the SDP.
+   * Function to remove mid & bundle lines from the SDP.
    * @param {String} sdp
    * @returns {*|sdp}
   */
-  function fixSDP(description) {
-    logger.logTrace('fixSDP', description.sdp);
-    var sdp = description.sdp,
-      cryptoMatch;
+  function jslWorkarounds(sdp) {
+      // Remove mid lines
+      sdp = sdp.replace(/a=mid:video\r\n/g, "");
+      sdp = sdp.replace(/a=mid:audio\r\n/g, "");
 
-    if (!sdp) {
-      return description;
-    }
+      // Remove bundle lines
+      sdp = sdp.replace(/a=group:BUNDLE audio video\r\n/g, "");
+      sdp = sdp.replace(/a=group:BUNDLE audio\r\n/g, "");
 
-    // Remove the 'crypto' attribute because Chrome is going to remove support for SDES, and only implement DTLS-SRTP
-    // We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
-    cryptoMatch = sdp.match(new RegExp('crypto.+'));
-    while (cryptoMatch && cryptoMatch.length > 0) {
-      sdp = removeSDPAttribute(cryptoMatch[0], sdp);
-      cryptoMatch = sdp.match(new RegExp('crypto.+'));
-    }
+      return sdp;
+  };
 
-    // Remove the BUNDLE because it does not work with the ERelay. Media must be separated not bundle.
-    sdp = removeSDPAttribute('group:BUNDLE audio video', sdp);
-    sdp = removeSDPAttribute('group:BUNDLE audio', sdp);
-
-    sdp = sdp.replace(/a=mid:video\r\n/g, '');
-    sdp = sdp.replace(/a=mid:audio\r\n/g, '');
-
-    sdp = sdp.replace(/a=rtcp-mux\r\n/g, '');
-
-    // Remove Opus from Chrome and Leif
-    sdp = sdp.replace('RTP/SAVPF 111 103 104 0 ', 'RTP/SAVPF 0 ');
-    sdp = sdp.replace('\r\na=rtpmap:111 opus/48000/2', '');
-    sdp = sdp.replace('\r\na=rtpmap:103 ISAC/16000', '');
-    sdp = sdp.replace('\r\na=rtpmap:104 ISAC/32000', '');
-    sdp = sdp.replace('\r\na=fmtp:111 minptime=10', '');
-
-    // set back the fixed sdp string on description
-    description.sdp = sdp;
-
-    logger.logTrace('fixed sdp', sdp);
-    return description;
-  }
+  /**
+   * Function to Opus from SDP generated by Firefox, Chrome and Leif.
+   * @param {String} sdp
+   * @returns {*|sdp}
+  */
+  function removeCodec(sdp) {
+      if (navigator.mozGetUserMedia) {
+          //Remove Opus from Firefox
+          sdp = sdp.replace("RTP/SAVPF 109 0", "RTP/SAVPF 0");
+          sdp = sdp.replace("\r\na=rtpmap:109 opus/48000/2", "");
+      } else {
+          //Remove Opus from Chrome and Leif
+          sdp = sdp.replace("RTP/SAVPF 111 103 104 0 ", "RTP/SAVPF 0 ");
+          sdp = sdp.replace("\r\na=rtpmap:111 opus/48000/2", "");
+          sdp = sdp.replace("\r\na=rtpmap:103 ISAC/16000", "");
+          sdp = sdp.replace("\r\na=rtpmap:104 ISAC/32000", "");
+          sdp = sdp.replace("\r\na=fmtp:111 minptime=10", "");
+      }
+      return sdp;
+  };
 
   init = function () {
     return {
       processChromeSDPOffer : function (description) {
-        return fixSDP(description);
+          description.sdp = jslWorkarounds(description.sdp);
+          description.sdp = removeCodec(description.sdp);
+          logger.logTrace('fixed sdp', description.sdp);
+          return description;
       },
       incrementSDP: function (sdp, modCount) {
         return incrementSDP(sdp, modCount);
@@ -171,6 +174,10 @@ if (!ATT) {
       },
       getCodecfromSDP : function (sdp) {
         return getCodecfromSDP(sdp);
+      },
+      replaceSendOnlyWithSendRecv: function (sdp) {
+        // TODO: DON'T KNOW WHY, BUT THIS IS NEEDED
+        return sdp.replace(/sendonly/g, 'sendrecv');
       }
     };
   };

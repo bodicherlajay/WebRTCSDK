@@ -21,20 +21,21 @@
     logger.setLevel(logManager.logLevel.TRACE);
 
     function processDescription(description, success) {
-      var fixedSDP;
-      //description is the new SDP Which needs to processed
-      try {
-        logger.logInfo('Fixing the SDP');
-        logger.logTrace(description);
-        fixedSDP = sdpFilter.processChromeSDPOffer(description);
-        logger.logTrace(fixedSDP);
-      } catch (err) {
-        logger.logError('processChromeSDPOffer: error');
-        logger.logTrace(err);
-        throw new Error('Could not process Chrome offer SDP.');
-      }
-      pc.setLocalDescription(fixedSDP, function () {
-        success(fixedSDP);
+//      //description is the new SDP Which needs to processed
+//      try {
+//        logger.logInfo('Fixing the SDP');
+//        logger.logTrace(description);
+//        description = sdpFilter.processChromeSDPOffer(description);
+//        logger.logTrace(description);
+//      } catch (err) {
+//        logger.logError('processChromeSDPOffer: error');
+//        logger.logTrace(err);
+//        throw new Error('Could not process Chrome offer SDP.');
+//      }
+      pc.setLocalDescription(description, function () {
+        if ('function' === typeof success) {
+          success(description);
+        }
       }, function (error) { // ERROR setLocal
         logger.logError('setLocalDescription: error');
         logger.logTrace(error);
@@ -67,7 +68,7 @@
       }), function () {
         pc.createAnswer(function (description) {// SUCCESS
           logger.logInfo('createAnswer: success');
-          processDescription(description, success);
+          processDescription(description);
         }, function (error) {// ERROR createAnswer
           logger.logError('createAnswer: error');
           logger.logTrace(error);
@@ -127,16 +128,17 @@
       options.remoteSdp = null;
     }
 
-    if (null === options.remoteSdp) {
+    pc.onicecandidate = function (event) {
+      if (event.candidate) {
+        logger.logInfo('Candidate: ' + event.candidate);
+      } else {
+        logger.logInfo('End of candidates');
+        //TODO for Audio only call change video port to ZERO
+        onSuccess(pc.localDescription);
+      }
+    };
 
-      pc.onicecandidate = function (event) {
-        if (event.candidate) {
-          logger.logInfo('Candidate: ' + event.candidate);
-        } else {
-          logger.logInfo('End of candidates');
-          processDescription(pc.localDescription, onSuccess);
-        }
-      };
+    if (null === options.remoteSdp) {
 
       createSdpOffer();
 
@@ -147,8 +149,14 @@
       getLocalDescription: function () {
         return pc.localDescription;
       },
-      setRemoteDescription: function (options) {
-        acceptSdpOffer(options.remoteSdp, options.onSuccess);
+      setRemoteDescription: function (description) {
+//        acceptSdpOffer(options.remoteSdp, options.onSuccess);
+        pc.setRemoteDescription(new RTCSessionDescription(description), function () {
+          logger.logInfo('setRemoteDescription: success');
+        }, function (error) {
+          logger.logError('setRemoteDescription: error');
+          logger.logTrace(error);
+        });
       },
       getRemoteDescription: function () {
         return pc.remoteDescription;
