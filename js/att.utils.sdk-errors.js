@@ -692,7 +692,7 @@
       ErrorCode: "21002",
       ErrorMessage: "User is not logged in",
       Cause: "Invalid operation",
-      Resolution: "Please login first before invoking endConference"
+      Resolution: "Please login first before invoking getParticipants"
     },
     {
       JSObject: "ATT.rtc.Phone",
