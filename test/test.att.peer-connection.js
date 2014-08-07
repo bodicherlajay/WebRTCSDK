@@ -8,11 +8,12 @@ describe('PeerConnection', function () {
     onSuccessSpy,
     sdpFilter,
     rtcPC,
-    rtcpcStub,
+    rtcPeerConncetionStub,
     createOptionsOutgoing,
     createOptionsIncoming,
     description,
-    rtcSessionDescriptionStub;
+    rtcSessionDescriptionStub,
+    expectedConstraints;
 
   beforeEach(function () {
 
@@ -38,6 +39,10 @@ describe('PeerConnection', function () {
       onRemoteStream : function () {},
       onError : function () {}
     };
+
+    expectedConstraints = {};
+    expectedConstraints.audio = true;
+    expectedConstraints.video = (createOptionsOutgoing.mediaType === 'video');
 
     rtcPC = {
       setLocalDescription: function () { return; },
@@ -69,7 +74,7 @@ describe('PeerConnection', function () {
     describe('Error: Invalid parameters', function () {
       it('should throw an error if `options` are invalid', function () {
 
-        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+        rtcPeerConncetionStub = sinon.stub(window, 'RTCPeerConnection', function () {
           return rtcPC;
         });
 
@@ -104,17 +109,17 @@ describe('PeerConnection', function () {
           onError : function () {}
         })).to.not.throw(Error);
 
-        rtcpcStub.restore();
+        rtcPeerConncetionStub.restore();
       });
 
       it('should throw an error if it fails to create RTCPeerConnection ', function () {
-        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+        rtcPeerConncetionStub = sinon.stub(window, 'RTCPeerConnection', function () {
           throw new Error('Failed to create PeerConnection.');
         });
 
         expect(factories.createPeerConnection.bind(factories, createOptionsOutgoing)).to.throw('Failed to create PeerConnection.');
 
-        rtcpcStub.restore();
+        rtcPeerConncetionStub.restore();
       });
     });
 
@@ -128,7 +133,7 @@ describe('PeerConnection', function () {
           ]
         };
 
-        rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+        rtcPeerConncetionStub = sinon.stub(window, 'RTCPeerConnection', function () {
           return rtcPC;
         });
 
@@ -136,7 +141,7 @@ describe('PeerConnection', function () {
       });
 
       afterEach(function () {
-        rtcpcStub.restore();
+        rtcPeerConncetionStub.restore();
         onSuccessSpy.restore();
       });
 
@@ -146,7 +151,7 @@ describe('PeerConnection', function () {
         peerConnection = factories.createPeerConnection(createOptionsOutgoing);
 
         expect(peerConnection).to.be.a('object');
-        expect(rtcpcStub.calledWith(rtcPCConfig)).to.equal(true);
+        expect(rtcPeerConncetionStub.calledWith(rtcPCConfig)).to.equal(true);
 
       });
 
@@ -195,14 +200,10 @@ describe('PeerConnection', function () {
         });
 
         it('should call `pc.createOffer` if we don\'t have a remote SDP', function () {
-          var expectedConstraints = {};
 
           createOfferStub = sinon.stub(rtcPC, 'createOffer');
           createOptionsOutgoing.mediaType = 'video';
           createOptionsOutgoing.remoteSdp = undefined;
-
-          expectedConstraints.audio = true;
-          expectedConstraints.video = (createOptionsOutgoing.mediaType === 'video');
 
           factories.createPeerConnection(createOptionsOutgoing);
 
@@ -340,45 +341,17 @@ describe('PeerConnection', function () {
         setRemoteDescriptionStub.restore();
       });
 
-      it.skip('should execute the success callback', function () {
-        var setRemoteDescriptionStub = sinon.stub(rtcPC, 'setRemoteDescription', function (description, success) {
-            success();
-          }),
-          createAnswerStub = sinon.stub(rtcPC, 'createAnswer', function (success) {
-            success();
-          }),
-          processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer'),
-          setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function (desc, success) {
-            success();
-          });
-
-        onSuccessSpy = sinon.spy();
-
-        peerConnection.setRemoteDescription({
-          remoteSdp: 'ABD',
-          onSuccess: onSuccessSpy
-        });
-
-        expect(onSuccessSpy.called).to.equal(true);
-
-        setRemoteDescriptionStub.restore();
-        createAnswerStub.restore();
-        processChromeSDPOfferStub.restore();
-        setLocalDescriptionStub.restore();
-      });
     });
 
     describe('getLocalDescription', function () {
-      var createOfferStub,
-        localSDP;
-
       it('should exist', function () {
         expect(peerConnection.getLocalDescription).to.be.a('function');
       });
 
       it('should return the `localDescription` of its RTCPeerConnection`', function () {
-        localSDP = 'ABCD';
+        var localSDP = 'ABCD';
         rtcPC.localDescription = localSDP;
+
         expect(peerConnection.getLocalDescription()).to.equal(localSDP);
       });
     });
@@ -388,13 +361,16 @@ describe('PeerConnection', function () {
         setRemoteDescriptionStub;
 
       beforeEach(function () {
-
-        onSuccessSpy = sinon.spy();
-
         acceptOpts = {
           remoteSdp: description.sdp,
-          onSuccess: onSuccessSpy
+          onSuccess: function () {}
         };
+
+        onSuccessSpy = sinon.spy(acceptOpts, 'onSuccess');
+      });
+
+      afterEach(function () {
+        onSuccessSpy.restore();
       });
 
       it('should exist', function () {
@@ -419,8 +395,7 @@ describe('PeerConnection', function () {
 
       describe('pc.setRemoteDescription: Success', function () {
 
-        var createAnswerStub,
-          localSDP;
+        var createAnswerStub;
 
         beforeEach(function () {
           setRemoteDescriptionStub = sinon.stub(rtcPC, 'setRemoteDescription', function (description, success, error) {
@@ -453,7 +428,7 @@ describe('PeerConnection', function () {
         });
 
         describe('pc.createAnswer: Success', function () {
-          var processChromeSDPOfferStub;
+          var localSDP;
 
           beforeEach(function () {
             createAnswerStub = sinon.stub(rtcPC, 'createAnswer', function (success) {
@@ -466,6 +441,7 @@ describe('PeerConnection', function () {
           });
 
           xit('should call `sdpFilter.processChromeSDPOffer` with the answer\'s SDP', function () {
+            var processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer');
 
             factories.createPeerConnection(createOptionsIncoming);
 
@@ -474,6 +450,7 @@ describe('PeerConnection', function () {
           });
 
           xdescribe('processSDP: Error', function () {
+
             it('should throw an error if it fails to process the SDP', function () {
               var processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer', function () {
                 throw new Error('BAD SDP.');
@@ -482,7 +459,7 @@ describe('PeerConnection', function () {
               processChromeSDPOfferStub.restore();
             });
 
-            it('should not in')
+            it('should not invoke `pc.setLocalDescription`');
 
           });
 
@@ -509,7 +486,7 @@ describe('PeerConnection', function () {
 
             beforeEach(function () {
               setLocalDescriptionStub = sinon.stub(rtcPC, 'setLocalDescription', function (desc, success) {
-                success();
+                success(description);
               });
             });
 
@@ -517,12 +494,19 @@ describe('PeerConnection', function () {
               setLocalDescriptionStub.restore();
             });
 
-            it('should execute `onSucces` callback if passed in', function () {
-
+            it('should execute `onSuccess` callback if passed in', function () {
               peerConnection.acceptSdpOffer(acceptOpts);
 
+              expect(rtcSessionDescriptionStub.called).to.equal(true);
+              expect(rtcSessionDescriptionStub.getCall(0).args[0].sdp).to.equal(acceptOpts.remoteSdp);
+              expect(rtcSessionDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+              expect(setRemoteDescriptionStub.getCall(0).args[0] instanceof RTCSessionDescription).to.equal(true);
+              expect(createAnswerStub.getCall(0).args[0]).to.be.a('function');
+              expect(createAnswerStub.getCall(0).args[1]).to.be.a('function');
+              expect(createAnswerStub.getCall(0).args[2].mandatory.OfferToReceiveAudio).to.equal(expectedConstraints.audio);
+              expect(createAnswerStub.getCall(0).args[2].mandatory.OfferToReceiveVideo).to.equal(expectedConstraints.video);
+              expect(setLocalDescriptionStub.calledWith(description)).to.equal(true);
               expect(onSuccessSpy.called).to.equal(true);
-
             });
 
             it('should NOT execute `onSucces` callback if NOT passed in', function () {
@@ -532,7 +516,6 @@ describe('PeerConnection', function () {
               peerConnection.acceptSdpOffer(acceptOpts);
 
               expect(onSuccessSpy.called).to.equal(false);
-
             });
           });
 
@@ -555,7 +538,6 @@ describe('PeerConnection', function () {
         });
 
         describe('pc.createAnswer: Error', function () {
-          var createAnswerStub;
 
           beforeEach(function () {
             createAnswerStub = sinon.stub(rtcPC, 'createAnswer', function (success, error) {
@@ -578,12 +560,12 @@ describe('PeerConnection', function () {
   describe('Callbacks', function () {
 
     beforeEach(function () {
-      rtcpcStub = sinon.stub(window, 'RTCPeerConnection', function () {
+      rtcPeerConncetionStub = sinon.stub(window, 'RTCPeerConnection', function () {
         return rtcPC;
       });
     });
     afterEach(function () {
-      rtcpcStub.restore();
+      rtcPeerConncetionStub.restore();
     });
 
     describe('onicecandidate', function () {

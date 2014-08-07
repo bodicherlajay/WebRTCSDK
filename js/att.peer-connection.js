@@ -35,7 +35,7 @@
 //      }
 
       pc.setLocalDescription(description, function () {
-        if (undefined !== success && 'function' !== typeof success) {
+        if (undefined !== success && 'function' === typeof success) {
           success(description);
         }
       }, function (error) { // ERROR setLocal
