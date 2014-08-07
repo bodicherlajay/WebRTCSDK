@@ -364,6 +364,7 @@
     };
    */
     function dial(options) {
+      var call;
 
       try {
 
@@ -393,21 +394,15 @@
           }
         }
 
-        if (null !== session.backgroundCall) {
-          if (options.holdCurrentCall === true) {
-            throw ATT.errorDictionary.getSDKError('4010');
+        call = session.currentCall;
+
+        if (null !== call) {
+          if (undefined === options.holdCurrentCall
+              || false === options.holdCurrentCall) {
+            call.disconnect();
           }
         }
 
-        if (null !== session.currentCall) {
-          if (options.holdCurrentCall === true) {
-            session.currentCall.hold();
-          } else {
-            session.currentCall.hangup();
-          }
-          session.backgroundCall = session.currentCall;
-          session.currentCall = null;
-        }
 
         try {
 
@@ -455,11 +450,6 @@
              */
             emitter.publish('call-rejected', data);
             session.deleteCurrentCall();
-            session.switchCall();
-
-            if (session.currentCall !== null) {
-              session.currentCall.resume();
-            }
           });
           call.on('connected', function (data) {
             /**
@@ -512,10 +502,16 @@
              */
             emitter.publish('call-disconnected', data);
             session.deleteCurrentCall();
-            session.switchCall();
 
-            if (session.currentCall !== null) {
-                session.currentCall.resume();
+            if (false  === options.holdCurrentCall) {
+              call = session.createCall({
+                peer: options.destination,
+                breed: 'call',
+                type: ATT.CallTypes.OUTGOING,
+                mediaType: options.mediaType,
+                localMedia: options.localMedia,
+                remoteMedia: options.remoteMedia
+              });
             }
           });
           call.on('error', function (data) {

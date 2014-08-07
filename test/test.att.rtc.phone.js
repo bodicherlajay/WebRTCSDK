@@ -603,7 +603,7 @@ describe('Phone', function () {
           expect(createCallSpy.getCall(0).args[0].breed).to.be.a('string');
           expect(createCallSpy.getCall(0).args[0].mediaType).to.be.a('string');
           expect(createCallSpy.getCall(0).args[0].localMedia).to.be.a('object');
-          expect(createCallSpy.getCall(0).args[0].localMedia).to.be.a('object');
+          expect(createCallSpy.getCall(0).args[0].remoteMedia).to.be.a('object');
 
           createCallSpy.restore();
         });
@@ -875,6 +875,74 @@ describe('Phone', function () {
               error: ATT.errorDictionary.getSDKError('4009')
             })).to.equal(true);
           });
+        });
+      });
+
+      describe('[US221924] Second call', function () {
+
+        var onSpy,
+          callDisconnectStub,
+          options;
+
+        beforeEach(function () {
+
+          onSpy = sinon.spy(call, 'on');
+          callDisconnectStub = sinon.stub(call, 'disconnect');
+
+          session.setId('12345');
+          session.currentCall = call;
+
+          options = {
+            destination: 'johnny',
+            breed: 'call',
+            mediaType: 'video',
+            localMedia: localVideo,
+            remoteMedia: remoteVideo,
+            holdCurrentCall: false
+          };
+        });
+
+        afterEach(function () {
+          callDisconnectStub.restore();
+        });
+
+        it('should execute call.disconnect if [null !== session.currentCall]', function () {
+          phone.dial(options);
+
+          expect(callDisconnectStub.called).to.equal(true);
+        });
+
+        it('should NOT execute call.disconnect() if [null === session.currentCall]', function () {
+
+          session.currentCall = null;
+
+          phone.dial(options);
+
+          expect(callDisconnectStub.called).to.equal(false);
+        });
+
+        it('should call session.createCall on `disconnected` if [false === options.holdCurrentCall]', function (done) {
+          var createCallSpy = sinon.spy(session, 'createCall');
+
+          phone.dial(options);
+
+          emitterCall.publish('disconnected');
+
+          setTimeout(function () {
+            try {
+              expect(createCallSpy.called).to.equal(true);
+              expect(createCallSpy.getCall(0).args[0].peer).to.be.a('string');
+              expect(createCallSpy.getCall(0).args[0].type).to.be.a('string');
+              expect(createCallSpy.getCall(0).args[0].breed).to.be.a('string');
+              expect(createCallSpy.getCall(0).args[0].mediaType).to.be.a('string');
+              expect(createCallSpy.getCall(0).args[0].localMedia).to.be.a('object');
+              expect(createCallSpy.getCall(0).args[0].remoteMedia).to.be.a('object');
+              done();
+              createCallSpy.restore();
+            } catch (e) {
+              done(e);
+            }
+          }, 50);
         });
       });
 
