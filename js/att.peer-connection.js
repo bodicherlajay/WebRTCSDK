@@ -153,7 +153,7 @@
 
     } else {
       acceptSdpOffer({
-        sdp: options.remoteSdp
+        remoteSdp: options.remoteSdp
       });
     }
     return {

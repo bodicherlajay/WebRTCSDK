@@ -33,10 +33,7 @@ describe('PeerConnection', function () {
     createOptionsIncoming = {
       stream : {},
       mediaType: 'video',
-      remoteSdp: {
-        sdp : '123',
-        type: 'offer'
-      },
+      remoteSdp: '123',
       onSuccess : function () {},
       onRemoteStream : function () {},
       onError : function () {}
@@ -259,6 +256,7 @@ describe('PeerConnection', function () {
       });
 
       describe('[remoteSdp !== null]', function () {
+
         it('should execute `pc.setLocalDescription`', function () {
           var setRemoteDescriptionStub,
             createAnswerStub,
@@ -275,6 +273,10 @@ describe('PeerConnection', function () {
           factories.createPeerConnection(createOptionsIncoming);
 
           expect(setRemoteDescriptionStub.called).to.equal(true);
+          expect(rtcSessionDescriptionStub.calledWith({
+            sdp: createOptionsIncoming.remoteSdp,
+            type: 'offer'
+          })).to.equal(true);
           expect(createAnswerStub.called).to.equal(true);
           expect(setLocalDescriptionStub.called).to.equal(true);
           expect(setLocalDescriptionStub.calledWith(description)).to.equal(true);
