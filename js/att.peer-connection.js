@@ -33,6 +33,7 @@
         logger.logTrace(err);
         throw new Error('Could not process Chrome offer SDP.');
       }
+      /*
       pc.setLocalDescription(fixedSDP, function () {
         success(fixedSDP);
       }, function (error) { // ERROR setLocal
@@ -40,11 +41,20 @@
         logger.logTrace(error);
         throw new Error('Could not set the localDescription.');
       });
+      */
     }
 
     function createSdpOffer() {
       pc.createOffer(function (description) {
+        var filter = ATT.sdpFilter.getInstance();
         logger.logInfo('createOffer: success');
+
+        //Remove the 'crypto' attribute because Chrome is going to remove support for SDES, and only implement DTLS-SRTP
+        //We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
+        while (description.sdp.indexOf('crypto:') != -1) {
+            description.sdp = filter.removeSDPAttribute(sdp.sdp.match(/crypto.+/)[0], description.sdp);
+        }
+
         pc.setLocalDescription(description, function () {
           logger.logInfo('setLocalDescription: success');
         }, function (error) {

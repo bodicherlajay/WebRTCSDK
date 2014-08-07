@@ -211,7 +211,7 @@
             logger.logTrace('local description', sdp);
            // set local description
             try {
-              self.peerConnection.setLocalDescription(sdp);
+              //self.peerConnection.setLocalDescription(sdp);
               self.localDescription = sdp;
             } catch (e) {
               //todo get the sdk error
@@ -401,10 +401,18 @@
     * @param {Object} description SDP
     */
     setLocalAndSendMessage : function (description) {
+        var filter = ATT.sdpFilter.getInstance();
+
       logger.logDebug('setLocalAndSendMessage');
       // fix SDP
       logger.logTrace('Fixing SDP for Chrome', description);
-      SDPFilter.processChromeSDPOffer(description);
+      //SDPFilter.processChromeSDPOffer(description);
+
+      //Remove the 'crypto' attribute because Chrome is going to remove support for SDES, and only implement DTLS-SRTP
+      //We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
+      while (description.sdp.indexOf('crypto:') != -1) {
+          description.sdp = filter.removeSDPAttribute(sdp.sdp.match(/crypto.+/)[0], description.sdp);
+      }
 
       this.localDescription = description;
 
