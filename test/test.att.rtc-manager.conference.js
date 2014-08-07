@@ -303,6 +303,41 @@ describe('RTCManager [Conference]', function () {
           expect(onErrorSpy.calledWith(error)).to.equal(true);
         });
       });
-    })
+    });
+
+    describe('acceptMediaModifications', function () {
+
+      it('should exist', function () {
+        expect(rtcManager.acceptMediaModifications).to.be.a('function');
+      });
+
+      it('should execute resourceManager.doOperation', function () {
+        var modOptions = {
+          breed: 'conference',
+          sessionId: 'sessionId',
+          callId: 'callId',
+          token: 'token',
+          modId: 'modId',
+          sdp: 'sdp'
+        };
+        doOperationStub = sinon.stub(resourceManager, 'doOperation');
+
+        rtcManager.acceptMediaModifications(modOptions);
+
+        expect(doOperationStub.calledWith('acceptModifications')).to.equal(true);
+        expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(modOptions.sessionId);
+        expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal('conferences');
+        expect(doOperationStub.getCall(0).args[1].params.url[2]).to.equal(modOptions.callId);
+        expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + modOptions.token);
+        expect(doOperationStub.getCall(0).args[1].params.headers['x-modId']).to.equal(modOptions.modId);
+        expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(modOptions.sdp);
+        expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
+        expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
+
+        doOperationStub.restore();
+      });
+
+
+    });
   });
 });

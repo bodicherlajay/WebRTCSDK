@@ -406,6 +406,36 @@
       return;
     }
 
+    function acceptMediaModifications(options) {
+      var type = ('call' === options.breed ? 'calls' : 'conferences');
+
+      resourceManager.doOperation('acceptModifications', {
+        params: {
+          url: [
+            options.sessionId,
+            type,
+            options.callId
+          ],
+          headers: {
+            'Authorization': 'Bearer ' + options.token,
+            'x-modId': options.modId
+          }
+        },
+        data: {
+          conferenceModifications: {
+            sdp: options.sdp
+          }
+        },
+        success: function () {
+          logger.logInfo('acceptMediaModifications: success');
+        },
+        error: function (error) {
+          logger.logError('acceptMediaModifications: error');
+          logger.logTrace(error);
+        }
+      });
+    }
+
     function addParticipant(options) {
       var invitee,
         modId;
@@ -786,6 +816,7 @@
     this.connectCall = connectCall.bind(this);
     this.connectCall2 = connectCall2.bind(this);
     this.connectConference = connectConference;
+    this.acceptMediaModifications = acceptMediaModifications;
     this.addParticipant = addParticipant.bind(this);
     this.removeParticipant = removeParticipant.bind(this);
     this.disconnectCall = disconnectCall.bind(this);
