@@ -70,14 +70,12 @@
       });
     }
 
-    function acceptSdpOffer(remoteSdp, success) {
-      pc.setRemoteDescription(new RTCSessionDescription({
-        sdp: remoteSdp,
-        type: 'offer'
-      }), function () {
+    function acceptSdpOffer(options) {
+      pc.setRemoteDescription(new RTCSessionDescription(options.description), function () {
+        logger.logInfo('setRemoteDescription: success');
         pc.createAnswer(function (description) {// SUCCESS
           logger.logInfo('createAnswer: success');
-          processDescription(description);
+          processDescription(description, options.onSuccess);
         }, function (error) {// ERROR createAnswer
           logger.logError('createAnswer: error');
           logger.logTrace(error);
@@ -152,7 +150,7 @@
       createSdpOffer();
 
     } else {
-      acceptSdpOffer(options.remoteSdp, onSuccess);
+      acceptSdpOffer(options.remoteSdp);
     }
     return {
       getLocalDescription: function () {
@@ -167,6 +165,7 @@
           logger.logTrace(error);
         });
       },
+      acceptSdpOffer: acceptSdpOffer,
       getRemoteDescription: function () {
         return pc.remoteDescription;
       }
