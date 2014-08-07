@@ -132,11 +132,13 @@
 
       if ('conference' === breed) {
         if (undefined !== data.remoteSdp) {
-          peerConnection.setRemoteDescription({
-            remoteSdp: data.remoteSdp,
-            onSuccess: function () {
+          peerConnection.acceptSdpOffer({
+            description: {
+              sdp: data.remoteSdp,
+              type: 'offer'
             },
-            onError: function () {
+            onSuccess: function () {
+              logger.logInfo('acceptSdpOffer: success');
             }
           });
         }

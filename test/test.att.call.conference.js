@@ -909,7 +909,8 @@ describe('Call [Conference]', function () {
         getRemoteDescription: function () {
           return remoteDesc;
         },
-        setRemoteDescription: function () {}
+        setRemoteDescription: function () {},
+        acceptSdpOffer: function () {}
       };
 
       createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
@@ -1111,13 +1112,13 @@ describe('Call [Conference]', function () {
     });
 
     describe('media-modifications', function () {
-      var setRemoteDescriptionStub;
+      var acceptSdpOfferStub;
 
       beforeEach(function () {
-        setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
+        acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
       });
       afterEach(function () {
-        setRemoteDescriptionStub.restore();
+        acceptSdpOfferStub.restore();
       });
 
       it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
@@ -1128,7 +1129,7 @@ describe('Call [Conference]', function () {
         });
 
         setTimeout(function () {
-          expect(setRemoteDescriptionStub.called).to.equal(false);
+          expect(acceptSdpOfferStub.called).to.equal(false);
           done();
         }, 10);
       });
@@ -1141,10 +1142,10 @@ describe('Call [Conference]', function () {
         });
 
         setTimeout(function () {
-          expect(setRemoteDescriptionStub.called).to.equal(true);
-          expect(setRemoteDescriptionStub.getCall(0).args[0].remoteSdp).to.equal('abdc');
-          expect(setRemoteDescriptionStub.getCall(0).args[0].onSuccess).to.be.a('function');
-          expect(setRemoteDescriptionStub.getCall(0).args[0].onError).to.be.a('function');
+          expect(acceptSdpOfferStub.called).to.equal(true);
+          expect(acceptSdpOfferStub.getCall(0).args[0].description.sdp).to.equal('abdc');
+          expect(acceptSdpOfferStub.getCall(0).args[0].description.type).to.equal('offer');
+          expect(acceptSdpOfferStub.getCall(0).args[0].onSuccess).to.be.a('function');
           done();
         }, 10);
       });
