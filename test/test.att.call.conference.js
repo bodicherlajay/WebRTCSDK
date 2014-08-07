@@ -1047,7 +1047,6 @@ describe('Call [Conference]', function () {
         };
       });
 
-      // Not a requirement
       it.skip('should set invitee with `rejected` status', function (done) {
 
         var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant', function (options) {
