@@ -7,7 +7,8 @@
   'use strict';
 
   var factories = ATT.private.factories,
-    logManager = ATT.logManager.getInstance();
+    logManager = ATT.logManager.getInstance(),
+    sdpFilter = ATT.sdpFilter.getInstance();
 
   /** 
     Creates a new WebRTC Session.
@@ -38,17 +39,21 @@
 
     rtcManager.on('invitation-received', function (callInfo) {
       var eventName,
-        call = session.createCall({
-          breed: callInfo.type,
-          id: callInfo.id,
-          peer: callInfo.from,
-          type: ATT.CallTypes.INCOMING,
-          mediaType: callInfo.mediaType
-        });
+        sendRecvSdp,
+        call;
+
+      call = session.createCall({
+        breed: callInfo.type,
+        id: callInfo.id,
+        peer: callInfo.from,
+        type: ATT.CallTypes.INCOMING,
+        mediaType: callInfo.mediaType
+      });
 
       if (undefined !== call) {
         if (callInfo.sdp) {
-          call.setRemoteSdp(callInfo.sdp);
+          sendRecvSdp = sdpFilter.replaceSendOnlyWithSendRecv(callInfo.sdp);
+          call.setRemoteSdp(sendRecvSdp);
         }
 
         if (call.breed() === 'call') {
