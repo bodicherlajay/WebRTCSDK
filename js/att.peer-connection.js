@@ -70,7 +70,10 @@
     }
 
     function acceptSdpOffer(options) {
-      pc.setRemoteDescription(new RTCSessionDescription(options.description), function () {
+      pc.setRemoteDescription(new RTCSessionDescription({
+        sdp: options.remoteSdp,
+        type: 'offer'
+      }), function () {
         logger.logInfo('setRemoteDescription: success');
         pc.createAnswer(function (description) {// SUCCESS
           logger.logInfo('createAnswer: success');
@@ -149,7 +152,9 @@
       createSdpOffer();
 
     } else {
-      acceptSdpOffer(options.remoteSdp);
+      acceptSdpOffer({
+        sdp: options.remoteSdp
+      });
     }
     return {
       getLocalDescription: function () {
