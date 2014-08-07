@@ -1128,7 +1128,7 @@ describe('Call [Conference]', function () {
         }, 10);
       });
 
-      it('should set the remote description', function (done) {
+      it('should execurte `peerConnection.acceptSdpOffer`', function (done) {
         acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
 
         emitterEM.publish('media-modifications', {
@@ -1138,8 +1138,7 @@ describe('Call [Conference]', function () {
 
         setTimeout(function () {
           expect(acceptSdpOfferStub.called).to.equal(true);
-          expect(acceptSdpOfferStub.getCall(0).args[0].description.sdp).to.equal('abdc');
-          expect(acceptSdpOfferStub.getCall(0).args[0].description.type).to.equal('offer');
+          expect(acceptSdpOfferStub.getCall(0).args[0].remoteSdp).to.equal('abdc');
           expect(acceptSdpOfferStub.getCall(0).args[0].onSuccess).to.be.a('function');
           acceptSdpOfferStub.restore();
           done();

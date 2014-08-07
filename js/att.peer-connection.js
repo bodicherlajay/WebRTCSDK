@@ -21,27 +21,28 @@
     logger.setLevel(logManager.logLevel.TRACE);
 
     function processDescription(description, success) {
-      var fixedSDP;
+//      var fixedSDP;
       //description is the new SDP Which needs to processed
-      try {
-        logger.logInfo('Fixing the SDP');
-        logger.logTrace(description);
-        fixedSDP = sdpFilter.processChromeSDPOffer(description);
-        logger.logTrace(fixedSDP);
-      } catch (err) {
-        logger.logError('processChromeSDPOffer: error');
-        logger.logTrace(err);
-        throw new Error('Could not process Chrome offer SDP.');
-      }
-      /*
-      pc.setLocalDescription(fixedSDP, function () {
-        success(fixedSDP);
+//      try {
+//        logger.logInfo('Fixing the SDP');
+//        logger.logTrace(description);
+//        fixedSDP = sdpFilter.processChromeSDPOffer(description);
+//        logger.logTrace(fixedSDP);
+//      } catch (err) {
+//        logger.logError('processChromeSDPOffer: error');
+//        logger.logTrace(err);
+//        throw new Error('Could not process Chrome offer SDP.');
+//      }
+
+      pc.setLocalDescription(description, function () {
+        if (undefined !== success && 'function' !== typeof success) {
+          success(description);
+        }
       }, function (error) { // ERROR setLocal
         logger.logError('setLocalDescription: error');
         logger.logTrace(error);
         throw new Error('Could not set the localDescription.');
       });
-      */
     }
 
     function createSdpOffer() {
@@ -71,7 +72,10 @@
     }
 
     function acceptSdpOffer(options) {
-      pc.setRemoteDescription(new RTCSessionDescription(options.description), function () {
+      pc.setRemoteDescription(new RTCSessionDescription({
+        sdp: options.remoteSdp,
+        type: 'offer'
+      }), function () {
         logger.logInfo('setRemoteDescription: success');
         pc.createAnswer(function (description) {// SUCCESS
           logger.logInfo('createAnswer: success');
@@ -150,14 +154,15 @@
       createSdpOffer();
 
     } else {
-      acceptSdpOffer(options.remoteSdp);
+      acceptSdpOffer({
+        remoteSdp: options.remoteSdp
+      });
     }
     return {
       getLocalDescription: function () {
         return pc.localDescription;
       },
       setRemoteDescription: function (description) {
-//        acceptSdpOffer(options.remoteSdp, options.onSuccess);
         pc.setRemoteDescription(new RTCSessionDescription(description), function () {
           logger.logInfo('setRemoteDescription: success');
         }, function (error) {

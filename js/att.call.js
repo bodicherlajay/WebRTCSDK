@@ -133,10 +133,7 @@
       if ('conference' === breed) {
         if (undefined !== data.remoteSdp) {
           peerConnection.acceptSdpOffer({
-            description: {
-              sdp: data.remoteSdp,
-              type: 'offer'
-            },
+            remoteSdp: data.remoteSdp,
             onSuccess: function (description) {
               logger.logInfo('acceptSdpOffer: success');
               rtcManager.acceptMediaModifications({

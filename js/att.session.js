@@ -325,9 +325,9 @@
     };
 
     this.switchCall = function () {
-        var call = this.currentCall;
-        this.currentCall = this.backgroundCall;
-        this.backgroundCall = call;
+      var call = this.currentCall;
+      this.currentCall = this.backgroundCall;
+      this.backgroundCall = call;
     };
 
     this.deleteCurrentCall = function () {
