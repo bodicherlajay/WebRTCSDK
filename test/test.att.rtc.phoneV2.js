@@ -310,12 +310,15 @@ describe('Phone [Call]', function () {
 
       var onSpy,
         callHoldStub,
+        moveToBkgStub,
         options;
 
       beforeEach(function () {
 
         onSpy = sinon.spy(call, 'on');
         getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+        moveToBkgStub = sinon.stub(session, 'moveToBackground');
+
         callHoldStub = sinon.stub(call, 'hold', function () {
           emitterCall.publish('held');
         });
@@ -336,6 +339,7 @@ describe('Phone [Call]', function () {
       afterEach(function () {
         getUserMediaStub.restore();
         callHoldStub.restore();
+        moveToBkgStub.restore();
       });
 
       it('should register for `held` on the current call object', function () {
@@ -351,13 +355,16 @@ describe('Phone [Call]', function () {
          expect(callHoldStub.called).to.equal(true);
       });
 
-      xit('should call session.moveToBackground', function () {
-        var moveToBkgStub = sinon.stub(session, 'moveToBackground');
+      it('should call session.moveToBackground', function (done) {
+
         phone.dial(options);
-        expect(moveToBkgStub.called).to.equal(true);
+        setTimeout(function () {
+          expect(moveToBkgStub.called).to.equal(true);
+          done();
+        }, 50);
       });
 
-      xit('should call session.createCall on `disconnected` if [false === options.holdCurrentCall]', function (done) {
+      it('should call session.createCall on `held` if [true === options.holdCurrentCall]', function (done) {
 
         phone.dial(options);
 

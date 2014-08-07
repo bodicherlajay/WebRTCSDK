@@ -568,13 +568,13 @@
                * @type {object}
                * @property {Date} timestamp - Event fire time.
                */
-              session.moveToBackground(call)
-             // call = dialSetup(options);
+              session.moveToBackground();
+              dialSetup(options);
             });
             call.hold();
           }
         } else {
-          call = dialSetup(options);
+           dialSetup(options);
         }
       } catch (err) {
         logger.logError(err);

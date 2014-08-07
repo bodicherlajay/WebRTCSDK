@@ -325,8 +325,8 @@
     };
 
     this.moveToBackground = function (call) {
-
-    }
+      console.log('moving!!!!');
+    };
 
     this.switchCall = function () {
       var call = this.currentCall;
