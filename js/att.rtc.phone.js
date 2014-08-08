@@ -36,6 +36,7 @@
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('call incoming event  by phone layer');
       emitter.publish('call-incoming', data);
     });
 
@@ -51,10 +52,11 @@
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('conference invite event  by phone layer')
       emitter.publish('conference-invite', data);
     });
 
-	  session.on('call-disconnected', function (data) {
+    session.on('call-disconnected', function (data) {
       /**
        * Call disconnected event.
        * @desc Indicates a call has been disconnected
@@ -66,6 +68,7 @@
        * @property {String} codec - The codec of the call.
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('call disconnected event  by phone layer');
       emitter.publish('call-disconnected', data);
       session.deleteCurrentCall();
     });
@@ -82,11 +85,13 @@
        * @property {String} codec - The codec of the conference
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('conference disconnected  event  by phone layer');
       emitter.publish('conference:disconnected', data);
       session.deleteCurrentCall();
     });
 
     session.on('error', function (data) {
+      logger.logError("Error in Session " +data);
       emitter.publish('error', data);
     });
 
@@ -157,7 +162,6 @@
           && 'conference:disconnecting' !== event
           && 'conference:disconnected' !== event
           && 'conference-connected' !== event
-
           && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
@@ -196,16 +200,16 @@
     function login(options) {
       try {
         if (undefined === options) {
-          //todo remove throw and publish it using error callback handler
-          throw ATT.errorDictionary.getSDKError('2002');
+          publishError('2002');
+          return;
         }
         if (undefined === options.token) {
-          //todo remove throw and publish it using error callback handler
-          throw ATT.errorDictionary.getSDKError('2001');
+          publishError('2001');
+          return;
         }
         if (undefined !== session && null !== session.getId()) {
-          //todo remove throw and publish it using error callback handler
-          throw ATT.errorDictionary.getSDKError('2005');
+          publishError('2005');
+          return;
         }
 
         try {
@@ -227,7 +231,7 @@
           session.connect(options);
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('2004');
+          publishError('2004');
         }
       } catch (err) {
 
@@ -280,7 +284,8 @@
       try {
 
         if (null === session || null === session.getId()) {
-          throw ATT.errorDictionary.getSDKError('3001');
+          publishError('3001');
+          return;
         }
 
         try {
@@ -303,7 +308,7 @@
           session = undefined;
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('3000');
+          publishError('3000');
         }
       } catch (err) {
         logger.logError(err);
@@ -450,7 +455,7 @@
         }
 
       } catch (err) {
-        throw ATT.errorDictionary.getSDKError('4003');
+       publishError('4003');
       }
 
     }
@@ -512,28 +517,34 @@
       try {
 
         if (null === session.getId()) {
-          throw ATT.errorDictionary.getSDKError('4004');
+          publishError('4004');
+          return;
         }
         if (undefined === options) {
-          throw ATT.errorDictionary.getSDKError('4009');
+          publishError('4009');
+          return;
         }
 
         if (undefined === options.localMedia) {
-          throw ATT.errorDictionary.getSDKError('4006');
+          publishError('4006');
+          return;
         }
 
         if (undefined === options.remoteMedia) {
-          throw ATT.errorDictionary.getSDKError('4007');
+          publishError('4007');
+          return;
         }
 
         if (undefined === options.destination) {
-          throw ATT.errorDictionary.getSDKError('4008');
+          publishError('4008');
+          return;
         }
 
         if (undefined !== options.mediaType) {
           if ('audio' !== options.mediaType
               && 'video' !== options.mediaType) {
-            throw ATT.errorDictionary.getSDKError('4002');
+            publishError('4002');
+            return;
           }
         }
 
@@ -671,7 +682,7 @@
           }
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('4003');
+           publishError('4003');
         }
 
       } catch (err) {
@@ -827,10 +838,12 @@
       try {
 
         if (null === session || null === session.getId()) {
-          throw ATT.errorDictionary.getSDKError('20001');
+           publishError('20001');
+          return;
         }
         if (null === session.currentCall) {
-          throw ATT.errorDictionary.getSDKError('20002');
+          publishError('20002');
+          return;
         }
 
         try {
@@ -921,7 +934,7 @@
         } catch (err) {
           logger.logError(err);
 
-          throw ATT.errorDictionary.getSDKError('20000');
+           publishError('20000');
         }
 
       } catch (err) {
@@ -958,7 +971,8 @@
         var call = session.currentCall;
 
         if (null === call || null === call.id) {
-          throw ATT.errorDictionary.getSDKError('9000');
+          publishError('9000');
+          return;
         }
 
         try {
@@ -979,7 +993,7 @@
           call.mute();
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('9001');
+           publishError('9001');
         }
       } catch (err) {
         logger.logError(err);
@@ -1015,7 +1029,8 @@
         var call = session.currentCall;
 
         if (null === call || null === call.id) {
-          throw ATT.errorDictionary.getSDKError('10000');
+          publishError('10000');
+          return;
         }
 
         try {
@@ -1037,7 +1052,7 @@
           call.unmute();
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('10001');
+           publishError('10001');
         }
 
       } catch (err) {
@@ -1092,7 +1107,7 @@
         call = session.currentCall;
 
         if (null === call || null === call.id()) {
-          throw ATT.errorDictionary.getSDKError('6000');
+           publishError('6000');
         }
 
         try {
@@ -1101,7 +1116,7 @@
           });
           call.disconnect();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('6001');
+           publishError('6001');
         }
 
       } catch (err) {
@@ -1137,7 +1152,8 @@
 
       try {
         if (null === call) {
-          throw ATT.errorDictionary.getSDKError('11000');
+          publishError('11000');
+          return;
         }
         try {
           if (null === call.id()) {
@@ -1155,7 +1171,7 @@
         }
           call.disconnect();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('11001');
+           publishError('11001');
         }
       } catch (err) {
         logger.logError(err);
@@ -1190,7 +1206,7 @@
         var call = session.currentCall;
 
         if (null === call || null === call.id()) {
-          publishError('12000')
+          publishError('12000');
           return;
         }
         try {
@@ -1205,7 +1221,7 @@
           });
           call.reject();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('12001');
+           publishError('12001');
         }
 
       } catch (err) {
@@ -1241,10 +1257,12 @@
       try {
 
         if (null === session || null === session.getId()) {
-          throw ATT.errorDictionary.getSDKError('22001');
+          publishError('22001');
+          return;
         }
         if (null === session.currentCall) {
-          throw ATT.errorDictionary.getSDKError('22002');
+          publishError('22002');
+          return;
         }
 
         try {
@@ -1257,7 +1275,7 @@
         } catch (err) {
           logger.logError(err);
 
-          throw ATT.errorDictionary.getSDKError('22000');
+           publishError('22000');
         }
 
       } catch (err) {
@@ -1294,13 +1312,14 @@
         call = session.currentCall;
 
         if (null === call || null === call.id()) {
-          throw ATT.errorDictionary.getSDKError('7000');
+          publishError('7000');
+          return;
         }
 
         try {
           call.hold();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('7001');
+           publishError('7001');
         }
       } catch (err) {
         emitter.publish('error', {
@@ -1337,17 +1356,19 @@
         call = session.currentCall;
 
         if (null === call || null === call.id()) {
-          throw ATT.errorDictionary.getSDKError('8000');
+          publishError('8000');
+          return;
         }
 
         if ('held' !== call.getState()) {
-          throw ATT.errorDictionary.getSDKError('8001');
+          publishError('8001');
+          return;
         }
 
         try {
           call.resume();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('8002');
+           publishError('8002');
         }
       } catch (err) {
         emitter.publish('error', {
@@ -1379,15 +1400,18 @@
 
       try {
         if (undefined === options) {
-          throw ATT.errorDictionary.getSDKError('17000');
+          publishError('17000');
+          return;
         }
 
         if (undefined === session || null === session.getId()) {
-          throw ATT.errorDictionary.getSDKError('17002');
+          publishError('17002');
+          return;
         }
 
         if (undefined === options.e911Id || null === options.e911Id) {
-          throw ATT.errorDictionary.getSDKError('17000');
+          publishError('17000');
+          return;
         }
 
         try {
@@ -1397,7 +1421,8 @@
 
           session.updateE911Id(options);
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('17001');
+          publishError('17001');
+          return;
         }
 
       } catch (err) {
@@ -1757,7 +1782,7 @@
           conference.disconnectConference();
         } catch (err) {
           logger.logError(err);
-          throw ATT.errorDictionary.getSDKError(23000);
+           publishError(23000);
         }
       } catch(err) {
         logger.logError(err);
@@ -1811,7 +1836,7 @@
           return participants;
         } catch (err) {
           logger.logError(err);
-          throw ATT.errorDictionary.getSDKError(21001);
+           publishError(21001);
         }
       } catch (err) {
         logger.logError(err);
@@ -1865,6 +1890,7 @@
 
         if (undefined === participant) {
           publishError(25002);
+          return;
         }
 
         conference.on('participant-removed', function (data) {
@@ -1883,7 +1909,7 @@
           conference.removeParticipant(participant);
         } catch (err) {
           logger.logError(err);
-          throw ATT.errorDictionary.getSDKError(25003);
+          publishError(25003);
         }
       } catch (err) {
         logger.logError(err);
