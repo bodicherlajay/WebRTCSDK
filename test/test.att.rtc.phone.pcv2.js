@@ -3,7 +3,7 @@
  before: true, sinon: true, expect: true, xit: true, URL: true, assert, after*/
 
 
-describe('Phone [Call]', function () {
+describe('Phone [PCV2]', function () {
   'use strict';
   var Call,
     Session,
@@ -14,7 +14,6 @@ describe('Phone [Call]', function () {
     ums,
     sessionStub,
     getUserMediaStub,
-    userMediaService,
     restClientStub,
     createCallOptions,
     createPeerConnectionStub,
