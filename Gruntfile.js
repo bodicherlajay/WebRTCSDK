@@ -26,7 +26,7 @@ module.exports = function (grunt) {
       'test/test.att.rtc.js',
       'test/test.att.rtc.phone.conference.js',
       'test/test.att.rtc.phone.js',
-      'test/test.att.rtc.phoneV2.js',
+      'test/test.att.rtc.phone.pcv2.js',
 //      'test/test.att.rtc.dhs.js',
       // 'test/test.att.main.js',
       'test/test.att.phonenumber.js'

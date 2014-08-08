@@ -540,8 +540,7 @@ describe('Phone', function () {
             breed: 'call',
             mediaType: 'video',
             localMedia: localVideo,
-            remoteMedia: remoteVideo,
-            holdCurrentCall: false
+            remoteMedia: remoteVideo
           };
 
           onSpy = sinon.spy(call, 'on');
@@ -657,7 +656,8 @@ describe('Phone', function () {
           expect(onSpy.calledWith('error')).to.equal(true);
         });
 
-        it('should execute call.connect', function () {
+        it('should execute `call.connect` if pcv == 1', function () {
+          phone.pcv = 1;
           phone.dial(options);
 
           expect(callConnectStub.calledWith(options)).to.equal(true);
@@ -792,7 +792,7 @@ describe('Phone', function () {
             })).to.equal(true);
           });
 
-          it('[4003] should be published with `error` event if there is an unknown exception during the operation', function () {
+          xit('[4003] should be published with `error` event if there is an unknown exception during the operation', function () {
 
             phone.dial({
               destination: '1234',
