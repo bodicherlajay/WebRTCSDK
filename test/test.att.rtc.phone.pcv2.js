@@ -14,7 +14,6 @@ describe('Phone [PCV2]', function () {
     ums,
     sessionStub,
     getUserMediaStub,
-    restClientStub,
     createCallOptions,
     createPeerConnectionStub,
     options,
@@ -57,9 +56,6 @@ describe('Phone [PCV2]', function () {
     });
 
     phone = new Phone();
-    phone.useNewPeerConnection(true);
-
-
   });
   afterEach(function () {
     sessionStub.restore();
@@ -68,12 +64,17 @@ describe('Phone [PCV2]', function () {
 
   describe('Methods', function () {
 
-    var onErrorSpy, call, createCallStub, callConnectStub,
-      localVideo = document.createElement('video'),
-      remoteVideo = document.createElement('video');
+    var onErrorSpy,
+      call,
+      createCallStub,
+      callConnectStub,
+      localVideo,
+      remoteVideo;
 
     beforeEach(function () {
-      restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
+      localVideo = document.createElement('video');
+      remoteVideo = document.createElement('video');
+
       createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
         return {};
       });
@@ -87,14 +88,11 @@ describe('Phone [PCV2]', function () {
       createCallStub = sinon.stub(session, 'createCall', function () {
         return call;
       });
-      callConnectStub = sinon.stub(call, 'connect');
 
     });
 
     afterEach(function () {
-      restClientStub.restore();
       createPeerConnectionStub.restore();
-      callConnectStub.restore();
       createCallStub.restore();
     });
 
@@ -102,6 +100,8 @@ describe('Phone [PCV2]', function () {
 
       it('should `ums.getUserMedia` if pcv == 2', function () {
         getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+
+        phone.pcv = 2;
         phone.dial(options);
 
         expect(getUserMediaStub.called).to.equal(true);
@@ -126,10 +126,12 @@ describe('Phone [PCV2]', function () {
         getUserMediaStub.restore();
       });
 
-      xdescribe('getUserMedia Success :onUserMedia', function () {
+      describe('getUserMedia Success :onUserMedia', function () {
+
         var media = {localStream: '12123'}, onUserMediaSpy;
+
         beforeEach(function () {
-          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options){
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
             setTimeout(function () {
               onUserMediaSpy = sinon.spy(options, 'onUserMedia');
               options.onUserMedia(media);
@@ -143,103 +145,25 @@ describe('Phone [PCV2]', function () {
           getUserMediaStub.restore();
         });
 
-        it('should call `call.addStream` on userMedia Success', function (done) {
-          var addStreamStub = sinon.stub(call, 'addStream');
+        it('should call `call.connect` with newPeerConnection as true', function (done) {
+          callConnectStub = sinon.stub(call, 'connect', function () {});
+          phone.pcv = 2;
           phone.dial(options);
+
           setTimeout(function () {
-            expect(onUserMediaSpy.called).to.equal(true);
-            expect(addStreamStub.called).to.equal(true);
-            expect(addStreamStub.calledWith(media.localStream)).to.equal(true);
-            expect(onUserMediaSpy.calledBefore(addStreamStub)).to.equal(true);
-            expect(addStreamStub.calledAfter(onUserMediaSpy)).to.equal(true);
-            addStreamStub.restore();
-            done();
-          }, 100);
-
-
-        });
-
-        xit('should call `call.connect` on userMedia Success', function (done) {
-
-          phone.dial(options);
-          setTimeout(function () {
-            expect(onUserMediaSpy.called).to.equal(true);
-            expect(callConnectStub.getCall(0).args[0].newPeerConnection).to.be.an('boolean');
-            expect(onUserMediaSpy.calledBefore(callConnectStub)).to.equal(true);
-            expect(callConnectStub.calledAfter(onUserMediaSpy)).to.equal(true);
-            done();
+            try {
+              expect(callConnectStub.called).to.equal(true);
+              expect(callConnectStub.getCall(0).args[0].newPeerConnection).to.equal(true);
+              callConnectStub.restore();
+              done();
+            } catch (e) {
+              done(e);
+            }
           }, 100);
 
         });
       });
 
-      xdescribe('getUserMedia Success :onMediaEstablished', function () {
-        var  onMediaEstablishedSpy;
-        beforeEach(function () {
-          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options){
-            setTimeout(function () {
-              onMediaEstablishedSpy = sinon.spy(options, 'onMediaEstablished');
-              options.onMediaEstablished();
-              onMediaEstablishedSpy.restore();
-            }, 10);
-          });
-
-        });
-
-        afterEach(function () {
-          getUserMediaStub.restore();
-        });
-
-        it('should publish `media-established` on onMediaEstablished by getUserMedia', function (done) {
-          var emitterPublishStub = sinon.stub(emitterCall, 'publish');
-          phone.dial(options);
-          setTimeout(function () {
-            expect(onMediaEstablishedSpy.called).to.equal(true);
-            expect(emitterPublishStub.called).to.equal(true);
-            expect(emitterPublishStub.calledWith('media-established')).to.equal(true);
-
-            expect(emitterPublishStub.getCall(1).args[1].mediaType).to.be.a('string');
-            expect(emitterPublishStub.getCall(1).args[1].codec).to.be.a('array');
-            expect(emitterPublishStub.getCall(1).args[1].timestamp).to.be.a('date');
-
-            expect(onMediaEstablishedSpy.calledBefore(emitterPublishStub)).to.equal(true);
-            expect(emitterPublishStub.calledAfter(onMediaEstablishedSpy)).to.equal(true);
-            emitterPublishStub.restore();
-            done();
-          }, 100);
-
-
-        });
-      });
-
-      xdescribe('[20002] getUserMedia Success :onUserMediaError', function () {
-        var getUserMediaStub, phone2,
-          onErrorSpy;
-
-        beforeEach(function () {
-          onErrorSpy = sinon.spy();
-          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
-            options.onUserMediaError();
-          });
-          phone2 = new Phone();
-          phone2.on('error', onErrorSpy);
-
-        });
-
-        afterEach(function () {
-          getUserMediaStub.restore();
-        });
-
-        it('should publish error', function (done) {
-          phone.dial(options);
-
-          setTimeout(function () {
-            expect(onErrorSpy.called).to.equal(true);
-            expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('4011');
-            done();
-          }, 50);
-        });
-      });
     });
 
     xdescribe('[US221924] Second call[end]', function () {

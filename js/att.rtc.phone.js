@@ -517,7 +517,9 @@
               remoteMedia: options.remoteMedia,
               onUserMedia: function (media) {
                 call.addStream(media.localStream);
-                call.connect();
+                call.connect({
+                  newPeerConnection: true
+                });
               },
               onMediaEstablished: function () {
                 emitter.publish('media-established', {
