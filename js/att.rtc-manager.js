@@ -342,6 +342,7 @@
     function connectCall2() {}
 
     function connectConference(options) {
+
       var responseData,
           joinConfig,
           createConfig,
@@ -350,6 +351,10 @@
           data,
           callData,
           conferenceData;
+
+      if (undefined === options.breed) {
+        throw new Error('No call type defined.');
+      }
 
       conferenceData = {
         conference: {
@@ -365,13 +370,13 @@
       };
 
       commonParams = {
-        url: { sessionId : options.sessionInfo.sessionId,
+        url: { sessionId : options.sessionId,
         type: options.type},
         headers: {
-          'Authorization': 'Bearer ' + options.sessionInfo.token
+          'Authorization': 'Bearer ' + options.token
         }
       };
-      if ('call' === options.type) {
+      if ('call' === options.breed) {
        data = callData;
       } else {
         data = conferenceData;

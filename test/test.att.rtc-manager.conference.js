@@ -51,11 +51,9 @@ describe('RTCManager [Conference]', function () {
             sdp: localSdp,
             type: 'offer'
           },
-          sessionInfo : {
-            sessionId: '123',
-            token : 'token'
-          },
-          type: 'conference', // `conference` or `call`
+          sessionId: '123',
+          token : 'token',
+          breed: 'conference', // `conference` or `call`
           peer: 'junito',
           onSuccess: onSuccessSpy,
           onRemoteStream : onRemoteStreamSpy,
@@ -66,18 +64,23 @@ describe('RTCManager [Conference]', function () {
         expect(rtcManager.connectConference).to.be.a('function');
       });
 
+      it('should throw an error if the call type is not defined', function () {
+        connectConfOpts.breed = undefined;
+        expect(rtcManager.connectConference.bind(rtcManager, connectConfOpts)).to.throw('No call type defined.');
+      });
+
       it('should execute `doOperation(createCall)` [breed === call] with required params', function () {
         var params;
 
-        connectConfOpts.type = 'call';
+        connectConfOpts.breed = 'call';
 
         params = {
           url : {
-            sessionId: connectConfOpts.sessionInfo.sessionId,
+            sessionId: connectConfOpts.sessionId,
             type: connectConfOpts.type
           },
           headers : {
-            Authorization : 'Bearer ' + connectConfOpts.sessionInfo.token
+            Authorization : 'Bearer ' + connectConfOpts.token
           }
         };
 
@@ -91,7 +94,7 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
         expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(params.url.sessionId);
         expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal(params.url.type);
-        expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.sessionInfo.token);
+        expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.token);
         expect(doOperationStub.getCall(0).args[1].data.call.calledParty).to.equal(connectConfOpts.peer);
         expect(doOperationStub.getCall(0).args[1].data.call.sdp).to.equal(connectConfOpts.description.sdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
@@ -107,11 +110,11 @@ describe('RTCManager [Conference]', function () {
 
         params = {
           url : {
-            sessionId: connectConfOpts.sessionInfo.sessionId,
+            sessionId: connectConfOpts.sessionId,
             type: connectConfOpts.type
           },
           headers : {
-            Authorization : 'Bearer ' + connectConfOpts.sessionInfo.token
+            Authorization : 'Bearer ' + connectConfOpts.token
           }
         };
 
@@ -125,7 +128,7 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
         expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(params.url.sessionId);
         expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal(params.url.type);
-        expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.sessionInfo.token);
+        expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.token);
         expect(doOperationStub.getCall(0).args[1].data.conference.sdp).to.equal(connectConfOpts.description.sdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
         expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
