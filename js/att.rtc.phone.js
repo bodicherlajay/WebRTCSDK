@@ -15,12 +15,12 @@
   */
   function Phone() {
 
-    var emitter = ATT.private.factories.createEventEmitter(),
+    var that = this,
+      emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
       userMediaSvc = ATT.UserMediaService,
-      logger = logManager.addLoggerForModule('Phone'),
-      newPeerConnection = false;
+      logger = logManager.addLoggerForModule('Phone');
 
     logger.logInfo('Creating new instance of Phone');
 
@@ -641,9 +641,8 @@
             emitter.publish('error', data);
           });
 
-          console.log(this.pcv);
-
           if (2 === this.pcv) {
+
             userMediaSvc.getUserMedia({
               mediaType: options.mediaType,
               localMedia: options.localMedia,
@@ -651,7 +650,7 @@
               onUserMedia: function (media) {
                 call.addStream(media.localStream);
                 call.connect({
-                  newPeerConnection: true
+                  pcv: that.pcv
                 });
               },
               onMediaEstablished: function () {
@@ -666,9 +665,10 @@
                 publishError('4011', error);
               }
             });
-          } else {
-            call.connect(options);
+            return;
           }
+
+          call.connect(options);
 
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('4003');
@@ -1893,9 +1893,7 @@
       }
     }
 
-    function useNewPeerConnection(value) {
-      newPeerConnection = value;
-    }
+    this.pcv = pcv;
     // ===================
     // Call interface
     // ===================
@@ -1916,7 +1914,6 @@
     this.updateE911Id = updateE911Id;
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
-    this.pcv = pcv;
 
     // ===================
     // Conference interface
@@ -1929,9 +1926,6 @@
     this.addParticipants = addParticipants;
     this.getParticipants = getParticipants;
     this.removeParticipant = removeParticipant;
-    this.useNewPeerConnection = useNewPeerConnection;
-
-
   }
 
   if (undefined === ATT.private) {

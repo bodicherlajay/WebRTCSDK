@@ -98,9 +98,15 @@ describe('Phone [PCV2]', function () {
 
     describe('dial', function () {
 
-      it('should `ums.getUserMedia` if pcv == 2', function () {
+      beforeEach(function () {
         getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+      });
 
+      afterEach(function () {
+        getUserMediaStub.restore();
+      });
+
+      it('should `ums.getUserMedia` if pcv == 2', function () {
         phone.pcv = 2;
         phone.dial(options);
 
@@ -111,19 +117,13 @@ describe('Phone [PCV2]', function () {
         expect(getUserMediaStub.getCall(0).args[0].onUserMedia).to.be.an('function');
         expect(getUserMediaStub.getCall(0).args[0].onMediaEstablished).to.be.an('function');
         expect(getUserMediaStub.getCall(0).args[0].onUserMediaError).to.be.an('function');
-
-        getUserMediaStub.restore();
       });
 
       it('should NOT execute `ums.getUserMedia` if pcv != 2', function () {
-        getUserMediaStub = sinon.stub(ums, 'getUserMedia');
-
         phone.pcv = 1;
         phone.dial(options);
 
         expect(getUserMediaStub.called).to.equal(false);
-
-        getUserMediaStub.restore();
       });
 
       describe('getUserMedia Success :onUserMedia', function () {
@@ -131,21 +131,15 @@ describe('Phone [PCV2]', function () {
         var media = {localStream: '12123'}, onUserMediaSpy;
 
         beforeEach(function () {
+          getUserMediaStub.restore();
+
           getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
-            setTimeout(function () {
-              onUserMediaSpy = sinon.spy(options, 'onUserMedia');
-              options.onUserMedia(media);
-              onUserMediaSpy.restore();
-            }, 10);
+            options.onUserMedia(media);
           });
 
         });
 
-        afterEach(function () {
-          getUserMediaStub.restore();
-        });
-
-        it('should call `call.connect` with newPeerConnection as true', function (done) {
+        it('should call `call.connect` with pcv = 2', function (done) {
           callConnectStub = sinon.stub(call, 'connect', function () {});
           phone.pcv = 2;
           phone.dial(options);
@@ -153,7 +147,7 @@ describe('Phone [PCV2]', function () {
           setTimeout(function () {
             try {
               expect(callConnectStub.called).to.equal(true);
-              expect(callConnectStub.getCall(0).args[0].newPeerConnection).to.equal(true);
+              expect(callConnectStub.getCall(0).args[0].pcv).to.equal(2);
               callConnectStub.restore();
               done();
             } catch (e) {
