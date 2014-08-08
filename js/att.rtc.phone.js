@@ -314,6 +314,147 @@
       }
     }
 
+    function dialSetup(options) {
+      var call;
+
+      try {
+
+        logger.logDebug('Phone.dial');
+
+        /**
+         * Dialing event.
+         * @desc Triggered immediately.
+         * @event Phone#dialing
+         * @type {object}
+         * @property {Date} timestamp - Event fire time.
+         */
+        emitter.publish('dialing', {
+          to: options.destination,
+          mediaType: options.mediaType,
+          timestamp: new Date()
+        });
+
+         call = session.createCall({
+          peer: options.destination,
+          breed: 'call',
+          type: ATT.CallTypes.OUTGOING,
+          mediaType: options.mediaType,
+          localMedia: options.localMedia,
+          remoteMedia: options.remoteMedia
+        });
+
+        call.on('connecting', function (data) {
+          /**
+           * Call connecting event.
+           * @desc Indicates succesful creation of the call.
+           * @event Phone#call-connecting
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('call-connecting', data);
+        });
+        call.on('rejected', function (data) {
+          /**
+           * Call rejected event.
+           * @desc Successfully rejected an incoming call.
+           * @event Phone#call-rejected
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('call-rejected', data);
+          session.deleteCurrentCall();
+        });
+        call.on('connected', function (data) {
+          /**
+           * Call connected event.
+           * @desc Successfully established a call.
+           * @event Phone#call-connected
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('call-connected', data);
+        });
+        call.on('media-established', function (data) {
+          /**
+           * Media established event.
+           * @desc Triggered when both parties are completed negotiation
+           * and engaged in active conversation.
+           * @event Phone#media-established
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('media-established', data);
+        });
+        call.on('held', function (data) {
+          /**
+           * Call on hold event.
+           * @desc Successfully put the current call on hold.
+           * @event Phone#call-held
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('call-held', data);
+        });
+        call.on('resumed', function (data) {
+          /**
+           * Call resumed event.
+           * @desc Successfully resume a call that was on held.
+           * @event Phone#call-resumed
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('call-resumed', data);
+        });
+
+        call.on('disconnected', function (data) {
+          /**
+           * Call disconnected event.
+           * @desc Successfully disconnected the current call.
+           * @event Phone#call-disconnected
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('call-disconnected', data);
+          session.deleteCurrentCall();
+        });
+
+        call.on('error', function (data) {
+          emitter.publish('error', data);
+        });
+
+
+        if (newPeerConnection) {
+          userMediaSvc.getUserMedia({
+            mediaType : options.mediaType,
+            localMedia : options.localMedia,
+            remoteMedia : options.remoteMedia,
+            onUserMedia : function (media) {
+              call.addStream(media.localStream);
+              call.connect2();
+            },
+            onMediaEstablished : function () {
+              emitter.publish('media-established', {
+                timestamp: new Date(),
+                mediaType: call.mediaType(),
+                codec: call.codec()
+              });
+            },
+            onUserMediaError : function (error) {
+              logger.logError('getUserMedia Failed ');
+              publishError('4011', error);
+            }
+          });
+
+        } else {
+          call.connect(options);
+        }
+
+      } catch (err) {
+        throw ATT.errorDictionary.getSDKError('4003');
+      }
+
+    }
+
   /**
    * @summary Make a call
    * @desc Add description here
@@ -497,14 +638,6 @@
           });
 
           call.on('error', function (data) {
-            /**
-             * Call Error event.
-             * @desc Indicates an error condition during a call's flow
-             *
-             * @event Phone#error
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
             emitter.publish('error', data);
           });
 
@@ -720,14 +853,6 @@
           });
 
           conference.on('error', function (data) {
-            /**
-             * Conference error event
-             * @desc An error occurred during conferencing
-             * @event Phone#error
-             * @type {object}
-             * @property {Date} timestamp - Event fire time
-             * @property {Object} data - Available error detail
-             */
             emitter.publish('error', data);
           });
 
@@ -772,14 +897,6 @@
               } catch (err) {
                 logger.logError(err);
 
-                /**
-                 * Call Error event.
-                 * @desc Indicates an error condition during a call's flow
-                 *
-                 * @event Phone#error
-                 * @type {object}
-                 * @property {Object} error - error detail
-                 */
                 emitter.publish('error', {
                   error: ATT.errorDictionary.getSDKError('20000')
                 });
@@ -810,14 +927,6 @@
       } catch (err) {
         logger.logError(err);
 
-        /**
-         * Call Error event.
-         * @desc Indicates an error condition during a call's flow
-         *
-         * @event Phone#error
-         * @type {object}
-         * @property {Object} error - error detail
-         */
         emitter.publish('error', {
           error: err
         });
@@ -1154,14 +1263,6 @@
       } catch (err) {
         logger.logError(err);
 
-        /**
-         * Call Error event.
-         * @desc Indicates an error condition during a call's flow
-         *
-         * @event Phone#error
-         * @type {object}
-         * @property {Object} error - error detail
-         */
         emitter.publish('error', {
           error: err
         });
