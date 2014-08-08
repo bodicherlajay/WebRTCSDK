@@ -788,18 +788,44 @@
         call.on('resumed', function (data) {
           emitter.publish('call-resumed', data);
         });
-        call.on('disconnected', function (data) {
-          emitter.publish('call-disconnected', data);
-          session.deleteCurrentCall();
-          session.switchCall();
-
-          if (session.currentCall !== null) {
-              session.currentCall.resume();
-          }
-        });
+//        call.on('disconnected', function (data) {
+//          emitter.publish('call-disconnected', data);
+//          session.deleteCurrentCall();
+//          session.switchCall();
+//
+//          if (session.currentCall !== null) {
+//            session.currentCall.resume();
+//          }
+//        });
         call.on('error', function (data) {
           publishError(5002, data);
         });
+
+        if (2 === this.pcv) {
+          userMediaSvc.getUserMedia({
+            mediaType: call.mediaType,
+            localMedia: options.localMedia,
+            remoteMedia: options.remoteMedia,
+            onUserMedia: function (media) {
+              call.addStream(media.localStream);
+              call.connect({
+                pcv: that.pcv
+              });
+            },
+            onMediaEstablished: function () {
+              emitter.publish('media-established', {
+                timestamp: new Date(),
+                mediaType: call.mediaType(),
+                codec: call.codec()
+              });
+            },
+            onUserMediaError: function (error) {
+              logger.logError('getUserMedia Failed ');
+              publishError('4011', error);
+            }
+          });
+          return;
+        }
 
         call.connect(options);
 
@@ -1156,22 +1182,22 @@
           return;
         }
         try {
-          if (null === call.id()) {
-            emitter.publish('call-canceled', {
-              to: call.peer(),
-              mediaType: call.mediaType(),
-              timestamp: new Date()
-            });
-            session.deleteCurrentCall();
-            session.switchCall();
-
-            if (session.currentCall !== null) {
-                session.currentCall.resume();
-            }
-        }
+//          if (null === call.id()) {
+//            emitter.publish('call-canceled', {
+//              to: call.peer(),
+//              mediaType: call.mediaType(),
+//              timestamp: new Date()
+//            });
+//            session.deleteCurrentCall();
+//            session.switchCall();
+//
+//            if (session.currentCall !== null) {
+//              session.currentCall.resume();
+//            }
+//          }
           call.disconnect();
         } catch (err) {
-           publishError('11001');
+          publishError('11001');
         }
       } catch (err) {
         logger.logError(err);
@@ -1210,18 +1236,18 @@
           return;
         }
         try {
-          call.on('disconnected', function (data) {
-            emitter.publish('call-disconnected', data);
-            session.deleteCurrentCall();
-            session.switchCall();
-
-            if (session.currentCall !== null) {
-                session.currentCall.resume();
-            }
-          });
+//          call.on('disconnected', function (data) {
+//            emitter.publish('call-disconnected', data);
+//            session.deleteCurrentCall();
+//            session.switchCall();
+//
+//            if (session.currentCall !== null) {
+//                session.currentCall.resume();
+//            }
+//          });
           call.reject();
         } catch (err) {
-           publishError('12001');
+          publishError('12001');
         }
 
       } catch (err) {
