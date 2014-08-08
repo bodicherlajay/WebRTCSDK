@@ -7,7 +7,8 @@ describe('Call [Conference]', function () {
   var Call,
     restClientStub,
     factories,
-    optionsOutgoingVideo;
+    optionsOutgoingVideo,
+    newPeerConnection;
 
   beforeEach(function () {
 
@@ -18,7 +19,7 @@ describe('Call [Conference]', function () {
       type: ATT.CallTypes.OUTGOING,
       sessionInfo : {sessionId : '12345', token : '123'}
     };
-
+    newPeerConnection =  {newPeerConnection : true};
     factories = ATT.private.factories;
     restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
     Call = ATT.rtc.Call;
@@ -132,7 +133,7 @@ describe('Call [Conference]', function () {
         createPeerConnctionStub.restore();
       });
 
-      it('should return the SDP given from `peerConnection`\s `remoteDescription`', function () {
+      it('should return the SDP given from `peerConnections` `remoteDescription`', function () {
 
         var getRemoteDescriptionStub,
           remoteDesc = {
@@ -146,7 +147,7 @@ describe('Call [Conference]', function () {
         // before connecting it should be null
         expect(outgoingConference.remoteSdp()).to.equal(null);
 
-        outgoingConference.connect();
+        outgoingConference.connect(newPeerConnection);
         // afterConnecting, it should call peerConnection.getRemoteDescription
         expect(outgoingConference.remoteSdp()).to.equal(remoteDesc.sdp);
         expect(getRemoteDescriptionStub.called).to.equal(true);
@@ -435,7 +436,7 @@ describe('Call [Conference]', function () {
 
           createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
 
-          outgoingVideoConference.connect();
+          outgoingVideoConference.connect(newPeerConnection);
 
           expect(createPeerConnectionStub.calledOnce).to.equal(true);
           expect(createPeerConnectionStub.getCall(0).args[0].mediaType).to.equal(outgoingVideoConference.mediaType());
@@ -477,7 +478,7 @@ describe('Call [Conference]', function () {
           it('should call `rtcManager.connectConference`', function (done) {
             connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
 
-            outgoingVideoConference.connect();
+            outgoingVideoConference.connect(newPeerConnection);
 
             setTimeout(function () {
               expect(pcOnSuccessSpy.calledOnce).to.equal(true);
@@ -485,6 +486,7 @@ describe('Call [Conference]', function () {
               expect(connectConferenceStub.calledAfter(pcOnSuccessSpy)).to.equal(true);
               expect(connectConferenceStub.getCall(0).args[0].sessionId).not.to.be.an('undefined');
               expect(connectConferenceStub.getCall(0).args[0].token).not.to.be.an('undefined');
+              expect(connectConferenceStub.getCall(0).args[0].breed).not.to.be.an('undefined');
               expect(connectConferenceStub.getCall(0).args[0].description.sdp).to.equal(localDescription.sdp);
               expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
               expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
@@ -516,7 +518,7 @@ describe('Call [Conference]', function () {
             });
 
             it('should set the conference id', function (done) {
-              outgoingVideoConference.connect();
+              outgoingVideoConference.connect(newPeerConnection);
 
               setTimeout(function () {
                 expect(outgoingVideoConference.id()).to.equal(response.id);
@@ -527,7 +529,7 @@ describe('Call [Conference]', function () {
 
             it('should execute `conf.setId` with the newly created conference id ', function (done) {
 
-              outgoingVideoConference.connect();
+              outgoingVideoConference.connect(newPeerConnection);
 
               setTimeout(function () {
                 expect(onSuccessSpy.called).to.equal(true);
@@ -561,7 +563,7 @@ describe('Call [Conference]', function () {
 
             it('should publish the error', function (done) {
 
-              outgoingVideoConference.connect();
+              outgoingVideoConference.connect(newPeerConnection);
 
               setTimeout(function () {
                 expect(onErrorSpy.calledOnce).to.equal(true);
@@ -604,7 +606,7 @@ describe('Call [Conference]', function () {
           createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection');
 
           incomingConf.setRemoteSdp('ABDC');
-          incomingConf.connect();
+          incomingConf.connect(newPeerConnection);
 
           expect(createPeerConnectionStub.called).to.equal(true);
           expect(createPeerConnectionStub.getCall(0).args[0]).to.be.an('object');
@@ -663,14 +665,16 @@ describe('Call [Conference]', function () {
 
               incomingConf.setId('ABCD');
 
-              incomingConf.connect();
+              incomingConf.connect(newPeerConnection);
 
               setTimeout(function () {
                 expect(onSuccessSpy.called).to.equal(true);
                 expect(connectConferenceStub.called).to.equal(true);
                 expect(connectConferenceStub.getCall(0).args[0].conferenceId).to.equal(incomingConf.id());
                 expect(connectConferenceStub.getCall(0).args[0].description).to.equal(localDescription);
-                expect(connectConferenceStub.getCall(0).args[0].sessionInfo).to.equal(optionsIncomingConf.sessionInfo);
+                expect(connectConferenceStub.getCall(0).args[0].breed).to.equal(optionsIncomingConf.breed);
+                expect(connectConferenceStub.getCall(0).args[0].token).to.equal(optionsIncomingConf.sessionInfo.token);
+                expect(connectConferenceStub.getCall(0).args[0].sessionId).to.equal(optionsIncomingConf.sessionInfo.sessionId);
                 expect(connectConferenceStub.getCall(0).args[0].onSuccess).to.be.a('function');
                 expect(connectConferenceStub.getCall(0).args[0].onError).to.be.a('function');
                 connectConferenceStub.restore();
@@ -698,7 +702,7 @@ describe('Call [Conference]', function () {
                 });
 
                 it('should set the state to `connecting`', function (done) {
-                  incomingConf.connect();
+                  incomingConf.connect(newPeerConnection);
 
                   setTimeout(function () {
                     try {
@@ -731,7 +735,7 @@ describe('Call [Conference]', function () {
                 });
 
                 it('should publish an error with error data', function (done) {
-                  incomingConf.connect();
+                  incomingConf.connect(newPeerConnection);
 
                   setTimeout(function () {
                     expect(publishStub.calledWith('error')).to.equal(true);
@@ -764,7 +768,7 @@ describe('Call [Conference]', function () {
 
               var onStreamAddedSpy = sinon.spy();
 
-              incomingConf.connect();
+              incomingConf.connect(newPeerConnection);
 
               setTimeout(function () {
                 expect(onRemoteStreamSpy.called).to.equal(true);
@@ -798,7 +802,7 @@ describe('Call [Conference]', function () {
             it('should publish `error` with error data', function (done) {
               var onErrorHandlerSpy = sinon.spy();
 
-              incomingConf.connect();
+              incomingConf.connect(newPeerConnection);
 
               setTimeout(function () {
                 expect(onErrorSpy.calledWith(error)).to.equal(true);
@@ -917,7 +921,7 @@ describe('Call [Conference]', function () {
         return peerConnection;
       });
 
-      outgoingVideoConf.connect();
+      outgoingVideoConf.connect(newPeerConnection);
     });
 
     afterEach(function () {

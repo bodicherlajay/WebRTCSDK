@@ -500,7 +500,7 @@ describe('Call', function () {
                 } finally {
                   setIdStub.restore();
                 }
-              }, 10);
+              }, 100);
 
             });
           });

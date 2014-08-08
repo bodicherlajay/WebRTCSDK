@@ -277,7 +277,7 @@
           sessionId: sessionInfo.sessionId,
           token: sessionInfo.token,
           description: description,
-          sessionInfo: sessionInfo,
+          breed : breed,
           onSuccess: function (responsedata) {
             if (ATT.CallTypes.INCOMING === type) {
               setState('connecting');
@@ -296,11 +296,15 @@
           connectOptions.conferenceId = id;
         }
 
+        if (breed === 'call') {
+          connectOptions.peer = peer;
+        }
+
         rtcManager.connectConference(connectOptions);
       }
 
       try {
-
+        //for usermedia not used in new peer connection flow
         if (undefined !== connectOpts) {
           if (undefined !== connectOpts.localMedia) {
             localMedia = connectOpts.localMedia;
@@ -349,7 +353,9 @@
           }
         });
 
-        if ('call' === this.breed()) {
+        if ('call' === this.breed()
+            && (undefined === connectOpts.newPeerConnection
+            || false === connectOpts.newPeerConnection)) {
           rtcManager.connectCall({
             localMedia: localMedia,
             remoteMedia: remoteMedia,
@@ -387,7 +393,8 @@
           });
         }
 
-        if ('conference' === this.breed()) {
+        if (undefined !== connectOpts.newPeerConnection
+            && true === connectOpts.newPeerConnection) {
 
           pcOptions = {
             mediaType: mediaType,
@@ -418,49 +425,6 @@
       }
     }
 
-    function connect2() {
-      var connectOptions,
-        pcOptions = {
-          mediaType: mediaType,
-          stream: localStream,
-          onSuccess: function (description) {
-
-            connectOptions = {
-              peer : peer,
-              sessionId: sessionInfo.sessionId,
-              token: sessionInfo.token,
-              description: description,
-              sessionInfo: sessionInfo,
-              onSuccess: function (responsedata) {
-                if (ATT.CallTypes.INCOMING === type) {
-                  setState('connecting');
-                } else {
-                  id = responsedata.id;
-                  setState('connected');
-                }
-              },
-              onError: function (error) {
-                emitter.publish('error', {
-                  error: error
-                });
-              }
-            };
-            rtcManager.connectCall2(connectOptions);
-          },
-          onError: function (error) {
-            emitter.publish('error', {
-              error: error
-            });
-          },
-          onRemoteStream : function (stream) {
-            logger.logInfo('onRemoteStream');
-            emitter.publish('stream-added', {
-              stream: stream
-            });
-          }
-        };
-      peerConnection = factories.createPeerConnection(pcOptions);
-    }
 
     function addParticipant(invitee) {
 
@@ -750,7 +714,6 @@
     this.on = on;
     this.addStream = addStream;
     this.connect = connect;
-    this.connect2 = connect2;
     this.disconnect = disconnect;
     this.disconnectConference = disconnectConference;
     this.addParticipant = addParticipant;
