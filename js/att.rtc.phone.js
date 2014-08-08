@@ -917,7 +917,7 @@
           userMediaSvc.getUserMedia({
             localMedia: options.localMedia,
             remoteMedia: options.remoteMedia,
-            mediaType: options.mediaType,
+            mediaType: conference.mediaType(),
             onUserMedia: function (media) {
               try {
                 logger.logInfo('Successfully got user media');
