@@ -233,11 +233,25 @@ if (!ATT) {
         * Start Call via RTCEndpoint
         * @memberof ATT.APIConfigs
         */
-        startCall: {
+		startCall: {
           method: 'post',
           formatters: {
             url: function (params) {
               return DEFAULTS.RTCEndpoint + '/sessions/' + params + '/calls';
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
+        },
+        createCall: {
+          method: 'POST',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + '/' + params.type;
             },
             headers: {
               'Authorization': function (param) {

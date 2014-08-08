@@ -346,25 +346,43 @@
           joinConfig,
           createConfig,
           commonParams,
-          joinParams;
+          joinParams,
+          data,
+          callData,
+          conferenceData;
+
+      conferenceData = {
+        conference: {
+          sdp: options.description.sdp
+        }
+      };
+
+      callData = {
+        call: {
+          calledParty: options.peer,
+          sdp: options.description.sdp
+        }
+      };
 
       commonParams = {
-        url: [options.sessionInfo.sessionId],
+        url: { sessionId : options.sessionInfo.sessionId,
+        type: options.type},
         headers: {
           'Authorization': 'Bearer ' + options.sessionInfo.token
         }
       };
+      if ('call' === options.type) {
+       data = callData;
+      } else {
+        data = conferenceData;
+      }
 
       // If you DON'T have a conference ID, then CREATE the conference
       if (undefined === options.conferenceId) {
 
         createConfig = {
           params: commonParams,
-          data: {
-            conference: {
-              sdp: options.description.sdp
-            }
-          },
+          data: data,
           success: function (response) {
             responseData = {
               id: response.getResponseHeader('Location').split('/')[6],
@@ -375,7 +393,7 @@
           error: options.onError
         };
 
-        resourceManager.doOperation('createConference', createConfig);
+        resourceManager.doOperation('createCall', createConfig);
         return;
       }
 
