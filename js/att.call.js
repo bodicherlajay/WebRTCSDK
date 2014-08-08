@@ -269,7 +269,8 @@
      * @param {Object} The call config
     */
     function connect(connectOpts) {
-      var pcOptions;
+      var pcOptions,
+        pcv;
 
       function onPeerConnectionSuccess(description) {
 
@@ -315,6 +316,8 @@
           }
         }
 
+        pcv = (undefined === connectOpts || undefined === connectOpts.pcv) ? 1 : connectOpts.pcv;
+
         if (undefined !== remoteMedia) {
           remoteMedia.addEventListener('playing', function () {
             that.setState('media-established');
@@ -353,48 +356,8 @@
           }
         });
 
-        if ('call' === this.breed()
-            && (undefined === connectOpts.newPeerConnection
-            || false === connectOpts.newPeerConnection)) {
-          rtcManager.connectCall({
-            localMedia: localMedia,
-            remoteMedia: remoteMedia,
-            peer: peer,
-            callId: id,
-            type: type,
-            mediaType: mediaType,
-            remoteDescription: remoteSdp,
-            sessionInfo: sessionInfo,
-            onCallConnecting: function (callInfo) {
-              try {
-                if (type === ATT.CallTypes.OUTGOING) {
-                  that.setId(callInfo.callId);
-                }
-                if (type === ATT.CallTypes.INCOMING) {
-                  that.setState(callInfo.xState);
-                }
-                localSdp = callInfo.localSdp;
-              } catch (err) {
-                emitter.publish('error', {
-                  error: err
-                });
-              }
-            },
-            onError: function (error) {
-              emitter.publish('error', {
-                error: error
-              });
-            },
-            onUserMediaError: function (error) {
-              emitter.publish('error', {
-                error: error
-              });
-            }
-          });
-        }
-
-        if (undefined !== connectOpts.newPeerConnection
-            && true === connectOpts.newPeerConnection) {
+        if (('call' === breed && pcv === 2)
+            || 'conference' === breed) {
 
           pcOptions = {
             mediaType: mediaType,
@@ -416,7 +379,45 @@
           pcOptions.remoteSdp = remoteSdp;
 
           peerConnection = factories.createPeerConnection(pcOptions);
+
+          return;
         }
+
+        rtcManager.connectCall({
+          localMedia: localMedia,
+          remoteMedia: remoteMedia,
+          peer: peer,
+          callId: id,
+          type: type,
+          mediaType: mediaType,
+          remoteDescription: remoteSdp,
+          sessionInfo: sessionInfo,
+          onCallConnecting: function (callInfo) {
+            try {
+              if (type === ATT.CallTypes.OUTGOING) {
+                that.setId(callInfo.callId);
+              }
+              if (type === ATT.CallTypes.INCOMING) {
+                that.setState(callInfo.xState);
+              }
+              localSdp = callInfo.localSdp;
+            } catch (err) {
+              emitter.publish('error', {
+                error: err
+              });
+            }
+          },
+          onError: function (error) {
+            emitter.publish('error', {
+              error: error
+            });
+          },
+          onUserMediaError: function (error) {
+            emitter.publish('error', {
+              error: error
+            });
+          }
+        });
 
       } catch (err) {
         emitter.publish('error', {
