@@ -117,6 +117,31 @@
       emitter.publish('error', errorInfo);
     }
 
+    function connectWithMediaStream(options, call) {
+      userMediaSvc.getUserMedia({
+        mediaType: options.mediaType,
+        localMedia: options.localMedia,
+        remoteMedia: options.remoteMedia,
+        onUserMedia: function (media) {
+          call.addStream(media.localStream);
+          call.connect({
+            pcv: that.pcv
+          });
+        },
+        onMediaEstablished: function () {
+          emitter.publish('media-established', {
+            timestamp: new Date(),
+            mediaType: call.mediaType(),
+            codec: call.codec()
+          });
+        },
+        onUserMediaError: function (error) {
+          logger.logError('getUserMedia Failed ');
+          publishError('13005', error);
+        }
+      });
+    }
+
     function getSession() {
       return session;
     }
@@ -646,29 +671,7 @@
           });
 
           if (2 === this.pcv) {
-
-            userMediaSvc.getUserMedia({
-              mediaType: options.mediaType,
-              localMedia: options.localMedia,
-              remoteMedia: options.remoteMedia,
-              onUserMedia: function (media) {
-                call.addStream(media.localStream);
-                call.connect({
-                  pcv: that.pcv
-                });
-              },
-              onMediaEstablished: function () {
-                emitter.publish('media-established', {
-                  timestamp: new Date(),
-                  mediaType: call.mediaType(),
-                  codec: call.codec()
-                });
-              },
-              onUserMediaError: function (error) {
-                logger.logError('getUserMedia Failed ');
-                publishError('4011', error);
-              }
-            });
+            connectWithMediaStream(options, call);
             return;
           }
 
@@ -795,28 +798,7 @@
         });
 
         if (2 === this.pcv) {
-          userMediaSvc.getUserMedia({
-            mediaType: call.mediaType,
-            localMedia: options.localMedia,
-            remoteMedia: options.remoteMedia,
-            onUserMedia: function (media) {
-              call.addStream(media.localStream);
-              call.connect({
-                pcv: that.pcv
-              });
-            },
-            onMediaEstablished: function () {
-              emitter.publish('media-established', {
-                timestamp: new Date(),
-                mediaType: call.mediaType(),
-                codec: call.codec()
-              });
-            },
-            onUserMediaError: function (error) {
-              logger.logError('getUserMedia Failed ');
-              publishError('4011', error);
-            }
-          });
+          connectWithMediaStream(options, call);
           return;
         }
 
