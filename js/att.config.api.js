@@ -307,7 +307,7 @@ if (!ATT) {
           method: 'PUT',
           formatters: {
             url: function (params) {
-              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/conferences/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + '/' + params.type + '/' + params.conferenceId;
             },
             headers: {
               'Authorization': function (param) {

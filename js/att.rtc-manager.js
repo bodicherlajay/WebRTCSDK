@@ -370,8 +370,10 @@
       };
 
       commonParams = {
-        url: { sessionId : options.sessionId,
-        type: options.type},
+        url: {
+          sessionId : options.sessionId,
+          type: options.breed + 's'
+        },
         headers: {
           'Authorization': 'Bearer ' + options.token
         }
@@ -404,7 +406,11 @@
 
       // If you DO have a conference ID, then JOIN
       joinParams = {
-        url: [options.sessionInfo.sessionId, options.conferenceId],
+        url: {
+          sessionId: options.sessionId,
+          conferenceId: options.conferenceId,
+          type: 'conferences'
+        },
         headers: commonParams.headers
       };
       joinParams.headers['x-conference-action'] = 'call-answer';

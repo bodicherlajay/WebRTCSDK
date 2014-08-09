@@ -43,7 +43,6 @@ describe('RTCManager [Conference]', function () {
       beforeEach(function () {
         localSdp = '123';
         onSuccessSpy = sinon.spy();
-        onRemoteStreamSpy = sinon.spy();
         onErrorSpy = sinon.spy();
 
         connectConfOpts = {
@@ -54,9 +53,7 @@ describe('RTCManager [Conference]', function () {
           sessionId: '123',
           token : 'token',
           breed: 'conference', // `conference` or `call`
-          peer: 'junito',
           onSuccess: onSuccessSpy,
-          onRemoteStream : onRemoteStreamSpy,
           onError: onErrorSpy
         };
       });
@@ -73,16 +70,7 @@ describe('RTCManager [Conference]', function () {
         var params;
 
         connectConfOpts.breed = 'call';
-
-        params = {
-          url : {
-            sessionId: connectConfOpts.sessionId,
-            type: connectConfOpts.type
-          },
-          headers : {
-            Authorization : 'Bearer ' + connectConfOpts.token
-          }
-        };
+        connectConfOpts.peer = 'junito',
 
         doOperationStub = sinon.stub(resourceManager, 'doOperation');
 
@@ -92,8 +80,8 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.called).to.equal(true);
         expect(doOperationStub.getCall(0).args[0]).to.equal('createCall');
         expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
-        expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(params.url.sessionId);
-        expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal(params.url.type);
+        expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(connectConfOpts.sessionId);
+        expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal('calls');
         expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.token);
         expect(doOperationStub.getCall(0).args[1].data.call.calledParty).to.equal(connectConfOpts.peer);
         expect(doOperationStub.getCall(0).args[1].data.call.sdp).to.equal(connectConfOpts.description.sdp);
@@ -127,7 +115,7 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.getCall(0).args[0]).to.equal('createCall');
         expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
         expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(params.url.sessionId);
-        expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal(params.url.type);
+        expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal('conferences');
         expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.token);
         expect(doOperationStub.getCall(0).args[1].data.conference.sdp).to.equal(connectConfOpts.description.sdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
