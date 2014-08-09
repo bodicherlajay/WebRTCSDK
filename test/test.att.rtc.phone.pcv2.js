@@ -13,16 +13,23 @@ describe('Phone [PCV2]', function () {
     session,
     factories,
     ums,
+    error,
     sessionStub,
-    getUserMediaStub;
+    getUserMediaStub,
+    emitterPhone,
+    createEventEmitterStub,
+    publishStub;
 
   beforeEach(function () {
-
     factories = ATT.private.factories;
     ums = ATT.UserMediaService;
     Phone = ATT.private.Phone;
     Call = ATT.rtc.Call;
     Session = ATT.rtc.Session;
+
+    error = {
+      error: 'test message'
+    };
 
     session = new Session();
     session.setId('123');
@@ -30,11 +37,21 @@ describe('Phone [PCV2]', function () {
       return session;
     });
 
+    emitterPhone = factories.createEventEmitter();
+
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+      return emitterPhone;
+    });
+
+    publishStub = sinon.stub(emitterPhone, 'publish');
+
     phone = new Phone();
   });
 
   afterEach(function () {
     sessionStub.restore();
+    createEventEmitterStub.restore();
+    publishStub.restore();
   });
 
   describe('Methods', function () {
@@ -104,7 +121,7 @@ describe('Phone [PCV2]', function () {
         expect(getUserMediaStub.called).to.equal(false);
       });
 
-      describe('getUserMedia Success :onUserMedia', function () {
+      describe('getUserMedia :onUserMedia', function () {
 
         beforeEach(function () {
           getUserMediaStub.restore();
@@ -139,6 +156,26 @@ describe('Phone [PCV2]', function () {
         });
       });
 
+      describe('getUserMedia: onUserMediaError', function () {
+
+        beforeEach(function () {
+          getUserMediaStub.restore();
+
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
+            options.onUserMediaError(error);
+          });
+        });
+
+        it('[13005] should be published with error event', function () {
+          phone.pcv = 2;
+          phone.dial(dialOpts);
+
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('13005'),
+            data: error
+          })).to.equal(true);
+        });
+      });
     });
 
     describe('answer', function () {
