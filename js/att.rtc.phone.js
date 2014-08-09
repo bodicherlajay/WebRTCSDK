@@ -226,7 +226,8 @@
           session.connect(options);
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('2004');
+          publishError('2004', err);
+          return;
         }
       } catch (err) {
 
@@ -302,7 +303,8 @@
           session = undefined;
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('3000');
+          publishError('3000', err);
+          return;
         }
       } catch (err) {
         logger.logError(err);
@@ -441,6 +443,7 @@
             onUserMediaError : function (error) {
               logger.logError('getUserMedia Failed ');
               publishError('4011', error);
+              return;
             }
           });
 
@@ -449,7 +452,8 @@
         }
 
       } catch (err) {
-        throw ATT.errorDictionary.getSDKError('4003');
+        publishError('4003', err);
+        return; 
       }
 
     }
@@ -687,7 +691,8 @@
         call.connect(options);
 
       } catch (err) {
-        publishError(5002);
+        publishError('5002', err);
+        return;
       }
 
     }
@@ -795,10 +800,8 @@
                 conference.addStream(media.localStream);
                 conference.connect();
               } catch (err) {
-                logger.logError(err);
-                emitter.publish('error', {
-                  error: ATT.errorDictionary.getSDKError('20000')
-                });
+                publishError('20000', err);
+                return;
               }
             },
             onMediaEstablished: function () {
@@ -814,13 +817,13 @@
             onUserMediaError: function (error) {
               logger.logError('getUserMedia Failed ');
               publishError('20002', error);
+              return;
             }
           });
 
         } catch (err) {
-          logger.logError(err);
-
-          throw ATT.errorDictionary.getSDKError('20000');
+          publishError('20000', err);
+          return;
         }
 
       } catch (err) {
@@ -878,7 +881,7 @@
           call.mute();
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('9001');
+          publishError('9001', err);
         }
       } catch (err) {
         logger.logError(err);
@@ -936,7 +939,8 @@
           call.unmute();
 
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('10001');
+          publishError('10001', err);
+          return;
         }
 
       } catch (err) {
@@ -1000,7 +1004,8 @@
           });
           call.disconnect();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('6001');
+          publishError('6001', err);
+          return;
         }
 
       } catch (err) {
@@ -1054,7 +1059,8 @@
         }
           call.disconnect();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('11001');
+          publishError('11001', err);
+          return;
         }
       } catch (err) {
         logger.logError(err);
@@ -1104,7 +1110,8 @@
           });
           call.reject();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('12001');
+          publishError('12001', err);
+          return;
         }
 
       } catch (err) {
@@ -1155,9 +1162,8 @@
           conference.reject();
 
         } catch (err) {
-          logger.logError(err);
-
-          throw ATT.errorDictionary.getSDKError('22000');
+          publishError('22000', err);
+          return;
         }
 
       } catch (err) {
@@ -1199,7 +1205,8 @@
         try {
           call.hold();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('7001');
+          publishError('7001', err);
+          return;
         }
       } catch (err) {
         emitter.publish('error', {
@@ -1246,7 +1253,8 @@
         try {
           call.resume();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('8002');
+          publishError('8002', err);
+          return;
         }
       } catch (err) {
         emitter.publish('error', {
@@ -1296,7 +1304,8 @@
 
           session.updateE911Id(options);
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError('17001');
+          publishError('17001', err);
+          return;
         }
 
       } catch (err) {
@@ -1427,12 +1436,12 @@
           onUserMediaError: function (error) {
             logger.logError('getUserMedia Failed ');
             publishError('18004', error);
+            return;
           }
         });
       } catch (err) {
-
-        logger.logError('error while start conference , check logs');
         publishError('18005', err);
+        return;
       }
 
     }
@@ -1468,7 +1477,7 @@
         try {
           this.addParticipants([invitee]);
         } catch (err) {
-          publishError('19001');
+          publishError('19001', err);
           return;
         }
       } catch (err) {
@@ -1595,7 +1604,7 @@
             conference.addParticipant(invitee);
           }
         } catch (err) {
-          publishError('24004');
+          publishError('24004', err);
           return;
         }
 
@@ -1660,8 +1669,8 @@
         try {
           conference.disconnectConference();
         } catch (err) {
-          logger.logError(err);
-          throw ATT.errorDictionary.getSDKError(23000);
+          publishError('23000', err);
+          return;
         }
       } catch(err) {
         logger.logError(err);
@@ -1714,8 +1723,8 @@
           participants = conference.participants();
           return participants;
         } catch (err) {
-          logger.logError(err);
-          throw ATT.errorDictionary.getSDKError(21001);
+          publishError('21001', err);
+          return;
         }
       } catch (err) {
         logger.logError(err);
@@ -1786,8 +1795,8 @@
         try {
           conference.removeParticipant(participant);
         } catch (err) {
-          logger.logError(err);
-          throw ATT.errorDictionary.getSDKError(25003);
+          publishError('25003', err);
+          return;
         }
       } catch (err) {
         logger.logError(err);
