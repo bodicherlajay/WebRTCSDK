@@ -1075,7 +1075,7 @@ describe('Phone', function () {
           expect(onSpy.calledWith('error')).to.equal(true);
         });
 
-        it('should call `call.connect` with optional params localMedia & remoteMedia', function () {
+        xit('should call `call.connect` with optional params localMedia & remoteMedia', function () {
           phone.answer(options);
 
           expect(callConnectStub.calledWith(options)).to.equal(true);
@@ -1158,7 +1158,7 @@ describe('Phone', function () {
             }, 50);
           });
 
-          it('[5002] should trigger `error` with relevant data when call publishes `error` event', function (done) {
+          xit('[5002] should trigger `error` with relevant data when call publishes `error` event', function (done) {
 
             phone.answer(options);
 
@@ -2370,7 +2370,7 @@ describe('Phone', function () {
           expect(phone.cancel).to.be.a('function');
         });
 
-        it('should publish `call-canceled` immediately if [null == call.id]', function () {
+        xit('should publish `call-canceled` immediately if [null == call.id]', function () {
           call.setId(null);
           var publishStub = sinon.stub(emitter, 'publish', function () {});
 
@@ -2384,7 +2384,7 @@ describe('Phone', function () {
           publishStub.restore();
         });
 
-        it('should follow up by calling session.deleteCurrentCall after publishing `call-canceled`', function () {
+        xit('should follow up by calling session.deleteCurrentCall after publishing `call-canceled`', function () {
           var deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
           call.setId(null);
 
@@ -2483,14 +2483,14 @@ describe('Phone', function () {
           expect(callRejectStub.called).to.equal(true);
         });
 
-        it('should register for the `disconnected` event on the call object', function () {
+        xit('should register for the `disconnected` event on the call object', function () {
           phone.reject();
 
           expect(onSpy.calledOnce).to.equal(true);
           expect(onSpy.calledWith('disconnected')).to.equal(true);
         });
 
-        it('should trigger `call-disconnected` with data when call publishes `disconnected` event', function (done) {
+        xit('should trigger `call-disconnected` with data when call publishes `disconnected` event', function (done) {
           var data = {
             data: 'test'
           };

@@ -5,6 +5,7 @@
 
 describe('Phone [PCV2]', function () {
   'use strict';
+
   var Call,
     Session,
     Phone,
@@ -12,35 +13,22 @@ describe('Phone [PCV2]', function () {
     session,
     factories,
     ums,
+    error,
     sessionStub,
     getUserMediaStub,
-    createCallOptions,
-    createPeerConnectionStub,
-    options,
-    emitterCall,
-    createEventEmitterStub;
+    emitterPhone,
+    createEventEmitterStub,
+    publishStub;
 
   beforeEach(function () {
-
     factories = ATT.private.factories;
     ums = ATT.UserMediaService;
     Phone = ATT.private.Phone;
     Call = ATT.rtc.Call;
     Session = ATT.rtc.Session;
 
-    options = {
-      destination: '123',
-      mediaType: 'video',
-      localMedia: {},
-      remoteMedia: {}
-    };
-
-    createCallOptions = {
-      peer: '1234567',
-      breed : 'call',
-      mediaType: 'video',
-      type: ATT.CallTypes.OUTGOING,
-      sessionInfo: {sessionId: '12345', token: '123'}
+    error = {
+      error: 'test message'
     };
 
     session = new Session();
@@ -49,24 +37,26 @@ describe('Phone [PCV2]', function () {
       return session;
     });
 
-    emitterCall = ATT.private.factories.createEventEmitter();
+    emitterPhone = factories.createEventEmitter();
 
-    createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-      return emitterCall;
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+      return emitterPhone;
     });
+
+    publishStub = sinon.stub(emitterPhone, 'publish');
 
     phone = new Phone();
   });
+
   afterEach(function () {
     sessionStub.restore();
     createEventEmitterStub.restore();
+    publishStub.restore();
   });
 
   describe('Methods', function () {
 
-    var onErrorSpy,
-      call,
-      createCallStub,
+    var createCallStub,
       callConnectStub,
       localVideo,
       remoteVideo;
@@ -74,35 +64,46 @@ describe('Phone [PCV2]', function () {
     beforeEach(function () {
       localVideo = document.createElement('video');
       remoteVideo = document.createElement('video');
-
-      createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
-        return {};
-      });
-
-      onErrorSpy = sinon.spy();
-
-      phone.on('error', onErrorSpy);
-
-      call = new Call(createCallOptions);
-
-      createCallStub = sinon.stub(session, 'createCall', function () {
-        return call;
-      });
-
-    });
-
-    afterEach(function () {
-      createPeerConnectionStub.restore();
-      createCallStub.restore();
     });
 
     describe('dial', function () {
+      var dialOpts,
+        outgoingCallOpts,
+        outgoingCall;
+
+      beforeEach(function () {
+        dialOpts = {
+          destination: '123',
+          mediaType: 'video',
+          localMedia: {},
+          remoteMedia: {}
+        };
+
+        outgoingCallOpts = {
+          peer: '1234567',
+          breed : 'call',
+          mediaType: 'video',
+          type: ATT.CallTypes.OUTGOING,
+          sessionInfo: {sessionId: '12345', token: '123'}
+        };
+
+        outgoingCall = new Call(outgoingCallOpts);
+
+        createCallStub = sinon.stub(session, 'createCall', function () {
+          return outgoingCall;
+        });
+
+        getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+      });
+
+      afterEach(function () {
+        createCallStub.restore();
+        getUserMediaStub.restore();
+      });
 
       it('should `ums.getUserMedia` if pcv == 2', function () {
-        getUserMediaStub = sinon.stub(ums, 'getUserMedia');
-
         phone.pcv = 2;
-        phone.dial(options);
+        phone.dial(dialOpts);
 
         expect(getUserMediaStub.called).to.equal(true);
         expect(getUserMediaStub.getCall(0).args[0].mediaType).to.equal('video');
@@ -111,50 +112,41 @@ describe('Phone [PCV2]', function () {
         expect(getUserMediaStub.getCall(0).args[0].onUserMedia).to.be.an('function');
         expect(getUserMediaStub.getCall(0).args[0].onMediaEstablished).to.be.an('function');
         expect(getUserMediaStub.getCall(0).args[0].onUserMediaError).to.be.an('function');
-
-        getUserMediaStub.restore();
       });
 
       it('should NOT execute `ums.getUserMedia` if pcv != 2', function () {
-        getUserMediaStub = sinon.stub(ums, 'getUserMedia');
-
         phone.pcv = 1;
-        phone.dial(options);
+        phone.dial(dialOpts);
 
         expect(getUserMediaStub.called).to.equal(false);
-
-        getUserMediaStub.restore();
       });
 
-      describe('getUserMedia Success :onUserMedia', function () {
-
-        var media = {localStream: '12123'}, onUserMediaSpy;
+      describe('getUserMedia :onUserMedia', function () {
 
         beforeEach(function () {
+          getUserMediaStub.restore();
+
           getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
-            setTimeout(function () {
-              onUserMediaSpy = sinon.spy(options, 'onUserMedia');
-              options.onUserMedia(media);
-              onUserMediaSpy.restore();
-            }, 10);
+            options.onUserMedia({
+              localStream: 'localStream'
+            });
           });
 
+          callConnectStub = sinon.stub(outgoingCall, 'connect');
         });
 
         afterEach(function () {
-          getUserMediaStub.restore();
+          callConnectStub.restore();
         });
 
-        it('should call `call.connect` with newPeerConnection as true', function (done) {
-          callConnectStub = sinon.stub(call, 'connect', function () {});
+        it('should call `call.connect` with pcv = 2', function (done) {
           phone.pcv = 2;
-          phone.dial(options);
+          phone.dial(dialOpts);
 
           setTimeout(function () {
             try {
               expect(callConnectStub.called).to.equal(true);
-              expect(callConnectStub.getCall(0).args[0].newPeerConnection).to.equal(true);
-              callConnectStub.restore();
+              expect(callConnectStub.getCall(0).args[0].pcv).to.equal(2);
               done();
             } catch (e) {
               done(e);
@@ -164,6 +156,94 @@ describe('Phone [PCV2]', function () {
         });
       });
 
+      describe('getUserMedia: onUserMediaError', function () {
+
+        beforeEach(function () {
+          getUserMediaStub.restore();
+
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
+            options.onUserMediaError(error);
+          });
+        });
+
+        it('[13005] should be published with error event', function () {
+          phone.pcv = 2;
+          phone.dial(dialOpts);
+
+          expect(publishStub.calledWith('error', {
+            error: ATT.errorDictionary.getSDKError('13005'),
+            data: error
+          })).to.equal(true);
+        });
+      });
+    });
+
+    describe('answer', function () {
+
+      var answerOpts,
+        incomingCallOpts,
+        incomingCall;
+
+      beforeEach(function () {
+        answerOpts = {
+          localMedia: localVideo,
+          remoteMedia: remoteVideo
+        };
+
+        incomingCallOpts = {
+          peer: '1234567',
+          breed : 'call',
+          mediaType: 'video',
+          type: ATT.CallTypes.INCOMING,
+          sessionInfo: {sessionId: '12345', token: '123'}
+        };
+
+        incomingCall = new Call(incomingCallOpts);
+
+        session.currentCall = incomingCall;
+
+        getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+      });
+
+      afterEach(function () {
+        getUserMediaStub.restore();
+      });
+
+      it('should execute ums.getUserMedia if pcv == 2', function () {
+        phone.pcv = 2;
+        phone.answer(answerOpts);
+
+        expect(getUserMediaStub.called).to.equal(true);
+      });
+
+      describe('getUserMedia: onUserMedia', function () {
+
+        beforeEach(function () {
+          getUserMediaStub.restore();
+
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
+            options.onUserMedia({
+              localStream: 'localStream'
+            });
+          });
+
+          callConnectStub = sinon.stub(incomingCall, 'connect');
+        });
+
+        afterEach(function () {
+          callConnectStub.restore();
+        });
+
+        it('should call `Call.connect` with pcv = 2', function () {
+          phone.pcv = 2;
+          phone.answer(answerOpts);
+
+          expect(callConnectStub.called).to.equal(true);
+          expect(callConnectStub.calledWith({
+            pcv: 2
+          })).to.equal(true);
+        });
+      });
     });
 
     xdescribe('[US221924] Second call[end]', function () {
@@ -174,14 +254,14 @@ describe('Phone [PCV2]', function () {
 
       beforeEach(function () {
 
-        onSpy = sinon.spy(call, 'on');
+        onSpy = sinon.spy(outgoingCall, 'on');
         getUserMediaStub = sinon.stub(ums, 'getUserMedia');
-        callDisconnectStub = sinon.stub(call, 'disconnect', function () {
+        callDisconnectStub = sinon.stub(outgoingCall, 'disconnect', function () {
           emitterCall.publish('disconnected');
         });
 
         session.setId('12345');
-        session.currentCall = call;
+        session.currentCall = outgoingCall;
 
         options = {
           destination: 'johnny',
@@ -200,7 +280,7 @@ describe('Phone [PCV2]', function () {
 
       it('should register for `disconnected` on the current call object', function () {
         phone.dial(options);
-        session.currentCall = call;
+        session.currentCall = outgoingCall;
         expect(onSpy.calledWith('disconnected')).to.equal(true);
         expect(onSpy.calledBefore(callDisconnectStub)).to.equal(true);
       });
@@ -253,16 +333,16 @@ describe('Phone [PCV2]', function () {
 
       beforeEach(function () {
 
-        onSpy = sinon.spy(call, 'on');
+        onSpy = sinon.spy(outgoingCall, 'on');
         getUserMediaStub = sinon.stub(ums, 'getUserMedia');
         moveToBkgStub = sinon.stub(session, 'moveToBackground');
 
-        callHoldStub = sinon.stub(call, 'hold', function () {
+        callHoldStub = sinon.stub(outgoingCall, 'hold', function () {
           emitterCall.publish('held');
         });
 
         session.setId('12345');
-        session.currentCall = call;
+        session.currentCall = outgoingCall;
 
         options = {
           destination: 'johnny',
@@ -282,7 +362,7 @@ describe('Phone [PCV2]', function () {
 
       it('should register for `held` on the current call object', function () {
         phone.dial(options);
-        session.currentCall = call;
+        session.currentCall = outgoingCall;
         expect(onSpy.calledWith('held')).to.equal(true);
         expect(onSpy.calledBefore(callHoldStub)).to.equal(true);
       });

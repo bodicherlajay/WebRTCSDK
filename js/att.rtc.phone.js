@@ -15,12 +15,12 @@
   */
   function Phone() {
 
-    var emitter = ATT.private.factories.createEventEmitter(),
+    var that = this,
+      emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
       userMediaSvc = ATT.UserMediaService,
-      logger = logManager.addLoggerForModule('Phone'),
-      newPeerConnection = false;
+      logger = logManager.addLoggerForModule('Phone');
 
     logger.logInfo('Creating new instance of Phone');
 
@@ -36,6 +36,7 @@
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('call incoming event  by phone layer');
       emitter.publish('call-incoming', data);
     });
 
@@ -51,10 +52,11 @@
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('conference invite event  by phone layer')
       emitter.publish('conference-invite', data);
     });
 
-	  session.on('call-disconnected', function (data) {
+    session.on('call-disconnected', function (data) {
       /**
        * Call disconnected event.
        * @desc Indicates a call has been disconnected
@@ -66,6 +68,7 @@
        * @property {String} codec - The codec of the call.
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('call disconnected event  by phone layer');
       emitter.publish('call-disconnected', data);
       session.deleteCurrentCall();
     });
@@ -82,11 +85,13 @@
        * @property {String} codec - The codec of the conference
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('conference disconnected  event  by phone layer');
       emitter.publish('conference:disconnected', data);
       session.deleteCurrentCall();
     });
 
     session.on('error', function (data) {
+      logger.logError("Error in Session " +data);
       emitter.publish('error', data);
     });
 
@@ -110,6 +115,31 @@
 
       logger.logError(errorInfo);
       emitter.publish('error', errorInfo);
+    }
+
+    function connectWithMediaStream(options, call) {
+      userMediaSvc.getUserMedia({
+        mediaType: options.mediaType,
+        localMedia: options.localMedia,
+        remoteMedia: options.remoteMedia,
+        onUserMedia: function (media) {
+          call.addStream(media.localStream);
+          call.connect({
+            pcv: that.pcv
+          });
+        },
+        onMediaEstablished: function () {
+          emitter.publish('media-established', {
+            timestamp: new Date(),
+            mediaType: call.mediaType(),
+            codec: call.codec()
+          });
+        },
+        onUserMediaError: function (error) {
+          logger.logError('getUserMedia Failed ');
+          publishError('13005', error);
+        }
+      });
     }
 
     function getSession() {
@@ -157,7 +187,6 @@
           && 'conference:disconnecting' !== event
           && 'conference:disconnected' !== event
           && 'conference-connected' !== event
-
           && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
@@ -641,34 +670,12 @@
             emitter.publish('error', data);
           });
 
-          console.log(this.pcv);
-
           if (2 === this.pcv) {
-            userMediaSvc.getUserMedia({
-              mediaType: options.mediaType,
-              localMedia: options.localMedia,
-              remoteMedia: options.remoteMedia,
-              onUserMedia: function (media) {
-                call.addStream(media.localStream);
-                call.connect({
-                  newPeerConnection: true
-                });
-              },
-              onMediaEstablished: function () {
-                emitter.publish('media-established', {
-                  timestamp: new Date(),
-                  mediaType: call.mediaType(),
-                  codec: call.codec()
-                });
-              },
-              onUserMediaError: function (error) {
-                logger.logError('getUserMedia Failed ');
-                publishError('4011', error);
-              }
-            });
-          } else {
-            call.connect(options);
+            connectWithMediaStream(options, call);
+            return;
           }
+
+          call.connect(options);
 
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('4003');
@@ -777,18 +784,23 @@
         call.on('resumed', function (data) {
           emitter.publish('call-resumed', data);
         });
-        call.on('disconnected', function (data) {
-          emitter.publish('call-disconnected', data);
-          session.deleteCurrentCall();
-          session.switchCall();
-
-          if (session.currentCall !== null) {
-              session.currentCall.resume();
-          }
-        });
+//        call.on('disconnected', function (data) {
+//          emitter.publish('call-disconnected', data);
+//          session.deleteCurrentCall();
+//          session.switchCall();
+//
+//          if (session.currentCall !== null) {
+//            session.currentCall.resume();
+//          }
+//        });
         call.on('error', function (data) {
           publishError(5002, data);
         });
+
+        if (2 === this.pcv) {
+          connectWithMediaStream(options, call);
+          return;
+        }
 
         call.connect(options);
 
@@ -887,7 +899,7 @@
           userMediaSvc.getUserMedia({
             localMedia: options.localMedia,
             remoteMedia: options.remoteMedia,
-            mediaType: options.mediaType,
+            mediaType: conference.mediaType(),
             onUserMedia: function (media) {
               try {
                 logger.logInfo('Successfully got user media');
@@ -1140,19 +1152,19 @@
           throw ATT.errorDictionary.getSDKError('11000');
         }
         try {
-          if (null === call.id()) {
-            emitter.publish('call-canceled', {
-              to: call.peer(),
-              mediaType: call.mediaType(),
-              timestamp: new Date()
-            });
-            session.deleteCurrentCall();
-            session.switchCall();
-
-            if (session.currentCall !== null) {
-                session.currentCall.resume();
-            }
-        }
+//          if (null === call.id()) {
+//            emitter.publish('call-canceled', {
+//              to: call.peer(),
+//              mediaType: call.mediaType(),
+//              timestamp: new Date()
+//            });
+//            session.deleteCurrentCall();
+//            session.switchCall();
+//
+//            if (session.currentCall !== null) {
+//              session.currentCall.resume();
+//            }
+//          }
           call.disconnect();
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('11001');
@@ -1194,15 +1206,15 @@
           return;
         }
         try {
-          call.on('disconnected', function (data) {
-            emitter.publish('call-disconnected', data);
-            session.deleteCurrentCall();
-            session.switchCall();
-
-            if (session.currentCall !== null) {
-                session.currentCall.resume();
-            }
-          });
+//          call.on('disconnected', function (data) {
+//            emitter.publish('call-disconnected', data);
+//            session.deleteCurrentCall();
+//            session.switchCall();
+//
+//            if (session.currentCall !== null) {
+//                session.currentCall.resume();
+//            }
+//          });
           call.reject();
         } catch (err) {
           throw ATT.errorDictionary.getSDKError('12001');
@@ -1865,6 +1877,7 @@
 
         if (undefined === participant) {
           publishError(25002);
+          return;
         }
 
         conference.on('participant-removed', function (data) {
@@ -1893,9 +1906,7 @@
       }
     }
 
-    function useNewPeerConnection(value) {
-      newPeerConnection = value;
-    }
+    this.pcv = pcv;
     // ===================
     // Call interface
     // ===================
@@ -1916,7 +1927,6 @@
     this.updateE911Id = updateE911Id;
     this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
     this.formatNumber = ATT.phoneNumber.formatNumber;
-    this.pcv = pcv;
 
     // ===================
     // Conference interface
@@ -1929,9 +1939,6 @@
     this.addParticipants = addParticipants;
     this.getParticipants = getParticipants;
     this.removeParticipant = removeParticipant;
-    this.useNewPeerConnection = useNewPeerConnection;
-
-
   }
 
   if (undefined === ATT.private) {
