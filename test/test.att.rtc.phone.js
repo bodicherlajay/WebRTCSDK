@@ -1733,12 +1733,12 @@ describe('Phone', function () {
           expect(onSpy.called).to.equal(true);
         });
 
-        it('should publish `conference:inviting` immediately', function () {
+        it('should publish `conference:invitation-sending` immediately', function () {
           var publishStub = sinon.stub(emitter, 'publish');
 
           phone.addParticipants(['4250000001']);
 
-          expect(publishStub.calledWith('conference:inviting')).to.equal(true);
+          expect(publishStub.calledWith('conference:invitation-sending')).to.equal(true);
 
           publishStub.restore();
         });
@@ -1776,9 +1776,9 @@ describe('Phone', function () {
             publishStub.restore();
           });
 
-          describe('conference:response-pending', function () {
+          describe('conference:invitation-sent', function () {
 
-            it('should publish `response-pending` with event data on getting a `response-pending`', function (done) {
+            it('should publish `conference:invitation-sent` with event data on getting a `response-pending`', function (done) {
               phone.addParticipants(['4250000001']);
 
               emitterConference.publish('response-pending', eventData);
@@ -1786,7 +1786,7 @@ describe('Phone', function () {
               setTimeout(function () {
                 try {
                   expect(publishStub.called).to.equal(true);
-                  expect(publishStub.calledWith('conference:response-pending', eventData)).to.equal(true);
+                  expect(publishStub.calledWith('conference:invitation-sent', eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);

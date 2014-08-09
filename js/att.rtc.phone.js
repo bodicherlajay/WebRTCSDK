@@ -178,10 +178,10 @@
           && 'media-established' !== event
           && 'conference-invite' !== event
           && 'conference-joining' !== event
-          && 'conference:inviting' !== event
+          && 'conference:invitation-sending' !== event
           && 'conference:invite-rejected' !== event
           && 'conference-connecting' !== event
-          && 'conference:response-pending' !== event
+          && 'conference:invitation-sent' !== event
           && 'conference:invite-accepted' !== event
           && 'conference:participant-removed' !== event
           && 'conference:disconnecting' !== event
@@ -820,19 +820,25 @@
      *   - 20000 - Internal error occurred
      *   - 20001 - User is not logged in
      *   - 20002 - No conference invite
-     *   - 20003 - getUserMedia failed
+     *   - 20003 - `getUserMedia` failed
      *
-     * @memberOf Phone
+     * @memberof Phone
      * @instance
-
+     * @param {Object} options
+     * @param {HTMLElement} options.localVideo
+     * @param {HTMLElement} options.remoteVideo
+     *
      * @fires Phone#conference-joining
      * @fires Phone#conference-connecting
      * @fires Phone#conference-connected
      * @fires Phone#error
 
      * @example
-     var phone = ATT.rtc.Phone.getPhone();
-     phone.joinConference();
+        var phone = ATT.rtc.Phone.getPhone();
+        phone.joinConference({
+          localMedia: document.getElementById('localVideo'),
+          remoteMedia: document.getElementById('remoteVideo')
+        });
      */
     function joinConference(options) {
 
@@ -908,7 +914,6 @@
                 conference.connect();
               } catch (err) {
                 logger.logError(err);
-
                 emitter.publish('error', {
                   error: ATT.errorDictionary.getSDKError('20000')
                 });
@@ -1221,6 +1226,7 @@
         }
 
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });
@@ -1274,7 +1280,6 @@
 
       } catch (err) {
         logger.logError(err);
-
         emitter.publish('error', {
           error: err
         });
@@ -1420,16 +1425,16 @@
     }
     /**
      * @summary
-     * start  a conference with a valid parameters.
-     * @desc start conference and create conference object
+     * Start a conference.
+     * @desc
      *
      * **Error Codes**
      *
      *   - 18000 - Parameters missing
-     *   - 18001 - Invalid localmedia passed
-     *   - 18002 - Invalid remotemedia passed
-     *   - 18003 - Invalid mediatype passed
-     *   - 18004 - Failed to get usermedia
+     *   - 18001 - Invalid `localMedia` passed
+     *   - 18002 - Invalid `remoteMedia` passed
+     *   - 18003 - Invalid `mediaType` passed
+     *   - 18004 - Failed to get the local user media
      *   - 18005 - Internal error occurred
      *   - 18006 - Cannot make second conference when first in progress
      *   - 18007 - Please login before you make a conference
@@ -1437,20 +1442,20 @@
      * @memberOf Phone
      * @instance
      * @param {Object} options
-     * @param {HTMLElement} options.localMedia
-     * @param {HTMLElement} options.remoteMedia
-     * @param {HTMLElement} options.mediaType
+     * @param {HTMLVideoElement} options.localMedia The host's video element
+     * @param {HTMLVideoElement} options.remoteMedia The conference participant's video element
+     * @param {String} options.mediaType `video|audio`
 
      * @fires Phone#conference-connected
      * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
-     phone.startConference({
-     mediaType: 'video',
-     localMedia: document.getElementById('localVideo'),
-     remoteMedia: document.getElementById('remoteVideo'),
-    });
+       phone.startConference({
+       mediaType: 'video',
+       localMedia: document.getElementById('localVideo'),
+       remoteMedia: document.getElementById('remoteVideo')
+     });
      */
     function startConference(options) {
 
@@ -1556,17 +1561,14 @@
      * @desc
      * Add a participant to a conference
      *
-     * @param {String} participant
-     *
      * **Error Codes**
      *
      *   - 19000 - Participant parameter missing
      *   - 19001 - Internal error occurred
+     * @param {String} participant
+     *
      * @memberOf Phone
      * @instance
-
-     * @fires Phone#participant-pending
-     * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
@@ -1614,7 +1616,8 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#participant-pending
+     * @fires Phone#conference:invitation-sending
+     * @fires Phone#conference:invitation-sent
      * @fires Phone#error
 
      * @example
@@ -1656,25 +1659,24 @@
 
         conference.on('response-pending', function (data) {
           /**
-           * Response pending event.
-           * @desc An invitation has been sent.
+           * Invitation Sent event
+           * @desc This event fires when an invitation has been successfully sent.
            *
-           * @event Phone#conference:response-pending
+           * @event Phone#conference:invitation-sent
            * @type {object}
-           * @property {Date} timestamp - Event fire time
-           * @property {Object} Invitations - Invitations list
+           * @property {Object} data - Additional event data
            */
-          emitter.publish('conference:response-pending', data);
+          emitter.publish('conference:invitation-sent', data);
         });
 
         conference.on('invite-accepted', function (data) {
           /**
            * Invite accepted event.
-           * @desc An invitation has been successfully accepted.
+           * @desc This event fires when an invitation has been accepted by the other party.
            *
            * @event Phone#conference:invite-accepted
            * @type {object}
-           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:invite-accepted', data);
         });
@@ -1682,11 +1684,11 @@
         conference.on('rejected', function (data) {
           /**
            * Invite rejected event.
-           * @desc An invitation has been rejected.
+           * @descThis event fires when an invitation has been rejected by the other party.
            *
            * @event Phone#conference:invite-rejected
            * @type {object}
-           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:invite-rejected', data);
         });
@@ -1695,7 +1697,15 @@
           for (counter = 0; counter < participants.length; counter += 1) {
             invitee = participants[counter];
 
-            emitter.publish('conference:inviting', {
+            /**
+             * Invite sending event.
+             * @desc This event fires when an invitation is in the process of sending.
+             *
+             * @event Phone#conference:invitation-sending
+             * @type {object}
+             * @property {Object} data - Additional event data
+             */
+            emitter.publish('conference:invitation-sending', {
               invitee: invitee,
               timestamp: new Date()
             });
@@ -1729,7 +1739,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#conference-disconnecting
+     * @fires Phone#conference:disconnecting
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
@@ -1756,11 +1766,11 @@
         conference.on('disconnecting', function (data) {
           /**
            * Conference disconnecting event.
-           * @desc The conference is being disconnected
+           * @desc This event fires when a conference is in the process of disconnecting.
            *
            * @event Phone#conference:disconnecting
            * @type {object}
-           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:disconnecting', data);
         });
@@ -1883,11 +1893,11 @@
         conference.on('participant-removed', function (data) {
           /**
            * Participant removed event.
-           * @desc The participant has been removed from the conference
+           * @desc This event fires when a participant has been removed from the conference.
            *
            * @event Phone#conference:participant-removed
            * @type {object}
-           * @property {Object} Data - Event object
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:participant-removed', data);
         });
