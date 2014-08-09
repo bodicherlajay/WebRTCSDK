@@ -147,10 +147,10 @@
           && 'media-established' !== event
           && 'conference-invite' !== event
           && 'conference-joining' !== event
-          && 'conference:inviting' !== event
+          && 'conference:invitation-sending' !== event
           && 'conference:invite-rejected' !== event
           && 'conference-connecting' !== event
-          && 'conference:response-pending' !== event
+          && 'conference:invitation-sent' !== event
           && 'conference:invite-accepted' !== event
           && 'conference:participant-removed' !== event
           && 'conference:disconnecting' !== event
@@ -1578,7 +1578,7 @@
 
         conference.on('response-pending', function (data) {
           /**
-           * Response pending event.
+           * Invitation Sent event
            * @desc An invitation has been sent.
            *
            * @event Phone#conference:response-pending
@@ -1586,7 +1586,7 @@
            * @property {Date} timestamp - Event fire time
            * @property {Object} Invitations - Invitations list
            */
-          emitter.publish('conference:response-pending', data);
+          emitter.publish('conference:invitation-sent', data);
         });
 
         conference.on('invite-accepted', function (data) {
@@ -1617,7 +1617,7 @@
           for (counter = 0; counter < participants.length; counter += 1) {
             invitee = participants[counter];
 
-            emitter.publish('conference:inviting', {
+            emitter.publish('conference:invitation-sending', {
               invitee: invitee,
               timestamp: new Date()
             });
@@ -1651,7 +1651,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#conference-disconnecting
+     * @fires Phone#conference:disconnecting
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
