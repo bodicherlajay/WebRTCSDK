@@ -43,14 +43,14 @@
        * Conference Invite event.
        * @desc Indicates a conference invite is received.
        *
-       * @event Phone#conference-invite
+       * @event Phone#conference:invitation-received
        * @type {object}
        * @property {String} from - The ID of the caller.
        * @property {String} mediaType - The type of call being received.
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
-      emitter.publish('conference-invite', data);
+      emitter.publish('conference:invitation-received', data);
     });
 
 	  session.on('call-disconnected', function (data) {
@@ -145,17 +145,17 @@
           && 'call-rejected' !== event
           && 'address-updated' !== event
           && 'media-established' !== event
-          && 'conference-invite' !== event
-          && 'conference-joining' !== event
+          && 'conference:invitation-received' !== event
+          && 'conference:joining' !== event
           && 'conference:invitation-sending' !== event
-          && 'conference:invite-rejected' !== event
-          && 'conference-connecting' !== event
+          && 'conference:invitation-rejected' !== event
+          && 'conference:connecting' !== event
           && 'conference:invitation-sent' !== event
-          && 'conference:invite-accepted' !== event
+          && 'conference:invitation-accepted' !== event
           && 'conference:participant-removed' !== event
           && 'conference:disconnecting' !== event
           && 'conference:disconnected' !== event
-          && 'conference-connected' !== event
+          && 'conference:connected' !== event
 
           && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
@@ -715,9 +715,9 @@
      * @param {HTMLElement} options.localVideo
      * @param {HTMLElement} options.remoteVideo
      *
-     * @fires Phone#conference-joining
-     * @fires Phone#conference-connecting
-     * @fires Phone#conference-connected
+     * @fires Phone#conference:joining
+     * @fires Phone#conference:connecting
+     * @fires Phone#conference:connected
      * @fires Phone#error
 
      * @example
@@ -745,12 +745,12 @@
 
           /**
            * Conference joining event.
-           * @desc Trying to accept and conference invitation and join the conference.
-           * @event Phone#conference-joining
+           * @desc This event fires immediately after invoking joinConference
+           * @event Phone#conference:joining
            * @type {object}
            * @property {Date} timestamp - Event fire time.
            */
-          emitter.publish('conference-joining', {
+          emitter.publish('conference:joining', {
             from: conference.peer(),
             mediaType: conference.mediaType(),
             codec: conference.codec(),
@@ -764,23 +764,16 @@
           conference.on('connecting', function (data) {
             /**
              * Conference connecting event.
-             * @desc Trying to connecting to a conference after accepting the invite.
-             * @event Phone#conference-connecting
+             * @desc This event fires when trying to connect to a conference after accepting the invite.
+             * @event Phone#conference:connecting
              * @type {object}
              * @property {Date} timestamp - Event fire time
              */
-            emitter.publish('conference-connecting', data);
+            emitter.publish('conference:connecting', data);
           });
 
           conference.on('connected', function (data) {
-            /**
-             * Conference connected event.
-             * @desc Successfully joined the conference after accepting the invite.
-             * @event Phone#conference-connected
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('conference-connected', data);
+            emitter.publish('conference:connected', data);
           });
           conference.on('stream-added', function (data) {
             userMediaSvc.showStream({
@@ -1337,7 +1330,7 @@
      * @param {HTMLVideoElement} options.remoteMedia The conference participant's video element
      * @param {String} options.mediaType `video|audio`
 
-     * @fires Phone#conference-connected
+     * @fires Phone#conference:connected
      * @fires Phone#error
 
      * @example
@@ -1405,12 +1398,12 @@
            * conference connected event.
            * @desc A conference has been connected.
            *
-           * @event Phone#conference-connected
+           * @event Phone#conference:connected
            * @type {object}
            * @property {Date} timestamp - Event fire time
            * @property {Object} data - data
            */
-          emitter.publish('conference-connected', data);
+          emitter.publish('conference:connected', data);
         });
 
         conference.on('stream-added', function (data) {
@@ -1565,11 +1558,11 @@
            * Invite accepted event.
            * @desc This event fires when an invitation has been accepted by the other party.
            *
-           * @event Phone#conference:invite-accepted
+           * @event Phone#conference:invitation-accepted
            * @type {object}
            * @property {Object} data - Additional event data
            */
-          emitter.publish('conference:invite-accepted', data);
+          emitter.publish('conference:invitation-accepted', data);
         });
 
         conference.on('rejected', function (data) {
@@ -1577,11 +1570,11 @@
            * Invite rejected event.
            * @descThis event fires when an invitation has been rejected by the other party.
            *
-           * @event Phone#conference:invite-rejected
+           * @event Phone#conference:invitation-rejected
            * @type {object}
            * @property {Object} data - Additional event data
            */
-          emitter.publish('conference:invite-rejected', data);
+          emitter.publish('conference:invitation-rejected', data);
         });
 
         try {
