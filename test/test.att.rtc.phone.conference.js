@@ -517,7 +517,7 @@ describe('Phone [Conference]', function () {
         expect(conferenceDisconnectStub.called).to.equal(true);
       });
 
-      xit('should trigger `conference:disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
+      it('should trigger `conference:disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
         phone.endConference();
 
         emitterConf.publish('disconnecting', eventData);
@@ -577,7 +577,7 @@ describe('Phone [Conference]', function () {
           phone.endConference();
 
           expect(ATT.errorDictionary.getSDKError('23000')).to.be.an('object');
-          expect(publishStub.calledWith('error', {
+          expect(publishStub.calledWithMatch('error', {
             error: ATT.errorDictionary.getSDKError('23000')
           })).to.equal(true);
         });
@@ -735,7 +735,7 @@ describe('Phone [Conference]', function () {
           phone.removeParticipant('sue');
 
           expect(ATT.errorDictionary.getSDKError('25003')).to.be.an('object');
-          expect(publishStub.calledWith('error', {
+          expect(publishStub.calledWithMatch('error', {
             error: ATT.errorDictionary.getSDKError('25003')
           })).to.equal(true);
         });

@@ -440,6 +440,7 @@ describe('PeerConnection', function () {
             createAnswerStub.restore();
           });
 
+          // NOTE: Ok to `xit`. Looks like this SDP manipulation is not necessary
           xit('should call `sdpFilter.processChromeSDPOffer` with the answer\'s SDP', function () {
             var processChromeSDPOfferStub = sinon.stub(sdpFilter, 'processChromeSDPOffer');
 
@@ -589,6 +590,7 @@ describe('PeerConnection', function () {
         expect(onSuccessSpy.calledWith(description)).to.equal(true);
       });
 
+      // NOTE: Ok to `xdescribe`: This branch of the code no longer exists
       xdescribe('processSDP: Success', function () {
 
         var fixedSDP,
@@ -665,7 +667,7 @@ describe('PeerConnection', function () {
         });
 
       });
-
+      // NOTE: Ok to `xdescribe`: This branch of the code no longer exists
       xdescribe('processSDP: Error', function () {
 
         xit('should throw an error if it fails to process the SDP', function () {

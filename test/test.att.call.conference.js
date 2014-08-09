@@ -387,7 +387,7 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe.skip('participants', function () {
+    describe('participants', function () {
 
       it('should exist', function () {
         expect(outgoingConference.participants).to.be.a('function');
@@ -400,7 +400,8 @@ describe('Call [Conference]', function () {
         expect(Object.keys(participants).length).to.equal(0);
       });
 
-      it('should return `participants` list', function () {
+      // NOTE: Skipped because `Call.setParticipant` is not part of the public interface
+      it.skip('should return `participants` list', function () {
         outgoingConference.setParticipant('john', 'invited', 'modId');
         outgoingConference.setParticipant('peter', 'invited', 'modId');
 
