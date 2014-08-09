@@ -170,9 +170,8 @@ describe('Phone [PCV2]', function () {
           phone.pcv = 2;
           phone.dial(dialOpts);
 
-          expect(publishStub.calledWith('error', {
-            error: ATT.errorDictionary.getSDKError('13005'),
-            data: error
+          expect(publishStub.calledWithMatch('error', {
+            error: ATT.errorDictionary.getSDKError('13005')
           })).to.equal(true);
         });
       });

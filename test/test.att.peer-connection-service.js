@@ -62,7 +62,7 @@ describe('PeerConnectionServiceModule', function () {
       peerConn.onicecandidate(evt);
       assert.isNotNull(ATT.PeerConnectionService.peerConnection);
     });
-
+    // NOTE: Ok to `xit`
     xit('should set remoteStream Object when `addstream` event fires', function () {
       var evt = {stream: 'foooooooo'};
       peerConn.onaddstream(evt);
@@ -71,6 +71,7 @@ describe('PeerConnectionServiceModule', function () {
   });
 
   describe('Peer connection decisions based on Call state', function () {
+    // NOTE: Ok to `xit`
     xit('should initialize correctly on start function call', function () {
       var fakeConfig = {from: 'Halifax, Nova Scotia', to: 'Van Diemen\'s land', mediaConstraints: 'Flogging Molly'},
         //Copy the old getUserMedia
@@ -126,7 +127,7 @@ describe('PeerConnectionServiceModule', function () {
       ATT.PeerConnectionService.setRemoteAndCreateAnswer(sdp, modId);
       expect(ATT.PeerConnectionService.modificationId).to.equal(modId);
     });
-
+    // NOTE: Ok to `xit`
     xit('should set local desc when setLocalAndSendMessage() is called', function () {
       var desc = "a=1\r\nb=2\r\nc=3";
       ATT.PeerConnectionService.setModificationId('12345');
@@ -160,6 +161,7 @@ describe('PeerConnectionServiceModule', function () {
   });
 
   describe('Peer connection call management functionalities', function () {
+    // NOTE: Ok to `xit`
     xit('should replace SDP attribute (sendrecv -> recvonly) for hold request', function () {
       var sdp = { sdp: 'a=sendrecv\r\nb=helloworld' };
       ATT.PeerConnectionService.localDescription = sdp;
@@ -167,7 +169,7 @@ describe('PeerConnectionServiceModule', function () {
       expect(sdp.sdp).to.include('recvonly');
       expect(ATT.PeerConnectionService.modificationCount).to.equal(3);
     });
-
+    // NOTE: Ok to `xit`
     xit('should replace SDP attribute (recvonly -> sendrecv) for resume request', function () {
       var sdp = { sdp: 'a=recvonly\r\nb=helloworld' };
       ATT.PeerConnectionService.localDescription = sdp;

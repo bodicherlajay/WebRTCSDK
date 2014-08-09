@@ -752,16 +752,19 @@ describe('Phone', function () {
 
         describe('Error Handling', function () {
 
-          var publishStub;
+          var getUserMediaStub,
+            publishStub;
 
           beforeEach(function () {
 
-            publishStub = sinon.stub(emitter, 'publish', function () {});
+            publishStub = sinon.stub(emitter, 'publish');
 
-            callConnectStub.restore();
+            getUserMediaStub = sinon.stub(ums, 'getUserMedia', function () {
+              throw new Error('UMS Error');
+            });
 
-            callConnectStub = sinon.stub(call, 'connect', function () {
-              throw error;
+            phone.on('error', function (err) {
+              console.error('XXXXX: ' + JSON.stringify(err));
             });
 
             phone.login({
@@ -773,8 +776,8 @@ describe('Phone', function () {
           });
 
           afterEach(function () {
+            getUserMediaStub.restore();
             publishStub.restore();
-            callConnectStub.restore();
           });
 
           it('[4002] should be published with `error` event if invalid mediaType in options', function () {
@@ -786,25 +789,26 @@ describe('Phone', function () {
               mediaType: 'foobar'
             });
 
-            expect(ATT.errorDictionary.getSDKError('4002')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('4002')
             })).to.equal(true);
           });
 
-          xit('[4003] should be published with `error` event if there is an unknown exception during the operation', function () {
+          it('[4003] should be published with `error` event if there is an unknown exception during the operation', function () {
 
             phone.dial({
-              destination: '1234',
+              destination: 1234,
               localMedia: 'foo',
               remoteMedia: 'bar',
               mediaType: 'video'
             });
 
-            expect(ATT.errorDictionary.getSDKError('4003')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
-              error: ATT.errorDictionary.getSDKError('4003')
+            expect(publishStub.calledWithMatch('error', {
+                error: {
+                  ErrorCode: '4003'
+                }
             })).to.equal(true);
+
           });
 
           it('[4004] should be published with `error` event if the user is not logged in', function () {
