@@ -1487,7 +1487,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#participant-pending
+     * @fires Phone#conference:response-pending
      * @fires Phone#error
 
      * @example
@@ -1536,7 +1536,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#participant-pending
+     * @fires Phone#conference:response-pending
      * @fires Phone#error
 
      * @example
