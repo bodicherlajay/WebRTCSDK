@@ -712,17 +712,23 @@
      *   - 20002 - No conference invite
      *   - 20003 - getUserMedia failed
      *
-     * @memberOf Phone
+     * @memberof Phone
      * @instance
-
+     * @param {Object} options
+     * @param {HTMLElement} options.localVideo
+     * @param {HTMLElement} options.remoteVideo
+     *
      * @fires Phone#conference-joining
      * @fires Phone#conference-connecting
      * @fires Phone#conference-connected
      * @fires Phone#error
 
      * @example
-     var phone = ATT.rtc.Phone.getPhone();
-     phone.joinConference();
+        var phone = ATT.rtc.Phone.getPhone();
+        phone.joinConference({
+          localMedia: document.getElementById('localVideo'),
+          remoteMedia: document.getElementById('remoteVideo')
+        });
      */
     function joinConference(options) {
 
@@ -755,14 +761,6 @@
           });
 
           conference.on('error', function (data) {
-            /**
-             * Conference error event
-             * @desc An error occurred during conferencing
-             * @event Phone#error
-             * @type {object}
-             * @property {Date} timestamp - Event fire time
-             * @property {Object} data - Available error detail
-             */
             emitter.publish('error', data);
           });
 
@@ -806,15 +804,6 @@
                 conference.connect();
               } catch (err) {
                 logger.logError(err);
-
-                /**
-                 * Call Error event.
-                 * @desc Indicates an error condition during a call's flow
-                 *
-                 * @event Phone#error
-                 * @type {object}
-                 * @property {Object} error - error detail
-                 */
                 emitter.publish('error', {
                   error: ATT.errorDictionary.getSDKError('20000')
                 });
@@ -845,14 +834,6 @@
       } catch (err) {
         logger.logError(err);
 
-        /**
-         * Call Error event.
-         * @desc Indicates an error condition during a call's flow
-         *
-         * @event Phone#error
-         * @type {object}
-         * @property {Object} error - error detail
-         */
         emitter.publish('error', {
           error: err
         });
@@ -1478,12 +1459,12 @@
      * @desc
      * Add a participant to a conference
      *
-     * @param {String} participant
-     *
      * **Error Codes**
      *
      *   - 19000 - Participant parameter missing
      *   - 19001 - Internal error occurred
+     * @param {String} participant
+     *
      * @memberOf Phone
      * @instance
 
