@@ -141,9 +141,9 @@ if (!ATT) {
     //FOR CHROME 31: If receiving a call (initial is true), we need to modify the SDP
     //Setup must be set to actpass for the answer to be made correctly
     if (description['sdp'].indexOf('setup:passive') != -1)
-      description['sdp'] = description['sdp'].replace('setup:passive', 'setup:actpass');
+      description['sdp'] = description['sdp'].replace(/setup:passive/g, 'setup:actpass');
     else if (description['sdp'].indexOf('setup:active') != -1)
-      description['sdp'] = description['sdp'].replace('setup:active', 'setup:actpass');
+      description['sdp'] = description['sdp'].replace(/setup:active/g, 'setup:actpass');
 
     return description;
   }
@@ -188,7 +188,8 @@ if (!ATT) {
       replaceSendOnlyWithSendRecv: function (sdp) {
         // TODO: DON'T KNOW WHY, BUT THIS IS NEEDED
         return sdp.replace(/sendonly/g, 'sendrecv');
-      }
+      },
+      setupActivePassive: setupActivePassive
     };
   };
 
