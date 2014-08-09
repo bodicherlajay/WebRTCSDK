@@ -318,7 +318,7 @@
         });
       }
     }
-
+// need this function to implement make second call
     function dialSetup(options) {
       var call;
 
