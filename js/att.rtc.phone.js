@@ -122,14 +122,14 @@
 
     * @example
       var phone = ATT.rtc.Phone.getPhone();
-      phone.on('session-ready', function (data) {
+      phone.on('session:ready', function (data) {
         // ... do something
       });
     */
     function on(event, handler) {
 
-      if ('session-ready' !== event
-          && 'session-disconnected' !== event
+      if ('session:ready' !== event
+          && 'session:disconnected' !== event
           && 'dialing' !== event
           && 'answering' !== event
           && 'call-incoming' !== event
@@ -182,7 +182,7 @@
     * @param {Object} options
     * @param {String} options.token OAuth Access Token.
     * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
-    * @fires Phone#session-ready
+    * @fires Phone#session:ready
     * @fires Phone#error
     * @example
     *
@@ -215,12 +215,12 @@
              * Session Ready event.
              * @desc Indicates the SDK is initialized and ready to make, receive calls
              *
-             * @event Phone#session-ready
+             * @event Phone#session:ready
              * @type {object}
              * @property {String} sessionId - The ID of the session.
              * @property {Date} timestamp - Event fire time.
              */
-            emitter.publish('session-ready', data);
+            emitter.publish('session:ready', data);
           });
 
           session.connect(options);
@@ -270,7 +270,7 @@
     *
     * @memberof Phone
     * @instance
-    * @fires Phone#session-disconnected
+    * @fires Phone#session:disconnected
     * @fires Phone#error
     * @example
     * var phone = ATT.rtc.Phone.getPhone();
@@ -291,11 +291,11 @@
              * Session Disconnected event.
              * @desc Session was successfully deleted.
              *
-             * @event Phone#session-disconnected
+             * @event Phone#session:disconnected
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
-            emitter.publish('session-disconnected', data);
+            emitter.publish('session:disconnected', data);
           });
 
           session.disconnect();
@@ -1129,7 +1129,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#conference-disconnected
+     * @fires Phone#conference:disconnected
      * @fires Phone#error
 
      * @example

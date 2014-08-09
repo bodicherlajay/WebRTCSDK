@@ -529,7 +529,7 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 50);
       });
 
       describe('Error handling', function () {

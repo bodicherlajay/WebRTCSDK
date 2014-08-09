@@ -256,7 +256,7 @@ describe('Phone', function () {
             unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
             subscribeSpy = sinon.spy(emitter, 'subscribe');
 
-          expect(phone.on.bind(phone, 'session-ready', fn)).to.not.throw(Error);
+          expect(phone.on.bind(phone, 'session:ready', fn)).to.not.throw(Error);
 
           expect(unsubscribeSpy.called).to.equal(true);
           expect(subscribeSpy.called).to.equal(true);
@@ -282,7 +282,7 @@ describe('Phone', function () {
             e911Id: '123'
           };
 
-          phone.on('session-ready', onSessionReadySpy);
+          phone.on('session:ready', onSessionReadySpy);
 
           data = {
             test: 'test'
@@ -316,7 +316,7 @@ describe('Phone', function () {
           expect(connectStub.called).to.equal(true);
         });
 
-        it('should trigger `session-ready` event with data on receiving the `ready` event from Session', function (done) {
+        it('should trigger `session:ready` event with data on receiving the `ready` event from Session', function (done) {
           phone.login(options);
 
           emitterSession.publish('ready', data);
@@ -421,7 +421,7 @@ describe('Phone', function () {
           disconnectStub = sinon.stub(session, 'disconnect', function () {
           });
 
-          phone.on('session-disconnected', onSessionDisconnectedSpy);
+          phone.on('session:disconnected', onSessionDisconnectedSpy);
 
           // logout checks for session id
           session.setId('sessionid');
@@ -448,7 +448,7 @@ describe('Phone', function () {
           expect(disconnectStub.called).to.equal(true);
         });
 
-        it('Should publish event `session-disconnected` on receiving a `disconnected` event from Session', function (done) {
+        it('Should publish event `session:disconnected` on receiving a `disconnected` event from Session', function (done) {
           phone.logout();
 
           emitterSession.publish('disconnected');
