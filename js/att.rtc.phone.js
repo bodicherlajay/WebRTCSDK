@@ -1459,12 +1459,12 @@
      * @desc
      * Add a participant to a conference
      *
-     * @param {String} participant
-     *
      * **Error Codes**
      *
      *   - 19000 - Participant parameter missing
      *   - 19001 - Internal error occurred
+     * @param {String} participant
+     *
      * @memberOf Phone
      * @instance
 
