@@ -14,10 +14,7 @@ describe('Phone [PCV2]', function () {
     factories,
     ums,
     sessionStub,
-    getUserMediaStub,
-    createPeerConnectionStub,
-    emitterCall,
-    createEventEmitterStub;
+    getUserMediaStub;
 
   beforeEach(function () {
 
@@ -33,23 +30,16 @@ describe('Phone [PCV2]', function () {
       return session;
     });
 
-    emitterCall = ATT.private.factories.createEventEmitter();
-
-    createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-      return emitterCall;
-    });
-
     phone = new Phone();
   });
+
   afterEach(function () {
     sessionStub.restore();
-    createEventEmitterStub.restore();
   });
 
   describe('Methods', function () {
 
-    var onErrorSpy,
-      createCallStub,
+    var createCallStub,
       callConnectStub,
       localVideo,
       remoteVideo;
@@ -57,18 +47,6 @@ describe('Phone [PCV2]', function () {
     beforeEach(function () {
       localVideo = document.createElement('video');
       remoteVideo = document.createElement('video');
-
-      createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
-        return {};
-      });
-
-      onErrorSpy = sinon.spy();
-
-      phone.on('error', onErrorSpy);
-    });
-
-    afterEach(function () {
-      createPeerConnectionStub.restore();
     });
 
     describe('dial', function () {
@@ -128,19 +106,23 @@ describe('Phone [PCV2]', function () {
 
       describe('getUserMedia Success :onUserMedia', function () {
 
-        var media = {localStream: '12123'}, onUserMediaSpy;
-
         beforeEach(function () {
           getUserMediaStub.restore();
 
           getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
-            options.onUserMedia(media);
+            options.onUserMedia({
+              localStream: 'localStream'
+            });
           });
 
+          callConnectStub = sinon.stub(outgoingCall, 'connect');
+        });
+
+        afterEach(function () {
+          callConnectStub.restore();
         });
 
         it('should call `call.connect` with pcv = 2', function (done) {
-          callConnectStub = sinon.stub(outgoingCall, 'connect', function () {});
           phone.pcv = 2;
           phone.dial(dialOpts);
 
@@ -148,7 +130,6 @@ describe('Phone [PCV2]', function () {
             try {
               expect(callConnectStub.called).to.equal(true);
               expect(callConnectStub.getCall(0).args[0].pcv).to.equal(2);
-              callConnectStub.restore();
               done();
             } catch (e) {
               done(e);
@@ -192,11 +173,39 @@ describe('Phone [PCV2]', function () {
       });
 
       it('should execute ums.getUserMedia if pcv == 2', function () {
-
         phone.pcv = 2;
         phone.answer(answerOpts);
 
         expect(getUserMediaStub.called).to.equal(true);
+      });
+
+      describe('getUserMedia: onUserMedia', function () {
+
+        beforeEach(function () {
+          getUserMediaStub.restore();
+
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
+            options.onUserMedia({
+              localStream: 'localStream'
+            });
+          });
+
+          callConnectStub = sinon.stub(incomingCall, 'connect');
+        });
+
+        afterEach(function () {
+          callConnectStub.restore();
+        });
+
+        it('should call `Call.connect` with pcv = 2', function () {
+          phone.pcv = 2;
+          phone.answer(answerOpts);
+
+          expect(callConnectStub.called).to.equal(true);
+          expect(callConnectStub.calledWith({
+            pcv: 2
+          })).to.equal(true);
+        });
       });
     });
 
