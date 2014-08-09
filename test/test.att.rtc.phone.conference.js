@@ -577,7 +577,7 @@ describe('Phone [Conference]', function () {
           phone.endConference();
 
           expect(ATT.errorDictionary.getSDKError('23000')).to.be.an('object');
-          expect(publishStub.calledWith('error', {
+          expect(publishStub.calledWithMatch('error', {
             error: ATT.errorDictionary.getSDKError('23000')
           })).to.equal(true);
         });
@@ -735,7 +735,7 @@ describe('Phone [Conference]', function () {
           phone.removeParticipant('sue');
 
           expect(ATT.errorDictionary.getSDKError('25003')).to.be.an('object');
-          expect(publishStub.calledWith('error', {
+          expect(publishStub.calledWithMatch('error', {
             error: ATT.errorDictionary.getSDKError('25003')
           })).to.equal(true);
         });

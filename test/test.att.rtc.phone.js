@@ -398,7 +398,7 @@ describe('Phone', function () {
             phone.login(options);
 
             expect(ATT.errorDictionary.getSDKError('2004')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('2004')
             })).to.equal(true);
           });
@@ -509,7 +509,7 @@ describe('Phone', function () {
             phone.logout();
 
             expect(ATT.errorDictionary.getSDKError('3000')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('3000')
             })).to.equal(true);
 
@@ -803,10 +803,9 @@ describe('Phone', function () {
               mediaType: 'video'
             });
 
+            expect(ATT.errorDictionary.getSDKError('4003')).to.be.an('object');
             expect(publishStub.calledWithMatch('error', {
-                error: {
-                  ErrorCode: '4003'
-                }
+              error: ATT.errorDictionary.getSDKError('4003')
             })).to.equal(true);
 
           });
@@ -1661,7 +1660,7 @@ describe('Phone', function () {
             phone.addParticipant('4250000001');
 
             expect(ATT.errorDictionary.getSDKError('19001')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('19001')
             })).to.equal(true);
 
@@ -1913,7 +1912,7 @@ describe('Phone', function () {
             phone.addParticipants(['4250000001']);
 
             expect(ATT.errorDictionary.getSDKError('24004')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('24004')
             })).to.equal(true);
 
@@ -2045,7 +2044,7 @@ describe('Phone', function () {
             phone.getParticipants();
 
             expect(ATT.errorDictionary.getSDKError('21001')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('21001')
             })).to.equal(true);
 
@@ -2166,7 +2165,7 @@ describe('Phone', function () {
               phone.mute();
 
               expect(ATT.errorDictionary.getSDKError('9001')).to.be.an('object');
-              expect(publishStub.calledWith('error', {
+              expect(publishStub.calledWithMatch('error', {
                 error: ATT.errorDictionary.getSDKError('9001')
               })).to.equal(true);
 
@@ -2247,7 +2246,7 @@ describe('Phone', function () {
               phone.unmute();
 
               expect(ATT.errorDictionary.getSDKError('10001')).to.be.an('object');
-              expect(publishStub.calledWith('error', {
+              expect(publishStub.calledWithMatch('error', {
                 error: ATT.errorDictionary.getSDKError('10001')
               })).to.equal(true);
             });
@@ -2357,7 +2356,7 @@ describe('Phone', function () {
             phone.hangup();
 
             expect(ATT.errorDictionary.getSDKError('6001')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('6001')
             })).to.equal(true);
           });
@@ -2444,7 +2443,7 @@ describe('Phone', function () {
             phone.cancel();
 
             expect(ATT.errorDictionary.getSDKError('11001')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('11001')
             })).to.equal(true);
           });
@@ -2549,7 +2548,7 @@ describe('Phone', function () {
             phone.reject();
 
             expect(ATT.errorDictionary.getSDKError('12001')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('12001')
             })).to.equal(true);
           });
@@ -2743,7 +2742,7 @@ describe('Phone', function () {
               phone.hold();
 
               expect(ATT.errorDictionary.getSDKError('7001')).to.be.an('object');
-              expect(publishStub.calledWith('error', {
+              expect(publishStub.calledWithMatch('error', {
                 error: ATT.errorDictionary.getSDKError('7001')
               })).to.equal(true);
             });
@@ -2804,7 +2803,7 @@ describe('Phone', function () {
               phone.resume();
 
               expect(ATT.errorDictionary.getSDKError('8001')).to.be.an('object');
-              expect(publishStub.calledWith('error', {
+              expect(publishStub.calledWithMatch('error', {
                 error: ATT.errorDictionary.getSDKError('8001')
               })).to.equal(true);
             });
@@ -2816,7 +2815,7 @@ describe('Phone', function () {
               phone.resume();
 
               expect(ATT.errorDictionary.getSDKError('8002')).to.be.an('object');
-              expect(publishStub.calledWith('error', {
+              expect(publishStub.calledWithMatch('error', {
                 error: ATT.errorDictionary.getSDKError('8002')
               })).to.equal(true);
             });
@@ -2937,7 +2936,7 @@ describe('Phone', function () {
             phone.updateE911Id({e911Id : '123454'});
 
             expect(ATT.errorDictionary.getSDKError('17001')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('17001')
             })).to.equal(true);
           });
