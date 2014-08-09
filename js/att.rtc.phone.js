@@ -702,7 +702,7 @@
      *   - 20000 - Internal error occurred
      *   - 20001 - User is not logged in
      *   - 20002 - No conference invite
-     *   - 20003 - getUserMedia failed
+     *   - 20003 - `getUserMedia` failed
      *
      * @memberof Phone
      * @instance
@@ -1307,16 +1307,16 @@
     }
     /**
      * @summary
-     * start  a conference with a valid parameters.
-     * @desc start conference and create conference object
+     * Start a conference.
+     * @desc
      *
      * **Error Codes**
      *
      *   - 18000 - Parameters missing
-     *   - 18001 - Invalid localmedia passed
-     *   - 18002 - Invalid remotemedia passed
-     *   - 18003 - Invalid mediatype passed
-     *   - 18004 - Failed to get usermedia
+     *   - 18001 - Invalid `localMedia` passed
+     *   - 18002 - Invalid `remoteMedia` passed
+     *   - 18003 - Invalid `mediaType` passed
+     *   - 18004 - Failed to get the local user media
      *   - 18005 - Internal error occurred
      *   - 18006 - Cannot make second conference when first in progress
      *   - 18007 - Please login before you make a conference
@@ -1324,20 +1324,20 @@
      * @memberOf Phone
      * @instance
      * @param {Object} options
-     * @param {HTMLElement} options.localMedia
-     * @param {HTMLElement} options.remoteMedia
-     * @param {HTMLElement} options.mediaType
+     * @param {HTMLVideoElement} options.localMedia The host's video element
+     * @param {HTMLVideoElement} options.remoteMedia The conference participant's video element
+     * @param {String} options.mediaType `video|audio`
 
      * @fires Phone#conference-connected
      * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
-     phone.startConference({
-     mediaType: 'video',
-     localMedia: document.getElementById('localVideo'),
-     remoteMedia: document.getElementById('remoteVideo'),
-    });
+       phone.startConference({
+       mediaType: 'video',
+       localMedia: document.getElementById('localVideo'),
+       remoteMedia: document.getElementById('remoteVideo')
+     });
      */
     function startConference(options) {
 
