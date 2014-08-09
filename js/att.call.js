@@ -91,7 +91,6 @@
           }
         }
       }
-
     }
 
     function setInvitee (invitee, modId, status) {
@@ -99,6 +98,21 @@
         invitee: invitee,
         id: modId,
         status: status
+      }
+    }
+
+    function updateInvitee(modId, status) {
+      var key,
+        username,
+        invite,
+        invites = that.invitations();
+
+      for (key in invites) {
+        username = invites[key];
+        if (modId === username['id']) {
+          invite = username['invitee'];
+          invitations[invite]['status'] = status;
+        }
       }
     }
 
@@ -171,6 +185,7 @@
             emitter.publish('invite-accepted', createEventData());
           }
           if ('Call rejected' === modifications.reason) {
+            updateInvitee(modifications.modificationId, 'rejected');
             emitter.publish('rejected', createEventData());
           }
         }
