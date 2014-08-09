@@ -387,7 +387,7 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe.skip('participants', function () {
+    describe('participants', function () {
 
       it('should exist', function () {
         expect(outgoingConference.participants).to.be.a('function');
@@ -400,7 +400,8 @@ describe('Call [Conference]', function () {
         expect(Object.keys(participants).length).to.equal(0);
       });
 
-      it('should return `participants` list', function () {
+      // NOTE: Skipped because `Call.setParticipant` is not part of the public interface
+      it.skip('should return `participants` list', function () {
         outgoingConference.setParticipant('john', 'invited', 'modId');
         outgoingConference.setParticipant('peter', 'invited', 'modId');
 
@@ -1040,7 +1041,8 @@ describe('Call [Conference]', function () {
     });
 
     describe('invitation-rejected', function () {
-      var modifications;
+      var modifications,
+        options;
 
       beforeEach(function () {
         modifications = {
@@ -1051,39 +1053,30 @@ describe('Call [Conference]', function () {
         };
       });
 
-      it.skip('should set invitee with `rejected` status', function (done) {
+      it('should set invitee with `rejected` status', function (done) {
+        options = {
+          invitee: 'johnny',
+          onSuccess: function () {}
+        };
 
         var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant', function (options) {
-          options.onSuccess();
+          options.onSuccess('abc321');
         });
 
-        outgoingVideoConf.invitations = function () {
-          return {
-            johnny: {
-              invitee: 'johnny',
-              status: 'invited',
-              id: 'abc321'
-            },
-            sally: {
-              invitee: 'sally',
-              status: 'invited',
-              id: '123abc'
-            }
-          }
-        };
+        outgoingVideoConf.addParticipant('johnny');
 
         emitterEM.publish('media-mod-terminations', modifications);
 
         setTimeout(function () {
           try {
-            var invitationInfo = outgoingVideoConf.invitations()['sally'];
+            var invitationInfo = outgoingVideoConf.invitations()['johnny'];
             expect(invitationInfo.status).to.equal('rejected');
             rtcMgrAddParticipantStub.restore();
             done();
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 100);
       });
 
       it('should publish `rejected`', function (done) {
@@ -1110,7 +1103,7 @@ describe('Call [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 100);
       });
     });
 
@@ -1132,7 +1125,7 @@ describe('Call [Conference]', function () {
         }, 10);
       });
 
-      it('should execurte `peerConnection.acceptSdpOffer`', function (done) {
+      it('should execute `peerConnection.acceptSdpOffer`', function (done) {
         acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
 
         emitterEM.publish('media-modifications', {

@@ -517,7 +517,7 @@ describe('Phone [Conference]', function () {
         expect(conferenceDisconnectStub.called).to.equal(true);
       });
 
-      xit('should trigger `conference:disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
+      it('should trigger `conference:disconnecting` with relevant data when call publishes `disconnecting` event', function (done) {
         phone.endConference();
 
         emitterConf.publish('disconnecting', eventData);

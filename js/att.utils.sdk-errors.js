@@ -240,14 +240,6 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
-      JSMethod: "dial",
-      ErrorCode: "4011",
-      ErrorMessage: "onUserMediaError",
-      Cause: "Failed to get the UserMedia",
-      Resolution: "Please enable Media for the browser "
-    },
-    {
-      JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
       ErrorCode: "5000",
       ErrorMessage: "Answer failed- No incoming call",
@@ -465,6 +457,14 @@
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "*",
+      ErrorCode: "13005",
+      ErrorMessage: "onUserMediaError",
+      Cause: "Failed to get the UserMedia",
+      Resolution: "Please enable Media for the browser "
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "*",
       ErrorCode: "14000",
       ErrorMessage: "Permission denied to access audio/video",
       Cause: "User denied permission",
@@ -637,14 +637,6 @@
       ErrorMessage: "No conference invite",
       Cause: "Invalid operation",
       Resolution: "Cannot join conference before receiving an invite"
-    },
-    {
-      JSObject: "ATT.rtc.Phone",
-      JSMethod: "joinConference",
-      ErrorCode: "20003",
-      ErrorMessage: "onUserMediaError  occured",
-      Cause: "failed to get userMedia",
-      Resolution: "Cannot join conference before getting userMedia failed "
     },
     {
       JSObject: "ATT.rtc.Phone",
