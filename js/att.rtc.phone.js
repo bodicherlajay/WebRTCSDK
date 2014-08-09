@@ -418,14 +418,6 @@
         });
 
         call.on('error', function (data) {
-          /**
-           * Call Error event.
-           * @desc Indicates an error condition during a call's flow
-           *
-           * @event Phone#error
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
           emitter.publish('error', data);
         });
 
@@ -1116,6 +1108,7 @@
         }
 
       } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });
@@ -1169,15 +1162,6 @@
 
       } catch (err) {
         logger.logError(err);
-
-        /**
-         * Call Error event.
-         * @desc Indicates an error condition during a call's flow
-         *
-         * @event Phone#error
-         * @type {object}
-         * @property {Object} error - error detail
-         */
         emitter.publish('error', {
           error: err
         });
@@ -1468,9 +1452,6 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#conference:response-pending
-     * @fires Phone#error
-
      * @example
      var phone = ATT.rtc.Phone.getPhone();
      phone.addParticipant('4250000001');
@@ -1517,7 +1498,8 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#conference:response-pending
+     * @fires Phone#conference:invitation-sending
+     * @fires Phone#conference:invitation-sent
      * @fires Phone#error
 
      * @example
@@ -1560,12 +1542,11 @@
         conference.on('response-pending', function (data) {
           /**
            * Invitation Sent event
-           * @desc An invitation has been sent.
+           * @desc This event fires when an invitation has been successfully sent.
            *
-           * @event Phone#conference:response-pending
+           * @event Phone#conference:invitation-sent
            * @type {object}
-           * @property {Date} timestamp - Event fire time
-           * @property {Object} Invitations - Invitations list
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:invitation-sent', data);
         });
@@ -1573,11 +1554,11 @@
         conference.on('invite-accepted', function (data) {
           /**
            * Invite accepted event.
-           * @desc An invitation has been successfully accepted.
+           * @desc This event fires when an invitation has been accepted by the other party.
            *
            * @event Phone#conference:invite-accepted
            * @type {object}
-           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:invite-accepted', data);
         });
@@ -1585,11 +1566,11 @@
         conference.on('rejected', function (data) {
           /**
            * Invite rejected event.
-           * @desc An invitation has been rejected.
+           * @descThis event fires when an invitation has been rejected by the other party.
            *
            * @event Phone#conference:invite-rejected
            * @type {object}
-           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:invite-rejected', data);
         });
@@ -1598,6 +1579,14 @@
           for (counter = 0; counter < participants.length; counter += 1) {
             invitee = participants[counter];
 
+            /**
+             * Invite sending event.
+             * @desc This event fires when an invitation is in the process of sending.
+             *
+             * @event Phone#conference:invitation-sending
+             * @type {object}
+             * @property {Object} data - Additional event data
+             */
             emitter.publish('conference:invitation-sending', {
               invitee: invitee,
               timestamp: new Date()
@@ -1659,11 +1648,11 @@
         conference.on('disconnecting', function (data) {
           /**
            * Conference disconnecting event.
-           * @desc The conference is being disconnected
+           * @desc This event fires when a conference is in the process of disconnecting.
            *
            * @event Phone#conference:disconnecting
            * @type {object}
-           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:disconnecting', data);
         });
@@ -1785,11 +1774,11 @@
         conference.on('participant-removed', function (data) {
           /**
            * Participant removed event.
-           * @desc The participant has been removed from the conference
+           * @desc This event fires when a participant has been removed from the conference.
            *
            * @event Phone#conference:participant-removed
            * @type {object}
-           * @property {Object} Data - Event object
+           * @property {Object} data - Additional event data
            */
           emitter.publish('conference:participant-removed', data);
         });
