@@ -80,7 +80,12 @@
     logger.logInfo('There was an error performing operation ' + methodName);
 
     var error = ATT.Error.createAPIErrorCode(err,"ATT.rtc.dhs",methodName,"DHS");
-    errHandler(error);
+
+    if (error === undefined) {
+      errHandler(err);
+    } else {
+      errHandler(error);
+    }
   };
 
   /**

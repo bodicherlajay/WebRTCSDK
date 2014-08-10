@@ -256,7 +256,7 @@ describe('Phone', function () {
             unsubscribeSpy = sinon.spy(emitter, 'unsubscribe'),
             subscribeSpy = sinon.spy(emitter, 'subscribe');
 
-          expect(phone.on.bind(phone, 'session-ready', fn)).to.not.throw(Error);
+          expect(phone.on.bind(phone, 'session:ready', fn)).to.not.throw(Error);
 
           expect(unsubscribeSpy.called).to.equal(true);
           expect(subscribeSpy.called).to.equal(true);
@@ -282,7 +282,7 @@ describe('Phone', function () {
             e911Id: '123'
           };
 
-          phone.on('session-ready', onSessionReadySpy);
+          phone.on('session:ready', onSessionReadySpy);
 
           data = {
             test: 'test'
@@ -316,7 +316,7 @@ describe('Phone', function () {
           expect(connectStub.called).to.equal(true);
         });
 
-        it('should trigger `session-ready` event with data on receiving the `ready` event from Session', function (done) {
+        it('should trigger `session:ready` event with data on receiving the `ready` event from Session', function (done) {
           phone.login(options);
 
           emitterSession.publish('ready', data);
@@ -421,7 +421,7 @@ describe('Phone', function () {
           disconnectStub = sinon.stub(session, 'disconnect', function () {
           });
 
-          phone.on('session-disconnected', onSessionDisconnectedSpy);
+          phone.on('session:disconnected', onSessionDisconnectedSpy);
 
           // logout checks for session id
           session.setId('sessionid');
@@ -448,7 +448,7 @@ describe('Phone', function () {
           expect(disconnectStub.called).to.equal(true);
         });
 
-        it('Should publish event `session-disconnected` on receiving a `disconnected` event from Session', function (done) {
+        it('Should publish event `session:disconnected` on receiving a `disconnected` event from Session', function (done) {
           phone.logout();
 
           emitterSession.publish('disconnected');
@@ -1224,7 +1224,7 @@ describe('Phone', function () {
 
           conferenceJoiningSpy = sinon.spy();
 
-          phone.on('conference-joining', conferenceJoiningSpy);
+          phone.on('conference:joining', conferenceJoiningSpy);
 
           session.setId('sessionId');
 
@@ -1239,7 +1239,7 @@ describe('Phone', function () {
           expect(phone.joinConference).to.be.a('function');
         });
 
-        it('should publish `conference-joining` immediately with relevant data', function (done) {
+        it('should publish `conference:joining` immediately with relevant data', function (done) {
 
           phone.joinConference(options);
 
@@ -1472,8 +1472,8 @@ describe('Phone', function () {
             conferenceConnectedSpy = sinon.spy();
             conferenceErrorSpy = sinon.spy();
 
-            phone.on('conference-connecting', onConfConnectingHandlerSpy);
-            phone.on('conference-connected', conferenceConnectedSpy);
+            phone.on('conference:connecting', onConfConnectingHandlerSpy);
+            phone.on('conference:connected', conferenceConnectedSpy);
             phone.on('error', conferenceErrorSpy);
 
             phone.joinConference(options);
@@ -1481,7 +1481,7 @@ describe('Phone', function () {
 
           describe('connecting', function () {
 
-            it('should publish `conference-connecting` with event data on getting a connecting event from call', function (done) {
+            it('should publish `conference:connecting` with event data on getting a connecting event from call', function (done) {
               emitterConference.publish('connecting', eventData);
 
               setTimeout(function() {
@@ -1494,7 +1494,7 @@ describe('Phone', function () {
               }, 50);
             });
 
-            it('should publish `conference-connected` when call publishes `connected` event', function (done) {
+            it('should publish `conference:connected` when call publishes `connected` event', function (done) {
               emitterConference.publish('connected', eventData);
 
               setTimeout(function () {
@@ -1543,7 +1543,7 @@ describe('Phone', function () {
                 } catch (e) {
                   done(e);
                 }
-              }, 50);
+              }, 100);
             });
           });
         });
@@ -1798,16 +1798,16 @@ describe('Phone', function () {
             });
           });
 
-          describe('conference:invite-accepted', function () {
+          describe('conference:invitation-accepted', function () {
 
-            it('should publish `conference:invite-accepted` with event data on getting a `invite-accepted`', function (done) {
+            it('should publish `conference:invitation-accepted` when conference publishes `invite-accepted`', function (done) {
               phone.addParticipants(['4250000001']);
 
               emitterConference.publish('invite-accepted', eventData);
 
               setTimeout(function () {
                 try {
-                  expect(publishStub.calledWith('conference:invite-accepted', eventData)).to.equal(true);
+                  expect(publishStub.calledWith('conference:invitation-accepted', eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
@@ -1816,16 +1816,16 @@ describe('Phone', function () {
             });
           });
 
-          describe('conference:invite-rejected', function () {
+          describe('conference:invitation-rejected', function () {
 
-            it('should publish `conference:invite-rejected` with event data on getting a `rejected`', function (done) {
+            it('should publish `conference:invitation-rejected` when conference publishes `rejected`', function (done) {
               phone.addParticipants(['4250000001']);
 
               emitterConference.publish('rejected', eventData);
 
               setTimeout(function () {
                 try {
-                  expect(publishStub.calledWith('conference:invite-rejected', eventData)).to.equal(true);
+                  expect(publishStub.calledWith('conference:invitation-rejected', eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
@@ -2591,7 +2591,7 @@ describe('Phone', function () {
           session.currentCall = conference;
 
           onConfDisconnectedHandlerSpy = sinon.spy();
-          phone.on('conference:disconnected', onConfDisconnectedHandlerSpy);
+          phone.on('conference:ended', onConfDisconnectedHandlerSpy);
         });
 
         afterEach(function () {
@@ -2998,9 +2998,9 @@ describe('Phone', function () {
           phone = new ATT.private.Phone();
 
           phone.on('call-incoming', onCallIncomingHandlerSpy);
-          phone.on('conference-invite', onConferenceInviteHandlerSpy);
+          phone.on('conference:invitation-received', onConferenceInviteHandlerSpy);
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
-          phone.on('conference:disconnected', onConferenceDisconnectedHandlerSpy);
+          phone.on('conference:ended', onConferenceDisconnectedHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
 
         });
@@ -3027,9 +3027,9 @@ describe('Phone', function () {
           });
         });
 
-        describe('conference-invite', function () {
+        describe('conference:invitation-received', function () {
 
-          it('should trigger `conference-invite` with relevant data on getting a `conference-invite` from session', function (done) {
+          it('should trigger `conference:invitation-received` with relevant data on getting a `conference-invite` from session', function (done) {
 
             emitterSession.publish('conference-invite', eventData);
 
@@ -3075,9 +3075,9 @@ describe('Phone', function () {
           });
         });
 
-        describe('conference:disconnected', function () {
+        describe('conference:ended', function () {
 
-          it('should trigger `conference:disconnected` if session publishes `conference-disconnected`', function (done) {
+          it('should trigger `conference:ended` if session publishes `conference-disconnected`', function (done) {
 
             emitterSession.publish('conference-disconnected', eventData);
 
