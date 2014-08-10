@@ -117,6 +117,8 @@
     }
 
     function extractUser(username) {
+      username.toString();
+
       if (username.indexOf('tel') > -1) {
         return username.split('+')[1];
       } else if (username.indexOf('sip') > -1) {
