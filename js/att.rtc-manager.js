@@ -456,7 +456,7 @@
         throw new Error('No `onSuccess` callback passed');
       }
 
-      invitee = options.invitee;
+      invitee = options['invitee'].toString();
 
       if (invitee.indexOf('@') > -1) {
         invitee = 'sip:' + invitee;
@@ -509,7 +509,7 @@
         throw new Error('No `onSuccess` callback passed');
       }
 
-      participant = options.participant;
+      participant = options['participant'].toString();
 
       if (participant.indexOf('@') > -1) {
         participant = 'sip:' + participant;

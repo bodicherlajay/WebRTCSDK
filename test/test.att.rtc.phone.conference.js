@@ -529,7 +529,7 @@ describe('Phone [Conference]', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 50);
       });
 
       describe('Error handling', function () {
@@ -770,13 +770,13 @@ describe('Phone [Conference]', function () {
         createCallStub.restore();
       });
 
-      it('should publish `conference-connected` when conference publishes `connected`', function (done) {
+      it('should publish `conference:connected` when conference publishes `connected`', function (done) {
         var connectedSpy = sinon.spy(),
           getUserMediaStub;
         userMediaService = ATT.UserMediaService;
 
         getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
-        phone.on('conference-connected', connectedSpy);
+        phone.on('conference:connected', connectedSpy);
         phone.startConference({
           localMedia : {},
           remoteMedia : {},

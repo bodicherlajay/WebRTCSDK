@@ -45,15 +45,14 @@
        * Conference Invite event.
        * @desc Indicates a conference invite is received.
        *
-       * @event Phone#conference-invite
+       * @event Phone#conference:invitation-received
        * @type {object}
        * @property {String} from - The ID of the caller.
        * @property {String} mediaType - The type of call being received.
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
-      logger.logInfo('conference invite event  by phone layer')
-      emitter.publish('conference-invite', data);
+      emitter.publish('conference:invitation-received', data);
     });
 
     session.on('call-disconnected', function (data) {
@@ -75,10 +74,10 @@
 
     session.on('conference-disconnected', function (data) {
       /**
-       * Conference disconnected event.
+       * Conference ended event.
        * @desc Indicates a conference has been disconnected
        *
-       * @event Phone#conference:disconnected
+       * @event Phone#conference:ended
        * @type {object}
        * @property {String} from - The ID of the conference.
        * @property {String} mediaType - The type of conference.
@@ -86,7 +85,7 @@
        * @property {Date} timestamp - Event fire time.
        */
       logger.logInfo('conference disconnected  event  by phone layer');
-      emitter.publish('conference:disconnected', data);
+      emitter.publish('conference:ended', data);
       session.deleteCurrentCall();
     });
 
@@ -154,14 +153,14 @@
 
     * @example
       var phone = ATT.rtc.Phone.getPhone();
-      phone.on('session-ready', function (data) {
+      phone.on('session:ready', function (data) {
         // ... do something
       });
     */
     function on(event, handler) {
 
-      if ('session-ready' !== event
-          && 'session-disconnected' !== event
+      if ('session:ready' !== event
+          && 'session:disconnected' !== event
           && 'dialing' !== event
           && 'answering' !== event
           && 'call-incoming' !== event
@@ -177,17 +176,17 @@
           && 'call-rejected' !== event
           && 'address-updated' !== event
           && 'media-established' !== event
-          && 'conference-invite' !== event
-          && 'conference-joining' !== event
+          && 'conference:invitation-received' !== event
+          && 'conference:joining' !== event
           && 'conference:invitation-sending' !== event
-          && 'conference:invite-rejected' !== event
-          && 'conference-connecting' !== event
+          && 'conference:invitation-rejected' !== event
+          && 'conference:connecting' !== event
           && 'conference:invitation-sent' !== event
-          && 'conference:invite-accepted' !== event
+          && 'conference:invitation-accepted' !== event
           && 'conference:participant-removed' !== event
           && 'conference:disconnecting' !== event
-          && 'conference:disconnected' !== event
-          && 'conference-connected' !== event
+          && 'conference:ended' !== event
+          && 'conference:connected' !== event
           && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
@@ -213,7 +212,7 @@
     * @param {Object} options
     * @param {String} options.token OAuth Access Token.
     * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
-    * @fires Phone#session-ready
+    * @fires Phone#session:ready
     * @fires Phone#error
     * @example
     *
@@ -246,12 +245,12 @@
              * Session Ready event.
              * @desc Indicates the SDK is initialized and ready to make, receive calls
              *
-             * @event Phone#session-ready
+             * @event Phone#session:ready
              * @type {object}
              * @property {String} sessionId - The ID of the session.
              * @property {Date} timestamp - Event fire time.
              */
-            emitter.publish('session-ready', data);
+            emitter.publish('session:ready', data);
           });
 
           session.connect(options);
@@ -301,7 +300,7 @@
     *
     * @memberof Phone
     * @instance
-    * @fires Phone#session-disconnected
+    * @fires Phone#session:disconnected
     * @fires Phone#error
     * @example
     * var phone = ATT.rtc.Phone.getPhone();
@@ -322,11 +321,11 @@
              * Session Disconnected event.
              * @desc Session was successfully deleted.
              *
-             * @event Phone#session-disconnected
+             * @event Phone#session:disconnected
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
-            emitter.publish('session-disconnected', data);
+            emitter.publish('session:disconnected', data);
           });
 
           session.disconnect();
@@ -833,9 +832,9 @@
      * @param {HTMLElement} options.localVideo
      * @param {HTMLElement} options.remoteVideo
      *
-     * @fires Phone#conference-joining
-     * @fires Phone#conference-connecting
-     * @fires Phone#conference-connected
+     * @fires Phone#conference:joining
+     * @fires Phone#conference:connecting
+     * @fires Phone#conference:connected
      * @fires Phone#error
 
      * @example
@@ -863,12 +862,12 @@
 
           /**
            * Conference joining event.
-           * @desc Trying to accept and conference invitation and join the conference.
-           * @event Phone#conference-joining
+           * @desc This event fires immediately after invoking joinConference
+           * @event Phone#conference:joining
            * @type {object}
            * @property {Date} timestamp - Event fire time.
            */
-          emitter.publish('conference-joining', {
+          emitter.publish('conference:joining', {
             from: conference.peer(),
             mediaType: conference.mediaType(),
             codec: conference.codec(),
@@ -882,23 +881,16 @@
           conference.on('connecting', function (data) {
             /**
              * Conference connecting event.
-             * @desc Trying to connecting to a conference after accepting the invite.
-             * @event Phone#conference-connecting
+             * @desc This event fires when trying to connect to a conference after accepting the invite.
+             * @event Phone#conference:connecting
              * @type {object}
              * @property {Date} timestamp - Event fire time
              */
-            emitter.publish('conference-connecting', data);
+            emitter.publish('conference:connecting', data);
           });
 
           conference.on('connected', function (data) {
-            /**
-             * Conference connected event.
-             * @desc Successfully joined the conference after accepting the invite.
-             * @event Phone#conference-connected
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('conference-connected', data);
+            emitter.publish('conference:connected', data);
           });
           conference.on('stream-added', function (data) {
             userMediaSvc.showStream({
@@ -1254,7 +1246,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#conference-disconnected
+     * @fires Phone#conference:disconnected
      * @fires Phone#error
 
      * @example
@@ -1455,7 +1447,7 @@
      * @param {HTMLVideoElement} options.remoteMedia The conference participant's video element
      * @param {String} options.mediaType `video|audio`
 
-     * @fires Phone#conference-connected
+     * @fires Phone#conference:connected
      * @fires Phone#error
 
      * @example
@@ -1523,12 +1515,12 @@
            * conference connected event.
            * @desc A conference has been connected.
            *
-           * @event Phone#conference-connected
+           * @event Phone#conference:connected
            * @type {object}
            * @property {Date} timestamp - Event fire time
            * @property {Object} data - data
            */
-          emitter.publish('conference-connected', data);
+          emitter.publish('conference:connected', data);
         });
 
         conference.on('stream-added', function (data) {
@@ -1683,11 +1675,11 @@
            * Invite accepted event.
            * @desc This event fires when an invitation has been accepted by the other party.
            *
-           * @event Phone#conference:invite-accepted
+           * @event Phone#conference:invitation-accepted
            * @type {object}
            * @property {Object} data - Additional event data
            */
-          emitter.publish('conference:invite-accepted', data);
+          emitter.publish('conference:invitation-accepted', data);
         });
 
         conference.on('rejected', function (data) {
@@ -1695,11 +1687,11 @@
            * Invite rejected event.
            * @descThis event fires when an invitation has been rejected by the other party.
            *
-           * @event Phone#conference:invite-rejected
+           * @event Phone#conference:invitation-rejected
            * @type {object}
            * @property {Object} data - Additional event data
            */
-          emitter.publish('conference:invite-rejected', data);
+          emitter.publish('conference:invitation-rejected', data);
         });
 
         try {
