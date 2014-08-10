@@ -71,17 +71,18 @@
 
     session.on('conference-disconnected', function (data) {
       /**
-       * Conference disconnected event.
+       * Conference ended event.
        * @desc Indicates a conference has been disconnected
        *
-       * @event Phone#conference:disconnected
+       * @event Phone#conference:ended
        * @type {object}
        * @property {String} from - The ID of the conference.
        * @property {String} mediaType - The type of conference.
        * @property {String} codec - The codec of the conference
        * @property {Date} timestamp - Event fire time.
        */
-      emitter.publish('conference:disconnected', data);
+      logger.logInfo('conference disconnected  event  by phone layer');
+      emitter.publish('conference:ended', data);
       session.deleteCurrentCall();
     });
 
@@ -154,9 +155,8 @@
           && 'conference:invitation-accepted' !== event
           && 'conference:participant-removed' !== event
           && 'conference:disconnecting' !== event
-          && 'conference:disconnected' !== event
+          && 'conference:ended' !== event
           && 'conference:connected' !== event
-
           && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
