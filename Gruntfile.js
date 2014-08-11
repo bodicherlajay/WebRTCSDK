@@ -152,6 +152,7 @@ module.exports = function (grunt) {
       // lint your project's server code
       server: {
         src: ['js/**/*.js', 'test/**/*.js'],
+        exclude: ['test/qunit*.js'],
         options: {
           failOnError: false,
           log: 'out/jslint/jslint.log',
