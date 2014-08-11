@@ -351,7 +351,7 @@ describe('Call', function () {
         onStub;
 
       beforeEach(function () {
-
+        ATT.private.pcv = 1;
         connectCallStub = sinon.stub(rtcMgr, 'connectCall');
 
         onStub = sinon.stub(rtcMgr, 'on');
@@ -1492,7 +1492,8 @@ describe('Call', function () {
 
         var setRemoteDescriptionStub,
           playStreamSpy,
-          eventData;
+          eventData,
+          pcSetRemoteDescriptionStub;
 
         beforeEach(function () {
           eventData = {
@@ -1502,12 +1503,14 @@ describe('Call', function () {
 
           setRemoteDescriptionStub = sinon.stub(rtcMgr, 'setRemoteDescription');
           playStreamSpy = sinon.spy(rtcMgr, 'playStream');
+          pcSetRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
 
         });
 
         afterEach(function () {
           playStreamSpy.restore();
           setRemoteDescriptionStub.restore();
+          pcSetRemoteDescriptionStub.restore();
         });
 
         it('Should execute Call.setState with `connected` state', function (done) {
@@ -1552,6 +1555,26 @@ describe('Call', function () {
             }
           }, 10);
         });
+
+        it('should execute `peerConnection.setRemoteDescription` [pcv===2]', function (done) {
+          var oldPCV = ATT.private.pcv;
+
+          ATT.private.pcv = 2;
+          call.connect(); // setup the peerConnection
+
+          emitterEM.publish('call-connected', eventData);
+          setTimeout(function () {
+            try {
+              expect(pcSetRemoteDescriptionStub.called).to.equal(true);
+              ATT.private.pcv = oldPCV;
+              done();
+            } catch (e) {
+              ATT.private.pcv = oldPCV;
+              done(e);
+            }
+          }, 50);
+        });
+
 
         it('should call `rtcManager.playStream`', function (done) {
           emitterEM.publish('call-connected', eventData);

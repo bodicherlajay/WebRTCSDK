@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  ATT.private.pcv = 2;
+  ATT.private.pcv = 1;
 
   var logManager = ATT.logManager.getInstance();
 
@@ -1802,9 +1802,6 @@
   ATT.rtc.Phone = (function () {
     var instance,
       logger = logManager.addLoggerForModule('rtc');
-
-    ATT.private.pcv = 2;
-
     return {
       /**
       * @summary Get the current instance of Phone.

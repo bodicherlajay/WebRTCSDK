@@ -37,8 +37,7 @@
       codec = [],
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
-      rtcManager = ATT.private.rtcManager.getRTCManager(),
-      pcv = ATT.private.pcv;
+      rtcManager = ATT.private.rtcManager.getRTCManager();
 
     // ================
     // Private methods
@@ -287,8 +286,7 @@
      * @param {Object} The call config
     */
     function connect(connectOpts) {
-      var pcOptions,
-        pcv;
+      var pcOptions;
 
       function onPeerConnectionSuccess(description) {
 
@@ -334,8 +332,6 @@
           }
         }
 
-        pcv = (undefined === connectOpts || undefined === connectOpts.pcv) ? 1 : connectOpts.pcv;
-
         if (undefined !== remoteMedia) {
           remoteMedia.addEventListener('playing', function () {
             that.setState('media-established');
@@ -350,6 +346,16 @@
 
           that.setState('connected');
 
+          if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
+            if (undefined !== data.remoteSdp) {
+              peerConnection.setRemoteDescription({
+                sdp: data.remoteSdp,
+                type: 'answer'
+              });
+            }
+            return;
+          }
+
           if ('call' === that.breed()) {
             if (data.remoteSdp) {
               rtcManager.setRemoteDescription({
@@ -363,18 +369,10 @@
             return;
           }
 
-          if ('conference' === breed) {
-            if (undefined !== data.remoteSdp) {
-              peerConnection.setRemoteDescription({
-                sdp: data.remoteSdp,
-                type: 'answer'
-              });
-            }
-            return;
-          }
+
         });
 
-        if (('call' === breed && pcv === 2)
+        if (('call' === breed && ATT.private.pcv === 2)
             || 'conference' === breed) {
 
           pcOptions = {
@@ -561,7 +559,7 @@
 
     function mute() {
 
-      if (2 === pcv) {
+      if (2 === ATT.private.pcv) {
         if (this.localStream) {
           var audioTracks, i, l;
 
@@ -586,7 +584,7 @@
     }
 
     function unmute() {
-      if (2 === pcv) {
+      if (2 === ATT.private.pcv) {
         if (this.localStream) {
           var audioTracks, i, l;
 

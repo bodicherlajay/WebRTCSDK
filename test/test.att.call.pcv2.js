@@ -81,6 +81,7 @@ describe('Call [PCV2]', function () {
 
         it('should NOT execute createPeerConnection if pcv != 2 for an outgoing call', function () {
 
+          ATT.private.pcv = 1;
           createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection');
 
           outgoingVideoCall.connect();
