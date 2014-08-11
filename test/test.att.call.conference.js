@@ -392,25 +392,6 @@ describe('Call [Conference]', function () {
       it('should exist', function () {
         expect(outgoingConference.participants).to.be.a('function');
       });
-
-      it('should return `empty` object if no participants were set', function () {
-        var participants = outgoingConference.participants();
-
-        expect(participants).to.be.an('object');
-        expect(Object.keys(participants).length).to.equal(0);
-      });
-
-      // NOTE: Skipped because `Call.setParticipant` is not part of the public interface
-      it.skip('should return `participants` list', function () {
-        outgoingConference.setParticipant('john', 'invited', 'modId');
-        outgoingConference.setParticipant('peter', 'invited', 'modId');
-
-        var participants = outgoingConference.participants();
-
-        expect(participants).to.be.an('object');
-        expect(participants['john']).to.be.an('object');
-        expect(participants['peter']).to.be.an('object');
-      });
     });
 
     describe('connect', function () {
