@@ -1308,7 +1308,7 @@ describe('Phone', function () {
               onUserMediaSpy,
               media;
 
-            beforeEach(function() {
+            beforeEach(function () {
               media = {
                 localStream: {
                   stream: 'stream'
@@ -1321,7 +1321,6 @@ describe('Phone', function () {
 
               connectStub = sinon.stub(conference, 'connect', function() {});
               addStreamStub = sinon.stub(conference, 'addStream', function () {});
-
 
               getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
                 onUserMediaSpy = sinon.spy(options, 'onUserMedia');
@@ -1428,7 +1427,7 @@ describe('Phone', function () {
             });
           });
 
-          describe('[20002] getUserMedia: onUserMediaError', function () {
+          describe('[13005] getUserMedia: onUserMediaError', function () {
             var getUserMediaStub, phone3,
               onErrorSpy;
 
@@ -1452,8 +1451,10 @@ describe('Phone', function () {
                 remoteMedia : {}
               });
               setTimeout(function () {
+
                 expect(onErrorSpy.called).to.equal(true);
-                expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('20002');
+                console.log(onErrorSpy.getCall(0).args[0]);
+                expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('13005');
                 done();
               }, 50);
             });
@@ -1552,8 +1553,6 @@ describe('Phone', function () {
 
           it('[20000] should be published with `error` event if there is an uncaught exception', function (done) {
 
-            getUserMediaStub.restore();
-
             getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function () {
               throw error;
             });
@@ -1565,10 +1564,11 @@ describe('Phone', function () {
                 expect(ATT.errorDictionary.getSDKError('20000')).to.be.an('object');
                 expect(onErrorHandlerSpy.called).to.equal(true);
                 expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('20000');
-                getUserMediaStub.restore();
                 done();
               } catch (e) {
                 done(e);
+              } finally {
+                getUserMediaStub.restore();
               }
             }, 50);
 

@@ -300,26 +300,6 @@ describe('Phone [Conference]', function () {
 
       });
 
-      describe('getUserMedia (local): onMediaEstablished', function () {
-        it('should log that the local media is ok', function () {
-          var phone2, loggerStub;
-
-          phone2 = new Phone();
-          loggerStub = sinon.stub(logger, 'logInfo');
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
-            options.onMediaEstablished();
-          });
-          phone2.startConference({
-            localMedia : {},
-            remoteMedia : {},
-            mediaType : 'video'
-          });
-          expect(loggerStub.calledWith('onMediaEstablished')).to.equal(true);
-          getUserMediaStub.restore();
-          loggerStub.restore();
-        });
-      });
-
       describe('getUserMedia: onUserMedia', function () {
         var userMedia, getUserMediaStub,
           phone2,
@@ -409,19 +389,23 @@ describe('Phone [Conference]', function () {
         });
       });
 
-      describe('[18004] getUserMedia: onUserMediaError', function () {
-        var getUserMediaStub, phone3;
+      describe('getUserMedia: onUserMediaError', function () {
+        var phone3;
+
         beforeEach(function () {
 
           getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
             options.onUserMediaError();
           });
+
           phone3 = new Phone();
         });
+
         afterEach(function () {
           getUserMediaStub.restore();
         });
-        it('should publish error', function (done) {
+
+        it('[13005] should be published with error event', function (done) {
           phone3.on('error', onErrorSpy);
           phone3.startConference({
             localMedia : {},
@@ -430,7 +414,7 @@ describe('Phone [Conference]', function () {
           });
           setTimeout(function () {
             expect(onErrorSpy.called).to.equal(true);
-            expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('18004');
+            expect(onErrorSpy.getCall(0).args[0].error.ErrorCode).to.equal('13005');
             done();
           }, 10);
         });
