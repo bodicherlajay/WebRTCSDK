@@ -365,7 +365,7 @@
           timestamp: new Date()
         });
 
-         call = session.createCall({
+        call = session.createCall({
           peer: options.destination,
           breed: 'call',
           type: ATT.CallTypes.OUTGOING,
@@ -438,13 +438,6 @@
         });
 
         call.on('disconnected', function (data) {
-          /**
-           * Call disconnected event.
-           * @desc Successfully disconnected the current call.
-           * @event Phone#call-disconnected
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
           emitter.publish('call-disconnected', data);
           session.deleteCurrentCall();
         });
@@ -483,7 +476,7 @@
 
       } catch (err) {
         publishError('4003', err);
-        return; 
+        return;
       }
 
     }
@@ -506,7 +499,7 @@
    * @param {HTMLVideoElement} options.localMedia
    * @param {HTMLVideoElement} options.remoteMedia
    * @param {String} options.mediaType `audio` or `video`
-   
+
    * @fires Phone#dialing
    * @fires Phone#call-connecting
    * @fires Phone#call-rejected
@@ -530,7 +523,7 @@
     @example
     // Start audio call with a NoTN/VTN User
     var phone = ATT.rtc.Phone.getPhone();
-    phone.dial({  
+    phone.dial({
       destination: 'john@domain.com',
       mediaType: 'audio',
       localMedia: document.getElementById('localVideo'),
@@ -703,7 +696,7 @@
      * **Error Codes**
      *
      *   - 5000 - Answer failed: No incoming call
-     *   - 5001 - Invalid media type 
+     *   - 5001 - Invalid media type
      *   - 5002 - Internal error occurred
      *   - 5003 - User is not logged in
      *   - 5004 - Mandatory fields can not be empty
@@ -1205,7 +1198,7 @@
         var call = session.currentCall;
 
         if (null === call || null === call.id()) {
-          publishError('12000')
+          publishError('12000');
           return;
         }
         try {
@@ -1246,7 +1239,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#conference:disconnected
+     * @fires Phone#conference:ended
      * @fires Phone#error
 
      * @example
@@ -1448,6 +1441,7 @@
      * @param {String} options.mediaType `video|audio`
 
      * @fires Phone#conference:connected
+     * @fires Phone#media-established
      * @fires Phone#error
 
      * @example
@@ -1782,7 +1776,7 @@
           publishError('23000', err);
           return;
         }
-      } catch(err) {
+      } catch (err) {
         logger.logError(err);
         emitter.publish('error', {
           error: err
@@ -1881,7 +1875,7 @@
         conference = session.currentCall;
 
         if (null === conference
-          || 'conference' !== conference.breed()) {
+            || 'conference' !== conference.breed()) {
           publishError(25001);
           return;
         }
@@ -1974,7 +1968,7 @@
       /**
       * @summary Get the current instance of Phone.
       * @description There can only be one instance of the Phone object.
-      * @function getPhone 
+      * @function getPhone
       * @static
       * @memberof ATT.rtc.Phone
       * @returns {Phone} A Phone object.
