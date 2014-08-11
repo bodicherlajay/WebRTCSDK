@@ -287,8 +287,7 @@
      * @param {Object} The call config
     */
     function connect(connectOpts) {
-      var pcOptions,
-        pcv;
+      var pcOptions;
 
       function onPeerConnectionSuccess(description) {
 
@@ -334,8 +333,6 @@
           }
         }
 
-        pcv = (undefined === connectOpts || undefined === connectOpts.pcv) ? 1 : connectOpts.pcv;
-
         if (undefined !== remoteMedia) {
           remoteMedia.addEventListener('playing', function () {
             that.setState('media-established');
@@ -374,7 +371,7 @@
           }
         });
 
-        if (('call' === breed && pcv === 2)
+        if (('call' === breed && 2 === ATT.private.pcv)
             || 'conference' === breed) {
 
           pcOptions = {

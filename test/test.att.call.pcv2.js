@@ -12,12 +12,19 @@ describe('Call [PCV2]', function () {
     optionsRTCM,
     getRTCManagerStub;
 
+  before(function () {
+    ATT.private.pcv = 2;
+  });
+
+  after(function () {
+    ATT.private.pcv = 1;
+  });
+
   beforeEach(function () {
     apiConfig = ATT.private.config.api;
     factories = ATT.private.factories;
 
     Call = ATT.rtc.Call;
-    ATT.private.pcv = 2;
 
     resourceManager = factories.createResourceManager(apiConfig);
 
@@ -81,6 +88,7 @@ describe('Call [PCV2]', function () {
 
         it('should NOT execute createPeerConnection if pcv != 2 for an outgoing call', function () {
 
+          ATT.private.pcv = 1;
           createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection');
 
           outgoingVideoCall.connect();
@@ -88,6 +96,8 @@ describe('Call [PCV2]', function () {
           expect(createPeerConnectionStub.called).to.equal(false);
 
           createPeerConnectionStub.restore();
+          ATT.private.pcv = 2;
+
         });
 
         it('should NOT execute rtcManager.connectCall if pcv == 2 for an outgoing call', function () {
