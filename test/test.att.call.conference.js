@@ -965,7 +965,9 @@ describe('Call [Conference]', function () {
     });
 
     describe('invitation-accepted', function () {
-      var modifications;
+      var modifications,
+        onInviteAcceptedSpy,
+        rtcMgrAddParticipantStub;
 
       beforeEach(function () {
         modifications = {
@@ -973,12 +975,16 @@ describe('Call [Conference]', function () {
           type: 'conference',
           modificationId: 'abc321',
           reason: 'success'
-        };
+        },
+        rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
+        onInviteAcceptedSpy = sinon.spy();
+      });
+
+      afterEach(function () {
+        rtcMgrAddParticipantStub.restore();
       });
 
       it('should create a participant with `active` status', function (done) {
-
-        var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
 
         outgoingVideoConf.invitations = function () {
           return {
@@ -1010,28 +1016,35 @@ describe('Call [Conference]', function () {
         }, 50);
       });
 
-      it('should publish `invite-accepted`', function (done) {
-        var rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant'),
-          onInvitedAcceptedSpy = sinon.spy(),
-          participants;
+      it('should also publish `invite-accepted` after participant was created successfully', function (done) {
 
-        outgoingVideoConf.addParticipant(modifications.from);
+        outgoingVideoConf.invitations = function () {
+          return {
+            johnny: {
+              invitee: 'johnny',
+              status: 'invited',
+              id: 'abc321'
+            },
+            sally: {
+              invitee: 'sally',
+              status: 'invited',
+              id: '123abc'
+            }
+          }
+        };
 
-        outgoingVideoConf.on('invite-accepted', onInvitedAcceptedSpy);
+        outgoingVideoConf.on('invite-accepted', onInviteAcceptedSpy);
 
         emitterEM.publish('media-mod-terminations', modifications);
 
-        participants = outgoingVideoConf.participants();
-
         setTimeout(function () {
           try {
-            expect(onInvitedAcceptedSpy.calledOnce).to.equal(true);
-            rtcMgrAddParticipantStub.restore();
+            expect(onInviteAcceptedSpy.called).to.equal(true);
             done();
           } catch (e) {
             done(e);
           }
-        }, 100);
+        }, 50);
       });
     });
 

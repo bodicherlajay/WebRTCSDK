@@ -88,7 +88,8 @@
           participants[participant] = {
             participant: participant,
             status: status
-          }
+          };
+          emitter.publish('invite-accepted', createEventData());
         }
       }
     }
@@ -184,7 +185,6 @@
           logger.logDebug('onMediaModTerminations:conference');
           if ('success' === modifications.reason) {
             setParticipant(modifications.modificationId, 'active');
-            emitter.publish('invite-accepted', createEventData());
           }
           if ('Call rejected' === modifications.reason) {
             updateInvitee(modifications.modificationId, 'rejected');
