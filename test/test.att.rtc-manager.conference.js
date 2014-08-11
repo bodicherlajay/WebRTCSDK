@@ -70,7 +70,7 @@ describe('RTCManager [Conference]', function () {
         var params;
 
         connectConfOpts.breed = 'call';
-        connectConfOpts.peer = 'junito',
+        connectConfOpts.peer = 'junito@domain.com',
 
         doOperationStub = sinon.stub(resourceManager, 'doOperation');
 
@@ -83,7 +83,7 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(connectConfOpts.sessionId);
         expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal('calls');
         expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.token);
-        expect(doOperationStub.getCall(0).args[1].data.call.calledParty).to.equal(connectConfOpts.peer);
+        expect(doOperationStub.getCall(0).args[1].data.call.calledParty).to.equal('sip:' + connectConfOpts.peer);
         expect(doOperationStub.getCall(0).args[1].data.call.sdp).to.equal(connectConfOpts.description.sdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
         expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');

@@ -33,25 +33,6 @@
     logger = service;
   }
 
-  function createCalledPartyUri(destination) {
-    if (destination.match(new RegExp('[^0-9]')) === null) { // Number (ICMN/VTN/PSTN)
-      if (destination.length === 10) {  // 10 digit number
-        return 'tel:+1' + destination;
-      }
-      if (destination.indexOf('1') === 0) {  // 1 + 10 digit number
-        return 'tel:+' + destination;
-      }
-      if (destination.indexOf('+') === 0) { // '+' + Number
-        return 'tel:' + destination;
-      }
-      return 'sip:' + destination + '@icmn.api.att.net'; // if nothing works this will
-    }
-    if (destination.indexOf('@') > 0) { // NoTN (assuming domain supplied to SDK dial)
-      return 'sip:' + destination;
-    }
-    return null;
-  }
-
   //Initialize dependency services
   function init() {
     try {

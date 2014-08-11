@@ -362,13 +362,6 @@
         }
       };
 
-      callData = {
-        call: {
-          calledParty: options.peer,
-          sdp: options.description.sdp
-        }
-      };
-
       commonParams = {
         url: {
           sessionId : options.sessionId,
@@ -379,6 +372,14 @@
         }
       };
       if ('call' === options.breed) {
+
+        callData = {
+          call: {
+            calledParty: utils.createCalledPartyUri(options.peer),
+            sdp: options.description.sdp
+          }
+        };
+
        data = callData;
       } else {
         data = conferenceData;
