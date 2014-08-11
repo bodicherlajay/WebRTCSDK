@@ -20,6 +20,14 @@ describe('Phone [PCV2]', function () {
     createEventEmitterStub,
     publishStub;
 
+  before(function () {
+    ATT.private.pcv = 2;
+  });
+
+  after(function () {
+    ATT.private.pcv = 1;
+  });
+
   beforeEach(function () {
     factories = ATT.private.factories;
     ums = ATT.UserMediaService;
@@ -102,7 +110,6 @@ describe('Phone [PCV2]', function () {
       });
 
       it('should `ums.getUserMedia` if pcv == 2', function () {
-        ATT.private.pcv = 2;
         phone.dial(dialOpts);
 
         expect(getUserMediaStub.called).to.equal(true);
@@ -141,7 +148,6 @@ describe('Phone [PCV2]', function () {
         });
 
         it('should call `call.connect`', function (done) {
-          ATT.private.pcv = 2;
           phone.dial(dialOpts);
 
           setTimeout(function () {
@@ -167,7 +173,6 @@ describe('Phone [PCV2]', function () {
         });
 
         it('[13005] should be published with error event', function () {
-          ATT.private.pcv = 2;
           phone.dial(dialOpts);
 
           expect(publishStub.calledWithMatch('error', {

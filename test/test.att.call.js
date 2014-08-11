@@ -33,6 +33,7 @@ describe('Call', function () {
     rtcPC;
 
   before(function () {
+    ATT.private.pcv = 1;
 
     rtcPC = {
       setLocalDescription: function () { return; },
@@ -100,6 +101,10 @@ describe('Call', function () {
 
     localSdp = 'localSdp';
     remoteSdp = 'remoteSdp';
+  });
+
+  after(function () {
+    ATT.private.pcv = 2;
   });
 
   beforeEach(function () {
@@ -566,7 +571,7 @@ describe('Call', function () {
         unmuteCallStub;
 
       beforeEach(function () {
-
+        ATT.private.pcv = 1;
         muteCallStub = sinon.stub(rtcMgr, 'muteCall', function (options) {
           options.onSuccess();
         });
