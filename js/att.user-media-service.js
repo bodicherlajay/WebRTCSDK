@@ -121,7 +121,12 @@
         }
       } catch (e) {
         //get the sdk error
-        onUserMediaError(e);
+        logger.logError('showStream error');
+        logger.logError(e);
+        if (undefined !== onUserMediaError
+            && 'function' === typeof onUserMediaError) {
+          onUserMediaError(e);
+        };
       }
     },
 
