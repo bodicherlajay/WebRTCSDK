@@ -408,13 +408,6 @@
         });
 
         call.on('disconnected', function (data) {
-          /**
-           * Call disconnected event.
-           * @desc Successfully disconnected the current call.
-           * @event Phone#call-disconnected
-           * @type {object}
-           * @property {Date} timestamp - Event fire time.
-           */
           emitter.publish('call-disconnected', data);
           session.deleteCurrentCall();
         });
@@ -545,25 +538,11 @@
           if (undefined === options.holdCurrentCall
               || false === options.holdCurrentCall) {
             call.on('disconnected', function (data) {
-              /**
-               * Call disconnected event.
-               * @desc Successfully disconnected the current call.
-               * @event Phone#call-disconnected
-               * @type {object}
-               * @property {Date} timestamp - Event fire time.
-               */
               call = dialSetup(options);
             });
             call.disconnect();
           } else if (true === options.holdCurrentCall) {
             call.on('held', function (data) {
-              /**
-               * Call disconnected event.
-               * @desc Successfully disconnected the current call.
-               * @event Phone#call-disconnected
-               * @type {object}
-               * @property {Date} timestamp - Event fire time.
-               */
               session.moveToBackground();
               dialSetup(options);
             });
@@ -1331,6 +1310,7 @@
      * @param {String} options.mediaType `video|audio`
 
      * @fires Phone#conference:connected
+     * @fires Phone#media-established
      * @fires Phone#error
 
      * @example
