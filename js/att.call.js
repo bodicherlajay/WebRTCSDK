@@ -37,7 +37,8 @@
       codec = [],
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
-      rtcManager = ATT.private.rtcManager.getRTCManager();
+      rtcManager = ATT.private.rtcManager.getRTCManager(),
+      pcv = ATT.private.pcv;
 
     // ================
     // Private methods
@@ -169,7 +170,7 @@
     function onMediaModTerminations(modifications) {
 
       logger.logDebug('onMediaModTerminations');
-      logger.logDebug (modifications);
+      logger.logDebug(modifications);
 
       if (breed === 'conference') {
 
@@ -467,7 +468,7 @@
       }
     }
 
-    function removeParticipant (participant) {
+    function removeParticipant(participant) {
 
       logger.logInfo('Call.removeParticipant: ', participant);
 
@@ -536,7 +537,7 @@
       }
     }
 
-    function disconnectConference () {
+    function disconnectConference() {
       logger.logInfo('Disconnecting...');
 
       setState('disconnecting');
@@ -560,26 +561,53 @@
 
     function mute() {
 
-      rtcManager.muteCall({
-        onSuccess: function () {
+      if (2 === pcv) {
+        if (this.localStream) {
+          var audioTracks, i, l;
+
+          audioTracks = this.localStream().getAudioTracks();
+          l = audioTracks.length;
+
+          for (i = 0; i < l; i = i + 1) {
+            audioTracks[i].enabled = false;
+          }
           setState('muted');
-        },
-        onError : function (error) {
-          emitter.publish('error', error);
         }
-      });
+      } else {
+        rtcManager.muteCall({
+          onSuccess: function () {
+            setState('muted');
+          },
+          onError: function (error) {
+            emitter.publish('error', error);
+          }
+        });
+      }
     }
 
     function unmute() {
+      if (2 === pcv) {
+        if (this.localStream) {
+          var audioTracks, i, l;
 
-      rtcManager.unmuteCall({
-        onSuccess: function () {
+          audioTracks = this.localStream().getAudioTracks();
+          l = audioTracks.length;
+
+          for (i = 0; i < l; i = i + 1) {
+            audioTracks[i].enabled = true;
+          }
           setState('unmuted');
-        },
-        onError : function (error) {
-          emitter.publish('error', error);
         }
-      });
+      } else {
+        rtcManager.unmuteCall({
+          onSuccess: function () {
+            setState('unmuted');
+          },
+          onError: function (error) {
+            emitter.publish('error', error);
+          }
+        });
+      }
     }
 
     function hold() {

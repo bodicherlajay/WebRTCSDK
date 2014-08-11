@@ -17,6 +17,7 @@ describe('Call [PCV2]', function () {
     factories = ATT.private.factories;
 
     Call = ATT.rtc.Call;
+    ATT.private.pcv = 2;
 
     resourceManager = factories.createResourceManager(apiConfig);
 
@@ -53,7 +54,6 @@ describe('Call [PCV2]', function () {
       };
 
       outgoingVideoCall = new Call(optionsOutgoingVideo);
-
     });
 
     describe('connect', function () {
@@ -103,6 +103,67 @@ describe('Call [PCV2]', function () {
           createPeerConnectionStub.restore();
         });
 
+      });
+
+    });
+
+    describe('mute', function () {
+      var getAudioTracksSpy;
+
+      it('should call getAudioTracks if there is a localStream and set stream to false', function () {
+        var audioTracks = [{ enabled: true}],
+          localStream = {getAudioTracks : function () { return audioTracks; }};
+
+        getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
+        outgoingVideoCall.addStream(localStream);
+        outgoingVideoCall.mute();
+
+        expect(getAudioTracksSpy.called).to.equal(true);
+        expect(audioTracks[0].enabled).to.equal(false);
+        getAudioTracksSpy.restore();
+
+      });
+
+      it('should call setState With `muted`', function () {
+        var audioTracks = [{ enabled: true}],
+          localStream = {getAudioTracks : function () { return audioTracks; }};
+
+        getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
+        outgoingVideoCall.addStream(localStream);
+        outgoingVideoCall.mute();
+
+        expect(outgoingVideoCall.getState()).to.equal('muted');
+        getAudioTracksSpy.restore();
+      });
+
+    });
+
+    describe('unmute', function () {
+      var getAudioTracksSpy;
+      it('should call getAudioTracks if there is a localStream and set stream to true', function () {
+        var getAudioTracksSpy, localStream, audioTracks = [{ enabled: false}];
+
+        localStream = {getAudioTracks : function () { return audioTracks; }};
+        getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
+        outgoingVideoCall.addStream(localStream);
+
+        outgoingVideoCall.unmute();
+
+        expect(getAudioTracksSpy.called).to.equal(true);
+        expect(audioTracks[0].enabled).to.equal(true);
+        getAudioTracksSpy.restore();
+      });
+
+      it('should call setState With `unmuted`', function () {
+        var audioTracks = [{ enabled: true}],
+          localStream = {getAudioTracks : function () { return audioTracks; }};
+
+        getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
+        outgoingVideoCall.addStream(localStream);
+        outgoingVideoCall.unmute();
+
+        expect(outgoingVideoCall.getState()).to.equal('unmuted');
+        getAudioTracksSpy.restore();
       });
 
     });
