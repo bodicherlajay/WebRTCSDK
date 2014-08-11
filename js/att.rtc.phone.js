@@ -4,8 +4,9 @@
 (function () {
   'use strict';
 
-  var logManager = ATT.logManager.getInstance(),
-    pcv = 2;
+  ATT.private.pcv = 2;
+
+  var logManager = ATT.logManager.getInstance();
 
   /**
     Creates a new Phone.
@@ -15,8 +16,7 @@
   */
   function Phone() {
 
-    var that = this,
-      emitter = ATT.private.factories.createEventEmitter(),
+    var emitter = ATT.private.factories.createEventEmitter(),
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
       userMediaSvc = ATT.UserMediaService,
@@ -125,9 +125,7 @@
           try {
             logger.logDebug('getUserMedia: onUserMedia');
             call.addStream(media.localStream);
-            call.connect({
-              pcv: that.pcv
-            });
+            call.connect();
           } catch (error) {
             logger.logError(error);
             if (undefined !== errorCallback
@@ -539,8 +537,13 @@
             emitter.publish('error', data);
           });
 
-          if (2 === this.pcv) {
-            connectWithMediaStream(options, call);
+          if (2 === ATT.private.pcv) {
+            connectWithMediaStream(options, call, function (error) {
+              emitter.publish('error', {
+                error: ATT.errorDictionary.getSDKError('4003'),
+                data: error
+              });
+            });
             return;
           }
 
@@ -668,7 +671,7 @@
           publishError(5002, data);
         });
 
-        if (2 === this.pcv) {
+        if (2 === ATT.private.pcv) {
           connectWithMediaStream(options, call);
           return;
         }
@@ -1748,7 +1751,6 @@
       }
     }
 
-    this.pcv = pcv;
     // ===================
     // Call interface
     // ===================

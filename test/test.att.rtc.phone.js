@@ -656,11 +656,12 @@ describe('Phone', function () {
           expect(onSpy.calledWith('error')).to.equal(true);
         });
 
-        it('should execute `call.connect` if pcv == 1', function () {
-          phone.pcv = 1;
+        it('should execute `call.connect`', function () {
+          ATT.private.pcv = 1;
           phone.dial(options);
 
           expect(callConnectStub.calledWith(options)).to.equal(true);
+          ATT.private.pcv = 2;
         });
 
         describe('Events for Dial', function () {
@@ -760,7 +761,8 @@ describe('Phone', function () {
             publishStub = sinon.stub(emitter, 'publish');
 
             getUserMediaStub = sinon.stub(ums, 'getUserMedia', function () {
-              throw new Error('UMS Error');
+              console.log(error);
+              throw error;
             });
 
             phone.on('error', function (err) {
@@ -795,7 +797,6 @@ describe('Phone', function () {
           });
 
           it('[4003] should be published with `error` event if there is an unknown exception during the operation', function () {
-
             phone.dial({
               destination: 1234,
               localMedia: 'foo',

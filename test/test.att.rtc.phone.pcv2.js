@@ -102,7 +102,7 @@ describe('Phone [PCV2]', function () {
       });
 
       it('should `ums.getUserMedia` if pcv == 2', function () {
-        phone.pcv = 2;
+        ATT.private.pcv = 2;
         phone.dial(dialOpts);
 
         expect(getUserMediaStub.called).to.equal(true);
@@ -115,10 +115,11 @@ describe('Phone [PCV2]', function () {
       });
 
       it('should NOT execute `ums.getUserMedia` if pcv != 2', function () {
-        phone.pcv = 1;
+        ATT.private.pcv = 1;
         phone.dial(dialOpts);
 
         expect(getUserMediaStub.called).to.equal(false);
+        ATT.private.pcv = 2;
       });
 
       describe('getUserMedia :onUserMedia', function () {
@@ -139,14 +140,13 @@ describe('Phone [PCV2]', function () {
           callConnectStub.restore();
         });
 
-        it('should call `call.connect` with pcv = 2', function (done) {
-          phone.pcv = 2;
+        it('should call `call.connect`', function (done) {
+          ATT.private.pcv = 2;
           phone.dial(dialOpts);
 
           setTimeout(function () {
             try {
               expect(callConnectStub.called).to.equal(true);
-              expect(callConnectStub.getCall(0).args[0].pcv).to.equal(2);
               done();
             } catch (e) {
               done(e);
@@ -167,7 +167,7 @@ describe('Phone [PCV2]', function () {
         });
 
         it('[13005] should be published with error event', function () {
-          phone.pcv = 2;
+          ATT.private.pcv = 2;
           phone.dial(dialOpts);
 
           expect(publishStub.calledWithMatch('error', {
@@ -233,14 +233,11 @@ describe('Phone [PCV2]', function () {
           callConnectStub.restore();
         });
 
-        it('should call `Call.connect` with pcv = 2', function () {
+        it('should call `Call.connect`', function () {
           phone.pcv = 2;
           phone.answer(answerOpts);
 
           expect(callConnectStub.called).to.equal(true);
-          expect(callConnectStub.calledWith({
-            pcv: 2
-          })).to.equal(true);
         });
       });
     });
