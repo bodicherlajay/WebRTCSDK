@@ -53,7 +53,7 @@
       emitter.publish('conference:invitation-received', data);
     });
 
-	  session.on('call-disconnected', function (data) {
+    session.on('call-disconnected', function (data) {
       /**
        * Call disconnected event.
        * @desc Indicates a call has been disconnected
@@ -335,7 +335,7 @@
           timestamp: new Date()
         });
 
-         call = session.createCall({
+        call = session.createCall({
           peer: options.destination,
           breed: 'call',
           type: ATT.CallTypes.OUTGOING,
@@ -446,7 +446,7 @@
 
       } catch (err) {
         publishError('4003', err);
-        return; 
+        return;
       }
 
     }
@@ -469,7 +469,7 @@
    * @param {HTMLVideoElement} options.localMedia
    * @param {HTMLVideoElement} options.remoteMedia
    * @param {String} options.mediaType `audio` or `video`
-   
+
    * @fires Phone#dialing
    * @fires Phone#call-connecting
    * @fires Phone#call-rejected
@@ -493,7 +493,7 @@
     @example
     // Start audio call with a NoTN/VTN User
     var phone = ATT.rtc.Phone.getPhone();
-    phone.dial({  
+    phone.dial({
       destination: 'john@domain.com',
       mediaType: 'audio',
       localMedia: document.getElementById('localVideo'),
@@ -538,18 +538,20 @@
           if (undefined === options.holdCurrentCall
               || false === options.holdCurrentCall) {
             call.on('disconnected', function (data) {
+              logger.logDebug(data);
               call = dialSetup(options);
             });
             call.disconnect();
           } else if (true === options.holdCurrentCall) {
             call.on('held', function (data) {
+              logger.logDebug(data);
               session.moveToBackground();
               dialSetup(options);
             });
             call.hold();
           }
         } else {
-           dialSetup(options);
+          dialSetup(options);
         }
       } catch (err) {
         logger.logError(err);
@@ -570,7 +572,7 @@
      * **Error Codes**
      *
      *   - 5000 - Answer failed: No incoming call
-     *   - 5001 - Invalid media type 
+     *   - 5001 - Invalid media type
      *   - 5002 - Internal error occurred
      *   - 5003 - User is not logged in
      *   - 5004 - Mandatory fields can not be empty
@@ -660,7 +662,7 @@
           session.switchCall();
 
           if (session.currentCall !== null) {
-              session.currentCall.resume();
+            session.currentCall.resume();
           }
         });
         call.on('error', function (data) {
@@ -1026,9 +1028,9 @@
             session.switchCall();
 
             if (session.currentCall !== null) {
-                session.currentCall.resume();
+              session.currentCall.resume();
             }
-        }
+          }
           call.disconnect();
         } catch (err) {
           publishError('11001', err);
@@ -1067,7 +1069,7 @@
         var call = session.currentCall;
 
         if (null === call || null === call.id()) {
-          publishError('12000')
+          publishError('12000');
           return;
         }
         try {
@@ -1077,7 +1079,7 @@
             session.switchCall();
 
             if (session.currentCall !== null) {
-                session.currentCall.resume();
+              session.currentCall.resume();
             }
           });
           call.reject();
@@ -1108,7 +1110,7 @@
      * @memberOf Phone
      * @instance
 
-     * @fires Phone#conference:disconnected
+     * @fires Phone#conference:ended
      * @fires Phone#error
 
      * @example
@@ -1645,7 +1647,7 @@
           publishError('23000', err);
           return;
         }
-      } catch(err) {
+      } catch (err) {
         logger.logError(err);
         emitter.publish('error', {
           error: err
@@ -1744,7 +1746,7 @@
         conference = session.currentCall;
 
         if (null === conference
-          || 'conference' !== conference.breed()) {
+            || 'conference' !== conference.breed()) {
           publishError(25001);
           return;
         }
@@ -1841,7 +1843,7 @@
       /**
       * @summary Get the current instance of Phone.
       * @description There can only be one instance of the Phone object.
-      * @function getPhone 
+      * @function getPhone
       * @static
       * @memberof ATT.rtc.Phone
       * @returns {Phone} A Phone object.
