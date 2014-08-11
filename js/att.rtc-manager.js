@@ -342,29 +342,55 @@
     function connectCall2() {}
 
     function connectConference(options) {
+
       var responseData,
           joinConfig,
           createConfig,
           commonParams,
-          joinParams;
+          joinParams,
+          data,
+          callData,
+          conferenceData;
 
-      commonParams = {
-        url: [options.sessionInfo.sessionId],
-        headers: {
-          'Authorization': 'Bearer ' + options.sessionInfo.token
+      if (undefined === options.breed) {
+        throw new Error('No call type defined.');
+      }
+
+      conferenceData = {
+        conference: {
+          sdp: options.description.sdp
         }
       };
+
+      commonParams = {
+        url: {
+          sessionId : options.sessionId,
+          type: options.breed + 's'
+        },
+        headers: {
+          'Authorization': 'Bearer ' + options.token
+        }
+      };
+      if ('call' === options.breed) {
+
+        callData = {
+          call: {
+            calledParty: utils.createCalledPartyUri(options.peer),
+            sdp: options.description.sdp
+          }
+        };
+
+       data = callData;
+      } else {
+        data = conferenceData;
+      }
 
       // If you DON'T have a conference ID, then CREATE the conference
       if (undefined === options.conferenceId) {
 
         createConfig = {
           params: commonParams,
-          data: {
-            conference: {
-              sdp: options.description.sdp
-            }
-          },
+          data: data,
           success: function (response) {
             responseData = {
               id: response.getResponseHeader('Location').split('/')[6],
@@ -375,13 +401,17 @@
           error: options.onError
         };
 
-        resourceManager.doOperation('createConference', createConfig);
+        resourceManager.doOperation('createCall', createConfig);
         return;
       }
 
       // If you DO have a conference ID, then JOIN
       joinParams = {
-        url: [options.sessionInfo.sessionId, options.conferenceId],
+        url: {
+          sessionId: options.sessionId,
+          conferenceId: options.conferenceId,
+          type: 'conferences'
+        },
         headers: commonParams.headers
       };
       joinParams.headers['x-conference-action'] = 'call-answer';

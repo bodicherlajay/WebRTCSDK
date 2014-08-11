@@ -918,11 +918,10 @@ describe('RTC Manager', function () {
               sdp: localSdp,
               type: 'offer'
             },
-            sessionInfo : {
-              sessionId: '123',
-              token : 'token'
-            },
-            conferenceId : '123',
+            conferenceId: '123',
+            sessionId: '123',
+            token : 'token',
+            breed: 'conference', // `conference` or `call`
             onSuccess: onSuccessSpy,
             onError: onErrorSpy
           };
@@ -933,7 +932,7 @@ describe('RTC Manager', function () {
           expect(rtcManager.connectConference).to.be.a('function');
         });
 
-        it('should execute `resourceManager.doOperation` with required params', function () {
+        it('should execute `resourceManager.doOperation(connectCall)`[breed == call] with required params', function () {
 
           rtcManager.connectConference(connectConfOpts);
 
@@ -941,6 +940,10 @@ describe('RTC Manager', function () {
           expect(doOperationStub.getCall(0).args[0]).to.equal('acceptConference');
           expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
           console.log(JSON.stringify(doOperationStub.getCall(0).args));
+          expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(connectConfOpts.sessionId);
+          expect(doOperationStub.getCall(0).args[1].params.url.conferenceId).to.equal(connectConfOpts.conferenceId);
+          expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal('conferences');
+          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.token);
           expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(connectConfOpts.description.sdp);
           expect(doOperationStub.getCall(0).args[1].params.headers['x-conference-action']).to.equal('call-answer');
           expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');

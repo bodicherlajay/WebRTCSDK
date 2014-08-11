@@ -75,11 +75,12 @@ describe('APIConfig', function () {
       expect(currentConfiguration.getEvents.headers['Cache-Control']).to.equal('no-cache');
     });
 
-    it('should have a valid method startCall method and returns Authorization and url', function () {
-      expect(currentConfiguration.startCall).to.be.an('object');
-      expect(currentConfiguration.startCall.method).to.equal('post');
-      expect(currentConfiguration.startCall.formatters.url('sessionid')).to.equal(appConfig.RTCEndpoint + '/sessions/sessionid/calls');
-      expect(currentConfiguration.startCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
+    it('should have a valid method createCall configuration object', function () {
+      var params = { sessionId: '1d23', type: 'call' };
+      expect(currentConfiguration.createCall).to.be.an('object');
+      expect(currentConfiguration.createCall.method).to.equal('POST');
+      expect(currentConfiguration.createCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/' + params.sessionId + '/' + params.type);
+      expect(currentConfiguration.createCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
     });
 
     it('should have a valid method answerCall method and returns Authorization and url', function () {
@@ -100,7 +101,11 @@ describe('APIConfig', function () {
     });
 
     it('should have a valid method acceptConference', function () {
-      var params = ['sessionId', 'confId'];
+      var params = {
+        sessionId: 'sessionId',
+        conferenceId: 'confId',
+        type: 'conferences'
+      };
       expect(currentConfiguration.acceptConference).to.be.an('object');
       expect(currentConfiguration.acceptConference.method).to.equal('PUT');
       expect(currentConfiguration.acceptConference.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/confId');
