@@ -10,7 +10,9 @@ describe('Call [PCV2]', function () {
     rtcMgr,
     resourceManager,
     optionsRTCM,
-    getRTCManagerStub;
+    getRTCManagerStub,
+    emitterCall,
+    createEventEmitterStub;
 
   before(function () {
     ATT.private.pcv = 2;
@@ -34,23 +36,38 @@ describe('Call [PCV2]', function () {
       peerConnSvc: ATT.PeerConnectionService
     };
 
+
     rtcMgr = new ATT.private.RTCManager(optionsRTCM);
+
+    emitterCall = factories.createEventEmitter();
+
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+      return emitterCall;
+    });
 
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return rtcMgr;
     });
-
   });
 
   afterEach(function () {
     getRTCManagerStub.restore();
+    createEventEmitterStub.restore();
   });
 
   describe('Methods', function () {
     var outgoingVideoCall,
-      optionsOutgoingVideo;
+      optionsOutgoingVideo,
+      onErrorHandlerSpy,
+      errorData,
+      error;
 
     beforeEach(function () {
+
+      error = 'Test Error';
+      errorData = {
+        error: error
+      };
 
       optionsOutgoingVideo = {
         breed: 'call',
@@ -61,6 +78,11 @@ describe('Call [PCV2]', function () {
       };
 
       outgoingVideoCall = new Call(optionsOutgoingVideo);
+
+      onErrorHandlerSpy = sinon.spy();
+
+      outgoingVideoCall.on('error', onErrorHandlerSpy);
+
     });
 
     describe('connect', function () {
@@ -118,45 +140,74 @@ describe('Call [PCV2]', function () {
     });
 
     describe('mute', function () {
-      var getAudioTracksSpy;
+      var getAudioTracksSpy,
+        audioTracks,
+        localStream;
+
+      beforeEach(function () {
+        audioTracks = [{ enabled: true}];
+        localStream = {getAudioTracks : function () { return audioTracks; }};
+
+        outgoingVideoCall.addStream(localStream);
+      });
+
 
       it('should call getAudioTracks if there is a localStream and set stream to false', function () {
-        var audioTracks = [{ enabled: true}],
-          localStream = {getAudioTracks : function () { return audioTracks; }};
-
         getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
-        outgoingVideoCall.addStream(localStream);
         outgoingVideoCall.mute();
 
         expect(getAudioTracksSpy.called).to.equal(true);
         expect(audioTracks[0].enabled).to.equal(false);
         getAudioTracksSpy.restore();
-
       });
 
       it('should call setState With `muted`', function () {
-        var audioTracks = [{ enabled: true}],
-          localStream = {getAudioTracks : function () { return audioTracks; }};
-
         getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
-        outgoingVideoCall.addStream(localStream);
         outgoingVideoCall.mute();
 
         expect(outgoingVideoCall.getState()).to.equal('muted');
         getAudioTracksSpy.restore();
       });
 
+      it('Should publish `error` with error data if there is an error in operation', function (done) {
+        var getAudioTracksStub;
+
+        getAudioTracksStub = sinon.stub(localStream, 'getAudioTracks', function () {
+          throw error;
+        });
+
+        outgoingVideoCall.mute();
+
+        setTimeout(function () {
+          try {
+            expect(onErrorHandlerSpy.called).to.equal(true);
+            expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          } finally {
+            getAudioTracksStub.restore();
+          }
+        }, 100);
+
+      });
+
     });
 
     describe('unmute', function () {
-      var getAudioTracksSpy;
-      it('should call getAudioTracks if there is a localStream and set stream to true', function () {
-        var getAudioTracksSpy, localStream, audioTracks = [{ enabled: false}];
+      var getAudioTracksSpy,
+        audioTracks,
+        localStream;
 
+      beforeEach(function () {
+        audioTracks = [{ enabled: true}];
         localStream = {getAudioTracks : function () { return audioTracks; }};
-        getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
-        outgoingVideoCall.addStream(localStream);
 
+        outgoingVideoCall.addStream(localStream);
+      });
+
+      it('should call getAudioTracks if there is a localStream and set stream to true', function () {
+        getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
         outgoingVideoCall.unmute();
 
         expect(getAudioTracksSpy.called).to.equal(true);
@@ -165,15 +216,34 @@ describe('Call [PCV2]', function () {
       });
 
       it('should call setState With `unmuted`', function () {
-        var audioTracks = [{ enabled: true}],
-          localStream = {getAudioTracks : function () { return audioTracks; }};
-
         getAudioTracksSpy = sinon.spy(localStream, 'getAudioTracks');
-        outgoingVideoCall.addStream(localStream);
         outgoingVideoCall.unmute();
 
         expect(outgoingVideoCall.getState()).to.equal('unmuted');
         getAudioTracksSpy.restore();
+      });
+
+      it('Should publish `error` with error data if there is an error in operation', function (done) {
+        var getAudioTracksStub;
+
+        getAudioTracksStub = sinon.stub(localStream, 'getAudioTracks', function () {
+          throw error;
+        });
+
+        outgoingVideoCall.unmute();
+
+        setTimeout(function () {
+          try {
+            expect(onErrorHandlerSpy.called).to.equal(true);
+            expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          } finally {
+            getAudioTracksStub.restore();
+          }
+        }, 100);
+
       });
 
     });

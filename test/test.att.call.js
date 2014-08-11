@@ -571,7 +571,7 @@ describe('Call', function () {
         unmuteCallStub;
 
       beforeEach(function () {
-
+        ATT.private.pcv = 1;
         muteCallStub = sinon.stub(rtcMgr, 'muteCall', function (options) {
           options.onSuccess();
         });
