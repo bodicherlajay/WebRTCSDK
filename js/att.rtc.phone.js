@@ -123,11 +123,13 @@
         remoteMedia: options.remoteMedia,
         onUserMedia: function (media) {
           try {
+            logger.logDebug('getUserMedia: onUserMedia');
             call.addStream(media.localStream);
             call.connect({
               pcv: that.pcv
             });
           } catch (error) {
+            logger.logError(error);
             if (undefined !== errorCallback
                 && 'function' === typeof errorCallback) {
               errorCallback(error);
@@ -135,6 +137,7 @@
           }
         },
         onMediaEstablished: function () {
+          logger.logDebug('getUserMedia: onMediaEstablished');
           emitter.publish('media-established', {
             from: call.peer(),
             timestamp: new Date(),
@@ -143,7 +146,7 @@
           });
         },
         onUserMediaError: function (error) {
-          logger.logError('getUserMedia Failed ');
+          logger.logDebug('getUserMedia: onUserMediaError');
           publishError('13005', error);
           return;
         }
@@ -261,6 +264,7 @@
           session.connect(options);
 
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('2004');
         }
       } catch (err) {
@@ -337,6 +341,7 @@
           session = undefined;
 
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('3000');
         }
       } catch (err) {
@@ -541,7 +546,8 @@
 
           call.connect(options);
 
-        } catch (e) {
+        } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('4003');
         }
 
@@ -761,53 +767,15 @@
             });
           });
 
-//          userMediaSvc.getUserMedia({
-//            localMedia: options.localMedia,
-//            remoteMedia: options.remoteMedia,
-//            mediaType: conference.mediaType(),
-//            onUserMedia: function (media) {
-//              try {
-//                logger.logInfo('Successfully got user media');
-//
-//                conference.addStream(media.localStream);
-//                conference.connect();
-//              } catch (err) {
-//                logger.logError(err);
-//
-//                emitter.publish('error', {
-//                  error: err
-//                });
-//              }
-//            },
-//            onMediaEstablished: function () {
-//              logger.logInfo('onMediaEstablished');
-//
-//              emitter.publish('media-established', {
-//                timestamp: new Date(),
-//                mediaType: conference.mediaType(),
-//                codec: conference.codec(),
-//                from: conference.peer()
-//              });
-//            },
-//            onUserMediaError: function (error) {
-//              logger.logError('getUserMedia Failed ');
-//              logger.logTrace(error);
-//
-//              emitter.publish('error', {
-//                error: error
-//              });
-//            }
-//          });
-
           connectWithMediaStream(options, conference, function (error) {
-            logger.logError(error);
-
             emitter.publish('error', {
-              error: ATT.errorDictionary.getSDKError('20000')
+              error: ATT.errorDictionary.getSDKError('20000'),
+              data: error
             });
           });
 
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('20000');
         }
 
@@ -866,6 +834,7 @@
           call.mute();
 
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('9001');
         }
       } catch (err) {
@@ -924,6 +893,7 @@
           call.unmute();
 
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('10001');
         }
 
@@ -987,6 +957,7 @@
           });
           call.disconnect();
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('6001');
         }
 
@@ -1042,6 +1013,7 @@
 //          }
           call.disconnect();
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('11001');
         }
       } catch (err) {
@@ -1092,6 +1064,7 @@
 //          });
           call.reject();
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('12001');
         }
 
@@ -1143,6 +1116,7 @@
           conference.reject();
 
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('22000');
         }
 
@@ -1185,6 +1159,7 @@
         try {
           call.hold();
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('7001');
         }
       } catch (err) {
@@ -1234,6 +1209,7 @@
         try {
           call.resume();
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('8002');
         }
       } catch (err) {
@@ -1286,6 +1262,7 @@
 
           session.updateE911Id(options);
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError('17001');
         }
 
@@ -1759,6 +1736,7 @@
 
           conference.removeParticipant(participant);
         } catch (err) {
+          logger.logError(err);
           throw ATT.errorDictionary.getSDKError(25003);
         }
       } catch (err) {
