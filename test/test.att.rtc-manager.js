@@ -1613,7 +1613,7 @@ describe('RTC Manager', function () {
 
         afterEach(function () {
           holdCallStub.restore();
-        })
+        });
 
         it('should exist', function () {
           expect(rtcManager.holdCall).to.be.a('function');

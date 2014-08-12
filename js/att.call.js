@@ -619,16 +619,25 @@
     }
 
     function hold() {
+      var sdp;
+      if (2 === ATT.private.pcv) {
+        sdp = sdpFilter.holdCall(this.localDescription);
 
-      rtcManager.holdCall({
-        onSuccess: function (sdp) {
-          localSdp = sdp;
-        },
-        callId: id,
-        onError : function (error) {
-          emitter.publish('error', error);
-        }
-      });
+        this.peerConnection.setLocalDescription(sdp);
+//        console.log( 'sdp ' + sdp + 'LD ' + localDescription);
+        this.localDescription = sdp;
+
+      } else {
+        rtcManager.holdCall({
+          onSuccess: function (sdp) {
+            localSdp = sdp;
+          },
+          callId: id,
+          onError: function (error) {
+            emitter.publish('error', error);
+          }
+        });
+      }
     }
 
     function resume() {

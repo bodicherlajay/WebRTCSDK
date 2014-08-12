@@ -247,7 +247,37 @@ describe('Call [PCV2]', function () {
       });
 
     });
-  });
 
+    describe('hold', function () {
+      var sdpFilter, sdp;
+
+      beforeEach(function () {
+        sdpFilter = ATT.sdpFilter.getInstance();
+        sdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
+        outgoingVideoCall.localDescription = sdp;
+      });
+      it('should call sdpFilter.holdCallSDP() method', function () {
+        var holdCallSDPStub,
+          setLocalDescriptionStub,
+          modsdp = '123',
+          peerconnection = {setLocalDescription : function () { return; }};
+        outgoingVideoCall.peerConnection = peerconnection;
+
+        console.log('object ' + JSON.stringify(outgoingVideoCall));
+        setLocalDescriptionStub = sinon.stub(outgoingVideoCall.peerConnection, 'setLocalDescription');
+
+        holdCallSDPStub = sinon.stub(sdpFilter, 'holdCall', function () {
+          return modsdp;
+        });
+        outgoingVideoCall.hold();
+
+        expect(holdCallSDPStub.calledWith(sdp)).to.equal(true);
+        expect(setLocalDescriptionStub.calledWith(modsdp)).to.equal(true);
+
+        setLocalDescriptionStub.restore();
+        holdCallSDPStub.restore();
+      });
+    });
+  });
 });
 
