@@ -209,6 +209,34 @@ if (!ATT) {
     }
   };
 
+  function resumeCall (localdescription) {
+
+
+    logger.logDebug('resumeCall');
+
+    if (undefined === localdescription ) {
+      logger.logError('Please pass the correct parameter for holdCall');
+      throw new Error ('localdescription is undefined');
+    }
+
+    try {
+      var sdp = localdescription;
+
+      logger.logTrace('resuming call', sdp);
+
+      // adjust SDP for resume request
+      sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
+      sdp.type = 'offer';
+      this.processChromeSDPOffer(sdp);
+      incrementModCount();
+
+      incrementSDP(sdp, modificationCount);
+      return sdp;
+
+    } catch (error) {
+      throw error;
+    }
+  };
 
   init = function () {
     return {
@@ -232,7 +260,8 @@ if (!ATT) {
         return sdp.replace(/sendonly/g, 'sendrecv');
       },
       setupActivePassive: setupActivePassive,
-      holdCall: holdCall
+      holdCall: holdCall,
+      resumeCall : resumeCall
     };
   };
 
