@@ -344,52 +344,43 @@
     function connectConference(options) {
 
       var responseData,
-          joinConfig,
-          createConfig,
-          commonParams,
-          joinParams,
-          data,
-          callData,
-          conferenceData;
+        connectConfig,
+        createConfig,
+        headers,
+        data;
 
       if (undefined === options.breed) {
         throw new Error('No call type defined.');
       }
 
-      conferenceData = {
-        conference: {
-          sdp: options.description.sdp
+      // If you DON'T have a callId ID, then create the call
+      if (undefined === options.callId) {
+
+        if ('call' === options.breed) {
+          data = {
+            call: {
+              calledParty: utils.createCalledPartyUri(options.peer),
+              sdp: options.description.sdp
+            }
+          };
+        } else {
+          data = {
+            conference: {
+              sdp: options.description.sdp
+            }
+          };
         }
-      };
-
-      commonParams = {
-        url: {
-          sessionId : options.sessionId,
-          type: options.breed + 's'
-        },
-        headers: {
-          'Authorization': 'Bearer ' + options.token
-        }
-      };
-      if ('call' === options.breed) {
-
-        callData = {
-          call: {
-            calledParty: utils.createCalledPartyUri(options.peer),
-            sdp: options.description.sdp
-          }
-        };
-
-       data = callData;
-      } else {
-        data = conferenceData;
-      }
-
-      // If you DON'T have a conference ID, then CREATE the conference
-      if (undefined === options.conferenceId) {
 
         createConfig = {
-          params: commonParams,
+          params: {
+            url: {
+              sessionId : options.sessionId,
+              type: options.breed + 's'
+            },
+            headers: {
+              'Authorization': 'Bearer ' + options.token
+            }
+          },
           data: data,
           success: function (response) {
             responseData = {
@@ -405,24 +396,37 @@
         return;
       }
 
-      // If you DO have a conference ID, then JOIN
-      joinParams = {
-        url: {
-          sessionId: options.sessionId,
-          conferenceId: options.conferenceId,
-          type: 'conferences'
-        },
-        headers: commonParams.headers
+      // If you DO have a call ID, then connect
+      headers = {
+        'Authorization': 'Bearer ' + options.token
       };
-      joinParams.headers['x-conference-action'] = 'call-answer';
 
-      joinConfig = {
-        params: joinParams,
-        data: {
+      if ('call' === options.breed) {
+        headers['x-calls-action'] = 'call-answer';
+        data = {
+          callsMediaModifications: {
+            sdp: options.description.sdp
+          }
+        };
+      } else {
+        headers['x-conference-action'] = 'call-answer';
+        data = {
           conferenceModifications: {
             sdp: options.description.sdp
           }
+        };
+      }
+
+      connectConfig = {
+        params: {
+          url: {
+            sessionId: options.sessionId,
+            callId: options.callId,
+            type: options.breed + 's'
+          },
+          headers: headers
         },
+        data: data,
         success: function (response) {
           responseData = {
             state: response.getResponseHeader('x-state')
@@ -432,8 +436,7 @@
         error: options.onError
       };
 
-      resourceManager.doOperation('acceptConference', joinConfig);
-      return;
+      resourceManager.doOperation('connectCall', connectConfig);
     }
 
     function acceptMediaModifications(options) {

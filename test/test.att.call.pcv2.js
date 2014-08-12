@@ -86,14 +86,7 @@ describe('Call [PCV2]', function () {
     });
 
     describe('connect', function () {
-      var createPeerConnectionStub,
-        connectOpts;
-
-      beforeEach(function () {
-        connectOpts = {
-          pcv: 2
-        };
-      });
+      var createPeerConnectionStub;
 
       describe('connect [OUTGOING]', function () {
 
@@ -101,7 +94,7 @@ describe('Call [PCV2]', function () {
 
           createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection');
 
-          outgoingVideoCall.connect(connectOpts);
+          outgoingVideoCall.connect();
 
           expect(createPeerConnectionStub.called).to.equal(true);
 
@@ -127,12 +120,29 @@ describe('Call [PCV2]', function () {
 
           createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection');
 
-          outgoingVideoCall.connect(connectOpts);
+          outgoingVideoCall.connect();
 
           expect(connectCallStub.called).to.equal(false);
 
           connectCallStub.restore();
           createPeerConnectionStub.restore();
+        });
+
+        describe('createPeerConnection: success', function () {
+          it('should call `connectConference` with the required params', function () {
+            var connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
+
+            createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
+              options.onSuccess();
+            });
+
+            outgoingVideoCall.connect();
+
+            expect(connectConferenceStub.called).to.equal(true);
+
+            connectConferenceStub.restore();
+            createPeerConnectionStub.restore();
+          });
         });
 
       });

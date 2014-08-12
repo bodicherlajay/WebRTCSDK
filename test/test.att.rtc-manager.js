@@ -41,17 +41,15 @@ describe('RTC Manager', function () {
     webRTCSessionResponse = {
       getResponseHeader: function (name) {
         switch (name) {
-          case 'Location':
-            return '123/123/123/123/' + sessionInfo.sessionId;
-          case 'x-expires':
-            return String(timeout); // seconds
-          default:
-            break;
+        case 'Location':
+          return '123/123/123/123/' + sessionInfo.sessionId;
+        case 'x-expires':
+          return String(timeout); // seconds
+        default:
+          break;
         }
       }
     };
-
-
 
   });
 
@@ -903,9 +901,10 @@ describe('RTC Manager', function () {
 
       });
 
-      describe('connectConference [JOIN]', function () {
+      describe('connectConference', function () {
 
         var connectConfOpts,
+          connectCallOpts,
           onSuccessSpy,
           onErrorSpy;
 
@@ -913,12 +912,26 @@ describe('RTC Manager', function () {
           onSuccessSpy = sinon.spy();
           onErrorSpy = sinon.spy();
 
+          connectCallOpts = {
+            peer: '1234',
+            description: {
+              sdp: localSdp,
+              type: 'offer'
+            },
+            callId: '123',
+            sessionId: '123',
+            token : 'token',
+            breed: 'call', // `conference` or `call`
+            onSuccess: onSuccessSpy,
+            onError: onErrorSpy
+          };
+
           connectConfOpts = {
             description: {
               sdp: localSdp,
               type: 'offer'
             },
-            conferenceId: '123',
+            callId: '123',
             sessionId: '123',
             token : 'token',
             breed: 'conference', // `conference` or `call`
@@ -933,15 +946,30 @@ describe('RTC Manager', function () {
         });
 
         it('should execute `resourceManager.doOperation(connectCall)`[breed == call] with required params', function () {
+          rtcManager.connectConference(connectCallOpts);
+
+          expect(doOperationStub.called).to.equal(true);
+          expect(doOperationStub.getCall(0).args[0]).to.equal('connectCall');
+          expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+          expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(connectCallOpts.sessionId);
+          expect(doOperationStub.getCall(0).args[1].params.url.callId).to.equal(connectCallOpts.callId);
+          expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal('calls');
+          expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectCallOpts.token);
+          expect(doOperationStub.getCall(0).args[1].data.callsMediaModifications.sdp).to.equal(connectCallOpts.description.sdp);
+          expect(doOperationStub.getCall(0).args[1].params.headers['x-calls-action']).to.equal('call-answer');
+          expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
+          expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
+        });
+
+        it('should execute `resourceManager.doOperation(connectCall)`[breed == conference] with required params', function () {
 
           rtcManager.connectConference(connectConfOpts);
 
           expect(doOperationStub.called).to.equal(true);
-          expect(doOperationStub.getCall(0).args[0]).to.equal('acceptConference');
+          expect(doOperationStub.getCall(0).args[0]).to.equal('connectCall');
           expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
-          console.log(JSON.stringify(doOperationStub.getCall(0).args));
           expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(connectConfOpts.sessionId);
-          expect(doOperationStub.getCall(0).args[1].params.url.conferenceId).to.equal(connectConfOpts.conferenceId);
+          expect(doOperationStub.getCall(0).args[1].params.url.callId).to.equal(connectConfOpts.callId);
           expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal('conferences');
           expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.token);
           expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(connectConfOpts.description.sdp);

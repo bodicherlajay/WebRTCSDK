@@ -310,7 +310,7 @@
         };
 
         if (undefined !== id && null !== id) {
-          connectOptions.conferenceId = id;
+          connectOptions.callId = id;
         }
 
         if (breed === 'call') {
@@ -346,6 +346,16 @@
 
           that.setState('connected');
 
+          if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
+            if (undefined !== data.remoteSdp) {
+              peerConnection.setRemoteDescription({
+                sdp: data.remoteSdp,
+                type: 'answer'
+              });
+            }
+            return;
+          }
+
           if ('call' === that.breed()) {
             if (data.remoteSdp) {
               rtcManager.setRemoteDescription({
@@ -359,15 +369,7 @@
             return;
           }
 
-          if ('conference' === breed) {
-            if (undefined !== data.remoteSdp) {
-              peerConnection.setRemoteDescription({
-                sdp: data.remoteSdp,
-                type: 'answer'
-              });
-            }
-            return;
-          }
+
         });
 
         if (('call' === breed && 2 === ATT.private.pcv)
