@@ -117,6 +117,14 @@
     }
 
     function connectWithMediaStream(options, call, errorCallback) {
+
+      call.on('stream-added', function (data) {
+        userMediaSvc.showStream({
+          stream: data.stream,
+          localOrRemote: 'remote'
+        });
+      });
+
       userMediaSvc.getUserMedia({
         mediaType: options.mediaType,
         localMedia: options.localMedia,
@@ -763,12 +771,6 @@
           conference.on('connected', function (data) {
             emitter.publish('conference:connected', data);
           });
-          conference.on('stream-added', function (data) {
-            userMediaSvc.showStream({
-              localOrRemote: 'remote',
-              stream: data.stream
-            });
-          });
 
           connectWithMediaStream(options, conference, function (error) {
             emitter.publish('error', {
@@ -1375,13 +1377,6 @@
            * @property {Object} data - data
            */
           emitter.publish('conference:connected', data);
-        });
-
-        conference.on('stream-added', function (data) {
-          userMediaSvc.showStream({
-            stream: data.stream,
-            localOrRemote: 'remote'
-          });
         });
 
         connectWithMediaStream(options, conference);
