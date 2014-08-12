@@ -227,7 +227,10 @@
       rtcManager.off('call-disconnected', onCallDisconnected);
 
       if (2 === ATT.private.pcv) {
-        peerConnection.close();
+        if (undefined !== peerConnection) {
+          peerConnection.close();
+          peerConnection = undefined;
+        }
         return;
       }
       rtcManager.resetPeerConnection();
