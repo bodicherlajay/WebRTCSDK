@@ -35,6 +35,13 @@ describe('SDPFilter', function () {
     sdp = filter.removeSDPAttribute(attr, sdp);
     expect(sdp.indexOf(attr)).to.equal(-1);
   });
+  xdescribe('holdCall', function () {
+    it('should replace sdp for hold call , function () {
+      var sdp = "/a=sendrecv/g", attr ='recvonly';
+      sdp = filter.holdCall(sdp);
+      expect(sdp.indexOf(attr)).to.equal(-1);
+    });
+  });
 
   afterEach(function () {
     ATT = backupAtt;

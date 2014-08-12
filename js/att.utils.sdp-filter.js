@@ -13,7 +13,8 @@ if (!ATT) {
     instance,
     init,
     logMgr = ATT.logManager.getInstance(),
-    logger;
+    logger,
+    modificationCount = 2;
 
   logger = logMgr.getLoggerByName('SDPFilterModule');
 
@@ -94,6 +95,8 @@ if (!ATT) {
       sIndex = sdp.sdp.indexOf('s=-'),
       oLine = sdp.sdp.slice(oIndex, sIndex),
       oLineArray = oLine.split(' '),
+      oLine2;
+      console.log('lineArray ' + oLineArray[2] + 'count ' + count);
       oLine2 = oLine.replace(' ' + oLineArray[2].toString() + ' ', ' ' + count.toString() + ' ');
 
     sdp.sdp = sdp.sdp.replace(oLine, oLine2);
@@ -166,7 +169,46 @@ if (!ATT) {
           sdp = sdp.replace("\r\na=fmtp:111 minptime=10", "");
       }
       return sdp;
+  }
+
+
+  /**
+   * Increment modification count
+   *
+   */
+  function incrementModCount() {
+    modificationCount = modificationCount + 1;
+  }
+
+  function  holdCall (localdescription) {
+    logger.logDebug('holdCall');
+
+    if (undefined === localdescription ) {
+      logger.logError('Please pass the correct parameter for holdCall');
+      throw new Error ('localdescription is undefined');
+    }
+
+    try {
+      var sdp = localdescription;
+
+      logger.logTrace('holding call', sdp);
+
+      // adjust SDP for hold request
+      sdp.sdp = sdp.sdp.replace('/a=sendrecv/g', 'a=recvonly');
+
+      //sdp.sdp = sdp.sdp.replace(/a=setup:active/g, 'a=setup:actpass');
+      sdp.type = 'offer';
+      this.processChromeSDPOffer(sdp);
+      incrementModCount();
+
+      incrementSDP(sdp, modificationCount);
+      return sdp;
+
+    } catch (error) {
+      throw error;
+    }
   };
+
 
   init = function () {
     return {
@@ -189,7 +231,8 @@ if (!ATT) {
         // TODO: DON'T KNOW WHY, BUT THIS IS NEEDED
         return sdp.replace(/sendonly/g, 'sendrecv');
       },
-      setupActivePassive: setupActivePassive
+      setupActivePassive: setupActivePassive,
+      holdCall: holdCall
     };
   };
 

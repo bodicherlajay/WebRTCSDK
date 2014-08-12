@@ -699,25 +699,82 @@
     }
 
     function holdCall(options) {
+      var data;
+      if (2 === ATT.private.pcv) {
+        if (undefined === options) {
+          throw new Error('No options provided');
+        }
+        if (undefined === options.callId) {
+          throw new Error('No callId provided');
+        }
+        if (undefined === options.sessionId) {
+          throw new Error('No sessionId provided');
+        }
+        if (undefined === options.token) {
+          throw new Error('No token provided');
+        }
+        if (undefined === options.description) {
+          throw new Error('No sdp provided');
+        }
+        if (undefined === options.onSuccess) {
+          throw new Error('No success callback provided');
+        }
+        if (undefined === options.onError) {
+          throw new Error('No error callback provided');
+        }
 
-      if (undefined === options) {
-        throw new Error('No options passed');
+        data = {
+          callsMediaModifications: {
+            sdp: options.description.sdp,
+            type: options.description.type
+          }
+        };
+
+        logger.logTrace('doOperation: modifyCall');
+        resourceManager.doOperation('modifyCall', {
+          params: {
+            url: [
+              options.sessionId,
+              options.callId
+            ],
+            headers: {
+              'Authorization': 'Bearer ' + options.token,
+              'x-calls-action': 'initiate-call-hold'
+            }
+          },
+          data: data,
+          success: function (response) {
+            if (response.getResponseStatus() === 204) {
+              logger.logTrace('Hold request sent...');
+              options.onSuccess();
+            } else {
+              options.onError();
+            }
+          },
+          error: function (error) {
+            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'hold', 'RTC'));
+          }
+        });
+      } else {
+        if (undefined === options) {
+          throw new Error('No options passed');
+        }
+
+        if (undefined === options.callId) {
+          throw new Error('No callId passed');
+        }
+
+        if (undefined === options.onSuccess) {
+          throw new Error('No onSuccess callback passed');
+        }
+
+        peerConnSvc.holdCall({
+          onHoldSuccess: function (localSdp) {
+            options.onSuccess(localSdp);
+          },
+          callId: options.callId
+        });
       }
-
-      if (undefined === options.callId) {
-        throw new Error('No callId passed');
-      }
-
-      if (undefined === options.onSuccess) {
-        throw new Error('No onSuccess callback passed');
-      }
-
-      peerConnSvc.holdCall({
-        onHoldSuccess: function (localSdp) {
-          options.onSuccess(localSdp);
-        },
-        callId: options.callId
-      });
     }
 
     function resumeCall(options) {
