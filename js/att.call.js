@@ -311,7 +311,7 @@
         };
 
         if (undefined !== id && null !== id) {
-          connectOptions.conferenceId = id;
+          connectOptions.callId = id;
         }
 
         if (breed === 'call') {

@@ -37,9 +37,9 @@ describe('RTCManager [Conference]', function () {
     describe('connectConference [CREATE]', function () {
       var  connectConfOpts,
         onSuccessSpy,
-        onRemoteStreamSpy,
         onErrorSpy,
         localSdp;
+
       beforeEach(function () {
         localSdp = '123';
         onSuccessSpy = sinon.spy();
@@ -57,6 +57,7 @@ describe('RTCManager [Conference]', function () {
           onError: onErrorSpy
         };
       });
+
       it('should exist', function () {
         expect(rtcManager.connectConference).to.be.a('function');
       });
@@ -67,13 +68,10 @@ describe('RTCManager [Conference]', function () {
       });
 
       it('should execute `doOperation(createCall)` [breed === call] with required params', function () {
-        var params;
-
         connectConfOpts.breed = 'call';
-        connectConfOpts.peer = 'junito@domain.com',
+        connectConfOpts.peer = 'junito@domain.com';
 
         doOperationStub = sinon.stub(resourceManager, 'doOperation');
-
 
         rtcManager.connectConference(connectConfOpts);
 
@@ -107,7 +105,6 @@ describe('RTCManager [Conference]', function () {
         };
 
         doOperationStub = sinon.stub(resourceManager, 'doOperation');
-
 
         rtcManager.connectConference(connectConfOpts);
 

@@ -645,7 +645,7 @@ describe('Call [Conference]', function () {
               setTimeout(function () {
                 expect(onSuccessSpy.called).to.equal(true);
                 expect(connectConferenceStub.called).to.equal(true);
-                expect(connectConferenceStub.getCall(0).args[0].conferenceId).to.equal(incomingConf.id());
+                expect(connectConferenceStub.getCall(0).args[0].callId).to.equal(incomingConf.id());
                 expect(connectConferenceStub.getCall(0).args[0].description).to.equal(localDescription);
                 expect(connectConferenceStub.getCall(0).args[0].breed).to.equal(optionsIncomingConf.breed);
                 expect(connectConferenceStub.getCall(0).args[0].token).to.equal(optionsIncomingConf.sessionInfo.token);

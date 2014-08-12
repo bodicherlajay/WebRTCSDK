@@ -233,7 +233,7 @@ if (!ATT) {
         * Start Call via RTCEndpoint
         * @memberof ATT.APIConfigs
         */
-		startCall: {
+		    startCall: {
           method: 'post',
           formatters: {
             url: function (params) {
@@ -303,17 +303,20 @@ if (!ATT) {
           },
           headers: DEFAULTS.headers
         },
-        acceptConference: {
+        connectCall: {
           method: 'PUT',
           formatters: {
             url: function (params) {
-              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + '/' + params.type + '/' + params.conferenceId;
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + '/' + params.type + '/' + params.callId;
             },
             headers: {
               'Authorization': function (param) {
                 return param;
               },
               'x-conference-action' : function (action) {
+                return action;
+              },
+              'x-calls-action' : function (action) {
                 return action;
               }
             }

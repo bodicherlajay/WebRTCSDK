@@ -100,17 +100,19 @@ describe('APIConfig', function () {
       expect(currentConfiguration.modifyCall.headers).to.be.an('object');
     });
 
-    it('should have a valid method acceptConference', function () {
+    it('should have a valid method connectCall', function () {
       var params = {
         sessionId: 'sessionId',
-        conferenceId: 'confId',
+        callId: 'callId',
         type: 'conferences'
       };
-      expect(currentConfiguration.acceptConference).to.be.an('object');
-      expect(currentConfiguration.acceptConference.method).to.equal('PUT');
-      expect(currentConfiguration.acceptConference.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/confId');
-      expect(currentConfiguration.acceptConference.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
-      expect(currentConfiguration.acceptConference.headers).to.be.an('object');
+      expect(currentConfiguration.connectCall).to.be.an('object');
+      expect(currentConfiguration.connectCall.method).to.equal('PUT');
+      expect(currentConfiguration.connectCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/callId');
+      expect(currentConfiguration.connectCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
+      expect(currentConfiguration.connectCall.formatters.headers['x-conference-action']('conf-action')).to.equal('conf-action');
+      expect(currentConfiguration.connectCall.formatters.headers['x-calls-action']('call-action')).to.equal('call-action');
+      expect(currentConfiguration.connectCall.headers).to.be.an('object');
     });
 
     it('should have a valid method addParticipant', function () {
