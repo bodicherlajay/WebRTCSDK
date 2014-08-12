@@ -956,7 +956,7 @@ describe('RTC Manager', function () {
           expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal('calls');
           expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectCallOpts.token);
           expect(doOperationStub.getCall(0).args[1].data.callsMediaModifications.sdp).to.equal(connectCallOpts.description.sdp);
-          expect(doOperationStub.getCall(0).args[1].params.headers['x-calls-action']).to.equal('call-answer');
+          expect(doOperationStub.getCall(0).args[1].params.headers.options['x-calls-action']).to.equal('call-answer');
           expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
           expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
         });
@@ -973,7 +973,7 @@ describe('RTC Manager', function () {
           expect(doOperationStub.getCall(0).args[1].params.url.type).to.equal('conferences');
           expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + connectConfOpts.token);
           expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(connectConfOpts.description.sdp);
-          expect(doOperationStub.getCall(0).args[1].params.headers['x-conference-action']).to.equal('call-answer');
+          expect(doOperationStub.getCall(0).args[1].params.headers.options['x-conference-action']).to.equal('call-answer');
           expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
           expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
         });

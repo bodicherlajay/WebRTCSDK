@@ -399,18 +399,18 @@
       // If you DO have a call ID, then connect
       headers = {
         'Authorization': 'Bearer ' + options.token,
-        'Options': {}
+        'options': {}
       };
 
       if ('call' === options.breed) {
-        headers.Options['x-calls-action'] = 'call-answer';
+        headers.options['x-calls-action'] = 'call-answer';
         data = {
           callsMediaModifications: {
             sdp: options.description.sdp
           }
         };
       } else {
-        headers.Options['x-conference-action'] = 'call-answer';
+        headers.options['x-conference-action'] = 'call-answer';
         data = {
           conferenceModifications: {
             sdp: options.description.sdp

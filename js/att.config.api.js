@@ -313,7 +313,7 @@ if (!ATT) {
               'Authorization': function (param) {
                 return param;
               },
-              'Options' : {
+              'options' : {
                 'x-conference-action': function (action) {
                   return action;
                 },

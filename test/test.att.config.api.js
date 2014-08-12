@@ -110,8 +110,8 @@ describe('APIConfig', function () {
       expect(currentConfiguration.connectCall.method).to.equal('PUT');
       expect(currentConfiguration.connectCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/sessionId/conferences/callId');
       expect(currentConfiguration.connectCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
-      expect(currentConfiguration.connectCall.formatters.headers['x-conference-action']('conf-action')).to.equal('conf-action');
-      expect(currentConfiguration.connectCall.formatters.headers['x-calls-action']('call-action')).to.equal('call-action');
+      expect(currentConfiguration.connectCall.formatters.headers.options['x-conference-action']('conf-action')).to.equal('conf-action');
+      expect(currentConfiguration.connectCall.formatters.headers.options['x-calls-action']('call-action')).to.equal('call-action');
       expect(currentConfiguration.connectCall.headers).to.be.an('object');
     });
 
