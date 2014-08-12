@@ -22,6 +22,7 @@ describe('RTC Manager', function () {
     localSdp;
 
   before(function () {
+    ATT.private.pcv = 1;
     factories = ATT.private.factories;
     apiConfig = ATT.private.config.api;
 
@@ -1871,6 +1872,167 @@ describe('RTC Manager', function () {
 
       });
 
+      describe('peerConnection 2', function () {
+        beforeEach(function () {
+          ATT.private.pcv = 2;
+        });
+        describe('hold', function () {
+          var onSuccessSpy, onErrorSpy, options;
+          beforeEach(function () {
+            onSuccessSpy = sinon.spy();
+            onErrorSpy = sinon.spy();
+
+            options = {
+              callId: 'callId',
+              sessionId: 'sessionId',
+              token: 'token',
+              description: {
+                sdp: localSdp,
+                type: 'offer'
+              },
+              onSuccess: onSuccessSpy,
+              onError: onErrorSpy
+            };
+          });
+          it('should throw an error if invalid `options`', function () {
+            expect(rtcManager.holdCall.bind(rtcManager)).to.throw('No options provided');
+            expect(rtcManager.holdCall.bind(rtcManager, {})).to.throw('No callId provided');
+            expect(rtcManager.holdCall.bind(rtcManager, {
+              callId: options.callId
+            })).to.throw('No sessionId provided');
+            expect(rtcManager.holdCall.bind(rtcManager, {
+              callId: options.callId,
+              sessionId: options.sessionId
+            })).to.throw('No token provided');
+            expect(rtcManager.holdCall.bind(rtcManager, {
+              callId: options.callId,
+              sessionId: options.sessionId,
+              token: options.token
+            })).to.throw('No sdp provided');
+            expect(rtcManager.holdCall.bind(rtcManager, {
+              callId: options.callId,
+              sessionId: options.sessionId,
+              token: options.token,
+              description : options.description
+            })).to.throw('No success callback provided');
+            expect(rtcManager.holdCall.bind(rtcManager, {
+              callId: options.callId,
+              sessionId: options.sessionId,
+              token: options.token,
+              description : options.description,
+              onSuccess: options.onSuccess
+            })).to.throw('No error callback provided');
+            expect(rtcManager.holdCall.bind(rtcManager, {
+              callId: options.callId,
+              sessionId: options.sessionId,
+              token: options.token,
+              description : options.description,
+              onSuccess: options.onSuccess,
+              onError: options.onError
+            })).not.to.throw(Error);
+          });
+          it('should call resourceManager.doOperation for holdcall', function () {
+            rtcManager.holdCall(options);
+
+            expect(doOperationStub.called).to.equal(true);
+            expect(doOperationStub.getCall(0).args[0]).to.equal('modifyCall');
+            expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+            expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+            expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('array');
+            expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(options.sessionId);
+            expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal(options.callId);
+            expect(doOperationStub.getCall(0).args[1].data.callsMediaModifications.sdp).to.equal(options.description.sdp);
+            expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+            expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+          });
+
+          describe('Success on `hold modifyCall`', function () {
+            var response;
+
+            it('should execute `onSuccess` callback on 204', function (done) {
+              response = {getResponseStatus : function () { return 204; }};
+              doOperationStub.restore();
+              doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
+                setTimeout(function () {
+                  options.success(response);
+                }, 0);
+              });
+              rtcManager.holdCall(options);
+              setTimeout(function () {
+                expect(onSuccessSpy.called).to.equal(true);
+                done();
+              }, 30);
+
+            });
+
+            it('should execute `onError` callback on not 204', function (done) {
+              response = {getResponseStatus : function () { return 201; }};
+              doOperationStub.restore();
+              doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
+                setTimeout(function () {
+                  options.success(response);
+                }, 0);
+              });
+              rtcManager.holdCall(options);
+              setTimeout(function () {
+                expect(onErrorSpy.called).to.equal(true);
+                done();
+              }, 30);
+
+            });
+
+          });
+
+          describe('Error on doOperation', function () {
+            var createAPIErrorCodeStub;
+
+            beforeEach(function () {
+              doOperationStub.restore();
+
+              doOperationStub = sinon.stub(resourceManager, 'doOperation', function(operationName, options) {
+                setTimeout(function () {
+                  options.error(error);
+                }, 0);
+              });
+
+              createAPIErrorCodeStub = sinon.stub(ATT.Error, 'createAPIErrorCode', function () {
+                return error;
+              });
+            });
+
+            afterEach(function () {
+              createAPIErrorCodeStub.restore();
+            });
+
+            it('should call createAPIErrorCode with operation `hold`', function (done) {
+              rtcManager.holdCall(options);
+
+              setTimeout(function () {
+                try {
+                  expect(createAPIErrorCodeStub.calledWith(error, 'ATT.rtc.Phone', 'hold', 'RTC')).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 10);
+            });
+
+            it('should call onError callback of holdCall with the error object', function (done) {
+              rtcManager.holdCall(options);
+
+              setTimeout(function () {
+                try {
+                  expect(onErrorSpy.calledWith(error)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 10);
+            });
+
+          });
+        });
+      });
     });
   });
 });

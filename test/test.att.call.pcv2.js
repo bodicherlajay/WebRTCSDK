@@ -74,10 +74,11 @@ describe('Call [PCV2]', function () {
         peer: '12345',
         mediaType: 'video',
         type: ATT.CallTypes.OUTGOING,
-        sessionInfo : {sessionId : '12345', token : '123'}
+        sessionInfo: {sessionId: '12345', token: '123'}
       };
 
       outgoingVideoCall = new Call(optionsOutgoingVideo);
+      outgoingVideoCall.id = '123';
 
       onErrorHandlerSpy = sinon.spy();
 
@@ -155,8 +156,12 @@ describe('Call [PCV2]', function () {
         localStream;
 
       beforeEach(function () {
-        audioTracks = [{ enabled: true}];
-        localStream = {getAudioTracks : function () { return audioTracks; }};
+        audioTracks = [
+          { enabled: true}
+        ];
+        localStream = {getAudioTracks: function () {
+          return audioTracks;
+        }};
 
         outgoingVideoCall.addStream(localStream);
       });
@@ -210,8 +215,12 @@ describe('Call [PCV2]', function () {
         localStream;
 
       beforeEach(function () {
-        audioTracks = [{ enabled: true}];
-        localStream = {getAudioTracks : function () { return audioTracks; }};
+        audioTracks = [
+          { enabled: true}
+        ];
+        localStream = {getAudioTracks: function () {
+          return audioTracks;
+        }};
 
         outgoingVideoCall.addStream(localStream);
       });
@@ -259,33 +268,116 @@ describe('Call [PCV2]', function () {
     });
 
     describe('hold', function () {
-      var sdpFilter, sdp;
+      var sdpFilter, sdp, peerconnection, holdCallSDPStub, modsdp;
 
       beforeEach(function () {
+        modsdp = '123';
         sdpFilter = ATT.sdpFilter.getInstance();
         sdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
         outgoingVideoCall.localDescription = sdp;
-      });
-      it('should call sdpFilter.holdCallSDP() method', function () {
-        var holdCallSDPStub,
-          setLocalDescriptionStub,
-          modsdp = '123',
-          peerconnection = {setLocalDescription : function () { return; }};
+        peerconnection = {setLocalDescription: function () {
+          return;
+        }};
         outgoingVideoCall.peerConnection = peerconnection;
-
-        console.log('object ' + JSON.stringify(outgoingVideoCall));
-        setLocalDescriptionStub = sinon.stub(outgoingVideoCall.peerConnection, 'setLocalDescription');
 
         holdCallSDPStub = sinon.stub(sdpFilter, 'holdCall', function () {
           return modsdp;
         });
+
+
+      });
+
+      afterEach(function () {
+        holdCallSDPStub.restore();
+      });
+      it('should call sdpFilter.holdCallSDP() method', function () {
+        outgoingVideoCall.hold();
+
+        expect(holdCallSDPStub.calledWith(sdp)).to.equal(true);
+      });
+      it('should set local description on peerConnection', function () {
+        var setLocalDescriptionStub;
+
+        setLocalDescriptionStub = sinon.stub(outgoingVideoCall.peerConnection, 'setLocalDescription');
         outgoingVideoCall.hold();
 
         expect(holdCallSDPStub.calledWith(sdp)).to.equal(true);
         expect(setLocalDescriptionStub.calledWith(modsdp)).to.equal(true);
 
         setLocalDescriptionStub.restore();
-        holdCallSDPStub.restore();
+      });
+
+      it('should call rtcmanager.holdcall() with valid parameters', function () {
+        var options, rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall');
+        outgoingVideoCall.sdp = '123';
+        outgoingVideoCall.setId('123');
+        options = {
+          description: outgoingVideoCall.localDescription,
+          sessionId: optionsOutgoingVideo.sessionInfo.sessionId,
+          callId: outgoingVideoCall.id,
+          token: optionsOutgoingVideo.sessionInfo.token,
+          onSuccess: function () {
+            return;
+          },
+          onError: function () {
+            return;
+          }
+        };
+        outgoingVideoCall.hold();
+
+        expect(rtcHoldCallStub.called).to.equal(true);
+
+        expect(rtcHoldCallStub.getCall(0).args[0].description).to.not.equal(undefined);
+        expect(rtcHoldCallStub.getCall(0).args[0].description).to.equal(outgoingVideoCall.sdp);
+
+        expect(rtcHoldCallStub.getCall(0).args[0].callId).to.not.equal(undefined);
+        expect(rtcHoldCallStub.getCall(0).args[0].callId).to.equal(options.callId);
+
+        expect(rtcHoldCallStub.getCall(0).args[0].sessionId).to.not.equal(undefined);
+        expect(rtcHoldCallStub.getCall(0).args[0].sessionId).to.equal(options.sessionId);
+
+        expect(rtcHoldCallStub.getCall(0).args[0].token).to.not.equal(undefined);
+        expect(rtcHoldCallStub.getCall(0).args[0].token).to.equal(options.token);
+
+        expect(rtcHoldCallStub.getCall(0).args[0].onSuccess).to.be.an('function');
+        expect(rtcHoldCallStub.getCall(0).args[0].onError).to.be.an('function');
+        rtcHoldCallStub.restore();
+      });
+
+      it('should setState to `held` on success callback for hold', function (done) {
+        var rtcholdStub,
+          onHeldSpy = sinon.spy();
+
+        outgoingVideoCall.on('held', onHeldSpy);
+        rtcholdStub = sinon.stub(rtcMgr, 'holdCall', function (options) {
+          options.onSuccess();
+        });
+
+        outgoingVideoCall.hold();
+        setTimeout(function () {
+          expect(onHeldSpy.called).to.equal(true);
+          done();
+          rtcholdStub.restore();
+        }, 50);
+
+
+      });
+
+      it('should publish error on onError callback called ', function (done) {
+        var rtcholdStub;
+
+        rtcholdStub = sinon.stub(rtcMgr, 'holdCall', function (options) {
+          options.onError(error);
+        });
+
+        outgoingVideoCall.hold();
+        setTimeout(function () {
+          expect(onErrorHandlerSpy.called).to.equal(true);
+          expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+          done();
+          rtcholdStub.restore();
+        }, 50);
+
       });
     });
   });
