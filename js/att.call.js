@@ -225,6 +225,11 @@
         emitter.publish('disconnected', data);
       }
       rtcManager.off('call-disconnected', onCallDisconnected);
+
+      if (2 === ATT.private.pcv) {
+        peerConnection.close();
+        return;
+      }
       rtcManager.resetPeerConnection();
     }
 

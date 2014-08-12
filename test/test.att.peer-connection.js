@@ -53,7 +53,8 @@ describe('PeerConnection', function () {
       onicecandidate : null,
       createOffer : function () {return; },
       createAnswer : function () {return; },
-      remoteDescription: 'ABCDEFG'
+      remoteDescription: 'ABCDEFG',
+      close: function () {}
     };
 
     sdpFilter = ATT.sdpFilter.getInstance();
@@ -554,6 +555,23 @@ describe('PeerConnection', function () {
             expect(factories.createPeerConnection.bind(factories, createOptionsIncoming)).to.throw('Failed to create answer.');
           });
         });
+      });
+    });
+
+    describe('close', function () {
+
+      it('should exist', function () {
+        expect(peerConnection.close).to.be.a('function');
+      });
+
+      it('should execute `pc.close`', function () {
+        var closeStub = sinon.stub(rtcPC, 'close');
+
+        peerConnection.close();
+
+        expect(closeStub.called).to.equal(true);
+
+        closeStub.restore();
       });
     });
   });

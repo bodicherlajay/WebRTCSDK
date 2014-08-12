@@ -173,6 +173,10 @@
       acceptSdpOffer: acceptSdpOffer,
       getRemoteDescription: function () {
         return pc.remoteDescription;
+      },
+      close: function () {
+        pc.close();
+        pc = null;
       }
     };
   }

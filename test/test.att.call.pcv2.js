@@ -376,6 +376,7 @@ describe('Call [PCV2]', function () {
 
       });
     });
+
   });
 
   describe('Events', function () {
@@ -396,7 +397,8 @@ describe('Call [PCV2]', function () {
           return remoteDesc;
         },
         setRemoteDescription: function () {},
-        acceptSdpOffer: function () {}
+        acceptSdpOffer: function () {},
+        close: function () {}
       };
 
       createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
@@ -523,6 +525,27 @@ describe('Call [PCV2]', function () {
             done(e);
           } finally {
             ATT.private.pcv = 2;
+          }
+        }, 10);
+
+      });
+    });
+
+    describe('call-disconnected', function () {
+
+      it('should execute `peerConnection.close` if pcv == 2', function (done) {
+        var peerConnectionCloseStub = sinon.stub(peerConnection, 'close');
+
+        emitterEM.publish('call-disconnected');
+
+        setTimeout(function () {
+          try {
+            expect(peerConnectionCloseStub.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          } finally {
+            peerConnectionCloseStub.restore();
           }
         }, 10);
 

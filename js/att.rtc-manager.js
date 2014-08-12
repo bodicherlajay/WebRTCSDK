@@ -235,9 +235,9 @@
         }
       });
 
-    };
+    }
 
-    function disconnectSession (options) {
+    function disconnectSession(options) {
 
       if (undefined === options) {
         throw new Error('No options defined.');
@@ -349,8 +349,39 @@
         headers,
         data;
 
+      if (undefined === options) {
+        throw new Error('No options provided');
+      }
+
       if (undefined === options.breed) {
-        throw new Error('No call type defined.');
+        throw new Error('No call breed provided');
+      }
+
+      if ('call' === options.breed
+          && undefined === options.peer) {
+        throw new Error('No peer provided');
+      }
+
+      if (undefined === options.sessionId) {
+        throw new Error('No session id provided');
+      }
+
+      if (undefined === options.token) {
+        throw new Error('No token provided');
+      }
+
+      if (undefined === options.description) {
+        throw new Error('No description provided');
+      }
+
+      if (undefined === options.onSuccess
+          && 'function' !== typeof options.onSuccess) {
+        throw new Error('No success callback provided');
+      }
+
+      if (undefined === options.onError
+          && 'function' !== typeof options.onError) {
+        throw new Error('No error callback provided');
       }
 
       // If you DON'T have a callId ID, then create the call
@@ -578,7 +609,7 @@
     }
 
     // Reused for call & conference
-    function disconnectCall (options) {
+    function disconnectCall(options) {
 
       if (undefined === options) {
         throw new Error('No options provided');
@@ -655,7 +686,7 @@
         });
 
       // Its probably ringing on the other end
-      } else if (options.callId['length'] > 0) {
+      } else if (options.callId.length > 0) {
         resourceManager.doOperation('cancelCall', {
           params: {
             url: [
@@ -876,7 +907,7 @@
         throw new Error('No error callback provided');
       }
 
-      var type = 'call' === options.breed ? 'calls': 'conferences',
+      var type = 'call' === options.breed ? 'calls' : 'conferences',
         operation = 'call' === options.breed ? 'reject' : 'rejectConference';
 
       resourceManager.doOperation('rejectCall', {

@@ -62,9 +62,54 @@ describe('RTCManager [Conference]', function () {
         expect(rtcManager.connectConference).to.be.a('function');
       });
 
-      it('should throw an error if the call type is not defined', function () {
-        connectConfOpts.breed = undefined;
-        expect(rtcManager.connectConference.bind(rtcManager, connectConfOpts)).to.throw('No call type defined.');
+      it('should throw an error if invalid options', function () {
+        expect(rtcManager.connectConference.bind(rtcManager)).to.throw('No options provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {})).to.throw('No call breed provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {
+          breed: 'call'
+        })).to.throw('No peer provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {
+          breed: 'call',
+          peer: '1234'
+        })).to.throw('No session id provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {
+          breed: 'conference'
+        })).to.throw('No session id provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {
+          breed: 'call',
+          peer: '1234',
+          sessionId: 'sessionId'
+        })).to.throw('No token provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {
+          breed: 'call',
+          peer: '1234',
+          sessionId: 'sessionId',
+          token: 'token'
+        })).to.throw('No description provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {
+          breed: 'call',
+          peer: '1234',
+          sessionId: 'sessionId',
+          token: 'token',
+          description: {}
+        })).to.throw('No success callback provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {
+          breed: 'call',
+          peer: '1234',
+          sessionId: 'sessionId',
+          token: 'token',
+          description: {},
+          onSuccess: function () {}
+        })).to.throw('No error callback provided');
+        expect(rtcManager.connectConference.bind(rtcManager, {
+          breed: 'call',
+          peer: '1234',
+          sessionId: 'sessionId',
+          token: 'token',
+          description: {},
+          onSuccess: function () {},
+          onError: function () {}
+        })).not.to.throw(Error);
       });
 
       it('should execute `doOperation(createCall)` [breed === call] with required params', function () {
