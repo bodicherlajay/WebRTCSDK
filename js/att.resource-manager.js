@@ -32,6 +32,7 @@
         formatters,
         formattersLength,
         headerType,
+        headerObj,
         headersObjectForREST;
 
       // we have an operation config.
@@ -82,7 +83,17 @@
 
             for (headerType in options.params.headers) {
               if (options.params.headers.hasOwnProperty(headerType)) {
-                headersObjectForREST[headerType] = operationConfig.formatters.headers[headerType](options.params.headers[headerType]);
+                if ('Options' === headerType && 'object' === typeof operationConfig.formatters.headers[headerType]) {
+                  if (Object.keys(options.params.headers[headerType]).length === 0) {
+                    throw new Error('Options for header not passed in. Cannot construct request');
+                  }
+                  var optionKey = null;
+                  headerObj = operationConfig.formatters.headers[headerType][optionKey];
+                  headerType = optionKey;
+                } else {
+                  headerObj = operationConfig.formatters.headers[headerType];
+                }
+                headersObjectForREST[headerType] = headerObj(options.params.headers[headerType]);
                 logger.logDebug('header: ' + headerType + ', ' + headersObjectForREST[headerType]);
               }
             }
