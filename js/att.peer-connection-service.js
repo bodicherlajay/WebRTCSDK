@@ -212,7 +212,7 @@
               logger.logInfo('sending offer');
               try {
                 SignalingService.sendOffer({
-                  calledParty: createCalledPartyUri(self.peer),
+                  calledParty: ATT.utils.createCalledPartyUri(self.peer),
                   sdp: self.localDescription,
                   sessionInfo: self.sessionInfo,
                   success: function (response) {
