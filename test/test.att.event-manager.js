@@ -1,5 +1,5 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, URL*/
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 180 */
+/*global Env, ATT, describe, it, afterEach, beforeEach, before, sinon, expect, assert, xit, after, URL*/
 
 'use strict';
 
@@ -7,8 +7,8 @@ describe('Event Manager', function () {
   var resourceManagerStub = {
     getLogger : function () {
       return {
-        logDebug : function () {},
-        logInfo: function () {}
+        logDebug : function () { return; },
+        logInfo: function () { return; }
       };
     }
   },
@@ -46,7 +46,6 @@ describe('Event Manager', function () {
       eventChannel,
       createEvtChanStub,
       stopListeningSpy,
-      emitterEC,
       emitterEM,
       createEventEmitterStub;
 
@@ -57,7 +56,7 @@ describe('Event Manager', function () {
         endpoint: '/events',
         sessionId: '123',
         resourceManager: {
-          doOperation: function () {}
+          doOperation: function () {return; }
         },
         publicMethodName: 'getEvents',
         usesLongPolling: true
@@ -143,7 +142,7 @@ describe('Event Manager', function () {
         onListeningSpy;
 
       before(function () {
-        startListeningStub = sinon.stub(eventChannel, 'startListening', function () {});
+        startListeningStub = sinon.stub(eventChannel, 'startListening', function () { return; });
 
         onSpy = sinon.spy(eventChannel, 'on');
 
@@ -290,7 +289,7 @@ describe('Event Manager', function () {
         endpoint: '/events',
         sessionId: '123',
         resourceManager: {
-          doOperation: function () {}
+          doOperation: function () { return; }
         },
         publicMethodName: 'getEvents',
         usesLongPolling: true
@@ -298,7 +297,7 @@ describe('Event Manager', function () {
 
       eventChannel = ATT.private.factories.createEventChannel(channelConfig);
 
-      startListeningStub = sinon.stub(eventChannel, 'startListening', function () {});
+      startListeningStub = sinon.stub(eventChannel, 'startListening', function () { return; });
 
       createEvtChanStub = sinon.stub(factories, 'createEventChannel', function () {
         return eventChannel;
@@ -401,7 +400,7 @@ describe('Event Manager', function () {
       var event;
 
       describe('media-mod-terminations [Conference]', function () {
-        it('should publish event `media-mod-terminations` with `type` conference and `remoteDescription` and `modificationId` for conference event', function (done) {
+        it('should publish event `media-mod-terminations` with `type` conference, `remoteDescription`, `modificationId` for conference event', function (done) {
           event = {
             'type': 'conferences',
             'from': 'sip:1234@icmn.api.att.net',
@@ -444,13 +443,13 @@ describe('Event Manager', function () {
           setTimeout(function () {
             expect(publishSpy.called).to.equal(true);
             expect(publishSpy.calledWith('media-mod-terminations', {
-                type: 'call',
-                remoteSdp: 'abcdefg',
-                modificationId: '12345',
-                reason: 'success',
-                from: event.from
-              }
-            )).to.equal(true);
+              type: 'call',
+              remoteSdp: 'abcdefg',
+              modificationId: '12345',
+              reason: 'success',
+              from: event.from
+            }
+              )).to.equal(true);
             done();
           }, 10);
         });
@@ -464,10 +463,10 @@ describe('Event Manager', function () {
       it('should publish `call-connected` event with type `call` and remoteDescription for a calls event', function (done) {
 
         event = {
-          type:'calls',
-          from:'sip:1234@icmn.api.att.net',
-          resourceURL:'/RTC/v1/sessions/0000/calls/1111',
-          state:'session-open',
+          type: 'calls',
+          from: 'sip:1234@icmn.api.att.net',
+          resourceURL: '/RTC/v1/sessions/0000/calls/1111',
+          state: 'session-open',
           sdp: 'abc'
         };
 
@@ -485,10 +484,10 @@ describe('Event Manager', function () {
       it('should publish `call-connected` event with type `conferences` and remoteDescription for a conferences event', function (done) {
 
         event = {
-          type:'conferences',
-          from:'sip:1234@icmn.api.att.net',
-          resourceURL:'/RTC/v1/sessions/0000/conferences/1111',
-          state:'session-open',
+          type: 'conferences',
+          from: 'sip:1234@icmn.api.att.net',
+          resourceURL: '/RTC/v1/sessions/0000/conferences/1111',
+          state: 'session-open',
           sdp: 'abc'
         };
 
@@ -505,20 +504,20 @@ describe('Event Manager', function () {
     });
 
     describe('session-terminated', function () {
-        var event;
+      var event;
 
-        it('should publish `call-disconnected` with call information extracted from the event', function (done) {
-          event = {
-            type: 'calls',
-            from: 'sip:1111@icmn.api.att.net',
-            resourceURL: '/RTC/v1/sessions/ccccc/calls/1234',
-            state: 'session-terminated',
-            reason: 'call-disconnected'
-          };
+      it('should publish `call-disconnected` with call information extracted from the event', function (done) {
+        event = {
+          type: 'calls',
+          from: 'sip:1111@icmn.api.att.net',
+          resourceURL: '/RTC/v1/sessions/ccccc/calls/1234',
+          state: 'session-terminated',
+          reason: 'call-disconnected'
+        };
 
-          emitterEC.publish('api-event', event);
+        emitterEC.publish('api-event', event);
 
-          setTimeout(function () {
+        setTimeout(function () {
           try {
             expect(publishSpy.calledWith('call-disconnected')).to.equal(true);
             expect(publishSpy.getCall(1).args[1].id).to.equal('1234');
