@@ -1798,8 +1798,6 @@
     var instance,
       logger = logManager.addLoggerForModule('rtc');
 
-    ATT.private.pcv = 1;
-
     return {
       /**
       * @summary Get the current instance of Phone.
