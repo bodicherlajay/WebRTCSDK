@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit, RTCSessionDescription*/
+/*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit, xdescribe, RTCSessionDescription*/
 
 describe('PeerConnection', function () {
   'use strict';
@@ -27,17 +27,17 @@ describe('PeerConnection', function () {
       remoteSdp: null,
       stream : {},
       mediaType: 'video',
-      onSuccess : function () {},
-      onRemoteStream : function () {},
-      onError : function () {}
+      onSuccess : function () { return; },
+      onRemoteStream : function () {return; },
+      onError : function () { return; }
     };
     createOptionsIncoming = {
       stream : {},
       mediaType: 'video',
       remoteSdp: '123',
-      onSuccess : function () {},
-      onRemoteStream : function () {},
-      onError : function () {}
+      onSuccess : function () { return; },
+      onRemoteStream : function () { return; },
+      onError : function () { return; }
     };
 
     expectedConstraints = {};
@@ -94,20 +94,20 @@ describe('PeerConnection', function () {
         expect(factories.createPeerConnection.bind(factories, {
           stream: {},
           mediaType: 'video',
-          onSuccess: function () {}
+          onSuccess: function () { return; }
         })).to.throw('No `onRemoteStream` callback passed.');
         expect(factories.createPeerConnection.bind(factories, {
           stream: {},
           mediaType: 'video',
-          onSuccess: function () {},
-          onRemoteStream : function () {}
+          onSuccess: function () { return; },
+          onRemoteStream : function () { return; }
         })).to.throw('No `onError` callback passed.');
         expect(factories.createPeerConnection.bind(factories, {
           stream: {},
           mediaType: 'video',
-          onSuccess :  function () {},
-          onRemoteStream : function () {},
-          onError : function () {}
+          onSuccess :  function () { return; },
+          onRemoteStream : function () { return; },
+          onError : function () { return; }
         })).to.not.throw(Error);
 
         rtcPeerConncetionStub.restore();
@@ -364,7 +364,7 @@ describe('PeerConnection', function () {
       beforeEach(function () {
         acceptOpts = {
           remoteSdp: description.sdp,
-          onSuccess: function () {}
+          onSuccess: function () { return; }
         };
 
         onSuccessSpy = sinon.spy(acceptOpts, 'onSuccess');
