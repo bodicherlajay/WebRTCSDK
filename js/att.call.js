@@ -129,25 +129,9 @@
     }
 
     function onMediaModifications(data) {
-      if ('call' === breed) {
-        rtcManager.setMediaModifications(data);
-        if (data.remoteSdp
-            && data.remoteSdp.indexOf('recvonly') !== -1) {
-          that.setState('held');
-          rtcManager.disableMediaStream();
-        } else if (data.remoteSdp
-            && remoteSdp
-            && remoteSdp.indexOf
-            && remoteSdp.indexOf('recvonly') !== -1
-            && data.remoteSdp.indexOf('sendrecv') !== -1) {
-          that.setState('resumed');
-          rtcManager.enableMediaStream();
-        }
-        that.setRemoteSdp(data.remoteSdp);
-        return;
-      }
 
-      if ('conference' === breed) {
+      if ('conference' === breed
+          || (2 === ATT.private.pcv && 'call' === breed)) {
         if (undefined !== data.remoteSdp) {
           peerConnection.acceptSdpOffer({
             remoteSdp: data.remoteSdp,
@@ -163,16 +147,32 @@
             }
           });
         }
+        return;
       }
+
+      rtcManager.setMediaModifications(data);
+      if (data.remoteSdp
+        && data.remoteSdp.indexOf('recvonly') !== -1) {
+        that.setState('held');
+        rtcManager.disableMediaStream();
+      } else if (data.remoteSdp
+          && remoteSdp
+          && remoteSdp.indexOf
+          && remoteSdp.indexOf('recvonly') !== -1
+          && data.remoteSdp.indexOf('sendrecv') !== -1) {
+        that.setState('resumed');
+        rtcManager.enableMediaStream();
+      }
+      that.setRemoteSdp(data.remoteSdp);
+
     }
 
     function onMediaModTerminations(modifications) {
 
       logger.logDebug('onMediaModTerminations');
-      logger.logDebug(modifications);
+      logger.logTrace(modifications);
 
-      if (breed === 'conference') {
-
+      if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
         if (undefined !== modifications.remoteSdp) {
           peerConnection.setRemoteDescription({
             sdp: modifications.remoteSdp,
@@ -191,27 +191,29 @@
             emitter.publish('rejected', createEventData());
           }
         }
-      } else if (breed === 'call') {
-        logger.logDebug('onMediaModTerminations:call');
-        if (modifications.remoteSdp) {
-          rtcManager.setRemoteDescription({
-            remoteDescription: modifications.remoteSdp,
-            type: 'answer'
-          });
-          if (modifications.reason === 'success'
-              && modifications.remoteSdp.indexOf('sendonly') !== -1
-              && modifications.remoteSdp.indexOf('sendrecv') === -1) {
-            that.setState('held');
-            rtcManager.disableMediaStream();
-          }
-          if (modifications.reason === 'success'
-              && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-            that.setState('resumed');
-            rtcManager.enableMediaStream();
-          }
-          remoteSdp = modifications.remoteSdp;
-        }
+        return;
       }
+
+      logger.logDebug('onMediaModTerminations:call');
+      if (modifications.remoteSdp) {
+        rtcManager.setRemoteDescription({
+          remoteDescription: modifications.remoteSdp,
+          type: 'answer'
+        });
+        if (modifications.reason === 'success'
+            && modifications.remoteSdp.indexOf('sendonly') !== -1
+            && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+          that.setState('held');
+          rtcManager.disableMediaStream();
+        }
+        if (modifications.reason === 'success'
+            && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+          that.setState('resumed');
+          rtcManager.enableMediaStream();
+        }
+        remoteSdp = modifications.remoteSdp;
+      }
+
     }
 
     function onCallDisconnected(data) {

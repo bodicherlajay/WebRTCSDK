@@ -313,11 +313,13 @@ if (!ATT) {
               'Authorization': function (param) {
                 return param;
               },
-              'x-conference-action' : function (action) {
-                return action;
-              },
-              'x-calls-action' : function (action) {
-                return action;
+              'options' : {
+                'x-conference-action': function (action) {
+                  return action;
+                },
+                'x-calls-action': function (action) {
+                  return action;
+                }
               }
             }
           },
