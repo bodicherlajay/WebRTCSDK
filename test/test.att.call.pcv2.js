@@ -11,6 +11,7 @@ describe('Call [PCV2]', function () {
     resourceManager,
     optionsRTCM,
     getRTCManagerStub,
+    emitterEM,
     emitterCall,
     createEventEmitterStub;
 
@@ -36,14 +37,12 @@ describe('Call [PCV2]', function () {
       peerConnSvc: ATT.PeerConnectionService
     };
 
+    emitterEM = factories.createEventEmitter();
+    createEventEmitterStub =  sinon.stub(factories, 'createEventEmitter', function () {
+      return emitterEM;
+    });
 
     rtcMgr = new ATT.private.RTCManager(optionsRTCM);
-
-    emitterCall = factories.createEventEmitter();
-
-    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
-      return emitterCall;
-    });
 
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return rtcMgr;
@@ -102,7 +101,6 @@ describe('Call [PCV2]', function () {
         });
 
         it('should NOT execute createPeerConnection if pcv != 2 for an outgoing call', function () {
-
           ATT.private.pcv = 1;
           createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection');
 
@@ -112,7 +110,6 @@ describe('Call [PCV2]', function () {
 
           createPeerConnectionStub.restore();
           ATT.private.pcv = 2;
-
         });
 
         it('should NOT execute rtcManager.connectCall if pcv == 2 for an outgoing call', function () {
@@ -257,6 +254,159 @@ describe('Call [PCV2]', function () {
       });
 
     });
+  });
+
+  describe('Events', function () {
+
+    var incomingCall,
+      remoteDesc,
+      peerConnection,
+      createPeerConnectionStub;
+
+    beforeEach(function () {
+      remoteDesc = {
+        sdp: 'sdf',
+        type: 'offer'
+      };
+
+      peerConnection = {
+        getRemoteDescription: function () {
+          return remoteDesc;
+        },
+        setRemoteDescription: function () {},
+        acceptSdpOffer: function () {}
+      };
+
+      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
+        return peerConnection;
+      });
+
+      incomingCall = new ATT.rtc.Call({
+        breed: 'call',
+        peer: '12345',
+        mediaType: 'audio',
+        type: ATT.CallTypes.INCOMING,
+        remoteSdp: 'abc',
+        sessionInfo: {sessionId: '12345'}
+      });
+
+      incomingCall.connect();
+    });
+
+    afterEach(function () {
+      createPeerConnectionStub.restore();
+    });
+
+    describe('media-modifications', function () {
+
+      var acceptSdpOfferStub,
+        setMediaModStub;
+
+      beforeEach(function () {
+        acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
+        setMediaModStub = sinon.stub(rtcMgr, 'setMediaModifications');
+      });
+
+      afterEach(function () {
+        acceptSdpOfferStub.restore();
+        setMediaModStub.restore();
+      });
+
+      it('should execute `peerConnection.acceptSdpOffer` if pcv == 2 for breed == call', function (done) {
+        emitterEM.publish('media-modifications', {
+          remoteSdp: 'abdc',
+          modificationId: 'ID'
+        });
+
+        setTimeout(function () {
+          try {
+            expect(acceptSdpOfferStub.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+      it('should NOT execute `peerConnection.acceptSdpOffer` if pcv == 1 for breed == call', function (done) {
+        ATT.private.pcv = 1;
+
+        emitterEM.publish('media-modifications', {
+          remoteSdp: 'abdc',
+          modificationId: 'ID'
+        });
+
+        setTimeout(function () {
+          try {
+            expect(acceptSdpOfferStub.called).to.equal(false);
+            done();
+          } catch (e) {
+            done(e);
+          } finally {
+            ATT.private.pcv = 2;
+          }
+        }, 10);
+      });
+
+    });
+
+    describe('media-mod-terminations', function () {
+
+      var setRemoteDescStub;
+
+      beforeEach(function () {
+        setRemoteDescStub = sinon.stub(peerConnection, 'setRemoteDescription');
+      });
+
+      afterEach(function () {
+        setRemoteDescStub.restore();
+      });
+
+      it('should execute peerConnection.setRemoteDescription if pcv == 2 for breed = call', function (done) {
+        emitterEM.publish('media-mod-terminations', {
+          remoteSdp: 'abdcX',
+          type: 'call',
+          modificationId: 'ID',
+          reason: 'abdc',
+          from: 'me'
+        });
+
+        setTimeout(function () {
+          try {
+            expect(setRemoteDescStub.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+
+      });
+
+      it('should NOT execute peerConnection.setRemoteDescription if pcv == 1 for breed = call', function (done) {
+        ATT.private.pcv = 1;
+
+        emitterEM.publish('media-mod-terminations', {
+          remoteSdp: 'abdcX',
+          type: 'call',
+          modificationId: 'ID',
+          reason: 'abdc',
+          from: 'me'
+        });
+
+        setTimeout(function () {
+          try {
+            expect(setRemoteDescStub.called).to.equal(false);
+            done();
+          } catch (e) {
+            done(e);
+          } finally {
+            ATT.private.pcv = 2;
+          }
+        }, 10);
+
+      });
+    });
+
   });
 
 });
