@@ -33,6 +33,7 @@
         formattersLength,
         headerType,
         headerObj,
+        paramHeader,
         optionKey,
         headersObjectForREST;
 
@@ -90,11 +91,13 @@
                   }
                   optionKey = Object.keys(options.params.headers[headerType])[0];
                   headerObj = operationConfig.formatters.headers[headerType][optionKey];
+                  paramHeader = options.params.headers[headerType][optionKey];
                   headerType = optionKey;
                 } else {
                   headerObj = operationConfig.formatters.headers[headerType];
+                  paramHeader = options.params.headers[headerType];
                 }
-                headersObjectForREST[headerType] = headerObj(options.params.headers[headerType]);
+                headersObjectForREST[headerType] = headerObj(paramHeader);
                 logger.logDebug('header: ' + headerType + ', ' + headersObjectForREST[headerType]);
               }
             }
