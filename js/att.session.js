@@ -72,8 +72,8 @@
     });
 
     rtcManager.on('call-disconnected', function (callInfo) {
-      var eventName,
-        message;
+      var eventName;
+
       if ('call' === callInfo.type) {
         eventName = 'call-disconnected';
       } else {
