@@ -16,6 +16,7 @@
 
     @fires Phone#call-incoming
     @fires Phone#conference:invitation-received
+    @fires Phone#network:notification
     @fires Phone#error
 
    */
@@ -100,6 +101,15 @@
     });
 
     session.on('network-notification', function (data) {
+      /**
+       * Network notification event
+       * @desc Unhandled messages from the network will be published through this event.
+       *
+       * @event Phone#network:notification
+       * @type {object}
+       * @property {String} message - The message.
+       * @property {Date} timestamp - Event fire time.
+       */
       emitter.publish('network:notification', data);
     });
 
