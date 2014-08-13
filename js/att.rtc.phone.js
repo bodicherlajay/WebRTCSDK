@@ -1634,7 +1634,7 @@
                     timestamp: new Date()
                   });
                   conference.addParticipant(invitee);
-                } else {
+                } else if (invitee === participant) {
                   publishError('24005', {
                     invitee: invitee,
                     timestamp: new Date()
