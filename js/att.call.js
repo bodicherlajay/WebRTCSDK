@@ -217,6 +217,36 @@
 
     }
 
+    function onCallConnected(data) {
+
+      that.setState('connected');
+
+      if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
+        if (undefined !== data.remoteSdp) {
+          peerConnection.setRemoteDescription({
+            sdp: data.remoteSdp,
+            type: 'answer'
+          });
+        }
+        return;
+      }
+
+      if ('call' === that.breed()) {
+        if (data.remoteSdp) {
+          rtcManager.setRemoteDescription({
+            remoteDescription: data.remoteSdp,
+            type: 'answer'
+          });
+          that.setRemoteSdp(data.remoteSdp);
+        }
+
+        rtcManager.playStream('remote');
+        return;
+      }
+
+
+    }
+
     function onCallDisconnected(data) {
       id = null;
 
@@ -232,6 +262,7 @@
         setState('disconnected');
       }
 
+      rtcManager.off('call-connected', onCallConnected);
       rtcManager.off('call-disconnected', onCallDisconnected);
 
       if (2 === ATT.private.pcv) {
@@ -369,36 +400,6 @@
         rtcManager.on('media-modifications', onMediaModifications);
 
         rtcManager.on('media-mod-terminations', onMediaModTerminations);
-
-        rtcManager.on('call-connected', function (data) {
-
-          that.setState('connected');
-
-          if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
-            if (undefined !== data.remoteSdp) {
-              peerConnection.setRemoteDescription({
-                sdp: data.remoteSdp,
-                type: 'answer'
-              });
-            }
-            return;
-          }
-
-          if ('call' === that.breed()) {
-            if (data.remoteSdp) {
-              rtcManager.setRemoteDescription({
-                remoteDescription: data.remoteSdp,
-                type: 'answer'
-              });
-              that.setRemoteSdp(data.remoteSdp);
-            }
-
-            rtcManager.playStream('remote');
-            return;
-          }
-
-
-        });
 
         if (('call' === breed && 2 === ATT.private.pcv)
             || 'conference' === breed) {
@@ -730,6 +731,8 @@
     if (undefined === options.mediaType) {
       throw new Error('No mediaType provided');
     }
+
+    rtcManager.on('call-connected', onCallConnected);
 
     rtcManager.on('call-disconnected', onCallDisconnected);
 

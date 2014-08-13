@@ -752,6 +752,14 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24005",
+      ErrorMessage: "Cannot invite existing participant",
+      Cause: "Invalid operation",
+      Resolution: "Please invite new user"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "removeParticipant",
       ErrorCode: "25000",
       ErrorMessage: "User is not logged in",
