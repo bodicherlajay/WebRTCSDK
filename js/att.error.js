@@ -1,4 +1,4 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 250*/
 /*global cmgmt:true, Logger:true, ATT:true*/
 
 //Dependency: ATT.logManager, cmgmt.CallManager, ATT.errorDictionary, ATT.RTCEvent, ATT.CallStatus
@@ -40,7 +40,7 @@
         logger.logError(error);
       } else {
         error = {
-          APIError:response.responseText
+          APIError: response.responseText
         };
         logger.logError(response);
         logger.logError(error);
@@ -51,20 +51,20 @@
     }
     if (errObj.RequestError.ServiceException) { // API Service Exceptions
       error = {
-        APIError:errObj.RequestError.ServiceException.MessageId + ":" + errObj.RequestError.ServiceException.Text + ",Variables=" +
+        APIError: errObj.RequestError.ServiceException.MessageId + ":" + errObj.RequestError.ServiceException.Text + ",Variables=" +
           errObj.RequestError.ServiceException.Variables,
-        MessageId:errObj.RequestError.ServiceException.MessageId
-      }
+        MessageId: errObj.RequestError.ServiceException.MessageId
+      };
     } else if (errObj.RequestError.PolicyException) { // API Policy Exceptions
       error = {
-        APIError:errObj.RequestError.PolicyException.MessageId + ":" + errObj.RequestError.PolicyException.Text + ",Variables=" + errObj.RequestError.PolicyException.Variables,
-        MessageId:errObj.RequestError.PolicyException.MessageId
-      }
+        APIError: errObj.RequestError.PolicyException.MessageId + ":" + errObj.RequestError.PolicyException.Text + ",Variables=" + errObj.RequestError.PolicyException.Variables,
+        MessageId: errObj.RequestError.PolicyException.MessageId
+      };
     } else if (errObj.RequestError.Exception) { // API Exceptions
       error = {
         APIError: errObj.RequestError.Exception.MessageId || "" + ":" + errObj.RequestError.Exception.Text + ",Variables=" + errObj.RequestError.Exception.Variables || "",
         MessageId: errObj.RequestError.Exception.MessageId
-      }
+      };
     }
     error.ResourceMethod = response.getResourceURL();
     error.HttpStatusCode = response.getResponseStatus();
@@ -77,7 +77,7 @@
     return error;
   }
 
-  createAPIErrorCode = function(response, jsObject, methodName, moduleId) {
+  createAPIErrorCode = function (response, jsObject, methodName, moduleId) {
     logger.logTrace('raw error', response);
 
     var apiError, errorResponse;
@@ -99,8 +99,7 @@
         apiError.MessageId = errorResponse.MessageId;
         apiError.ResourceMethod = errorResponse.ResourceMethod;
       }
-    } else
-    {
+    } else {
       //Network connectivity related errors will not have valid http status code
       apiError = errorResponse;
     }
@@ -115,8 +114,8 @@
         HttpStatusCode: response.HttpStatusCode || 'Unknown',
         ErrorMessage: methodName + ' failed',
         APIError:  errorResponse.APIError || response.responseText,
-        PossibleCauses:"Please look into APIError",
-        PossibleResolution:"Please look into APIError",
+        PossibleCauses: "Please look into APIError",
+        PossibleResolution: "Please look into APIError",
         MessageId: errorResponse.MessageId || "",
         ResourceMethod: errorResponse.ResourceMethod || response.getResourceURL()
       });
@@ -127,7 +126,7 @@
     apiError.ModuleId = moduleId;
     apiError.ErrorMessage = methodName + " failed - " + apiError.ErrorMessage;
     return apiError;
-  }
+  };
 
   init();
 }(ATT || {}));
