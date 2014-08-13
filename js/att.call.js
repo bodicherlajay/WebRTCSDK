@@ -147,13 +147,10 @@
               });
             }
           });
-
-          if (data.remoteSdp
-              && data.remoteSdp.indexOf('recvonly') !== -1) {
+          if (data.remoteSdp.indexOf('recvonly') !== -1) {
             that.setState('held');
             rtcManager.disableMediaStream();
-          } else if (data.remoteSdp
-              && remoteSdp
+          } else if (remoteSdp
               && remoteSdp.indexOf
               && remoteSdp.indexOf('recvonly') !== -1
               && data.remoteSdp.indexOf('sendrecv') !== -1) {
@@ -163,9 +160,23 @@
         }
         return;
       }
+      rtcManager.setMediaModifications(data);
 
-
-
+      if (1 === ATT.private.pcv) {
+        if (data.remoteSdp
+            && data.remoteSdp.indexOf('recvonly') !== -1) {
+          that.setState('held');
+          rtcManager.disableMediaStream();
+        } else if (data.remoteSdp
+            && remoteSdp
+            && remoteSdp.indexOf
+            && remoteSdp.indexOf('recvonly') !== -1
+            && data.remoteSdp.indexOf('sendrecv') !== -1) {
+          that.setState('resumed');
+          rtcManager.enableMediaStream();
+        }
+        that.setRemoteSdp(data.remoteSdp);
+      }
 
     }
 
