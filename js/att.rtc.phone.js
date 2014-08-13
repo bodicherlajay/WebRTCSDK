@@ -122,7 +122,7 @@
           } catch (error) {
             logger.logError(error);
             if (undefined !== errorCallback
-              && 'function' === typeof errorCallback) {
+                && 'function' === typeof errorCallback) {
               errorCallback(error);
             }
           }
@@ -167,36 +167,36 @@
     function on(event, handler) {
 
       if ('session:ready' !== event
-        && 'session:disconnected' !== event
-        && 'network:notification' !== event
-        && 'dialing' !== event
-        && 'answering' !== event
-        && 'call-incoming' !== event
-        && 'call-connecting' !== event
-        && 'call-connected' !== event
-        && 'call-disconnecting' !== event
-        && 'call-disconnected' !== event
-        && 'call-muted' !== event
-        && 'call-unmuted' !== event
-        && 'call-held' !== event
-        && 'call-resumed' !== event
-        && 'call-canceled' !== event
-        && 'call-rejected' !== event
-        && 'address-updated' !== event
-        && 'media-established' !== event
-        && 'conference:invitation-received' !== event
-        && 'conference:joining' !== event
-        && 'conference:invitation-sending' !== event
-        && 'conference:invitation-rejected' !== event
-        && 'conference:connecting' !== event
-        && 'conference:invitation-sent' !== event
-        && 'conference:invitation-accepted' !== event
-        && 'conference:participant-removed' !== event
-        && 'conference:disconnecting' !== event
-        && 'conference:ended' !== event
-        && 'conference:connected' !== event
-        && 'warning' !== event
-        && 'error' !== event) {
+          && 'session:disconnected' !== event
+          && 'network:notification' !== event
+          && 'dialing' !== event
+          && 'answering' !== event
+          && 'call-incoming' !== event
+          && 'call-connecting' !== event
+          && 'call-connected' !== event
+          && 'call-disconnecting' !== event
+          && 'call-disconnected' !== event
+          && 'call-muted' !== event
+          && 'call-unmuted' !== event
+          && 'call-held' !== event
+          && 'call-resumed' !== event
+          && 'call-canceled' !== event
+          && 'call-rejected' !== event
+          && 'address-updated' !== event
+          && 'media-established' !== event
+          && 'conference:invitation-received' !== event
+          && 'conference:joining' !== event
+          && 'conference:invitation-sending' !== event
+          && 'conference:invitation-rejected' !== event
+          && 'conference:connecting' !== event
+          && 'conference:invitation-sent' !== event
+          && 'conference:invitation-accepted' !== event
+          && 'conference:participant-removed' !== event
+          && 'conference:disconnecting' !== event
+          && 'conference:ended' !== event
+          && 'conference:connected' !== event
+          && 'warning' !== event
+          && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -246,7 +246,7 @@
         try {
           logger.logDebug('Phone.login');
 
-          if (undefined === session){
+          if (undefined === session) {
             session = new ATT.rtc.Session();
           }
 
@@ -434,7 +434,7 @@
 
         if (undefined !== options.mediaType) {
           if ('audio' !== options.mediaType
-            && 'video' !== options.mediaType) {
+              && 'video' !== options.mediaType) {
             throw ATT.errorDictionary.getSDKError('4002');
           }
         }
@@ -1537,8 +1537,8 @@
         }
 
         if (typeof participants !== 'object'
-          || null === participants
-          || Object.keys(participants).length === 0) {
+            || null === participants
+            || Object.keys(participants).length === 0) {
           publishError('24001');
           return;
         }
@@ -1762,7 +1762,7 @@
         conference = session.currentCall;
 
         if (null === conference
-          || 'conference' !== conference.breed()) {
+            || 'conference' !== conference.breed()) {
           publishError(21000);
           return;
         }
@@ -1820,7 +1820,7 @@
         conference = session.currentCall;
 
         if (null === conference
-          || 'conference' !== conference.breed()) {
+            || 'conference' !== conference.breed()) {
           throw ATT.errorDictionary.getSDKError(25001);
         }
 
