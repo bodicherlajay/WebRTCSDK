@@ -393,19 +393,18 @@
       destination: '11231231234',
       mediaType: 'video',
       localMedia: document.getElementById('localVideo'),
-      remoteMedia: document.getElementById('remoteVideo'),
-      holdCurrentCall
-    };
+      remoteMedia: document.getElementById('remoteVideo')
+     });
+
      @example
      // Start audio call with a NoTN/VTN User
      var phone = ATT.rtc.Phone.getPhone();
      phone.dial({
       destination: 'john@domain.com',
-     mediaType: 'audio',
-     localMedia: document.getElementById('localVideo'),
-     remoteMedia: document.getElementById('remoteVideo'),
-     holdCurrentCall: true
-     };
+       mediaType: 'audio',
+       localMedia: document.getElementById('localVideo'),
+       remoteMedia: document.getElementById('remoteVideo')
+     });
      */
     function dial(options) {
 
