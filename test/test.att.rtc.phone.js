@@ -2583,24 +2583,28 @@ describe('Phone', function () {
 
         var onSpy,
           callRejectStub,
-          callRejectedSpy;
+          callRejectedSpy,
+          deleteCurrentCallStub;
 
         beforeEach(function () {
 
           onSpy = sinon.spy(call, 'on');
+
           callRejectStub = sinon.stub(call, 'reject', function () {
           });
 
           callRejectedSpy = sinon.spy();
 
-          phone.on('call-disconnected', callRejectedSpy);
+          phone.on('call-rejected', callRejectedSpy);
 
           call.setId('123');
           session.currentCall = call;
+          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
         });
 
         afterEach(function () {
           callRejectStub.restore();
+          deleteCurrentCallStub.restore();
         });
 
         it('should exist', function () {
@@ -2613,31 +2617,33 @@ describe('Phone', function () {
           expect(callRejectStub.called).to.equal(true);
         });
 
-        xit('should register for the `disconnected` event on the call object', function () {
+        it('should register for the `rejected` event on the call object', function () {
           phone.reject();
 
           expect(onSpy.calledOnce).to.equal(true);
-          expect(onSpy.calledWith('disconnected')).to.equal(true);
+          expect(onSpy.calledWith('rejected')).to.equal(true);
         });
 
-        xit('should trigger `call-disconnected` with data when call publishes `disconnected` event', function (done) {
+        it('should trigger `call-rejected` with data when call publishes `rejected` event', function (done) {
           var data = {
             data: 'test'
           };
 
           phone.reject();
 
-          emitterCall.publish('disconnected', data);
+          emitterCall.publish('rejected', data);
 
           setTimeout(function () {
             try {
               expect(callRejectedSpy.calledWith(data)).to.equal(true);
+              expect(deleteCurrentCallStub.called).to.equal(true);
               done();
             } catch (e) {
               done(e);
             }
           }, 50);
         });
+
         describe('Error Handling', function () {
 
           var publishStub;

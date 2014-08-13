@@ -1214,16 +1214,12 @@
         if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('12000');
         }
+
         try {
-//          call.on('disconnected', function (data) {
-//            emitter.publish('call-disconnected', data);
-//            session.deleteCurrentCall();
-//            session.switchCall();
-//
-//            if (session.currentCall !== null) {
-//                session.currentCall.resume();
-//            }
-//          });
+          call.on('rejected', function (data) {
+            emitter.publish('call-rejected', data);
+            session.deleteCurrentCall();
+          });
           call.reject();
         } catch (err) {
           logger.logError(err);
