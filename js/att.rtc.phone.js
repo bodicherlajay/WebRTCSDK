@@ -181,15 +181,20 @@
     function getSession() {
       return session;
     }
-    /**
-     * @summary
-     * Subscribe to events on a Phone object.
-     * @memberOf Phone
-     * @instance
 
-     * @example
-     var phone = ATT.rtc.Phone.getPhone();
-     phone.on('session:ready', function (data) {
+
+    function setSession(newSession) {
+      session = newSession;
+    }
+    /**
+    * @summary
+    * Subscribe to events on a Phone object.
+    * @memberOf Phone
+    * @instance
+
+    * @example
+      var phone = ATT.rtc.Phone.getPhone();
+      phone.on('session:ready', function (data) {
         // ... do something
       });
      */
@@ -274,6 +279,13 @@
         try {
           logger.logDebug('Phone.login');
 
+          if (undefined === session){
+            session = new ATT.rtc.Session();
+          }
+
+          session.connect(options);
+
+
           session.on('ready', function (data) {
             /**
              * Session Ready event.
@@ -286,8 +298,6 @@
              */
             emitter.publish('session:ready', data);
           });
-
-          session.connect(options);
 
         } catch (err) {
           logger.logError(err);
@@ -364,7 +374,7 @@
 
           session.disconnect();
 
-          session = undefined;
+          setSession(undefined);
 
         } catch (err) {
           logger.logError(err);
@@ -1813,6 +1823,7 @@
     // ===================
     this.on = on;
     this.getSession = getSession;
+    this.setSession = setSession;
     this.login = login;
     this.logout = logout;
     this.dial = dial;

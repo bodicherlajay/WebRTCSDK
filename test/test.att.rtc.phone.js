@@ -308,6 +308,13 @@ describe('Phone', function () {
           expect(phone.login).to.be.a('function');
         });
 
+        it('should create a session object if session is not defined', function () {
+          phone.setSession(undefined);
+          phone.login(options);
+
+          expect(phone.getSession()).not.to.be.undefined;
+        });
+
         it('should register for event `ready` from Session', function () {
           phone.login(options);
 
