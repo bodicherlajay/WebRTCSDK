@@ -73,8 +73,8 @@
 
     rtcManager.on('media-mod-terminations', function (callInfo) {
       if (undefined !== callInfo.reason
-        && 'success' !== callInfo.reason
-        && 'Call rejected' !== callInfo.reason) {
+          && 'success' !== callInfo.reason
+          && 'Call rejected' !== callInfo.reason) {
         emitter.publish('network-notification', {
           message: callInfo.reason,
           timestamp: new Date()
@@ -85,20 +85,20 @@
     function on(event, handler) {
 
       if ('ready' !== event &&
-        'connecting' !== event &&
-        'connected' !== event &&
-        'updating' !== event &&
-        'needs-refresh' !== event &&
-        'network-notification' !== event &&
-        'call-incoming' !== event &&
-        'conference-invite' !== event &&
-        'call-disconnected' !== event &&
-        'conference-disconnected' !== event &&
-        'disconnecting' !== event &&
-        'disconnected' !== event &&
-        'address-updated' !== event &&
-        'allcallsterminated' !== event &&
-        'error' !== event) {
+          'connecting' !== event &&
+          'connected' !== event &&
+          'updating' !== event &&
+          'needs-refresh' !== event &&
+          'network-notification' !== event &&
+          'call-incoming' !== event &&
+          'conference-invite' !== event &&
+          'call-disconnected' !== event &&
+          'conference-disconnected' !== event &&
+          'disconnecting' !== event &&
+          'disconnected' !== event &&
+          'address-updated' !== event &&
+          'allcallsterminated' !== event &&
+          'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -166,7 +166,7 @@
         rtcManager.refreshSession({
           sessionId : id,
           token : token,
-          success : function () {},
+          success : function () { return; },
           error : function (error) {
             emitter.publish('error', {
               error: error
@@ -177,7 +177,7 @@
     };
 
     this.connect = function connect(options) {
-	     var session = this;
+      var session = this;
       try {
         if (undefined === options) {
           throw ATT.errorDictionary.getSDKError('2002');
@@ -190,7 +190,7 @@
 
           logger.logDebug('Session.connect');
 
-		      token = options.token;
+          token = options.token;
           this.e911Id = options.e911Id;
 
           emitter.publish('connecting');
