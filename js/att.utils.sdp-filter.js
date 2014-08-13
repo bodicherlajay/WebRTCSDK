@@ -24,11 +24,11 @@ if (!ATT) {
   * returns {String} sdp
   */
   function removeVideoMediaPartFromSdp(sdp) {
-      var indexof = sdp.indexOf("m=video");
-      if (indexof > 0) {
-          sdp = sdp.substr(0, indexof);
-      }
-      return sdp;
+    var indexof = sdp.indexOf("m=video");
+    if (indexof > 0) {
+      sdp = sdp.substr(0, indexof);
+    }
+    return sdp;
   };
 
   /**
@@ -59,13 +59,13 @@ if (!ATT) {
   * returns {String} sdp
   */
   function removeSDPAttribute(attributeValue, sdp) {
-      //remove attribute from the middle.
-      var attribute = "a=" + attributeValue + "\r\n"
-      var index = sdp.indexOf(attribute);
-      if (index > 0) {
-          sdp = sdp.replace(attribute, "");
-      }
-      return sdp;
+    //remove attribute from the middle.
+    var attribute = "a=" + attributeValue + "\r\n",
+      index = sdp.indexOf(attribute);
+    if (index > 0) {
+      sdp = sdp.replace(attribute, "");
+    }
+    return sdp;
   };
 
   /**
@@ -76,9 +76,9 @@ if (!ATT) {
   * returns {String} sdp
   */
   function updateSdp(sdp, oldString, newString) {
-      var regex = new RegExp(oldString, 'g');
-      sdp = sdp.replace(regex, newString);
-      return sdp;
+    var regex = new RegExp(oldString, 'g');
+    sdp = sdp.replace(regex, newString);
+    return sdp;
   };
 
   /**
@@ -96,8 +96,8 @@ if (!ATT) {
       oLine = sdp.sdp.slice(oIndex, sIndex),
       oLineArray = oLine.split(' '),
       oLine2;
-      console.log('lineArray ' + oLineArray[2] + 'count ' + count);
-      oLine2 = oLine.replace(' ' + oLineArray[2].toString() + ' ', ' ' + count.toString() + ' ');
+    console.log('lineArray ' + oLineArray[2] + 'count ' + count);
+    oLine2 = oLine.replace(' ' + oLineArray[2].toString() + ' ', ' ' + count.toString() + ' ');
 
     sdp.sdp = sdp.sdp.replace(oLine, oLine2);
 
@@ -129,15 +129,15 @@ if (!ATT) {
    * @returns {*|sdp}
   */
   function jslWorkarounds(sdp) {
-      // Remove mid lines
-      sdp = sdp.replace(/a=mid:video\r\n/g, "");
-      sdp = sdp.replace(/a=mid:audio\r\n/g, "");
+    // Remove mid lines
+    sdp = sdp.replace(/a=mid:video\r\n/g, "");
+    sdp = sdp.replace(/a=mid:audio\r\n/g, "");
 
-      // Remove bundle lines
-      sdp = sdp.replace(/a=group:BUNDLE audio video\r\n/g, "");
-      sdp = sdp.replace(/a=group:BUNDLE audio\r\n/g, "");
+    // Remove bundle lines
+    sdp = sdp.replace(/a=group:BUNDLE audio video\r\n/g, "");
+    sdp = sdp.replace(/a=group:BUNDLE audio\r\n/g, "");
 
-      return sdp;
+    return sdp;
   };
 
   function setupActivePassive(description) {
