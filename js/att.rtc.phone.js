@@ -9,15 +9,15 @@
   var logManager = ATT.logManager.getInstance();
 
   /**
-    Creates a new Phone.
-    @global
-    @class Represents a Phone.
-    @constructor
+   Creates a new Phone.
+   @global
+   @class Represents a Phone.
+   @constructor
 
-    @fires Phone#call-incoming
-    @fires Phone#conference:invitation-received
-    @fires Phone#network:notification
-    @fires Phone#error
+   @fires Phone#call-incoming
+   @fires Phone#conference:invitation-received
+   @fires Phone#network:notification
+   @fires Phone#error
 
    */
   function Phone() {
@@ -33,7 +33,7 @@
     session.on('call-incoming', function (data) {
       /**
        * Call incoming event.
-       * @desc Indicates a call is being received.
+       * @desc This event fires when a call is incoming.
        *
        * @event Phone#call-incoming
        * @type {object}
@@ -49,7 +49,7 @@
     session.on('conference-invite', function (data) {
       /**
        * Conference Invite event.
-       * @desc Indicates a conference invite is received.
+       * @desc This event fires when a conference invitation is received.
        *
        * @event Phone#conference:invitation-received
        * @type {object}
@@ -122,7 +122,7 @@
           } catch (error) {
             logger.logError(error);
             if (undefined !== errorCallback
-                && 'function' === typeof errorCallback) {
+              && 'function' === typeof errorCallback) {
               errorCallback(error);
             }
           }
@@ -147,7 +147,12 @@
     function getSession() {
       return session;
     }
-   /**
+
+
+    function setSession(newSession) {
+      session = newSession;
+    }
+    /**
     * @summary
     * Subscribe to events on a Phone object.
     * @memberOf Phone
@@ -158,39 +163,39 @@
       phone.on('session:ready', function (data) {
         // ... do something
       });
-    */
+     */
     function on(event, handler) {
 
       if ('session:ready' !== event
-          && 'session:disconnected' !== event
-          && 'network:notification' !== event
-          && 'dialing' !== event
-          && 'answering' !== event
-          && 'call-incoming' !== event
-          && 'call-connecting' !== event
-          && 'call-connected' !== event
-          && 'call-disconnecting' !== event
-          && 'call-disconnected' !== event
-          && 'call-muted' !== event
-          && 'call-unmuted' !== event
-          && 'call-held' !== event
-          && 'call-resumed' !== event
-          && 'call-canceled' !== event
-          && 'call-rejected' !== event
-          && 'address-updated' !== event
-          && 'media-established' !== event
-          && 'conference:invitation-received' !== event
-          && 'conference:joining' !== event
-          && 'conference:invitation-sending' !== event
-          && 'conference:invitation-rejected' !== event
-          && 'conference:connecting' !== event
-          && 'conference:invitation-sent' !== event
-          && 'conference:invitation-accepted' !== event
-          && 'conference:participant-removed' !== event
-          && 'conference:disconnecting' !== event
-          && 'conference:ended' !== event
-          && 'conference:connected' !== event
-          && 'error' !== event) {
+        && 'session:disconnected' !== event
+        && 'network:notification' !== event
+        && 'dialing' !== event
+        && 'answering' !== event
+        && 'call-incoming' !== event
+        && 'call-connecting' !== event
+        && 'call-connected' !== event
+        && 'call-disconnecting' !== event
+        && 'call-disconnected' !== event
+        && 'call-muted' !== event
+        && 'call-unmuted' !== event
+        && 'call-held' !== event
+        && 'call-resumed' !== event
+        && 'call-canceled' !== event
+        && 'call-rejected' !== event
+        && 'address-updated' !== event
+        && 'media-established' !== event
+        && 'conference:invitation-received' !== event
+        && 'conference:joining' !== event
+        && 'conference:invitation-sending' !== event
+        && 'conference:invitation-rejected' !== event
+        && 'conference:connecting' !== event
+        && 'conference:invitation-sent' !== event
+        && 'conference:invitation-accepted' !== event
+        && 'conference:participant-removed' !== event
+        && 'conference:disconnecting' !== event
+        && 'conference:ended' !== event
+        && 'conference:connected' !== event
+        && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -198,33 +203,33 @@
       emitter.subscribe(event, handler, this);
     }
 
-  /**
-    * @summary Creates a WebRTC Session.
-    * @desc Used to establish webRTC session so that the user can place webRTC calls.
-    * The service parameter indicates the desired service such as audio or video call
-    *
-    *  **Error Code**
-    *
-    *    - 2001 - Missing input parameter
-    *    - 2002 - Mandatory fields can not be empty
-    *    - 2004 - Internal error occurred
-    *    - 2005 - User already logged in
-    *
-    * @memberOf Phone
-    * @instance
-    * @param {Object} options
-    * @param {String} options.token OAuth Access Token.
-    * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
-    * @fires Phone#session:ready
-    * @fires Phone#error
-    * @example
-    *
-      var phone = ATT.rtc.Phone.getPhone();
-      phone.login({
+    /**
+     * @summary Creates a WebRTC Session.
+     * @desc Used to establish webRTC session so that the user can place webRTC calls.
+     * The service parameter indicates the desired service such as audio or video call
+     *
+     *  **Error Code**
+     *
+     *    - 2001 - Missing input parameter
+     *    - 2002 - Mandatory fields can not be empty
+     *    - 2004 - Internal error occurred
+     *    - 2005 - User already logged in
+     *
+     * @memberOf Phone
+     * @instance
+     * @param {Object} options
+     * @param {String} options.token OAuth Access Token.
+     * @param {String} options.e911Id E911 Id. Optional parameter for NoTN users. Required for ICMN and VTN users
+     * @fires Phone#session:ready
+     * @fires Phone#error
+     * @example
+     *
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.login({
         token: token,
         e911Id: e911Id
       });
-   */
+     */
     function login(options) {
       try {
         if (undefined === options) {
@@ -240,10 +245,17 @@
         try {
           logger.logDebug('Phone.login');
 
+          if (undefined === session){
+            session = new ATT.rtc.Session();
+          }
+
+          session.connect(options);
+
+
           session.on('ready', function (data) {
             /**
              * Session Ready event.
-             * @desc Indicates the SDK is initialized and ready to make, receive calls
+             * @desc This event fires when the SDK is initialized and ready to make, receive calls
              *
              * @event Phone#session:ready
              * @type {object}
@@ -252,8 +264,6 @@
              */
             emitter.publish('session:ready', data);
           });
-
-          session.connect(options);
 
         } catch (err) {
           logger.logError(err);
@@ -289,23 +299,23 @@
     }
 
     /**
-    * @summary Deletes the current RTC Session
-    * @desc
-    * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
-    * requests gets stopped
-    *
-    * **Error Codes**
-    *
-    *   - 3000 - Internal error occurred
-    *
-    * @memberof Phone
-    * @instance
-    * @fires Phone#session:disconnected
-    * @fires Phone#error
-    * @example
-    * var phone = ATT.rtc.Phone.getPhone();
-    * phone.logout();
-    */
+     * @summary Deletes the current RTC Session
+     * @desc
+     * Logs out the user from RTC session. When invoked webRTC session gets deleted, future event channel polling
+     * requests gets stopped
+     *
+     * **Error Codes**
+     *
+     *   - 3000 - Internal error occurred
+     *
+     * @memberof Phone
+     * @instance
+     * @fires Phone#session:disconnected
+     * @fires Phone#error
+     * @example
+     * var phone = ATT.rtc.Phone.getPhone();
+     * phone.logout();
+     */
     function logout() {
       try {
 
@@ -319,7 +329,7 @@
           session.on('disconnected', function (data) {
             /**
              * Session Disconnected event.
-             * @desc Session was successfully deleted.
+             * @desc This event fires when the session was successfully disconnected.
              *
              * @event Phone#session:disconnected
              * @type {object}
@@ -330,7 +340,7 @@
 
           session.disconnect();
 
-          session = undefined;
+          setSession(undefined);
 
         } catch (err) {
           logger.logError(err);
@@ -345,56 +355,56 @@
       }
     }
 
-  /**
-   * @summary Make a call
-   * @desc Add description here
-   *
-   * **Error codes**
-   *
-   *  - 4002 - Invalid Media Type
-   *  - 4003 - Internal error occurred
-   *  - 4004 - User is not logged in
-   *  - 4005 - onUserMediaError occured
-   *
-   * @param {Object} options
-   * @memberOf Phone
-   * @instance
-   * @param {String} options.destination The Phone Number or User Id of the called party.
-   * @param {HTMLVideoElement} options.localMedia
-   * @param {HTMLVideoElement} options.remoteMedia
-   * @param {String} options.mediaType `audio` or `video`
+    /**
+     * @summary Make a call
+     * @desc Add description here
+     *
+     * **Error codes**
+     *
+     *  - 4002 - Invalid Media Type
+     *  - 4003 - Internal error occurred
+     *  - 4004 - User is not logged in
+     *  - 4005 - onUserMediaError occured
+     *
+     * @param {Object} options
+     * @memberOf Phone
+     * @instance
+     * @param {String} options.destination The Phone Number or User Id of the called party.
+     * @param {HTMLVideoElement} options.localMedia
+     * @param {HTMLVideoElement} options.remoteMedia
+     * @param {String} options.mediaType `audio` or `video`
 
-   * @fires Phone#dialing
-   * @fires Phone#call-connecting
-   * @fires Phone#call-rejected
-   * @fires Phone#call-connected
-   * @fires Phone#media-established
-   * @fires Phone#call-held
-   * @fires Phone#call-resumed
-   * @fires Phone#call-disconnected
-   * @fires Phone#error
+     * @fires Phone#dialing
+     * @fires Phone#call-connecting
+     * @fires Phone#call-rejected
+     * @fires Phone#call-connected
+     * @fires Phone#media-established
+     * @fires Phone#call-held
+     * @fires Phone#call-resumed
+     * @fires Phone#call-disconnected
+     * @fires Phone#error
 
-   * @example
-    // Start video call with an ICMN User
-    var phone = ATT.rtc.Phone.getPhone();
-    phone.dial({
+     * @example
+     // Start video call with an ICMN User
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.dial({
       destination: '11231231234',
       mediaType: 'video',
       localMedia: document.getElementById('localVideo'),
       remoteMedia: document.getElementById('remoteVideo'),
       holdCurrentCall
     };
-    @example
-    // Start audio call with a NoTN/VTN User
-    var phone = ATT.rtc.Phone.getPhone();
-    phone.dial({
+     @example
+     // Start audio call with a NoTN/VTN User
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.dial({
       destination: 'john@domain.com',
-      mediaType: 'audio',
-      localMedia: document.getElementById('localVideo'),
-      remoteMedia: document.getElementById('remoteVideo'),
-      holdCurrentCall: true
-    };
-   */
+     mediaType: 'audio',
+     localMedia: document.getElementById('localVideo'),
+     remoteMedia: document.getElementById('remoteVideo'),
+     holdCurrentCall: true
+     };
+     */
     function dial(options) {
 
       var call;
@@ -422,7 +432,7 @@
 
         if (undefined !== options.mediaType) {
           if ('audio' !== options.mediaType
-              && 'video' !== options.mediaType) {
+            && 'video' !== options.mediaType) {
             throw ATT.errorDictionary.getSDKError('4002');
           }
         }
@@ -455,7 +465,7 @@
           call.on('connecting', function (data) {
             /**
              * Call connecting event.
-             * @desc Indicates succesful creation of the call.
+             * @desc This event fires when a call is connecting
              * @event Phone#call-connecting
              * @type {object}
              * @property {Date} timestamp - Event fire time.
@@ -476,7 +486,7 @@
           call.on('rejected', function (data) {
             /**
              * Call rejected event.
-             * @desc Successfully rejected an incoming call.
+             * @desc Host side: This event fires when a call is rejected
              * @event Phone#call-rejected
              * @type {object}
              * @property {Date} timestamp - Event fire time.
@@ -487,7 +497,7 @@
           call.on('connected', function (data) {
             /**
              * Call connected event.
-             * @desc Successfully established a call.
+             * @desc This event fires when a call is connected
              * @event Phone#call-connected
              * @type {object}
              * @property {Date} timestamp - Event fire time.
@@ -497,8 +507,7 @@
           call.on('media-established', function (data) {
             /**
              * Media established event.
-             * @desc Triggered when both parties are completed negotiation
-             * and engaged in active conversation.
+             * @desc This event fires after when audio/video media has started
              * @event Phone#media-established
              * @type {object}
              * @property {Date} timestamp - Event fire time.
@@ -508,7 +517,7 @@
           call.on('held', function (data) {
             /**
              * Call on hold event.
-             * @desc Successfully put the current call on hold.
+             * @desc This event fires when a call has been put on hold
              * @event Phone#call-held
              * @type {object}
              * @property {Date} timestamp - Event fire time.
@@ -518,7 +527,7 @@
           call.on('resumed', function (data) {
             /**
              * Call resumed event.
-             * @desc Successfully resume a call that was on held.
+             * @desc This event fires when a call has been resumed
              * @event Phone#call-resumed
              * @type {object}
              * @property {Date} timestamp - Event fire time.
@@ -527,6 +536,7 @@
           });
 
           call.on('disconnected', function (data) {
+            logger.logInfo('call disconnected event by phone layer');
             /**
              * Call disconnected event.
              * @desc Indicates a call has been disconnected
@@ -538,7 +548,6 @@
              * @property {String} codec - The codec of the call.
              * @property {Date} timestamp - Event fire time.
              */
-            logger.logInfo('call disconnected event by phone layer');
             emitter.publish('call-disconnected', data);
             session.deleteCurrentCall();
           });
@@ -606,8 +615,8 @@
      * @fires Phone#error
 
      * @example
-        var phone = ATT.rtc.Phone.getPhone();
-        phone.answer({
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.answer({
           localMedia: document.getElementById('localVideo'),
           remoteMedia: document.getElementById('remoteVideo')
         });
@@ -844,8 +853,8 @@
      * @fires Phone#error
 
      * @example
-        var phone = ATT.rtc.Phone.getPhone();
-        phone.joinConference({
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.joinConference({
           localMedia: document.getElementById('localVideo'),
           remoteMedia: document.getElementById('remoteVideo')
         });
@@ -868,9 +877,12 @@
 
           /**
            * Conference joining event.
-           * @desc This event fires immediately after invoking joinConference
+           * @desc Participant side: This event fires immediately after invoking `joinConference`
            * @event Phone#conference:joining
            * @type {object}
+           * @property {String} from - The ID of the caller.
+           * @property {String} mediaType - The type of conference being received.
+           * @property {String} codec - The codec used by the conference
            * @property {Date} timestamp - Event fire time.
            */
           emitter.publish('conference:joining', {
@@ -887,10 +899,13 @@
           conference.on('connecting', function (data) {
             /**
              * Conference connecting event.
-             * @desc This event fires when trying to connect to a conference after accepting the invite.
+             * @desc This event fires when network is trying to connect to a conference.
              * @event Phone#conference:connecting
              * @type {object}
-             * @property {Date} timestamp - Event fire time
+             * @property {String} from - The ID of the caller.
+             * @property {String} mediaType - The media type of the conference (audio or video).
+             * @property {String} codec - The codec used by the conference.
+             * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('conference:connecting', data);
           });
@@ -927,25 +942,25 @@
     }
 
     /**
-    * @summary
-    * Mute the current call.
-    * @desc Add description here
-    *
-    * **Error Codes**
-    *
-    *   - 9000 - Mute failed- Call is not in progress
-    *   - 9001 - Internal error occurred
-    *
-    * @memberOf Phone
-    * @instance
+     * @summary
+     * Mute the current call.
+     * @desc Add description here
+     *
+     * **Error Codes**
+     *
+     *   - 9000 - Mute failed- Call is not in progress
+     *   - 9001 - Internal error occurred
+     *
+     * @memberOf Phone
+     * @instance
 
-    * @fires Phone#call-muted
-    * @fires Phone#error
+     * @fires Phone#call-muted
+     * @fires Phone#error
 
-    * @example
-      var phone = ATT.rtc.Phone.getPhone();
-      phone.mute();
-    */
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.mute();
+     */
     function mute() {
       try {
         var call = session.currentCall;
@@ -960,10 +975,13 @@
           call.on('muted', function (data) {
             /**
              * Call muted event.
-             * @desc Call was successfully muted.
+             * @desc This event fires when the media is successfully muted.
              *
              * @event Phone#call-muted
              * @type {object}
+             * @property {String} from - The ID of the caller.
+             * @property {String} mediaType - The media type.
+             * @property {String} codec - The codec used by the call.
              * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('call-muted', data);
@@ -985,25 +1003,25 @@
     }
 
     /**
-    * @summary
-    * Unmute the current call.
-    * @desc Add description here
-    *
-    * **Error Codes**
-    *
-    *   - 10000 - Unmute failed- No media stream
-    *   - 10001 - Internal error occurred
-    *
-    * @memberOf Phone
-    * @instance
+     * @summary
+     * Unmute the current call.
+     * @desc Add description here
+     *
+     * **Error Codes**
+     *
+     *   - 10000 - Unmute failed- No media stream
+     *   - 10001 - Internal error occurred
+     *
+     * @memberOf Phone
+     * @instance
 
-    * @fires Phone#call-unmuted
-    * @fires Phone#error
+     * @fires Phone#call-unmuted
+     * @fires Phone#error
 
-    * @example
-      var phone = ATT.rtc.Phone.getPhone();
-      phone.unmute();
-    */
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.unmute();
+     */
     function unmute() {
       try {
         var call = session.currentCall;
@@ -1019,10 +1037,13 @@
           call.on('unmuted', function (data) {
             /**
              * Call unmuted event.
-             * @desc Call was successfully unmuted.
+             * @desc This event fires when the media is successfully un-muted.
              *
              * @event Phone#call-unmuted
              * @type {object}
+             * @property {String} from - The ID of the caller.
+             * @property {String} mediaType - The media type of the call (audio or video).
+             * @property {String} codec - The codec used by the call.
              * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('call-unmuted', data);
@@ -1045,15 +1066,15 @@
     }
 
     /**
-    * @summary
-    * Get the media type of the current call.
-    * @memberOf Phone
-    * @instance
+     * @summary
+     * Get the media type of the current call.
+     * @memberOf Phone
+     * @instance
 
-    * @example
-      var phone = ATT.rtc.Phone.getPhone();
-      phone.getMediaType();
-    */
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.getMediaType();
+     */
     function getMediaType() {
       var call = session.currentCall;
 
@@ -1076,9 +1097,9 @@
      * @fires Phone#call-disconnected
 
      * @example
-      var phone = ATT.rtc.Phone.getPhone();
-      phone.hangup();
-    */
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.hangup();
+     */
     function hangup() {
       var call;
 
@@ -1164,26 +1185,26 @@
       }
     }
 
-   /**
-    * @summary
-    * Reject current incoming call.
-    * @desc Add description here
-    *
-    *  ** Error Codes **
-    *
-    *  - 12000 - Reject failed-Call has not been initiated
-    *  - 12001 - Internal error occurred
-    *
-    * @memberOf Phone
-    * @instance
+    /**
+     * @summary
+     * Reject current incoming call.
+     * @desc Add description here
+     *
+     *  ** Error Codes **
+     *
+     *  - 12000 - Reject failed-Call has not been initiated
+     *  - 12001 - Internal error occurred
+     *
+     * @memberOf Phone
+     * @instance
 
-    * @fires Phone#call-disconnected
-    * @fires Phone#error
+     * @fires Phone#call-disconnected
+     * @fires Phone#error
 
-    * @example
-      var phone = ATT.rtc.Phone.getPhone();
-      phone.reject();
-    */
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.reject();
+     */
     function reject() {
       try {
         var call = session.currentCall;
@@ -1375,11 +1396,11 @@
      * @fires Phone#error
 
      * @example
-      var phone = ATT.rtc.Phone.getPhone();
-      phone.updateE911Id({
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.updateE911Id({
         e911Id: e911AddressId
       });
-    */
+     */
     function updateE911Id(options) {
 
       try {
@@ -1507,8 +1528,8 @@
         }
 
         if (typeof participants !== 'object'
-            || null === participants
-            || Object.keys(participants).length === 0) {
+          || null === participants
+          || Object.keys(participants).length === 0) {
           publishError('24001');
           return;
         }
@@ -1528,35 +1549,49 @@
         conference.on('response-pending', function (data) {
           /**
            * Invitation Sent event
-           * @desc This event fires when an invitation has been successfully sent.
+           * @desc Host side: this event fires when an invitation has been successfully sent.
            *
            * @event Phone#conference:invitation-sent
            * @type {object}
-           * @property {Object} data - Additional event data
+           * @property {String} to - The ID of the callee.
+           * @property {Object} invitations - The invitations list.
+           * @property {Object} participants - The participants list.
+           * @property {String} mediaType - The media type of the call (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
            */
           emitter.publish('conference:invitation-sent', data);
         });
 
         conference.on('invite-accepted', function (data) {
           /**
-           * Invite accepted event.
-           * @desc This event fires when an invitation has been accepted by the other party.
+           * Invitation accepted event
+           * @desc Host side: this event fires when an invitation has been accepted
            *
            * @event Phone#conference:invitation-accepted
            * @type {object}
-           * @property {Object} data - Additional event data
+           * @property {String} to - The ID of the callee.
+           * @property {Object} participants - The participants list.
+           * @property {String} mediaType - The media type of the call (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
            */
           emitter.publish('conference:invitation-accepted', data);
         });
 
         conference.on('rejected', function (data) {
           /**
-           * Invite rejected event.
-           * @descThis event fires when an invitation has been rejected by the other party.
+           * Invitation rejected event
+           * @desc Host side: this event fires when an invitation has been rejected
            *
            * @event Phone#conference:invitation-rejected
            * @type {object}
-           * @property {Object} data - Additional event data
+           * @property {String} to - The ID of the callee.
+           * @property {Object} participants - The participants list.
+           * @property {Object} invitations - The invitations list.
+           * @property {String} mediaType - The media type of the conference (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
            */
           emitter.publish('conference:invitation-rejected', data);
         });
@@ -1566,12 +1601,13 @@
             invitee = participants[counter];
 
             /**
-             * Invite sending event.
-             * @desc This event fires when an invitation is in the process of sending.
+             * Invitation sending event
+             * @desc Host side: this event fires when an invitation is in the process of sending.
              *
              * @event Phone#conference:invitation-sending
              * @type {object}
-             * @property {Object} data - Additional event data
+             * @property {Object} invitee - The invitee.
+             * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('conference:invitation-sending', {
               invitee: invitee,
@@ -1635,12 +1671,17 @@
 
         conference.on('disconnecting', function (data) {
           /**
-           * Conference disconnecting event.
+           * Conference disconnecting event
            * @desc This event fires when a conference is in the process of disconnecting.
            *
            * @event Phone#conference:disconnecting
            * @type {object}
-           * @property {Object} data - Additional event data
+           * @property {String} to - The ID of the callee.
+           * @property {Object} participants - The participants list.
+           * @property {Object} invitations - The invitations list.
+           * @property {String} mediaType - The media type of the conference (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
            */
           emitter.publish('conference:disconnecting', data);
         });
@@ -1694,7 +1735,7 @@
         conference = session.currentCall;
 
         if (null === conference
-            || 'conference' !== conference.breed()) {
+          || 'conference' !== conference.breed()) {
           publishError(21000);
           return;
         }
@@ -1752,7 +1793,7 @@
         conference = session.currentCall;
 
         if (null === conference
-            || 'conference' !== conference.breed()) {
+          || 'conference' !== conference.breed()) {
           throw ATT.errorDictionary.getSDKError(25001);
         }
 
@@ -1762,14 +1803,18 @@
 
         try {
           conference.on('participant-removed', function (data) {
-          /**
-           * Participant removed event.
-           * @desc This event fires when a participant has been removed from the conference.
-           *
-           * @event Phone#conference:participant-removed
-           * @type {object}
-           * @property {Object} data - Additional event data
-           */
+            /**
+             * Participant removed
+             * @desc Host side: this event fires when a host has successfully removed a participant.
+             *
+             * @event Phone#conference:participant-removed
+             * @type {object}
+             * @property {Object} participants - The participants list.
+             * @property {Object} invitations - The invitations list.
+             * @property {String} mediaType - The media type of the conference (audio or video).
+             * @property {String} codec - The codec used by the conference.
+             * @property {Date} timestamp - Event fire time.
+             */
             emitter.publish('conference:participant-removed', data);
           });
 
@@ -1792,6 +1837,7 @@
     // ===================
     this.on = on;
     this.getSession = getSession;
+    this.setSession = setSession;
     this.login = login;
     this.logout = logout;
     this.dial = dial;
@@ -1831,9 +1877,9 @@
   }
 
   /**
-  * Phone API for RTC functionality.
-  * @namespace ATT.rtc.Phone
-  */
+   * Phone API for RTC functionality.
+   * @namespace ATT.rtc.Phone
+   */
 
   ATT.rtc.Phone = (function () {
     var instance,
@@ -1841,13 +1887,13 @@
 
     return {
       /**
-      * @summary Get the current instance of Phone.
-      * @description There can only be one instance of the Phone object.
-      * @function getPhone
-      * @static
-      * @memberof ATT.rtc.Phone
-      * @returns {Phone} A Phone object.
-      */
+       * @summary Get the current instance of Phone.
+       * @description There can only be one instance of the Phone object.
+       * @function getPhone
+       * @static
+       * @memberof ATT.rtc.Phone
+       * @returns {Phone} A Phone object.
+       */
       getPhone: function () {
         if (undefined === instance) {
           logger.logInfo('Creating new Phone instance');

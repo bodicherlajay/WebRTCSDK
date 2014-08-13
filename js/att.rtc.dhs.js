@@ -15,8 +15,6 @@
     logger,
 
     // private methods
-    init,
-
     handleSuccess,
 
     handleError,
@@ -46,8 +44,8 @@
 
     createE911Id,
 
-  // implementions
-  init = function () {
+    // implementions
+    init = function () {
 
       logger = logManager.getLogger('DHSModule', logManager.loggerType.CONSOLE, logManager.logLevel.ERROR);
 
@@ -79,7 +77,7 @@
     logger.logDebug('handleError: ' + methodName);
     logger.logInfo('There was an error performing operation ' + methodName);
 
-    var error = ATT.Error.createAPIErrorCode(err,"ATT.rtc.dhs",methodName,"DHS");
+    var error = ATT.Error.createAPIErrorCode(err, "ATT.rtc.dhs", methodName, "DHS");
 
     if (error === undefined) {
       errHandler(err);
@@ -171,10 +169,7 @@
       resourceManager.doOperation('checkDhsSession', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    function(error)
-        {
-          handleError(config.error,error,"session");
-        }
+        error:    function (error) { handleError(config.error, error, "session"); }
       });
     } catch (err) {
       handleError(config.error, err, "session");
@@ -221,9 +216,8 @@
       resourceManager.doOperation('registerUser', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    function(error)
-        {
-          handleError(config.error,error,"registerUser");
+        error:    function (error) {
+          handleError(config.error, error, "registerUser");
         }
       });
     } catch (err) {
@@ -256,9 +250,8 @@
           url: config.data.userId
         },
         success:  handleSuccess.bind(this, config.success),
-        error:    function(error)
-        {
-          handleError(config.error,error,"deleteUser");
+        error:    function (error) {
+          handleError(config.error, error, "deleteUser");
         }
       });
     } catch (err) {
@@ -271,9 +264,8 @@
       // Call DHS to get a list of VTN phone numbers
       resourceManager.doOperation('getVTNList', {
         success:  handleSuccess.bind(this, config.success),
-        error:    function(error)
-        {
-          handleError(config.error,error,"vtnList");
+        error:    function (error) {
+          handleError(config.error, error, "vtnList");
         }
       });
     } catch (err) {
@@ -305,9 +297,8 @@
       resourceManager.doOperation('oAuthAuthorize', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    function(error)
-        {
-          handleError(config.error,error,"authorize");
+        error:    function (error) {
+          handleError(config.error, error, "authorize");
         }
       });
     } catch (err) {
@@ -337,9 +328,8 @@
       resourceManager.doOperation('oAuthToken', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    function(error)
-        {
-          handleError(config.error,error,"token");
+        error:    function (error) {
+          handleError(config.error, error, "token");
         }
       });
     } catch (err) {
@@ -366,9 +356,8 @@
       resourceManager.doOperation('authenticateUser', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    function(error)
-        {
-          handleError(config.error,error,"login");
+        error:    function (error) {
+          handleError(config.error, error, "login");
         }
       });
     } catch (err) {
@@ -407,9 +396,8 @@
             config.success(data);
           }
         },
-        error:    function(error)
-        {
-          handleError(config.error,error,"logout");
+        error:    function (error) {
+          handleError(config.error, error, "logout");
         }
       });
     } catch (err) {
@@ -450,9 +438,8 @@
       resourceManager.doOperation('createE911Id', {
         data:     config.data,
         success:  handleSuccess.bind(this, config.success),
-        error:    function(error)
-        {
-          handleError(config.error,error,"createE911Id");
+        error:    function (error) {
+          handleError(config.error, error, "createE911Id");
         }
       });
     } catch (err) {
