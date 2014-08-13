@@ -2229,6 +2229,24 @@ describe('Phone', function () {
             expect(onSpy.calledWith('muted')).to.equal(true);
           });
 
+
+          it('should not call `call.mute` and publish warning if state is already muted', function (done) {
+            var onWarning = sinon.spy(), state;
+            state = call.getState();
+            call.setState('muted');
+            phone.on('warning', onWarning);
+
+            phone.mute();
+
+            expect(callMuteStub.called).not.to.equal(true);
+            setTimeout(function () {
+              expect(onWarning.calledWith({message : 'Already muted'})).to.equal(true);
+              call.setState(state);
+              done();
+            }, 50);
+
+          });
+
           it('should call `call.mute`', function () {
             phone.mute();
 
@@ -2317,6 +2335,24 @@ describe('Phone', function () {
             phone.unmute();
 
             expect(callUnmuteStub.called).to.equal(true);
+          });
+
+          it('should not call `call.unmute` and publish warning if state is already unmuted', function (done) {
+            var onWarning = sinon.spy(),
+            state;
+            state = call.getState();
+            call.setState('unmuted');
+            phone.on('warning', onWarning);
+
+            phone.unmute();
+
+            expect(callMuteStub.called).not.to.equal(true);
+            setTimeout(function () {
+              expect(onWarning.calledWith({message : 'Already unmuted'})).to.equal(true);
+              call.setState(state);
+              done();
+            }, 50);
+
           });
 
           it('should trigger `call-unmuted` with relevant data when call publishes `unmuted` event', function (done) {

@@ -195,6 +195,7 @@
         && 'conference:disconnecting' !== event
         && 'conference:ended' !== event
         && 'conference:connected' !== event
+        && 'warning' !== event
         && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
@@ -989,7 +990,11 @@
             emitter.publish('call-muted', data);
           });
 
-          call.mute();
+          if ('muted' !== call.getState()) {
+            call.mute();
+          } else {
+            emitter.publish('warning', {message : 'Already muted'});
+          }
 
         } catch (err) {
           logger.logError(err);
@@ -1050,8 +1055,12 @@
              */
             emitter.publish('call-unmuted', data);
           });
+          if ('unmuted' !== call.getState()) {
+            call.unmute();
+          } else {
+            emitter.publish('warning', {message : 'Already unmuted'});
+          }
 
-          call.unmute();
 
         } catch (err) {
           logger.logError(err);
