@@ -254,6 +254,13 @@ describe('Call', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
+    it('should register for event `call-connected` from RTCManager', function () {
+      call1 = new ATT.rtc.Call(optionsOutgoing);
+
+      expect(onSpy.calledWith('call-connected')).to.equal(true);
+      expect(onSpy.getCall(0).args[1]).to.be.a('function');
+    });
+
     it('should register for `call-disconnected` event on `RTCManager`', function () {
       call1 = new ATT.rtc.Call(optionsOutgoing);
 
@@ -387,13 +394,6 @@ describe('Call', function () {
         incomingCall.connect(connectOptions);
 
         expect(onStub.calledWith('media-mod-terminations')).to.equal(true);
-      });
-
-      it('should register for event `call-connected` from RTCManager', function () {
-        outgoingCall.connect(connectOptions);
-
-        expect(onStub.calledWith('call-connected')).to.equal(true);
-        expect(onStub.getCall(0).args[1]).to.be.a('function');
       });
 
       it('should register for `playing` event from remote video element', function () {
