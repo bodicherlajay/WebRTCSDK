@@ -376,6 +376,7 @@
 
      * @fires Phone#dialing
      * @fires Phone#call-connecting
+     * @fires Phone#call-canceled
      * @fires Phone#call-rejected
      * @fires Phone#call-connected
      * @fires Phone#media-established
@@ -474,9 +475,9 @@
           });
           call.on('canceled', function (data) {
             /**
-             * Call rejected event.
-             * @desc Successfully rejected an incoming call.
-             * @event Phone#call-rejected
+             * Call canceled event.
+             * @desc Successfully canceled an outgoing call.
+             * @event Phone#call-canceled
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
@@ -849,6 +850,7 @@
      * @fires Phone#conference:joining
      * @fires Phone#conference:connecting
      * @fires Phone#conference:connected
+     * @fires Phone#conference:ended
      * @fires Phone#media-established
      * @fires Phone#error
 
