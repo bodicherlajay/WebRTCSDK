@@ -67,23 +67,10 @@ describe('Call [PCV2]', function () {
       return rtcPC;
     });
 
-    peerConnection = factories.createPeerConnection({
-      stream : {},
-      mediaType : 'video',
-      onRemoteStream : function () {},
-      onSuccess : function () {},
-      onError : function () {}
-    });
-
-    createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
-      return peerConnection;
-    });
-
   });
 
   afterEach(function () {
     rtcpcStub.restore();
-    createPeerConnectionStub.restore();
     getRTCManagerStub.restore();
     createEventEmitterStub.restore();
   });
@@ -525,7 +512,7 @@ describe('Call [PCV2]', function () {
 
       });
     });
-    describe.only('resume', function () {
+    describe('resume', function () {
       var sdpFilter, sdp, peerconnection, resumeCallSDPStub, modsdp;
 
       beforeEach(function () {
