@@ -86,6 +86,17 @@
       });
     });
 
+    rtcManager.on('media-mod-terminations', function (callInfo) {
+      if (undefined !== callInfo.reason
+        && 'success' !== callInfo.reason
+        && 'Call rejected' !== callInfo.reason) {
+        emitter.publish('network-notification', {
+          message: callInfo.reason,
+          timestamp: new Date()
+        });
+      }
+    });
+
     function on(event, handler) {
 
       if ('ready' !== event &&
@@ -93,6 +104,7 @@
         'connected' !== event &&
         'updating' !== event &&
         'needs-refresh' !== event &&
+        'network-notification' !== event &&
         'call-incoming' !== event &&
         'conference-invite' !== event &&
         'call-disconnected' !== event &&

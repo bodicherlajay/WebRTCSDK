@@ -150,6 +150,10 @@ describe('Phone', function () {
         expect(onSpy.calledWith('error')).to.equal(true);
       });
 
+      it('should register for a `network-notification` event on session object', function () {
+        expect(onSpy.calledWith('network-notification')).to.equal(true);
+      });
+
     });
 
     describe('Methods', function () {
@@ -2971,7 +2975,8 @@ describe('Phone', function () {
 		      onCallDisconnectedHandlerSpy,
           onConferenceDisconnectedHandlerSpy,
           onConferenceInviteHandlerSpy,
-          onErrorHandlerSpy;
+          onErrorHandlerSpy,
+          onNetworkNotificationHandlerSpy;
 
         beforeEach(function () {
           emitterSession = ATT.private.factories.createEventEmitter();
@@ -2995,6 +3000,7 @@ describe('Phone', function () {
           onConferenceDisconnectedHandlerSpy = sinon.spy();
           onConferenceInviteHandlerSpy = sinon.spy();
           onErrorHandlerSpy = sinon.spy();
+          onNetworkNotificationHandlerSpy = sinon.spy();
 
           phone = new ATT.private.Phone();
 
@@ -3003,6 +3009,7 @@ describe('Phone', function () {
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
           phone.on('conference:ended', onConferenceDisconnectedHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
+          phone.on('network:notification', onNetworkNotificationHandlerSpy);
 
         });
 
@@ -3119,6 +3126,26 @@ describe('Phone', function () {
             setTimeout(function () {
               try {
                 expect(onErrorHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 50);
+          });
+        });
+
+        describe('network:notification', function () {
+
+          it('should publish `network:notification` event with the error data on getting an `network-notification` from session', function (done) {
+            var eventData = {
+              message: 'whatcha talkin bout willis'
+            };
+
+            emitterSession.publish('network-notification', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(onNetworkNotificationHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);

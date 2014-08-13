@@ -95,8 +95,12 @@
     });
 
     session.on('error', function (data) {
-      logger.logError("Error in Session " +data);
+      logger.logError("Error in Session " + data);
       emitter.publish('error', data);
+    });
+
+    session.on('network-notification', function (data) {
+      emitter.publish('network:notification', data);
     });
 
     function getError(errorNumber) {
@@ -183,6 +187,7 @@
 
       if ('session:ready' !== event
           && 'session:disconnected' !== event
+          && 'network:notification' !== event
           && 'dialing' !== event
           && 'answering' !== event
           && 'call-incoming' !== event
@@ -1375,6 +1380,8 @@
           logger.logError(data);
           emitter.publish('error', data);
         });
+
+
 
         conference.on('connected', function (data) {
           logger.logInfo('connected conference event published to UI');
