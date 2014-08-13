@@ -472,7 +472,21 @@
     }
 
     function acceptMediaModifications(options) {
-      var type = ('call' === options.breed ? 'calls' : 'conferences');
+      var data, type = ('call' === options.breed ? 'calls' : 'conferences');
+
+      if ('call' === type) {
+        data = {
+          callsMediaModifications: {
+            sdp: options.sdp
+          }
+        };
+      } else {
+        data = {
+          conferenceModifications: {
+            sdp: options.sdp
+          }
+        };
+      }
 
       resourceManager.doOperation('acceptModifications', {
         params: {
@@ -486,11 +500,7 @@
             'x-modId': options.modId
           }
         },
-        data: {
-          conferenceModifications: {
-            sdp: options.sdp
-          }
-        },
+        data:data,
         success: function () {
           logger.logInfo('acceptMediaModifications: success');
         },
