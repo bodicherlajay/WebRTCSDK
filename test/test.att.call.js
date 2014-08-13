@@ -714,6 +714,12 @@ describe('Call', function () {
 
       describe('Cancel Call [call.remoteSdp === null]', function () {
 
+        it('should set `call.canceled` to true ', function () {
+          outgoingCall.disconnect();
+
+          expect(outgoingCall.canceled()).to.equal(true);
+        });
+
         it('should call `rtcManager.cancelCall` if the remoteDescription is null', function () {
           var cancelCallStub = sinon.stub(rtcMgr, 'cancelCall');
 
@@ -730,31 +736,6 @@ describe('Call', function () {
           cancelCallStub.restore();
         });
 
-        describe('Success on `rtcManager.cancelCall`', function () {
-          var cancelCallStub;
-
-          beforeEach(function () {
-            outgoingCall.setId(null);
-            cancelCallStub = sinon.stub(rtcMgr, 'cancelCall', function (options) {
-              options.onSuccess();
-            });
-
-          });
-
-          afterEach(function () {
-            cancelCallStub.restore();
-          });
-
-          it('should call `rtcManager.resetPeerConnection`', function () {
-            var resetStub = sinon.spy(rtcMgr, 'resetPeerConnection');
-
-            outgoingCall.disconnect();
-
-            expect(resetStub.calledOnce).to.equal(true);
-
-            resetStub.restore();
-          });
-        });
       });
 
       describe('Disconnect Call [call.remoteSdp !== null] && [call.id !== null]', function () {
@@ -878,7 +859,7 @@ describe('Call', function () {
 
             setTimeout(function () {
               try {
-                expect(onDisconnectedSpy.calledWith(data)).to.equal(true);
+                expect(onDisconnectedSpy.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -1628,7 +1609,9 @@ describe('Call', function () {
 
         it('should publish `disconnected` with data on getting `call-disconnected` with no reason', function (done) {
 
-          var data = {data : '123'},
+          var data = {
+              data : '123'
+            },
             disconnectedSpy = sinon.spy();
 
           call.on('disconnected', disconnectedSpy);
@@ -1637,7 +1620,6 @@ describe('Call', function () {
 
           setTimeout(function () {
             expect(disconnectedSpy.called).to.equal(true);
-            expect(disconnectedSpy.calledWith({data : '123'})).to.equal(true);
             done();
           }, 10);
 

@@ -35,6 +35,7 @@
       localStream = null,
       state = null,
       codec = [],
+      canceled = false,
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
@@ -219,11 +220,18 @@
     function onCallDisconnected(data) {
       id = null;
 
-      if (undefined !== data && 'Call rejected' === data.reason) {
-        setState('rejected');
+      if (undefined !== data) {
+        if ('Call rejected' === data.reason) {
+          setState('rejected');
+        } else if ('canceled' === data.reason) {
+          setState('canceled');
+        } else {
+          setState('disconnected');
+        }
       } else {
-        emitter.publish('disconnected', data);
+        setState('disconnected');
       }
+
       rtcManager.off('call-disconnected', onCallDisconnected);
 
       if (2 === ATT.private.pcv) {
@@ -268,6 +276,7 @@
           'response-pending' !== event &&
           'invite-accepted' !== event &&
           'participant-removed' !== event &&
+          'canceled' !== event &&
           'rejected' !== event &&
           'connected' !== event &&
           'muted' !== event &&
@@ -325,6 +334,15 @@
 
         if (breed === 'call') {
           connectOptions.peer = peer;
+        }
+
+        if (canceled) {
+          canceled = false;
+
+          onCallDisconnected({
+            reason: 'canceled'
+          });
+          return;
         }
 
         rtcManager.connectConference(connectOptions);
@@ -507,17 +525,18 @@
       if (null === remoteSdp) {
         logger.logInfo('Canceling...');
 
+        canceled = true;
+
         rtcManager.cancelCall({
           callId: id,
           sessionId: sessionInfo.sessionId,
           token: sessionInfo.token,
           onSuccess: function () {
-            logger.logInfo('Canceled successfully.');
-
-            rtcManager.resetPeerConnection();
+            logger.logInfo('cancelCall: success');
           },
           onError: function (error) {
-            logger.logError(error);
+            logger.logError('cancelCall: error');
+            logger.logTrace(error);
 
             emitter.publish('error', {
               error: error
@@ -793,6 +812,9 @@
     };
     this.localStream = function () {
       return localStream;
+    };
+    this.canceled = function () {
+      return canceled;
     };
 
     this.setRemoteSdp  = setRemoteSdp;

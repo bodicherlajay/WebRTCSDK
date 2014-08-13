@@ -54,7 +54,9 @@ describe('Call [PCV2]', function () {
   });
 
   describe('Methods', function () {
-    var outgoingVideoCall,
+    var createPeerConnectionStub,
+      peerConnection,
+      outgoingVideoCall,
       optionsOutgoingVideo,
       onErrorHandlerSpy,
       errorData,
@@ -66,6 +68,16 @@ describe('Call [PCV2]', function () {
       errorData = {
         error: error
       };
+
+      peerConnection = {
+        getRemoteDescription: function () { return; },
+        setRemoteDescription: function () {},
+        close: function () {}
+      };
+
+      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
+        return peerConnection;
+      });
 
       optionsOutgoingVideo = {
         breed: 'call',
@@ -84,62 +96,158 @@ describe('Call [PCV2]', function () {
 
     });
 
+    afterEach(function () {
+      createPeerConnectionStub.restore();
+    });
+
     describe('connect', function () {
-      var createPeerConnectionStub;
 
       describe('connect [OUTGOING]', function () {
 
         it('should execute createPeerConnection with mediaConstraints and localStream if pcv == 2 for an outgoing call', function () {
-
-          createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection');
-
           outgoingVideoCall.connect();
 
           expect(createPeerConnectionStub.called).to.equal(true);
-
-          createPeerConnectionStub.restore();
         });
 
         it('should NOT execute createPeerConnection if pcv != 2 for an outgoing call', function () {
           ATT.private.pcv = 1;
-          createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection');
 
           outgoingVideoCall.connect();
 
           expect(createPeerConnectionStub.called).to.equal(false);
 
-          createPeerConnectionStub.restore();
           ATT.private.pcv = 2;
         });
 
         it('should NOT execute rtcManager.connectCall if pcv == 2 for an outgoing call', function () {
           var connectCallStub = sinon.stub(rtcMgr, 'connectCall');
 
-          createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection');
-
           outgoingVideoCall.connect();
 
           expect(connectCallStub.called).to.equal(false);
 
           connectCallStub.restore();
-          createPeerConnectionStub.restore();
         });
 
         describe('createPeerConnection: success', function () {
-          it('should call `connectConference` with the required params', function () {
-            var connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
 
-            createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
-              options.onSuccess();
+          var connectConferenceStub;
+
+          beforeEach(function () {
+            connectConferenceStub = sinon.stub(rtcMgr, 'connectConference');
+          });
+
+          afterEach(function () {
+            connectConferenceStub.restore();
+          });
+
+          describe('canceled == true', function () {
+
+            var cancelCallStub,
+              closeStub;
+
+            beforeEach(function () {
+              cancelCallStub = sinon.stub(rtcMgr, 'cancelCall');
+
+              createPeerConnectionStub.restore();
+
+              createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
+                outgoingVideoCall.disconnect();
+                setTimeout(function () {
+                  options.onSuccess();
+                }, 10);
+                return peerConnection;
+              });
+              closeStub = sinon.stub(peerConnection, 'close');
             });
 
-            outgoingVideoCall.connect();
+            afterEach(function () {
+              cancelCallStub.restore();
+              closeStub.restore();
+            });
 
-            expect(connectConferenceStub.called).to.equal(true);
+            it('should NOT execute `rtcManager.connectConference` if canceled == true', function (done) {
+              outgoingVideoCall.connect();
 
-            connectConferenceStub.restore();
-            createPeerConnectionStub.restore();
+              setTimeout(function () {
+                try {
+                  expect(connectConferenceStub.called).to.equal(false);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 20);
+            });
+
+            it('should reset canceled flag to false', function (done) {
+              outgoingVideoCall.connect();
+
+              setTimeout(function () {
+                try {
+                  expect(outgoingVideoCall.canceled()).to.equal(false);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 20);
+            });
+
+            it('should publish `canceled` event with relevant data', function (done) {
+              var canceledHandlerSpy = sinon.spy();
+
+              outgoingVideoCall.on('canceled', canceledHandlerSpy);
+
+              outgoingVideoCall.connect();
+
+              setTimeout(function () {
+                try {
+                  expect(canceledHandlerSpy.called).to.equal(true);
+                  expect(canceledHandlerSpy.getCall(0).args[0]).to.be.an('object');
+                  expect(canceledHandlerSpy.getCall(0).args[0].to).to.equal(outgoingVideoCall.peer());
+                  expect(canceledHandlerSpy.getCall(0).args[0].mediaType).to.equal(outgoingVideoCall.mediaType());
+                  expect(canceledHandlerSpy.getCall(0).args[0].codec).to.equal(outgoingVideoCall.codec());
+                  expect(canceledHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 20);
+
+            });
+
+            it('should execute `peerConnection.close`', function (done) {
+              outgoingVideoCall.connect();
+              setTimeout(function () {
+                try {
+                  expect(closeStub.called).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 20);
+
+            });
+
           });
+
+          describe('canceled == false', function () {
+
+            beforeEach(function () {
+              createPeerConnectionStub.restore();
+
+              createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
+                options.onSuccess();
+              });
+            });
+
+            it('should call `connectConference` with the required params', function () {
+              outgoingVideoCall.connect();
+
+              expect(connectConferenceStub.called).to.equal(true);
+            });
+          });
+
         });
 
       });
