@@ -603,6 +603,19 @@ describe('Phone', function () {
           }, 50);
         });
 
+        it('should clean the `destination` if possible', function () {
+          options = {
+            destination: '(425)123-4567',
+            breed: 'call',
+            mediaType: 'video',
+            localMedia: localVideo,
+            remoteMedia: remoteVideo
+          };
+
+          phone.dial(options);
+          expect(options.destination).to.equal('14251234567');
+        });
+
         it('should call session.createCall', function () {
           var createCallSpy = sinon.spy(session, 'createCall');
           phone.dial(options);
@@ -830,6 +843,20 @@ describe('Phone', function () {
           afterEach(function () {
             getUserMediaStub.restore();
             publishStub.restore();
+          });
+
+          it.only('[4000] should be published with `error` event if invalid phone number in options', function () {
+
+            phone.dial({
+              destination: '129934',
+              localMedia: 'foo',
+              remoteMedia: 'bar',
+              mediaType: 'video'
+            });
+
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('4000')
+            })).to.equal(true);
           });
 
           it('[4002] should be published with `error` event if invalid mediaType in options', function () {

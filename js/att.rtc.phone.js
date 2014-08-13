@@ -437,6 +437,13 @@
             throw ATT.errorDictionary.getSDKError('4002');
           }
         }
+        console.log(this.cleanPhoneNumber(options.destination));
+        options.destination = this.cleanPhoneNumber(options.destination);
+
+        if (false === options.destination) {
+          throw ATT.errorDictionary.getSDKError('4000');
+        }
+
 
         try {
           logger.logDebug('Phone.dial');
