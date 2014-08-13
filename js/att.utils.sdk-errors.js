@@ -781,6 +781,14 @@
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "CleanNumber",
+      ErrorCode: "26001",
+      ErrorMessage: "Number Invalid",
+      Cause: "Invalid PhoneNumber passed",
+      Resolution: "Please check the logs and pass a valid phone number"
     }
 
   ];

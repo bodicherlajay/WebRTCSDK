@@ -1839,6 +1839,30 @@
       }
     }
 
+    function cleanPhoneNumber(number) {
+      try {
+        return ATT.phoneNumber.cleanPhoneNumber(number);
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
+    function formatNumber(number) {
+
+      try {
+        return ATT.phoneNumber.formatNumber(number);
+
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
     // ===================
     // Call interface
     // ===================
@@ -1858,8 +1882,8 @@
     this.cancel = cancel;
     this.reject = reject;
     this.updateE911Id = updateE911Id;
-    this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
-    this.formatNumber = ATT.phoneNumber.formatNumber;
+    this.cleanPhoneNumber = cleanPhoneNumber;
+    this.formatNumber = formatNumber;
 
     // ===================
     // Conference interface

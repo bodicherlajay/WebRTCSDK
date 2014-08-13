@@ -3123,6 +3123,50 @@ describe('Phone', function () {
         });
       });
 
+      describe('formateNumebr', function () {
+        it('should exists', function () {
+          expect(phone.formatNumber).to.be.an('function');
+        });
+
+        it('[26001] should be published with `error` event if there is an unknown exception during the operation', function () {
+          var publishStub = sinon.stub(emitter, 'publish'),
+            cleannumberStub = sinon.stub(ATT.phoneNumber, 'cleanPhoneNumber', function () {
+              throw new Error;
+            });
+          phone.formatNumber('12sdD3');
+
+          expect(ATT.errorDictionary.getSDKError('26001')).to.be.an('object');
+          expect(publishStub.calledWithMatch('error', {
+            error: ATT.errorDictionary.getSDKError('26001')
+          })).to.equal(true);
+
+          publishStub.restore();
+          cleannumberStub.restore();
+        });
+      });
+
+      describe('cleanPhoneNumber', function () {
+        it('should exists', function () {
+          expect(phone.cleanPhoneNumber).to.be.an('function');
+        });
+
+        it('[26001] should be published with `error` event if there is an unknown exception during the operation', function () {
+          var publishStub = sinon.stub(emitter, 'publish'),
+            getCallableStub = sinon.stub(ATT.phoneNumber, 'getCallable', function () {
+              throw new Error;
+            });
+          phone.cleanPhoneNumber('12sdD3');
+
+          expect(ATT.errorDictionary.getSDKError('26001')).to.be.an('object');
+          expect(publishStub.calledWithMatch('error', {
+            error: ATT.errorDictionary.getSDKError('26001')
+          })).to.equal(true);
+
+          publishStub.restore();
+          getCallableStub.restore();
+        });
+      });
+
     });
 
     describe('Events', function () {
