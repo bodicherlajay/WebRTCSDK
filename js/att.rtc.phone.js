@@ -1516,7 +1516,9 @@
     function addParticipants(participants) {
       var conference,
         counter,
-        invitee;
+        invitee,
+        participant,
+        currentParticipants;
 
       try {
         logger.logDebug('Phone.addParticipants');
@@ -1545,6 +1547,8 @@
           publishError('24003');
           return;
         }
+
+        currentParticipants = conference.participants();
 
         conference.on('response-pending', function (data) {
           /**
@@ -1600,21 +1604,37 @@
           for (counter = 0; counter < participants.length; counter += 1) {
             invitee = participants[counter];
 
-            /**
-             * Invitation sending event
-             * @desc Host side: this event fires when an invitation is in the process of sending.
-             *
-             * @event Phone#conference:invitation-sending
-             * @type {object}
-             * @property {Object} invitee - The invitee.
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('conference:invitation-sending', {
-              invitee: invitee,
-              timestamp: new Date()
-            });
-
-            conference.addParticipant(invitee);
+            if (0 === Object.keys(currentParticipants).length) {
+              emitter.publish('conference:invitation-sending', {
+                invitee: invitee,
+                timestamp: new Date()
+              });
+              conference.addParticipant(invitee);
+              /**
+               * Invitation sending event
+               * @desc Host side: this event fires when an invitation is in the process of sending.
+               *
+               * @event Phone#conference:invitation-sending
+               * @type {object}
+               * @property {Object} invitee - The invitee.
+               * @property {Date} timestamp - Event fire time.
+               */
+            } else {
+              for (participant in currentParticipants) {
+                if (invitee !== participant) {
+                  emitter.publish('conference:invitation-sending', {
+                    invitee: invitee,
+                    timestamp: new Date()
+                  });
+                  conference.addParticipant(invitee);
+                } else {
+                  publishError('24005', {
+                    invitee: invitee,
+                    timestamp: new Date()
+                  });
+                }
+              }
+            }
           }
         } catch (err) {
           publishError('24004', err);
