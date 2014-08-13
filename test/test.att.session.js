@@ -106,6 +106,10 @@ describe('Session', function () {
     it('should register for `call-disconnected` event on RTCManager', function () {
       expect(rtcManagerOnSpy.calledWith('call-disconnected')).to.equal(true);
     });
+
+    it('should register for `media-mod-terminations` event on RTCManager', function () {
+      expect(rtcManagerOnSpy.calledWith('media-mod-terminations')).to.equal(true);
+    });
   });
 
   describe('Methods', function () {
@@ -1408,6 +1412,99 @@ describe('Session', function () {
         }, 20);
       });
 
+    });
+
+    describe('network-notification', function () {
+
+      var rtcManager,
+        session,
+        callInfo,
+        emitterEM,
+        createEventEmitterStub,
+        onNetworkNotificationHandlerSpy,
+        getRTCMgrStub;
+
+      beforeEach(function () {
+        callInfo = {
+          id: '123',
+          type: 'call',
+          from: '1234',
+          mediaType: 'video',
+          remoteDescription: 'abc'
+        };
+
+        emitterEM = ATT.private.factories.createEventEmitter();
+
+        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
+          return emitterEM;
+        });
+
+        rtcManager = new ATT.private.RTCManager(optionsforRTCM);
+
+        getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
+          return rtcManager;
+        });
+
+        createEventEmitterStub.restore();
+
+        session = new ATT.rtc.Session();
+
+        session.currentCall = new ATT.rtc.Call({
+          breed: 'conference',
+          id: '12345',
+          peer: '12345',
+          type: 'abc',
+          mediaType: 'audio'
+        });
+
+        onNetworkNotificationHandlerSpy = sinon.spy();
+
+        session.on('network-notification', onNetworkNotificationHandlerSpy);
+      });
+
+      afterEach(function () {
+        getRTCMgrStub.restore();
+      });
+
+      it('should publish `network-notification` with data on getting `media-mod-terminations` if [event.reason !== `success`]', function (done) {
+
+        var eventInfo = {
+          reason: 'anything but success'
+        };
+
+        emitterEM.publish('media-mod-terminations', eventInfo);
+
+        setTimeout(function () {
+          try {
+            expect(onNetworkNotificationHandlerSpy.called).to.equal(true);
+            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].message).to.not.equal('success');
+            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 50);
+      });
+
+      it('should publish `network-notification` on getting `call-disconnected` with unhandled reason', function (done) {
+
+        var eventInfo = {
+          reason: 'wheres waldo?'
+        };
+
+        emitterEM.publish('call-disconnected', eventInfo);
+
+        setTimeout(function () {
+          try {
+            expect(onNetworkNotificationHandlerSpy.called).to.equal(true);
+            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].message).to.equal('wheres waldo?');
+            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 50);
+      });
     });
   });
 

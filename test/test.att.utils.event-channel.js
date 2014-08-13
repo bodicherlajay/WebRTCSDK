@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global WebSocket: true, ATT, Env, describe, xit, it, afterEach, beforeEach, before, sinon, expect*/
+/*global WebSocket: true, ATT, Env, RESTClient, describe, xit, it, afterEach, beforeEach, before, sinon, expect*/
 
 /**
  * Unit tests for event channel module.
@@ -8,7 +8,7 @@ describe('Event Channel', function () {
   'use strict';
 
   var resourceManager = {
-      doOperation: function () {}
+      doOperation: function () { return; }
     },
     requests,
     response,
@@ -129,7 +129,7 @@ describe('Event Channel', function () {
       doOperationStub;
 
     beforeEach(function () {
-      doOperationStub = sinon.stub(resourceManager, 'doOperation', function () {});
+      doOperationStub = sinon.stub(resourceManager, 'doOperation', function () { return; });
       emitter = factories.createEventEmitter();
       createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
         return emitter;
@@ -331,7 +331,6 @@ describe('Event Channel', function () {
             headers: {
               'Authorization': function (param) {
                 return param;
-                return param;
               }
             }
           },
@@ -367,7 +366,7 @@ describe('Event Channel', function () {
         doOperationStub503 = sinon.stub(channelConfig.resourceManager, 'doOperation', function (name, options) {
           options.error({
             getResponseStatus: function () { return 503; },
-            getResourceURL: function () { return ""},
+            getResourceURL: function () { return ""; },
             errorDetail: {
               HttpStatusCode: '503'
             }
