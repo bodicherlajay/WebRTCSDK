@@ -34,6 +34,11 @@
 //        throw new Error('Could not process Chrome offer SDP.');
 //      }
 
+      //We have to ensure that no 'crypto' attribute exists while DTLS is enabled.
+      while (description.sdp.indexOf('crypto:') != -1) {
+        description.sdp = sdpFilter.removeSDPAttribute(sdp.sdp.match(/crypto.+/)[0], description.sdp);
+      }
+
       pc.setLocalDescription(description, function () {
         if (undefined !== success && 'function' === typeof success) {
           success(description);
@@ -72,25 +77,33 @@
     }
 
     function acceptSdpOffer(options) {
-      pc.setRemoteDescription(new RTCSessionDescription({
-        sdp: options.remoteSdp,
-        type: 'offer'
-      }), function () {
-        logger.logInfo('setRemoteDescription: success');
-        pc.createAnswer(function (description) {// SUCCESS
-          logger.logInfo('createAnswer: success');
-          processDescription(description, options.onSuccess);
-        }, function (error) {// ERROR createAnswer
-          logger.logError('createAnswer: error');
+      try {
+        pc.setRemoteDescription(new RTCSessionDescription({
+          sdp: options.remoteSdp,
+          type: 'offer'
+        }), function () {
+          logger.logInfo('setRemoteDescription: success');
+          try {
+            pc.createAnswer(function (description) {// SUCCESS
+              logger.logInfo('createAnswer: success');
+              processDescription(description, options.onSuccess);
+            }, function (error) {// ERROR createAnswer
+              logger.logError('createAnswer: error');
+              logger.logTrace(error);
+              throw new Error('Failed to create answer.');
+            }, {
+              mandatory: mediaConstraint
+            });
+          } catch (err) {
+            console.log(err);
+          }
+        }, function (error) {
+          logger.logError('setRemoteDescription: error');
           logger.logTrace(error);
-          throw new Error('Failed to create answer.');
-        }, {
-          mandatory: mediaConstraint
         });
-      }, function (error) {
-        logger.logError('setRemoteDescription: error');
-        logger.logTrace(error);
-      });
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     if (undefined === options || Object.keys(options).length === 0) {
