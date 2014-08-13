@@ -525,7 +525,7 @@ describe('Call [PCV2]', function () {
 
       });
     });
-    describe('resume', function () {
+    describe.only('resume', function () {
       var sdpFilter, sdp, peerconnection, resumeCallSDPStub, modsdp;
 
       beforeEach(function () {
