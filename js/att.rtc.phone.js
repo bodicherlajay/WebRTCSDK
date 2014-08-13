@@ -61,40 +61,6 @@
       emitter.publish('conference:invitation-received', data);
     });
 
-    session.on('call-disconnected', function (data) {
-      /**
-       * Call disconnected event.
-       * @desc Indicates a call has been disconnected
-       *
-       * @event Phone#call-disconnected
-       * @type {object}
-       * @property {String} from - The ID of the caller.
-       * @property {String} mediaType - The type of call.
-       * @property {String} codec - The codec of the call.
-       * @property {Date} timestamp - Event fire time.
-       */
-      logger.logInfo('call disconnected event  by phone layer');
-      emitter.publish('call-disconnected', data);
-      session.deleteCurrentCall();
-    });
-
-    session.on('conference-disconnected', function (data) {
-      /**
-       * Conference ended event.
-       * @desc Indicates a conference has been disconnected
-       *
-       * @event Phone#conference:ended
-       * @type {object}
-       * @property {String} from - The ID of the conference.
-       * @property {String} mediaType - The type of conference.
-       * @property {String} codec - The codec of the conference
-       * @property {Date} timestamp - Event fire time.
-       */
-      logger.logInfo('conference disconnected  event  by phone layer');
-      emitter.publish('conference:ended', data);
-      session.deleteCurrentCall();
-    });
-
     session.on('error', function (data) {
       logger.logError("Error in Session " + data);
       emitter.publish('error', data);
@@ -496,6 +462,17 @@
              */
             emitter.publish('call-connecting', data);
           });
+          call.on('canceled', function (data) {
+            /**
+             * Call rejected event.
+             * @desc Successfully rejected an incoming call.
+             * @event Phone#call-rejected
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-canceled', data);
+            session.deleteCurrentCall();
+          });
           call.on('rejected', function (data) {
             /**
              * Call rejected event.
@@ -552,11 +529,16 @@
           call.on('disconnected', function (data) {
             /**
              * Call disconnected event.
-             * @desc Successfully disconnected the current call.
+             * @desc Indicates a call has been disconnected
+             *
              * @event Phone#call-disconnected
              * @type {object}
+             * @property {String} from - The ID of the caller.
+             * @property {String} mediaType - The type of call.
+             * @property {String} codec - The codec of the call.
              * @property {Date} timestamp - Event fire time.
              */
+            logger.logInfo('call disconnected event by phone layer');
             emitter.publish('call-disconnected', data);
             session.deleteCurrentCall();
           });
@@ -687,15 +669,11 @@
         call.on('resumed', function (data) {
           emitter.publish('call-resumed', data);
         });
-//        call.on('disconnected', function (data) {
-//          emitter.publish('call-disconnected', data);
-//          session.deleteCurrentCall();
-//          session.switchCall();
-//
-//          if (session.currentCall !== null) {
-//            session.currentCall.resume();
-//          }
-//        });
+        call.on('disconnected', function (data) {
+          logger.logInfo('call disconnected event by phone layer');
+          emitter.publish('call-disconnected', data);
+          session.deleteCurrentCall();
+        });
         call.on('error', function (data) {
           publishError(5002, data);
         });
@@ -709,6 +687,133 @@
 
       } catch (err) {
         publishError('5002', err);
+        return;
+      }
+
+    }
+
+    /**
+     * @summary
+     * Start a conference.
+     * @desc
+     *
+     * **Error Codes**
+     *
+     *   - 18000 - Parameters missing
+     *   - 18001 - Invalid `localMedia` passed
+     *   - 18002 - Invalid `remoteMedia` passed
+     *   - 18003 - Invalid `mediaType` passed
+     *   - 18004 - Failed to get the local user media
+     *   - 18005 - Internal error occurred
+     *   - 18006 - Cannot make second conference when first in progress
+     *   - 18007 - Please login before you make a conference
+     *
+     * @memberOf Phone
+     * @instance
+     * @param {Object} options
+     * @param {HTMLVideoElement} options.localMedia The host's video element
+     * @param {HTMLVideoElement} options.remoteMedia The conference participant's video element
+     * @param {String} options.mediaType `video|audio`
+
+     * @fires Phone#conference:connecting
+     * @fires Phone#conference:connected
+     * @fires Phone#media-established
+     * @fires Phone#conference:ended
+     * @fires Phone#error
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.startConference({
+       mediaType: 'video',
+       localMedia: document.getElementById('localVideo'),
+       remoteMedia: document.getElementById('remoteVideo')
+     });
+     */
+    function startConference(options) {
+
+      logger.logInfo('startConference');
+
+      var conference;
+
+      try {
+        if (undefined === options
+            || 0 === Object.keys(options).length) {
+          logger.logError(' parameters not found');
+          publishError('18000');
+          return;
+        }
+        if (undefined === session || null === session.getId()) {
+          logger.logError('no session to start  conference');
+          publishError('18007');
+          return;
+        }
+        if (session.currentCall !== null && session.currentCall.breed() === 'conference') {
+          logger.logError('Please End your current Conference');
+          publishError('18006');
+          return;
+        }
+
+        if (undefined === options.localMedia) {
+          logger.logError('localmedia not passed');
+          publishError('18001');
+          return;
+        }
+        if (undefined === options.remoteMedia) {
+          logger.logError('remotemedia not passed');
+          publishError('18002');
+          return;
+        }
+        if ((undefined === options.mediaType)
+            || ('audio' !== options.mediaType
+            && 'video' !== options.mediaType)) {
+          logger.logError('mediatype not passed');
+          publishError('18003');
+          return;
+        }
+
+        options.breed = 'conference';
+        options.type = ATT.CallTypes.OUTGOING;
+        conference = session.createCall(options);
+
+        conference.on('error', function (data) {
+          logger.logError(data);
+          emitter.publish('error', data);
+        });
+
+        conference.on('connected', function (data) {
+          logger.logInfo('connected conference event published to UI');
+          /**
+           * conference connected event.
+           * @desc A conference has been connected.
+           *
+           * @event Phone#conference:connected
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - data
+           */
+          emitter.publish('conference:connected', data);
+        });
+
+        conference.on('disconnected', function (data) {
+          logger.logInfo('conference ended  event by phone layer');
+          /**
+           * Conference ended event.
+           * @desc Indicates a conference has been ended
+           *
+           * @event Phone#conference:ended
+           * @type {object}
+           * @property {String} from - The ID of the conference.
+           * @property {String} mediaType - The type of conference.
+           * @property {String} codec - The codec of the conference
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:ended', data);
+          session.deleteCurrentCall();
+        });
+
+        connectWithMediaStream(options, conference);
+      } catch (err) {
+        publishError('18005', err);
         return;
       }
 
@@ -792,6 +897,12 @@
 
           conference.on('connected', function (data) {
             emitter.publish('conference:connected', data);
+          });
+
+          conference.on('disconnected', function (data) {
+            logger.logInfo('conference ended  event by phone layer');
+            emitter.publish('conference:ended', data);
+            session.deleteCurrentCall();
           });
 
           connectWithMediaStream(options, conference, function (error) {
@@ -1302,117 +1413,6 @@
           error: err
         });
       }
-    }
-    /**
-     * @summary
-     * Start a conference.
-     * @desc
-     *
-     * **Error Codes**
-     *
-     *   - 18000 - Parameters missing
-     *   - 18001 - Invalid `localMedia` passed
-     *   - 18002 - Invalid `remoteMedia` passed
-     *   - 18003 - Invalid `mediaType` passed
-     *   - 18004 - Failed to get the local user media
-     *   - 18005 - Internal error occurred
-     *   - 18006 - Cannot make second conference when first in progress
-     *   - 18007 - Please login before you make a conference
-     *
-     * @memberOf Phone
-     * @instance
-     * @param {Object} options
-     * @param {HTMLVideoElement} options.localMedia The host's video element
-     * @param {HTMLVideoElement} options.remoteMedia The conference participant's video element
-     * @param {String} options.mediaType `video|audio`
-
-     * @fires Phone#conference:connecting
-     * @fires Phone#conference:connected
-     * @fires Phone#media-established
-     * @fires Phone#conference:ended
-     * @fires Phone#error
-
-     * @example
-     var phone = ATT.rtc.Phone.getPhone();
-       phone.startConference({
-       mediaType: 'video',
-       localMedia: document.getElementById('localVideo'),
-       remoteMedia: document.getElementById('remoteVideo')
-     });
-     */
-    function startConference(options) {
-
-      logger.logInfo('startConference');
-
-      var conference;
-
-      try {
-        if (undefined === options
-            || 0 === Object.keys(options).length) {
-          logger.logError(' parameters not found');
-          publishError('18000');
-          return;
-        }
-        if (undefined === session || null === session.getId()) {
-          logger.logError('no session to start  conference');
-          publishError('18007');
-          return;
-        }
-        if (session.currentCall !== null && session.currentCall.breed() === 'conference') {
-          logger.logError('Please End your current Conference');
-          publishError('18006');
-          return;
-        }
-
-        if (undefined === options.localMedia) {
-          logger.logError('localmedia not passed');
-          publishError('18001');
-          return;
-        }
-        if (undefined === options.remoteMedia) {
-          logger.logError('remotemedia not passed');
-          publishError('18002');
-          return;
-        }
-        if ((undefined === options.mediaType)
-            || ('audio' !== options.mediaType
-            && 'video' !== options.mediaType)) {
-          logger.logError('mediatype not passed');
-          publishError('18003');
-          return;
-        }
-
-        options.breed = 'conference';
-        options.type = ATT.CallTypes.OUTGOING;
-        conference = session.createCall(options);
-
-        conference.on('error', function (data) {
-          logger.logError(data);
-          emitter.publish('error', data);
-        });
-
-
-
-        conference.on('connected', function (data) {
-          logger.logInfo('connected conference event published to UI');
-          /**
-           * conference connected event.
-           * @desc A conference has been connected.
-           *
-           * @event Phone#conference:connected
-           * @type {object}
-           * @property {Date} timestamp - Event fire time
-           * @property {Object} data - data
-           */
-          emitter.publish('conference:connected', data);
-        });
-
-        connectWithMediaStream(options, conference);
-      } catch (err) {
-        publishError('18005', err);
-        return;
-      }
-
     }
 
     /**

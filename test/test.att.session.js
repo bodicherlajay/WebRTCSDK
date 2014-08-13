@@ -103,10 +103,6 @@ describe('Session', function () {
       expect(rtcManagerOnSpy.calledWith('invitation-received')).to.equal(true);
     });
 
-    it('should register for `call-disconnected` event on RTCManager', function () {
-      expect(rtcManagerOnSpy.calledWith('call-disconnected')).to.equal(true);
-    });
-
     it('should register for `media-mod-terminations` event on RTCManager', function () {
       expect(rtcManagerOnSpy.calledWith('media-mod-terminations')).to.equal(true);
     });
@@ -1253,167 +1249,6 @@ describe('Session', function () {
       });
     });
 
-    describe('call-disconnected', function () {
-
-      var rtcManager,
-        session,
-        callInfo,
-        conferenceInfo,
-        emitterEM,
-        createEventEmitterStub,
-        getRTCMgrStub,
-        callDisconnectedHandlerSpy,
-        confDisconnectedHandlerSpy;
-
-      beforeEach(function () {
-        callInfo = {
-          id: '123',
-          type: 'call',
-          from: '1234',
-          mediaType: 'video',
-          remoteDescription: 'abc'
-        };
-
-        conferenceInfo = {
-          type: 'conference',
-          id: '123',
-          from: '1234',
-          mediaType: 'video',
-          remoteDescription: 'abc'
-        };
-
-        emitterEM = ATT.private.factories.createEventEmitter();
-
-        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-          return emitterEM;
-        });
-
-        rtcManager = new ATT.private.RTCManager(optionsforRTCM);
-
-        getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
-          return rtcManager;
-        });
-
-        createEventEmitterStub.restore();
-
-        session = new ATT.rtc.Session();
-
-//        conference = new ATT.rtc.Call({
-//          breed: 'conference',
-//          id: '12345',
-//          peer: '12345',
-//          type: 'abc',
-//          mediaType: 'audio'
-//        });
-
-        callDisconnectedHandlerSpy = sinon.spy();
-        confDisconnectedHandlerSpy = sinon.spy();
-
-        session.on('call-disconnected', callDisconnectedHandlerSpy);
-        session.on('conference-disconnected', confDisconnectedHandlerSpy);
-
-      });
-
-      afterEach(function () {
-        getRTCMgrStub.restore();
-      });
-
-      it('should publish `call-disconnected` with data on getting `call-disconnected` with type `call` from RTCMgr', function (done) {
-        session.currentCall = new ATT.rtc.Call({
-          breed: 'call',
-          id: '12345',
-          peer: '12345',
-          type: 'abc',
-          mediaType: 'audio'
-        });
-
-        emitterEM.publish('call-disconnected', callInfo);
-
-        setTimeout(function () {
-          try {
-            expect(callDisconnectedHandlerSpy.called).to.equal(true);
-            expect(callDisconnectedHandlerSpy.getCall(0).args[0]).to.be.an('object');
-            expect(callDisconnectedHandlerSpy.getCall(0).args[0].from).to.be.a('string');
-            expect(callDisconnectedHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
-            expect(callDisconnectedHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(callDisconnectedHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
-      });
-
-      it('should not publish `call-disconnected` on getting `call-disconnected` with type `conference` from RTCMgr', function (done) {
-        session.currentCall = new ATT.rtc.Call({
-          breed: 'call',
-          id: '12345',
-          peer: '12345',
-          type: 'abc',
-          mediaType: 'audio'
-        });
-
-        emitterEM.publish('call-disconnected', conferenceInfo);
-
-        setTimeout(function () {
-          try {
-            expect(callDisconnectedHandlerSpy.called).to.equal(false);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
-      });
-
-      it('should publish `conference-disconnected` with data on getting `call-disconnected` with type `conference` from RTCMgr', function (done) {
-        session.currentCall = new ATT.rtc.Call({
-          breed: 'conference',
-          id: '12345',
-          peer: '12345',
-          type: 'abc',
-          mediaType: 'audio'
-        });
-
-        emitterEM.publish('call-disconnected', conferenceInfo);
-
-        setTimeout(function () {
-          try {
-            expect(confDisconnectedHandlerSpy.called).to.equal(true);
-            expect(confDisconnectedHandlerSpy.getCall(0).args[0]).to.be.an('object');
-            expect(confDisconnectedHandlerSpy.getCall(0).args[0].from).to.be.a('string');
-            expect(confDisconnectedHandlerSpy.getCall(0).args[0].mediaType).to.be.a('string');
-            expect(confDisconnectedHandlerSpy.getCall(0).args[0].codec).to.be.a('array');
-            expect(confDisconnectedHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
-      });
-
-      it('should not publish `conference-disconnected` on getting `call-disconnected` with type `call` from RTCMgr', function (done) {
-        session.currentCall = new ATT.rtc.Call({
-          breed: 'conference',
-          id: '12345',
-          peer: '12345',
-          type: 'abc',
-          mediaType: 'audio'
-        });
-
-        emitterEM.publish('call-disconnected', callInfo);
-
-        setTimeout(function () {
-          try {
-            expect(confDisconnectedHandlerSpy.called).to.equal(false);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
-      });
-
-    });
-
     describe('network-notification', function () {
 
       var rtcManager,
@@ -1478,26 +1313,6 @@ describe('Session', function () {
           try {
             expect(onNetworkNotificationHandlerSpy.called).to.equal(true);
             expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].message).to.not.equal('success');
-            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 50);
-      });
-
-      it('should publish `network-notification` on getting `call-disconnected` with unhandled reason', function (done) {
-
-        var eventInfo = {
-          reason: 'wheres waldo?'
-        };
-
-        emitterEM.publish('call-disconnected', eventInfo);
-
-        setTimeout(function () {
-          try {
-            expect(onNetworkNotificationHandlerSpy.called).to.equal(true);
-            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].message).to.equal('wheres waldo?');
             expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           } catch (e) {

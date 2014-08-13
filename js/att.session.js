@@ -71,32 +71,6 @@
       }
     });
 
-    rtcManager.on('call-disconnected', function (callInfo) {
-      var eventName;
-
-      if ('call' === callInfo.type) {
-        eventName = 'call-disconnected';
-      } else {
-        eventName = 'conference-disconnected';
-      }
-
-      emitter.publish(eventName, {
-        from: callInfo.from,
-        mediaType: session.currentCall.mediaType(),
-        codec: session.currentCall.codec(),
-        timestamp: new Date()
-      });
-
-      if (undefined !== callInfo.reason
-        && 'success' !== callInfo.reason
-        && 'rejected' !== callInfo.reason) {
-       emitter.publish('network-notification', {
-         message: callInfo.reason,
-         timestamp: new Date()
-       });
-      }
-    });
-
     rtcManager.on('media-mod-terminations', function (callInfo) {
       if (undefined !== callInfo.reason
         && 'success' !== callInfo.reason

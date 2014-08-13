@@ -1606,7 +1606,6 @@ describe('Call', function () {
           }, 30);
         });
 
-
         it('should publish `disconnected` with data on getting `call-disconnected` with no reason', function (done) {
 
           var data = {
