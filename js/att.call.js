@@ -262,6 +262,7 @@
         setState('disconnected');
       }
 
+      rtcManager.off('call-connected', onCallConnected);
       rtcManager.off('call-disconnected', onCallDisconnected);
 
       if (2 === ATT.private.pcv) {
