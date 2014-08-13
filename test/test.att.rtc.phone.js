@@ -2231,7 +2231,8 @@ describe('Phone', function () {
 
 
           it('should not call `call.mute` and publish warning if state is already muted', function (done) {
-            var onWarning = sinon.spy();
+            var onWarning = sinon.spy(), state;
+            state = call.getState();
             call.setState('muted');
             phone.on('warning', onWarning);
 
@@ -2240,6 +2241,7 @@ describe('Phone', function () {
             expect(callMuteStub.called).not.to.equal(true);
             setTimeout(function () {
               expect(onWarning.calledWith({message : 'Already muted'})).to.equal(true);
+              call.setState(state);
               done();
             }, 50);
 
@@ -2336,7 +2338,9 @@ describe('Phone', function () {
           });
 
           it('should not call `call.unmute` and publish warning if state is already unmuted', function (done) {
-            var onWarning = sinon.spy();
+            var onWarning = sinon.spy(),
+            state;
+            state = call.getState();
             call.setState('unmuted');
             phone.on('warning', onWarning);
 
@@ -2345,6 +2349,7 @@ describe('Phone', function () {
             expect(callMuteStub.called).not.to.equal(true);
             setTimeout(function () {
               expect(onWarning.calledWith({message : 'Already unmuted'})).to.equal(true);
+              call.setState(state);
               done();
             }, 50);
 
