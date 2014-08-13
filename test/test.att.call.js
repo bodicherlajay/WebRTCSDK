@@ -1641,6 +1641,43 @@ describe('Call', function () {
 
         });
 
+        it('should publish `canceled` on getting `call-disconnected` with reason: `Call canceled`', function (done) {
+
+          var canceledSpy = sinon.spy();
+
+          call.on('canceled', canceledSpy);
+
+          emitterEM.publish('call-disconnected', {
+            reason: 'Call canceled'
+          });
+
+          setTimeout(function () {
+            expect(canceledSpy.calledOnce).to.equal(true);
+            done();
+          }, 10);
+
+        });
+
+        it('should publish `canceled` on getting `call-disconnected` and if Call.canceled = true', function (done) {
+
+          var canceledSpy = sinon.spy(),
+            eventData = {
+              abc: 'abc'
+            };
+
+          call.on('canceled', canceledSpy);
+
+          call.disconnect();
+
+          emitterEM.publish('call-disconnected', eventData);
+
+          setTimeout(function () {
+            expect(canceledSpy.calledOnce).to.equal(true);
+            done();
+          }, 10);
+
+        });
+
         it('should execute rtcMgr.resetPeerConnection', function (done) {
           emitterEM.publish('call-disconnected');
 
