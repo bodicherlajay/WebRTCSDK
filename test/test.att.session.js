@@ -1449,6 +1449,14 @@ describe('Session', function () {
 
         session = new ATT.rtc.Session();
 
+        session.currentCall = new ATT.rtc.Call({
+          breed: 'conference',
+          id: '12345',
+          peer: '12345',
+          type: 'abc',
+          mediaType: 'audio'
+        });
+
         onNetworkNotificationHandlerSpy = sinon.spy();
 
         session.on('network-notification', onNetworkNotificationHandlerSpy);
@@ -1459,13 +1467,6 @@ describe('Session', function () {
       });
 
       it('should publish `network-notification` with data on getting `media-mod-terminations` if [event.reason !== `success`]', function (done) {
-        session.currentCall = new ATT.rtc.Call({
-          breed: 'conference',
-          id: '12345',
-          peer: '12345',
-          type: 'abc',
-          mediaType: 'audio'
-        });
 
         var eventInfo = {
           reason: 'anything but success'
@@ -1476,7 +1477,27 @@ describe('Session', function () {
         setTimeout(function () {
           try {
             expect(onNetworkNotificationHandlerSpy.called).to.equal(true);
-            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].reason).to.not.equal('success');
+            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].message).to.not.equal('success');
+            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 50);
+      });
+
+      it('should publish `network-notification` on getting `call-disconnected` with unhandled reason', function (done) {
+
+        var eventInfo = {
+          reason: 'wheres waldo?'
+        };
+
+        emitterEM.publish('call-disconnected', eventInfo);
+
+        setTimeout(function () {
+          try {
+            expect(onNetworkNotificationHandlerSpy.called).to.equal(true);
+            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].message).to.equal('wheres waldo?');
             expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
             done();
           } catch (e) {

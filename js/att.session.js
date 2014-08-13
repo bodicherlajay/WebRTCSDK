@@ -72,18 +72,29 @@
     });
 
     rtcManager.on('call-disconnected', function (callInfo) {
-      var eventName;
+      var eventName,
+        message;
       if ('call' === callInfo.type) {
         eventName = 'call-disconnected';
       } else {
         eventName = 'conference-disconnected';
       }
+
       emitter.publish(eventName, {
         from: callInfo.from,
         mediaType: session.currentCall.mediaType(),
         codec: session.currentCall.codec(),
         timestamp: new Date()
       });
+
+      if (undefined !== callInfo.reason
+        && 'success' !== callInfo.reason
+        && 'rejected' !== callInfo.reason) {
+       emitter.publish('network-notification', {
+         message: callInfo.reason,
+         timestamp: new Date()
+       });
+      }
     });
 
     rtcManager.on('media-mod-terminations', function (callInfo) {
@@ -120,25 +131,6 @@
       emitter.unsubscribe(event, handler);
       emitter.subscribe(event, handler, this);
     }
-
-//    function refreshWebRTCSession() {
-//      var dataForRefreshWebRTCSession = {
-//        params: {
-//          url: [self.sessionId],
-//          headers: {
-//            'Authorization': self.token
-//          }
-//        },
-//        success: function () {
-//          logger.logInfo('Successfully refreshed web rtc session on blackflag');
-//          //this.onWebRTCSessionRefreshed();
-//        },
-//        //error: this.onError
-//      };
-
-      // Call BF to refresh WebRTC Session.
-//      resourceManager.doOperation('refreshWebRTCSession', {});
-//    }
 
     // public attributes
     this.timeout = null;
