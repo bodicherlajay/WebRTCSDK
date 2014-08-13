@@ -37,7 +37,8 @@ describe('SDPFilter', function () {
   });
   xdescribe('holdCall', function () {
     it('should replace sdp for hold call , function () {
-      var sdp = "/a=sendrecv/g", attr ='recvonly';
+      var sdp = /a=sendrecv/g,
+     attr ='recvonly';
       sdp = filter.holdCall(sdp);
       expect(sdp.indexOf(attr)).to.equal(-1);
     });

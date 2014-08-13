@@ -194,7 +194,7 @@ if (!ATT) {
       logger.logTrace('holding call', sdp);
 
       // adjust SDP for hold request
-      sdp.sdp = sdp.sdp.replace('/a=sendrecv/g', 'a=recvonly');
+      sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
 
       //sdp.sdp = sdp.sdp.replace(/a=setup:active/g, 'a=setup:actpass');
       sdp.type = 'offer';

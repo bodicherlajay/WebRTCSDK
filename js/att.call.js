@@ -147,24 +147,25 @@
               });
             }
           });
+
+          if (data.remoteSdp
+              && data.remoteSdp.indexOf('recvonly') !== -1) {
+            that.setState('held');
+            rtcManager.disableMediaStream();
+          } else if (data.remoteSdp
+              && remoteSdp
+              && remoteSdp.indexOf
+              && remoteSdp.indexOf('recvonly') !== -1
+              && data.remoteSdp.indexOf('sendrecv') !== -1) {
+            that.setState('resumed');
+            rtcManager.enableMediaStream();
+          }
         }
         return;
       }
 
-      rtcManager.setMediaModifications(data);
-      if (data.remoteSdp
-        && data.remoteSdp.indexOf('recvonly') !== -1) {
-        that.setState('held');
-        rtcManager.disableMediaStream();
-      } else if (data.remoteSdp
-          && remoteSdp
-          && remoteSdp.indexOf
-          && remoteSdp.indexOf('recvonly') !== -1
-          && data.remoteSdp.indexOf('sendrecv') !== -1) {
-        that.setState('resumed');
-        rtcManager.enableMediaStream();
-      }
-      that.setRemoteSdp(data.remoteSdp);
+
+
 
     }
 
@@ -650,19 +651,20 @@
     }
 
     function hold() {
-      var sdp;
+      var sdp, localDescription;
+      localDescription = that.localSdp();
       if (2 === ATT.private.pcv) {
-        sdp = sdpFilter.holdCall(this.localDescription);
+        sdp = sdpFilter.holdCall(localDescription);
 
-        this.peerConnection.setLocalDescription(sdp);
-        this.localDescription = sdp;
+//        that.peerConnection.setLocalDescription(sdp);
+        localSdp = sdp;
 
         rtcManager.holdCall({ description : sdp,
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
           callId : id,
           onSuccess : function () {
-            setState('held');
+            //setState('held');
           },
           onError : function (error) {
             emitter.publish('error', {
@@ -685,12 +687,13 @@
     }
 
     function resume() {
-      var sdp;
+      var sdp, localDescription;
+      localDescription = that.localSdp();
       if (2 === ATT.private.pcv) {
-        sdp = sdpFilter.resumeCall(this.localDescription);
+        sdp = sdpFilter.resumeCall(localDescription);
 
-        this.peerConnection.setLocalDescription(sdp);
-        this.localDescription = sdp;
+        //peerConnection.setLocalDescription(sdp);
+        localSdp = sdp;
 
         rtcManager.resumeCall({ description : sdp,
           sessionId : sessionInfo.sessionId,
@@ -804,7 +807,7 @@
     };
     this.localSdp = function () {
 
-      if ('call' === breed) {
+      if ('call' === breed && 1 === ATT.private.pcv) {
         return localSdp;
       }
 
