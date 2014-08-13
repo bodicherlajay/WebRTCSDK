@@ -195,6 +195,7 @@
         && 'conference:disconnecting' !== event
         && 'conference:ended' !== event
         && 'conference:connected' !== event
+        && 'warning' !== event
         && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
@@ -376,6 +377,7 @@
 
      * @fires Phone#dialing
      * @fires Phone#call-connecting
+     * @fires Phone#call-canceled
      * @fires Phone#call-rejected
      * @fires Phone#call-connected
      * @fires Phone#media-established
@@ -474,9 +476,9 @@
           });
           call.on('canceled', function (data) {
             /**
-             * Call rejected event.
-             * @desc Successfully rejected an incoming call.
-             * @event Phone#call-rejected
+             * Call canceled event.
+             * @desc Successfully canceled an outgoing call.
+             * @event Phone#call-canceled
              * @type {object}
              * @property {Date} timestamp - Event fire time.
              */
@@ -849,6 +851,7 @@
      * @fires Phone#conference:joining
      * @fires Phone#conference:connecting
      * @fires Phone#conference:connected
+     * @fires Phone#conference:ended
      * @fires Phone#media-established
      * @fires Phone#error
 
@@ -987,7 +990,11 @@
             emitter.publish('call-muted', data);
           });
 
-          call.mute();
+          if ('muted' !== call.getState()) {
+            call.mute();
+          } else {
+            emitter.publish('warning', {message : 'Already muted'});
+          }
 
         } catch (err) {
           logger.logError(err);
@@ -1048,8 +1055,12 @@
              */
             emitter.publish('call-unmuted', data);
           });
+          if ('unmuted' !== call.getState()) {
+            call.unmute();
+          } else {
+            emitter.publish('warning', {message : 'Already unmuted'});
+          }
 
-          call.unmute();
 
         } catch (err) {
           logger.logError(err);
@@ -1212,16 +1223,12 @@
         if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('12000');
         }
+
         try {
-//          call.on('disconnected', function (data) {
-//            emitter.publish('call-disconnected', data);
-//            session.deleteCurrentCall();
-//            session.switchCall();
-//
-//            if (session.currentCall !== null) {
-//                session.currentCall.resume();
-//            }
-//          });
+          call.on('rejected', function (data) {
+            emitter.publish('call-rejected', data);
+            session.deleteCurrentCall();
+          });
           call.reject();
         } catch (err) {
           logger.logError(err);

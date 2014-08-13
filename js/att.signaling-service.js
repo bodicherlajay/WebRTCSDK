@@ -53,8 +53,8 @@
 
           config.success.call(null, responseData);
         },
-        error: function(error) {
-          config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","dial","RTC"));
+        error: function (error) {
+          config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "dial", "RTC"));
         }
       });
     },
@@ -100,8 +100,8 @@
             config.success.call(null, headers);
           }
         },
-        error: function(error) {
-          config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","answer","RTC"));
+        error: function (error) {
+          config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "answer", "RTC"));
         }
       });
     },
@@ -148,8 +148,8 @@
             config.success.call(null, headers);
           }
         },
-        error: function(error) {
-          config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","answer","RTC"));
+        error: function (error) {
+          config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "answer", "RTC"));
         }
       });
     },
@@ -194,8 +194,8 @@
             }
           }
         },
-        error: function(error) {
-          config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","hold","RTC"));
+        error: function (error) {
+          config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "hold", "RTC"));
         }
       });
     },
@@ -240,8 +240,8 @@
             }
           }
         },
-        error: function(error) {
-          config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","resume","RTC"));
+        error: function (error) {
+          config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "resume", "RTC"));
         }
       });
     },
@@ -274,11 +274,11 @@
             }
           } else {
             logger.logError('CALL TERMINATION ERROR, status:', response.getResponseStatus());
-            config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","hangup","RTC"));
+            config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "hangup", "RTC"));
           }
         },
-        error: function(error) {
-          config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","hangup","RTC"));
+        error: function (error) {
+          config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "hangup", "RTC"));
         }
       });
     },
@@ -311,11 +311,11 @@
             }
           } else {
             logger.logError('CALL CANCELLATION ERROR, status:', response.getResponseStatus());
-            config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","cancel","RTC"));
+            config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "cancel", "RTC"));
           }
         },
-        error: function(error) {
-          config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","cancel","RTC"));
+        error: function (error) {
+          config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "cancel", "RTC"));
         }
       });
     },
@@ -347,11 +347,11 @@
             }
           } else {
             logger.logError('CALL REJECTION ERROR, status:', response.getResponseStatus());
-            config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","reject","RTC"));
+            config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "reject", "RTC"));
           }
         },
-        error: function(error) {
-          config.error(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","reject","RTC"));
+        error: function (error) {
+          config.error(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "reject", "RTC"));
         }
       });
     }

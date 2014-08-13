@@ -223,7 +223,7 @@
       if (undefined !== data) {
         if ('Call rejected' === data.reason) {
           setState('rejected');
-        } else if ('canceled' === data.reason) {
+        } else if ('Call canceled' === data.reason || canceled) {
           setState('canceled');
         } else {
           setState('disconnected');
@@ -340,7 +340,7 @@
           canceled = false;
 
           onCallDisconnected({
-            reason: 'canceled'
+            reason: 'Call canceled'
           });
           return;
         }
