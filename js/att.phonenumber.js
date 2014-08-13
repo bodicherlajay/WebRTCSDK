@@ -117,38 +117,45 @@
        */
       cleanPhoneNumber : function (number) {
         var callable, cleaned;
-      //removes the spaces form the number
-        callable = number.replace(/\s/g, '');
-        if (ATT.SpecialNumbers[number]) {
-          return number;
-        }
-        callable = ATT.phoneNumber.getCallable(callable);
-        if (callable) {
-          return callable;
-        }
-        logger.logWarning('Phone number not callable, will check special numbers list.');
-        logger.logInfo('checking number: ' + callable);
-        cleaned = ATT.phoneNumber.translate(number);
-        console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
+        try {
+          //removes the spaces form the number
+          callable = number.replace(/\s/g, '');
+          if (ATT.SpecialNumbers[number]) {
+            return number;
+          }
+          callable = ATT.phoneNumber.getCallable(callable);
+          if (callable) {
+            return callable;
+          }
+          logger.logWarning('Phone number not callable, will check special numbers list.');
+          logger.logInfo('checking number: ' + callable);
+          cleaned = ATT.phoneNumber.translate(number);
+          console.log('ATT.SpecialNumbers[' + cleaned + '] = ' + cleaned);
 //        if (number.charAt(0) === '*') {
 //          cleaned = '*' + cleaned;
 //        }
-        ATT.Error.publish('SDK-20027', null, function (error) {
-          logger.logWarning('Undefined `onError`: ' + error);
-        });
-        return false;
+          return false;
+        } catch (err) {
+          logger.logError(err);
+          throw ATT.errorDictionary.getSDKError(26001);
+        }
       },
       formatNumber : function (number) {
-        var callable = this.cleanPhoneNumber(number);
-        if (!callable) {
-          logger.logWarning('Phone number not formatable .');
-          return;
+        try {
+          var callable = this.cleanPhoneNumber(number);
+          if (!callable) {
+            logger.logWarning('Phone number not formatable .');
+            return;
+          }
+          if (number.length <= 10) {
+            return callable;
+          }
+          logger.logInfo('The formated Number' + callable);
+          return ATT.phoneNumber.stringify(callable);
+        } catch (err) {
+          logger.logError(err);
+          throw ATT.errorDictionary.getSDKError(26001);
         }
-        if (number.length <= 10) {
-          return callable;
-        }
-        logger.logInfo('The formated Number' + callable);
-        return ATT.phoneNumber.stringify(callable);
       }
 
     };
