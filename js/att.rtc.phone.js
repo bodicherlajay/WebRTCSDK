@@ -11,7 +11,12 @@
     @global
     @class Represents a Phone.
     @constructor
-  */
+
+    @fires Phone#call-incoming
+    @fires Phone#conference:invitation-received
+    @fires Phone#error
+
+   */
   function Phone() {
 
     var emitter = ATT.private.factories.createEventEmitter(),
@@ -583,6 +588,7 @@
      * @param {HTMLElement} options.localVideo
      * @param {HTMLElement} options.remoteVideo
 
+     * @fires Phone#answering
      * @fires Phone#call-connecting
      * @fires Phone#call-rejected
      * @fires Phone#call-connected
@@ -699,6 +705,7 @@
      * @fires Phone#conference:joining
      * @fires Phone#conference:connecting
      * @fires Phone#conference:connected
+     * @fires Phone#media-established
      * @fires Phone#error
 
      * @example
@@ -956,6 +963,7 @@
      * @instance
 
      * @fires Phone#call-disconnecting
+     * @fires Phone#call-disconnected
 
      * @example
       var phone = ATT.rtc.Phone.getPhone();
@@ -1249,6 +1257,7 @@
      * @instance
 
      * @fires Phone#address-updated
+     * @fires Phone#error
 
      * @example
       var phone = ATT.rtc.Phone.getPhone();
@@ -1311,8 +1320,10 @@
      * @param {HTMLVideoElement} options.remoteMedia The conference participant's video element
      * @param {String} options.mediaType `video|audio`
 
+     * @fires Phone#conference:connecting
      * @fires Phone#conference:connected
      * @fires Phone#media-established
+     * @fires Phone#conference:ended
      * @fires Phone#error
 
      * @example
@@ -1435,6 +1446,12 @@
      *
      * @memberOf Phone
      * @instance
+     *
+     * @fires Phone#conference:invitation-sending
+     * @fires Phone#conference:invitation-sent
+     * @fires Phone#conference:invitation-accepted
+     * @fires Phone#conference:invitation-rejected
+     * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
@@ -1484,6 +1501,8 @@
 
      * @fires Phone#conference:invitation-sending
      * @fires Phone#conference:invitation-sent
+     * @fires Phone#conference:invitation-accepted
+     * @fires Phone#conference:invitation-rejected
      * @fires Phone#error
 
      * @example
@@ -1606,6 +1625,8 @@
      * @instance
 
      * @fires Phone#conference:disconnecting
+     * @fires Phone#conference:ended
+     * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
@@ -1724,6 +1745,9 @@
      *
      * @memberOf Phone
      * @instance
+     *
+     * @fires Phone#conference:participant-removed
+     * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
