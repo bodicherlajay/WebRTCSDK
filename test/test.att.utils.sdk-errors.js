@@ -1,5 +1,5 @@
 /*jslint indent:2*/
-/*global ATT, describe, it, afterEach, beforeEach, sinon, expect*/
+/*global ATT, describe, it, afterEach, before, beforeEach, sinon, expect*/
 
 describe('SDK Error Store', function () {
   'use strict';

@@ -1,5 +1,5 @@
-/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
-/*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true, before: true, sinon: true, expect: true, xit: true*/
+/*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 250 */
+/*global ATT:true, RESTClient, Env, describe: true, it: true, afterEach: true, beforeEach: true, before: true, sinon: true, expect: true, xit: true, xdescribe: true*/
 
 describe('SDPFilter', function () {
   'use strict';
@@ -36,8 +36,8 @@ describe('SDPFilter', function () {
     expect(sdp.indexOf(attr)).to.equal(-1);
   });
   xdescribe('holdCall', function () {
-    it('should replace sdp for hold call , function () {
-      var sdp = "/a=sendrecv/g", attr ='recvonly';
+    it('should replace sdp for hold call', function () {
+      var sdp = "/a=sendrecv/g", attr = 'recvonly';
       sdp = filter.holdCall(sdp);
       expect(sdp.indexOf(attr)).to.equal(-1);
     });
