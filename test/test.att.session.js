@@ -202,7 +202,6 @@ describe('Session', function () {
     });
 
     afterEach(function () {
-      createEventEmitterStub.restore();
       getRTCMgrStub.restore();
       getTokenStub.restore();
     });
@@ -959,6 +958,14 @@ describe('Session', function () {
 
   describe('Events', function () {
 
+    var eventData;
+
+    beforeEach(function () {
+      eventData = {
+        abc: 'abc'
+      };
+    });
+
     describe('needs-refresh', function () {
 
       var onNeedsRefreshSpy,
@@ -1093,7 +1100,7 @@ describe('Session', function () {
 
     });
 
-    describe('call-incoming', function () {
+    describe('invitation-received', function () {
 
       var rtcManager,
         session,
@@ -1175,6 +1182,37 @@ describe('Session', function () {
         }, 10);
       });
 
+      it('should register for `canceled` event on the newly created incoming call', function (done) {
+        var call = new ATT.rtc.Call({
+          breed: 'call',
+          peer: callInfo.from,
+          type: ATT.CallTypes.INCOMING,
+          mediaType: callInfo.mediaType,
+          remoteSdp: 'ABD'
+        }),
+          callOnSpy = sinon.spy(call, 'on');
+
+        createCallSpyStub.restore();
+
+        createCallSpyStub = sinon.stub(session, 'createCall', function () {
+          return call;
+        });
+
+        emitterEM.publish('invitation-received', callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(callOnSpy.calledWith('canceled')).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          } finally {
+            callOnSpy.restore();
+          }
+        }, 10);
+
+      });
+
       it('should execute call.setRemoteSdp with remoteDescription on the newly created call', function (done) {
 
         var call = new ATT.rtc.Call({
@@ -1246,6 +1284,68 @@ describe('Session', function () {
             done(e);
           }
         }, 30);
+      });
+
+      describe('Events on newly created Call', function () {
+
+        var call,
+          emitterCall,
+          deleteCurrentCallStub;
+
+        beforeEach(function () {
+          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+
+          emitterCall = factories.createEventEmitter();
+
+          createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+            return emitterCall;
+          });
+
+          call = new ATT.rtc.Call({
+            breed: 'call',
+            peer: callInfo.from,
+            type: ATT.CallTypes.INCOMING,
+            mediaType: callInfo.mediaType,
+            remoteSdp: 'ABD'
+          });
+
+          createEventEmitterStub.restore();
+
+          createCallSpyStub.restore();
+
+          createCallSpyStub = sinon.stub(session, 'createCall', function () {
+            return call;
+          });
+
+          emitterEM.publish('invitation-received', callInfo);
+        });
+
+        afterEach(function () {
+          deleteCurrentCallStub.restore();
+        });
+
+        describe('canceled', function () {
+
+          it('should publish `call-canceled` when call publishes `canceled` with relevant data', function (done) {
+            var callCancelHandlerSpy = sinon.spy();
+
+            session.on('call-canceled', callCancelHandlerSpy);
+
+            setTimeout(function () {
+              emitterCall.publish('canceled', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(callCancelHandlerSpy.calledWith(eventData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 10);
+            }, 10);
+          });
+        });
+
       });
     });
 

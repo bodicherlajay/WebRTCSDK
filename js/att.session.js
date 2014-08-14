@@ -50,6 +50,11 @@
         mediaType: callInfo.mediaType
       });
 
+      call.on('canceled', function (data) {
+        emitter.publish('call-canceled', data);
+//        session.deleteCurrentCall();
+      });
+
       if (undefined !== call) {
         if (callInfo.sdp) {
           sendRecvSdp = sdpFilter.replaceSendOnlyWithSendRecv(callInfo.sdp);
@@ -85,20 +90,21 @@
     function on(event, handler) {
 
       if ('ready' !== event &&
-        'connecting' !== event &&
-        'connected' !== event &&
-        'updating' !== event &&
-        'needs-refresh' !== event &&
-        'network-notification' !== event &&
-        'call-incoming' !== event &&
-        'conference-invite' !== event &&
-        'call-disconnected' !== event &&
-        'conference-disconnected' !== event &&
-        'disconnecting' !== event &&
-        'disconnected' !== event &&
-        'address-updated' !== event &&
-        'allcallsterminated' !== event &&
-        'error' !== event) {
+          'connecting' !== event &&
+          'connected' !== event &&
+          'updating' !== event &&
+          'needs-refresh' !== event &&
+          'network-notification' !== event &&
+          'call-incoming' !== event &&
+          'conference-invite' !== event &&
+          'call-disconnected' !== event &&
+          'call-canceled' !== event &&
+          'conference-disconnected' !== event &&
+          'disconnecting' !== event &&
+          'disconnected' !== event &&
+          'address-updated' !== event &&
+          'allcallsterminated' !== event &&
+          'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -177,7 +183,7 @@
     };
 
     this.connect = function connect(options) {
-	     var session = this;
+
       try {
         if (undefined === options) {
           throw ATT.errorDictionary.getSDKError('2002');

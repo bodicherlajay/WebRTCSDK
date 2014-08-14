@@ -61,8 +61,14 @@
       emitter.publish('conference:invitation-received', data);
     });
 
+    session.on('call-canceled', function (data) {
+      logger.logInfo('call canceled event by phone layer');
+      emitter.publish('call-canceled', data);
+    });
+
     session.on('error', function (data) {
-      logger.logError("Error in Session " + data);
+      logger.logError("Error in Session");
+      logger.logTrace(data);
       emitter.publish('error', data);
     });
 
@@ -473,17 +479,6 @@
              * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('call-connecting', data);
-          });
-          call.on('canceled', function (data) {
-            /**
-             * Call canceled event.
-             * @desc Successfully canceled an outgoing call.
-             * @event Phone#call-canceled
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('call-canceled', data);
-            session.deleteCurrentCall();
           });
           call.on('rejected', function (data) {
             /**
@@ -1169,19 +1164,18 @@
           throw ATT.errorDictionary.getSDKError('11000');
         }
         try {
-//          if (null === call.id()) {
-//            emitter.publish('call-canceled', {
-//              to: call.peer(),
-//              mediaType: call.mediaType(),
-//              timestamp: new Date()
-//            });
-//            session.deleteCurrentCall();
-//            session.switchCall();
-//
-//            if (session.currentCall !== null) {
-//              session.currentCall.resume();
-//            }
-//          }
+          call.on('canceled', function (data) {
+            /**
+             * Call canceled event.
+             * @desc Successfully canceled an outgoing call.
+             * @event Phone#call-canceled
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-canceled', data);
+            session.deleteCurrentCall();
+          });
+
           call.disconnect();
         } catch (err) {
           logger.logError(err);
