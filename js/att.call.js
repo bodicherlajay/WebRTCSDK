@@ -101,7 +101,7 @@
         invitee: invitee,
         id: modId,
         status: status
-      }
+      };
     }
 
     function updateInvitee(modId, status) {
@@ -258,11 +258,17 @@
           setState('rejected');
         } else if ('Call canceled' === data.reason || canceled) {
           setState('canceled');
-        } else {
+        } else if (undefined !== data.reason) {
           state = 'disconnected';
           eventData = createEventData();
           eventData.reason = data.reason;
           emitter.publish('disconnected', eventData);
+        } else {
+          if ('created' === state) {
+            setState('canceled');
+          } else {
+            setState('disconnected');
+          }
         }
       } else {
         setState('disconnected');

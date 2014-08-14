@@ -1618,14 +1618,22 @@ describe('Call', function () {
             },
             disconnectedSpy = sinon.spy();
 
+          setStateStub.restore();
+
           call.on('disconnected', disconnectedSpy);
+
+          call.setState('connected');
 
           emitterEM.publish('call-disconnected', data); // no reason passed
 
           setTimeout(function () {
-            expect(disconnectedSpy.called).to.equal(true);
-            done();
-          }, 10);
+            try {
+              expect(disconnectedSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 100);
 
         });
 
@@ -1654,6 +1662,23 @@ describe('Call', function () {
 
           emitterEM.publish('call-disconnected', {
             reason: 'Call canceled'
+          });
+
+          setTimeout(function () {
+            expect(canceledSpy.calledOnce).to.equal(true);
+            done();
+          }, 10);
+
+        });
+
+        it('should publish `canceled` on getting `call-disconnected` when call state is `created`', function (done) {
+
+          var canceledSpy = sinon.spy();
+
+          call.on('canceled', canceledSpy);
+
+          emitterEM.publish('call-disconnected', {
+            abc: 'abc'
           });
 
           setTimeout(function () {
@@ -1695,14 +1720,18 @@ describe('Call', function () {
           emitterEM.publish('call-disconnected', data);
 
           setTimeout(function () {
-            expect(disconnectedSpy.called).to.equal(true);
-            expect(disconnectedSpy.getCall(0).args[0]).to.be.an('object');
-            expect(disconnectedSpy.getCall(0).args[0].reason).to.equal(data.reason);
-            expect(disconnectedSpy.getCall(0).args[0].to).to.equal(call.peer());
-            expect(disconnectedSpy.getCall(0).args[0].mediaType).to.equal(call.mediaType());
-            expect(disconnectedSpy.getCall(0).args[0].codec).to.equal(call.codec());
-            expect(disconnectedSpy.getCall(0).args[0].timestamp).to.be.a('date');
-            done();
+            try {
+              expect(disconnectedSpy.called).to.equal(true);
+              expect(disconnectedSpy.getCall(0).args[0]).to.be.an('object');
+              expect(disconnectedSpy.getCall(0).args[0].reason).to.equal(data.reason);
+              expect(disconnectedSpy.getCall(0).args[0].to).to.equal(call.peer());
+              expect(disconnectedSpy.getCall(0).args[0].mediaType).to.equal(call.mediaType());
+              expect(disconnectedSpy.getCall(0).args[0].codec).to.equal(call.codec());
+              expect(disconnectedSpy.getCall(0).args[0].timestamp).to.be.a('date');
+              done();
+            } catch (e) {
+              done(e);
+            }
           }, 10);
 
         });
