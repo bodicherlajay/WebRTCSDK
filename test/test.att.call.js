@@ -1683,6 +1683,30 @@ describe('Call', function () {
 
         });
 
+        it('should publish `disconnected` with data.reason on getting `call-disconnected` with any other reason', function (done) {
+
+          var data = {
+              reason : 'Other Reason'
+            },
+            disconnectedSpy = sinon.spy();
+
+          call.on('disconnected', disconnectedSpy);
+
+          emitterEM.publish('call-disconnected', data);
+
+          setTimeout(function () {
+            expect(disconnectedSpy.called).to.equal(true);
+            expect(disconnectedSpy.getCall(0).args[0]).to.be.an('object');
+            expect(disconnectedSpy.getCall(0).args[0].reason).to.equal(data.reason);
+            expect(disconnectedSpy.getCall(0).args[0].to).to.equal(call.peer());
+            expect(disconnectedSpy.getCall(0).args[0].mediaType).to.equal(call.mediaType());
+            expect(disconnectedSpy.getCall(0).args[0].codec).to.equal(call.codec());
+            expect(disconnectedSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            done();
+          }, 10);
+
+        });
+
         it('should unsubscribe the handler for `call-connected`', function (done) {
           emitterEM.publish('call-disconnected', {});
 

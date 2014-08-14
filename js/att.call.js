@@ -249,6 +249,8 @@
     }
 
     function onCallDisconnected(data) {
+      var eventData;
+
       id = null;
 
       if (undefined !== data) {
@@ -257,7 +259,10 @@
         } else if ('Call canceled' === data.reason || canceled) {
           setState('canceled');
         } else {
-          setState('disconnected');
+          state = 'disconnected';
+          eventData = createEventData();
+          eventData.reason = data.reason;
+          emitter.publish('disconnected', eventData);
         }
       } else {
         setState('disconnected');
