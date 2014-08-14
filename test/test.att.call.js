@@ -818,6 +818,7 @@ describe('Call', function () {
       });
 
       describe('Events for reject', function () {
+
         describe('call-disconnected', function () {
           var onDisconnectedSpy,
             rejectCallStub;
@@ -847,7 +848,7 @@ describe('Call', function () {
             }, 30);
           });
 
-          it('should publish `disconnected` with data when rtcManager publishes `call-disconnected`', function (done) {
+          it('should publish `rejected` with data when rtcManager publishes `call-disconnected`', function (done) {
 
             var data = {
               reason: 'nothing'

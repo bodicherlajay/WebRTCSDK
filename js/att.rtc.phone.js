@@ -49,7 +49,7 @@
     session.on('conference-invite', function (data) {
       /**
        * Conference Invite event.
-       * @desc This event fires when a conference invitation is received.
+       * @desc Participant receives this event after a conference invitation is sent to him/her.
        *
        * @event Phone#conference:invitation-received
        * @type {object}
@@ -61,8 +61,19 @@
       emitter.publish('conference:invitation-received', data);
     });
 
+    session.on('call-canceled', function (data) {
+      logger.logInfo('call canceled event by phone layer');
+      emitter.publish('call-canceled', data);
+    });
+
+    session.on('call-disconnected', function (data) {
+      logger.logInfo('call disconnected event by phone layer');
+      emitter.publish('call-disconnected', data);
+    });
+
     session.on('error', function (data) {
-      logger.logError("Error in Session " + data);
+      logger.logError("Error in Session");
+      logger.logTrace(data);
       emitter.publish('error', data);
     });
 
@@ -483,17 +494,6 @@
              */
             emitter.publish('call-connecting', data);
           });
-          call.on('canceled', function (data) {
-            /**
-             * Call canceled event.
-             * @desc Successfully canceled an outgoing call.
-             * @event Phone#call-canceled
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('call-canceled', data);
-            session.deleteCurrentCall();
-          });
           call.on('rejected', function (data) {
             /**
              * Call rejected event.
@@ -664,6 +664,15 @@
           return;
         }
 
+        /**
+         * Answering event.
+         * @desc Fired immediately after the `answer` method is invoked.
+         *
+         * @event Phone#answering
+         * @type {object}
+         * @property {Date} timestamp - Event fire time
+         * @property {Object} data - data
+         */
         emitter.publish('answering', {
           from: call.peer(),
           mediaType: call.mediaType(),
@@ -1133,6 +1142,15 @@
 
         try {
           call.on('disconnecting', function (data) {
+            /**
+             * Call disconnecting event.
+             * @desc Fired immediately after invoking the `hangup` method.
+             *
+             * @event Phone#call-disconnecting
+             * @type {object}
+             * @property {Date} timestamp - Event fire time
+             * @property {Object} data - data
+             */
             emitter.publish('call-disconnecting', data);
           });
           call.disconnect();
@@ -1178,19 +1196,18 @@
           throw ATT.errorDictionary.getSDKError('11000');
         }
         try {
-//          if (null === call.id()) {
-//            emitter.publish('call-canceled', {
-//              to: call.peer(),
-//              mediaType: call.mediaType(),
-//              timestamp: new Date()
-//            });
-//            session.deleteCurrentCall();
-//            session.switchCall();
-//
-//            if (session.currentCall !== null) {
-//              session.currentCall.resume();
-//            }
-//          }
+          call.on('canceled', function (data) {
+            /**
+             * Call canceled event.
+             * @desc Successfully canceled an outgoing call.
+             * @event Phone#call-canceled
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('call-canceled', data);
+            session.deleteCurrentCall();
+          });
+
           call.disconnect();
         } catch (err) {
           logger.logError(err);
@@ -1316,6 +1333,7 @@
      * @memberOf Phone
      * @instance
 
+     * @fires Phone#call-held
      * @fires Phone#error
 
      * @example
@@ -1362,6 +1380,7 @@
      * @instance
 
 
+     * @fires Phone#call-resumed
      * @fires Phone#error
 
      * @example
@@ -1434,6 +1453,14 @@
 
         try {
           session.on('address-updated', function () {
+            /**
+             * Address updated event
+             * @desc Indicates the E911 address has been updated successfully.
+             *
+             * @event Phone#address-updated
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
             emitter.publish('address-updated');
           });
 
