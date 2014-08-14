@@ -66,6 +66,11 @@
       emitter.publish('call-canceled', data);
     });
 
+    session.on('call-disconnected', function (data) {
+      logger.logInfo('call disconnected event by phone layer');
+      emitter.publish('call-disconnected', data);
+    });
+
     session.on('error', function (data) {
       logger.logError("Error in Session");
       logger.logTrace(data);

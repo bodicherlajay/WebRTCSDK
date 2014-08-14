@@ -147,6 +147,10 @@ describe('Phone', function () {
         expect(onSpy.calledWith('call-canceled')).to.equal(true);
       });
 
+      it('should register for `call-disconnected` event on session object', function () {
+        expect(onSpy.calledWith('call-disconnected')).to.equal(true);
+      });
+
       it('should register for `error` event on session object', function () {
         expect(onSpy.calledWith('error')).to.equal(true);
       });
@@ -3325,6 +3329,23 @@ describe('Phone', function () {
             setTimeout(function () {
               try {
                 expect(onCallCanceledHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 50);
+          });
+
+        });
+
+        describe('call-disconnected', function () {
+
+          it('should publish `call-disconnected` when session publishes `call-disconnected`', function (done) {
+            emitterSession.publish('call-disconnected', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(onCallDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);

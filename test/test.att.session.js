@@ -1213,6 +1213,37 @@ describe('Session', function () {
 
       });
 
+      it('should register for `disconnected` event on the newly created incoming call', function (done) {
+        var call = new ATT.rtc.Call({
+            breed: 'call',
+            peer: callInfo.from,
+            type: ATT.CallTypes.INCOMING,
+            mediaType: callInfo.mediaType,
+            remoteSdp: 'ABD'
+          }),
+          callOnSpy = sinon.spy(call, 'on');
+
+        createCallSpyStub.restore();
+
+        createCallSpyStub = sinon.stub(session, 'createCall', function () {
+          return call;
+        });
+
+        emitterEM.publish('invitation-received', callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(callOnSpy.calledWith('disconnected')).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          } finally {
+            callOnSpy.restore();
+          }
+        }, 10);
+
+      });
+
       it('should execute call.setRemoteSdp with remoteDescription on the newly created call', function (done) {
 
         var call = new ATT.rtc.Call({
@@ -1337,6 +1368,30 @@ describe('Session', function () {
               setTimeout(function () {
                 try {
                   expect(callCancelHandlerSpy.calledWith(eventData)).to.equal(true);
+                  expect(deleteCurrentCallStub.called).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 10);
+            }, 10);
+          });
+        });
+
+        describe('disconnected', function () {
+
+          it.only('should publish `call-disconnected` when call publishes `disconnected` with relevant data', function (done) {
+            var callDisconnectedHandlerSpy = sinon.spy();
+
+            session.on('call-disconnected', callDisconnectedHandlerSpy);
+
+            setTimeout(function () {
+              emitterCall.publish('disconnected', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(callDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                  expect(deleteCurrentCallStub.called).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
