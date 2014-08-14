@@ -373,6 +373,8 @@
      *
      * **Error codes**
      *
+     *  - 4000 - Invalid phone number
+     *  - 4001 - Invalid SIP URI
      *  - 4002 - Invalid Media Type
      *  - 4003 - Internal error occurred
      *  - 4004 - User is not logged in
@@ -1537,6 +1539,9 @@
      *   - 24002 - User is not logged in
      *   - 24003 - Conference not initiated
      *   - 24004 - Internal error occurred
+     *   - 24005 - Cannot invite existing participant
+     *   - 24006 - Invalid phone number
+     *   - 24007 - Invalid SIP URI
      *
      * @param {Array} participants List of participant-ids
      *
