@@ -762,26 +762,33 @@ describe('Call', function () {
     });
 
     describe('reject', function () {
-      var onSpy;
+      var onSpy,
+        rejectCallStub;
 
       beforeEach(function () {
         onSpy = sinon.spy(rtcMgr, "on");
         outgoingCall.setId('123');
+
+        rejectCallStub = sinon.stub(rtcMgr, 'rejectCall');
       });
 
       afterEach(function () {
         onSpy.restore();
+        rejectCallStub.restore();
       });
 
       it('Should exist', function () {
         expect(outgoingCall.reject).to.be.a('function');
       });
 
-      it('should call rtcManager.rejectCall', function () {
-        var args,
-          rejectCallStub;
+      it('should set rejected flag to true on call', function () {
+        incomingCall.reject();
 
-        rejectCallStub = sinon.stub(rtcMgr, 'rejectCall');
+        expect(incomingCall.rejected()).to.equal(true);
+      });
+
+      it('should call rtcManager.rejectCall', function () {
+        var args;
 
         outgoingCall.reject();
 
@@ -793,18 +800,19 @@ describe('Call', function () {
         expect(args.onSuccess).to.be.a('function');
         expect(args.breed).to.equal(outgoingCall.breed());
         expect(args.onError).to.be.a('function');
-
-        rejectCallStub.restore();
       });
 
       describe('Success on `rejectCall`', function () {
 
         it('should call `rtcManager.off` to unsubscribe the current call from `call-disconnected` event', function () {
 
-          var offSpy,
-            rejectCallStub = sinon.stub(rtcMgr, 'rejectCall', function (options) {
-              options.onSuccess();
-            });
+          var offSpy;
+
+          rejectCallStub.restore();
+
+          rejectCallStub = sinon.stub(rtcMgr, 'rejectCall', function (options) {
+            options.onSuccess();
+          });
 
           offSpy = sinon.spy(rtcMgr, 'off');
 
@@ -813,23 +821,16 @@ describe('Call', function () {
           expect(offSpy.called).to.equal(true);
 
           offSpy.restore();
-          rejectCallStub.restore();
         });
       });
 
       describe('Events for reject', function () {
 
         describe('call-disconnected', function () {
-          var onDisconnectedSpy,
-            rejectCallStub;
+          var onRejectedSpy;
 
-          beforeEach(function () {
-            rejectCallStub = sinon.stub(rtcMgr, 'rejectCall');
+          beforeEach (function () {
             incomingCall.reject();
-          });
-
-          afterEach(function () {
-            rejectCallStub.restore();
           });
 
           it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
@@ -848,24 +849,24 @@ describe('Call', function () {
             }, 30);
           });
 
-          it('should publish `rejected` with data when rtcManager publishes `call-disconnected`', function (done) {
+          it('should publish `rejected` with data when rtcManager publishes `call-disconnected` and rejected == true', function (done) {
 
             var data = {
               reason: 'nothing'
             };
-            onDisconnectedSpy = sinon.spy();
-            incomingCall.on('disconnected', onDisconnectedSpy);
+            onRejectedSpy = sinon.spy();
+            incomingCall.on('rejected', onRejectedSpy);
 
             emitterEM.publish('call-disconnected', data);
 
             setTimeout(function () {
               try {
-                expect(onDisconnectedSpy.called).to.equal(true);
+                expect(onRejectedSpy.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
               }
-            }, 30);
+            }, 10);
           });
 
           it('should execute rtcMgr.resetPeerConnection', function (done) {
