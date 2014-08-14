@@ -1655,7 +1655,7 @@
             publishError('24007');
             return;
           }
-         participants[counter] = invitee;
+          participants[counter] = invitee;
         }
 
         try {
@@ -1663,12 +1663,6 @@
             invitee = participants[counter];
 
             if (0 === Object.keys(currentParticipants).length) {
-              emitter.publish('conference:invitation-sending', {
-                invitee: invitee,
-                timestamp: new Date()
-              });
-
-              conference.addParticipant(invitee);
               /**
                * Invitation sending event
                * @desc Host side: this event fires when an invitation is in the process of sending.
@@ -1678,6 +1672,11 @@
                * @property {Object} invitee - The invitee.
                * @property {Date} timestamp - Event fire time.
                */
+              emitter.publish('conference:invitation-sending', {
+                invitee: invitee,
+                timestamp: new Date()
+              });
+              conference.addParticipant(invitee);
             } else {
               for (participant in currentParticipants) {
                 if (invitee !== participant) {
