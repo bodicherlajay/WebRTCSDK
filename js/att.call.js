@@ -36,6 +36,7 @@
       state = null,
       codec = [],
       canceled = false,
+      rejected = false,
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
@@ -251,7 +252,7 @@
       id = null;
 
       if (undefined !== data) {
-        if ('Call rejected' === data.reason) {
+        if ('Call rejected' === data.reason || rejected) {
           setState('rejected');
         } else if ('Call canceled' === data.reason || canceled) {
           setState('canceled');
@@ -700,6 +701,8 @@
 
     function reject() {
 
+      rejected = true;
+
       rtcManager.rejectCall({
         callId : id,
         sessionId : sessionInfo.sessionId,
@@ -818,6 +821,9 @@
     };
     this.canceled = function () {
       return canceled;
+    };
+    this.rejected = function () {
+      return rejected;
     };
 
     this.setRemoteSdp  = setRemoteSdp;

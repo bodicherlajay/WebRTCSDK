@@ -673,9 +673,6 @@
         call.on('connecting', function (data) {
           emitter.publish('call-connecting', data);
         });
-        call.on('rejected', function (data) {
-          emitter.publish('call-rejected', data);
-        });
         call.on('connected', function (data) {
           emitter.publish('call-connected', data);
         });

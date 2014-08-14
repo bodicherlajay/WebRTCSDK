@@ -672,11 +672,9 @@ describe('Phone', function () {
         });
 
         it('should execute `call.connect`', function () {
-          ATT.private.pcv = 1;
           phone.dial(options);
 
           expect(callConnectStub.calledWith(options)).to.equal(true);
-          ATT.private.pcv = 2;
         });
 
         describe('Events for Dial', function () {
@@ -787,20 +785,16 @@ describe('Phone', function () {
 
         describe('Error Handling', function () {
 
-          var getUserMediaStub,
-            publishStub;
+          var publishStub;
 
           beforeEach(function () {
 
             publishStub = sinon.stub(emitter, 'publish');
 
-            getUserMediaStub = sinon.stub(ums, 'getUserMedia', function () {
-              console.log(error);
-              throw error;
-            });
+            callConnectStub.restore();
 
-            phone.on('error', function (err) {
-              console.error('XXXXX: ' + JSON.stringify(err));
+            callConnectStub = sinon.stub(call, 'connect', function () {
+              throw error;
             });
 
             phone.login({
@@ -808,11 +802,9 @@ describe('Phone', function () {
             });
 
             session.setId('1234');
-
           });
 
           afterEach(function () {
-            getUserMediaStub.restore();
             publishStub.restore();
           });
 
@@ -858,7 +850,7 @@ describe('Phone', function () {
 
             expect(ATT.errorDictionary.getSDKError('4004')).to.be.an('object');
             expect(publishStub.calledWith('error', {
-                error: ATT.errorDictionary.getSDKError('4004')
+              error: ATT.errorDictionary.getSDKError('4004')
             })).to.equal(true);
           });
 
@@ -1122,7 +1114,7 @@ describe('Phone', function () {
           expect(onSpy.calledWith('error')).to.equal(true);
         });
 
-        xit('should call `call.connect` with optional params localMedia & remoteMedia', function () {
+        it('should call `call.connect` with optional params localMedia & remoteMedia', function () {
           phone.answer(options);
 
           expect(callConnectStub.calledWith(options)).to.equal(true);
@@ -1142,7 +1134,6 @@ describe('Phone', function () {
             getUserMediaStub.restore();
             deleteCurrentCallStub.restore();
           });
-
 
           it('should trigger `call-connecting` with relevant data when call publishes `connecting` event', function (done) {
             phone.answer(options);
@@ -1167,21 +1158,6 @@ describe('Phone', function () {
               try {
                 expect(callDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
                 expect(deleteCurrentCallStub.called).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 50);
-          });
-
-          it('should trigger `call-rejected` with relevant data when call publishes `rejected` event', function (done) {
-            phone.answer(options);
-
-            emitterCall.publish('rejected', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(callRejectedHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -2711,7 +2687,6 @@ describe('Phone', function () {
 
         it('should register for the `rejected` event on the call object', function () {
           phone.reject();
-
 
           expect(onSpy.calledOnce).to.equal(true);
           expect(onSpy.calledWith('rejected')).to.equal(true);
