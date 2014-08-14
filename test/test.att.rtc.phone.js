@@ -1780,7 +1780,8 @@ describe('Phone', function () {
       describe('[US288156] addParticipants', function () {
 
         var onSpy,
-          addParticipantStub;
+          addParticipantStub,
+          publishStub;
 
         beforeEach(function () {
           callConstructorStub.restore();
@@ -1843,14 +1844,21 @@ describe('Phone', function () {
           expect(onSpy.called).to.equal(true);
         });
 
-        it('should publish `conference:invitation-sending` immediately', function () {
-          var publishStub = sinon.stub(emitter, 'publish');
+        it('should publish `conference:invitation-sending` immediately', function (done) {
+          var onInvitationSendingHandlerSpy = sinon.spy();
 
-          phone.addParticipants(['4250000001']);
+          phone.on('conference:invitation-sending', onInvitationSendingHandlerSpy);
 
-          expect(publishStub.calledWith('conference:invitation-sending')).to.equal(true);
+          phone.addParticipants(['johnny@foo.com']);
 
-          publishStub.restore();
+          setTimeout(function () {
+            try {
+              expect(onInvitationSendingHandlerSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 50);
         });
 
         it('should execute call.addParticipant', function () {
@@ -2024,6 +2032,29 @@ describe('Phone', function () {
             })).to.equal(true);
 
             addParticipantStub.restore();
+          });
+
+          it('[24005] should be thrown if the invitee is already a participant', function () {
+
+            conference.participants = function () {
+              return {
+                johnny: {
+                  participant: 'johnny',
+                  status: 'active'
+                },
+                sally: {
+                  participant: 'sally',
+                  status: 'active'
+                }
+              }
+            };
+
+            phone.addParticipants(['sally']);
+
+            expect(ATT.errorDictionary.getSDKError('24005')).to.be.an('object');
+            expect(publishStub.calledWithMatch('error', {
+              error: ATT.errorDictionary.getSDKError('24005')
+            })).to.equal(true);
           });
         });
       });
@@ -3142,6 +3173,50 @@ describe('Phone', function () {
               error: ATT.errorDictionary.getSDKError('17002')
             })).to.equal(true);
           });
+        });
+      });
+
+      describe('formateNumebr', function () {
+        it('should exists', function () {
+          expect(phone.formatNumber).to.be.an('function');
+        });
+
+        it('[26001] should be published with `error` event if there is an unknown exception during the operation', function () {
+          var publishStub = sinon.stub(emitter, 'publish'),
+            cleannumberStub = sinon.stub(ATT.phoneNumber, 'cleanPhoneNumber', function () {
+              throw new Error;
+            });
+          phone.formatNumber('12sdD3');
+
+          expect(ATT.errorDictionary.getSDKError('26001')).to.be.an('object');
+          expect(publishStub.calledWithMatch('error', {
+            error: ATT.errorDictionary.getSDKError('26001')
+          })).to.equal(true);
+
+          publishStub.restore();
+          cleannumberStub.restore();
+        });
+      });
+
+      describe('cleanPhoneNumber', function () {
+        it('should exists', function () {
+          expect(phone.cleanPhoneNumber).to.be.an('function');
+        });
+
+        it('[26001] should be published with `error` event if there is an unknown exception during the operation', function () {
+          var publishStub = sinon.stub(emitter, 'publish'),
+            getCallableStub = sinon.stub(ATT.phoneNumber, 'getCallable', function () {
+              throw new Error;
+            });
+          phone.cleanPhoneNumber('12sdD3');
+
+          expect(ATT.errorDictionary.getSDKError('26001')).to.be.an('object');
+          expect(publishStub.calledWithMatch('error', {
+            error: ATT.errorDictionary.getSDKError('26001')
+          })).to.equal(true);
+
+          publishStub.restore();
+          getCallableStub.restore();
         });
       });
 

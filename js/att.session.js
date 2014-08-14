@@ -78,8 +78,8 @@
 
     rtcManager.on('media-mod-terminations', function (callInfo) {
       if (undefined !== callInfo.reason
-        && 'success' !== callInfo.reason
-        && 'Call rejected' !== callInfo.reason) {
+          && 'success' !== callInfo.reason
+          && 'Call rejected' !== callInfo.reason) {
         emitter.publish('network-notification', {
           message: callInfo.reason,
           timestamp: new Date()
@@ -172,7 +172,7 @@
         rtcManager.refreshSession({
           sessionId : id,
           token : token,
-          success : function () {},
+          success : function () { return; },
           error : function (error) {
             emitter.publish('error', {
               error: error
@@ -183,7 +183,7 @@
     };
 
     this.connect = function connect(options) {
-
+      var session = this;
       try {
         if (undefined === options) {
           throw ATT.errorDictionary.getSDKError('2002');
@@ -196,7 +196,7 @@
 
           logger.logDebug('Session.connect');
 
-		      token = options.token;
+          token = options.token;
           this.e911Id = options.e911Id;
 
           emitter.publish('connecting');

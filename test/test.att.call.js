@@ -254,6 +254,13 @@ describe('Call', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
+    it('should register for event `call-connected` from RTCManager', function () {
+      call1 = new ATT.rtc.Call(optionsOutgoing);
+
+      expect(onSpy.calledWith('call-connected')).to.equal(true);
+      expect(onSpy.getCall(0).args[1]).to.be.a('function');
+    });
+
     it('should register for `call-disconnected` event on `RTCManager`', function () {
       call1 = new ATT.rtc.Call(optionsOutgoing);
 
@@ -387,13 +394,6 @@ describe('Call', function () {
         incomingCall.connect(connectOptions);
 
         expect(onStub.calledWith('media-mod-terminations')).to.equal(true);
-      });
-
-      it('should register for event `call-connected` from RTCManager', function () {
-        outgoingCall.connect(connectOptions);
-
-        expect(onStub.calledWith('call-connected')).to.equal(true);
-        expect(onStub.getCall(0).args[1]).to.be.a('function');
       });
 
       it('should register for `playing` event from remote video element', function () {
@@ -1581,16 +1581,19 @@ describe('Call', function () {
 
       describe('call-disconnected', function () {
         var setIdSpy,
-          resetPeerConnectionStub;
+          resetPeerConnectionStub,
+          offStub;
 
         beforeEach(function () {
           setIdSpy = sinon.spy(call, 'setId');
           resetPeerConnectionStub = sinon.stub(rtcMgr, 'resetPeerConnection');
+          offStub = sinon.stub(rtcMgr, 'off');
         });
 
         afterEach(function () {
           setIdSpy.restore();
           resetPeerConnectionStub();
+          offStub.restore();
         });
 
         it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
@@ -1677,6 +1680,32 @@ describe('Call', function () {
             done();
           }, 10);
 
+        });
+
+        it('should unsubscribe the handler for `call-connected`', function (done) {
+          emitterEM.publish('call-disconnected', {});
+
+          setTimeout(function () {
+            try {
+              expect(offStub.calledWith('call-connected')).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        });
+
+        it('should unsubscribe the handler for `call-disconnected`', function (done) {
+          emitterEM.publish('call-disconnected', {});
+
+          setTimeout(function () {
+            try {
+              expect(offStub.calledWith('call-disconnected')).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
         });
 
         it('should execute rtcMgr.resetPeerConnection', function (done) {

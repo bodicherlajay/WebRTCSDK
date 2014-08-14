@@ -128,7 +128,7 @@
           } catch (error) {
             logger.logError(error);
             if (undefined !== errorCallback
-              && 'function' === typeof errorCallback) {
+                && 'function' === typeof errorCallback) {
               errorCallback(error);
             }
           }
@@ -173,36 +173,36 @@
     function on(event, handler) {
 
       if ('session:ready' !== event
-        && 'session:disconnected' !== event
-        && 'network:notification' !== event
-        && 'dialing' !== event
-        && 'answering' !== event
-        && 'call-incoming' !== event
-        && 'call-connecting' !== event
-        && 'call-connected' !== event
-        && 'call-disconnecting' !== event
-        && 'call-disconnected' !== event
-        && 'call-muted' !== event
-        && 'call-unmuted' !== event
-        && 'call-held' !== event
-        && 'call-resumed' !== event
-        && 'call-canceled' !== event
-        && 'call-rejected' !== event
-        && 'address-updated' !== event
-        && 'media-established' !== event
-        && 'conference:invitation-received' !== event
-        && 'conference:joining' !== event
-        && 'conference:invitation-sending' !== event
-        && 'conference:invitation-rejected' !== event
-        && 'conference:connecting' !== event
-        && 'conference:invitation-sent' !== event
-        && 'conference:invitation-accepted' !== event
-        && 'conference:participant-removed' !== event
-        && 'conference:disconnecting' !== event
-        && 'conference:ended' !== event
-        && 'conference:connected' !== event
-        && 'warning' !== event
-        && 'error' !== event) {
+          && 'session:disconnected' !== event
+          && 'network:notification' !== event
+          && 'dialing' !== event
+          && 'answering' !== event
+          && 'call-incoming' !== event
+          && 'call-connecting' !== event
+          && 'call-connected' !== event
+          && 'call-disconnecting' !== event
+          && 'call-disconnected' !== event
+          && 'call-muted' !== event
+          && 'call-unmuted' !== event
+          && 'call-held' !== event
+          && 'call-resumed' !== event
+          && 'call-canceled' !== event
+          && 'call-rejected' !== event
+          && 'address-updated' !== event
+          && 'media-established' !== event
+          && 'conference:invitation-received' !== event
+          && 'conference:joining' !== event
+          && 'conference:invitation-sending' !== event
+          && 'conference:invitation-rejected' !== event
+          && 'conference:connecting' !== event
+          && 'conference:invitation-sent' !== event
+          && 'conference:invitation-accepted' !== event
+          && 'conference:participant-removed' !== event
+          && 'conference:disconnecting' !== event
+          && 'conference:ended' !== event
+          && 'conference:connected' !== event
+          && 'warning' !== event
+          && 'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -252,7 +252,7 @@
         try {
           logger.logDebug('Phone.login');
 
-          if (undefined === session){
+          if (undefined === session) {
             session = new ATT.rtc.Session();
           }
 
@@ -399,19 +399,18 @@
       destination: '11231231234',
       mediaType: 'video',
       localMedia: document.getElementById('localVideo'),
-      remoteMedia: document.getElementById('remoteVideo'),
-      holdCurrentCall
-    };
+      remoteMedia: document.getElementById('remoteVideo')
+     });
+
      @example
      // Start audio call with a NoTN/VTN User
      var phone = ATT.rtc.Phone.getPhone();
      phone.dial({
       destination: 'john@domain.com',
-     mediaType: 'audio',
-     localMedia: document.getElementById('localVideo'),
-     remoteMedia: document.getElementById('remoteVideo'),
-     holdCurrentCall: true
-     };
+       mediaType: 'audio',
+       localMedia: document.getElementById('localVideo'),
+       remoteMedia: document.getElementById('remoteVideo')
+     });
      */
     function dial(options) {
 
@@ -440,7 +439,7 @@
 
         if (undefined !== options.mediaType) {
           if ('audio' !== options.mediaType
-            && 'video' !== options.mediaType) {
+              && 'video' !== options.mediaType) {
             throw ATT.errorDictionary.getSDKError('4002');
           }
         }
@@ -1517,7 +1516,9 @@
     function addParticipants(participants) {
       var conference,
         counter,
-        invitee;
+        invitee,
+        participant,
+        currentParticipants;
 
       try {
         logger.logDebug('Phone.addParticipants');
@@ -1529,8 +1530,8 @@
         }
 
         if (typeof participants !== 'object'
-          || null === participants
-          || Object.keys(participants).length === 0) {
+            || null === participants
+            || Object.keys(participants).length === 0) {
           publishError('24001');
           return;
         }
@@ -1546,6 +1547,8 @@
           publishError('24003');
           return;
         }
+
+        currentParticipants = conference.participants();
 
         conference.on('response-pending', function (data) {
           /**
@@ -1601,21 +1604,37 @@
           for (counter = 0; counter < participants.length; counter += 1) {
             invitee = participants[counter];
 
-            /**
-             * Invitation sending event
-             * @desc Host side: this event fires when an invitation is in the process of sending.
-             *
-             * @event Phone#conference:invitation-sending
-             * @type {object}
-             * @property {Object} invitee - The invitee.
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('conference:invitation-sending', {
-              invitee: invitee,
-              timestamp: new Date()
-            });
-
-            conference.addParticipant(invitee);
+            if (0 === Object.keys(currentParticipants).length) {
+              emitter.publish('conference:invitation-sending', {
+                invitee: invitee,
+                timestamp: new Date()
+              });
+              conference.addParticipant(invitee);
+              /**
+               * Invitation sending event
+               * @desc Host side: this event fires when an invitation is in the process of sending.
+               *
+               * @event Phone#conference:invitation-sending
+               * @type {object}
+               * @property {Object} invitee - The invitee.
+               * @property {Date} timestamp - Event fire time.
+               */
+            } else {
+              for (participant in currentParticipants) {
+                if (invitee !== participant) {
+                  emitter.publish('conference:invitation-sending', {
+                    invitee: invitee,
+                    timestamp: new Date()
+                  });
+                  conference.addParticipant(invitee);
+                } else if (invitee === participant) {
+                  publishError('24005', {
+                    invitee: invitee,
+                    timestamp: new Date()
+                  });
+                }
+              }
+            }
           }
         } catch (err) {
           publishError('24004', err);
@@ -1736,7 +1755,7 @@
         conference = session.currentCall;
 
         if (null === conference
-          || 'conference' !== conference.breed()) {
+            || 'conference' !== conference.breed()) {
           publishError(21000);
           return;
         }
@@ -1794,7 +1813,7 @@
         conference = session.currentCall;
 
         if (null === conference
-          || 'conference' !== conference.breed()) {
+            || 'conference' !== conference.breed()) {
           throw ATT.errorDictionary.getSDKError(25001);
         }
 
@@ -1833,6 +1852,30 @@
       }
     }
 
+    function cleanPhoneNumber(number) {
+      try {
+        return ATT.phoneNumber.cleanPhoneNumber(number);
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
+    function formatNumber(number) {
+
+      try {
+        return ATT.phoneNumber.formatNumber(number);
+
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
     // ===================
     // Call interface
     // ===================
@@ -1852,8 +1895,8 @@
     this.cancel = cancel;
     this.reject = reject;
     this.updateE911Id = updateE911Id;
-    this.cleanPhoneNumber = ATT.phoneNumber.cleanPhoneNumber;
-    this.formatNumber = ATT.phoneNumber.formatNumber;
+    this.cleanPhoneNumber = cleanPhoneNumber;
+    this.formatNumber = formatNumber;
 
     // ===================
     // Conference interface
