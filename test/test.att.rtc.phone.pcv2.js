@@ -81,14 +81,14 @@ describe('Phone [PCV2]', function () {
 
       beforeEach(function () {
         dialOpts = {
-          destination: '123',
+          destination: '1231234538',
           mediaType: 'video',
           localMedia: {},
           remoteMedia: {}
         };
 
         outgoingCallOpts = {
-          peer: '1234567',
+          peer: '1234567123',
           breed : 'call',
           mediaType: 'video',
           type: ATT.CallTypes.OUTGOING,

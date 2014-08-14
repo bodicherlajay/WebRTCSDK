@@ -752,6 +752,30 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24005",
+      ErrorMessage: "Cannot invite existing participant",
+      Cause: "Invalid operation",
+      Resolution: "Please invite new user"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24006",
+      ErrorMessage: "Invalid input parameter",
+      Cause: "Invalid phone number",
+      Resolution: "Please provide valid 10 digit phone number"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24007",
+      ErrorMessage: "Invalid input parameter",
+      Cause: "Invalid SIP URI",
+      Resolution: "Please provide valid SIP URI"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "removeParticipant",
       ErrorCode: "25000",
       ErrorMessage: "User is not logged in",
@@ -781,6 +805,14 @@
       ErrorMessage: "Internal error occurred",
       Cause: "Uncaught error",
       Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "CleanNumber",
+      ErrorCode: "26001",
+      ErrorMessage: "Number Invalid",
+      Cause: "Invalid PhoneNumber passed",
+      Resolution: "Please check the logs and pass a valid phone number"
     }
 
   ];

@@ -50,6 +50,16 @@
         mediaType: callInfo.mediaType
       });
 
+      call.on('canceled', function (data) {
+        emitter.publish('call-canceled', data);
+        session.deleteCurrentCall();
+      });
+
+      call.on('disconnected', function (data) {
+        emitter.publish('call-disconnected', data);
+        session.deleteCurrentCall();
+      });
+
       if (undefined !== call) {
         if (callInfo.sdp) {
           sendRecvSdp = sdpFilter.replaceSendOnlyWithSendRecv(callInfo.sdp);
@@ -71,36 +81,10 @@
       }
     });
 
-    rtcManager.on('call-disconnected', function (callInfo) {
-      var eventName;
-
-      if ('call' === callInfo.type) {
-        eventName = 'call-disconnected';
-      } else {
-        eventName = 'conference-disconnected';
-      }
-
-      emitter.publish(eventName, {
-        from: callInfo.from,
-        mediaType: session.currentCall.mediaType(),
-        codec: session.currentCall.codec(),
-        timestamp: new Date()
-      });
-
-      if (undefined !== callInfo.reason
-        && 'success' !== callInfo.reason
-        && 'rejected' !== callInfo.reason) {
-       emitter.publish('network-notification', {
-         message: callInfo.reason,
-         timestamp: new Date()
-       });
-      }
-    });
-
     rtcManager.on('media-mod-terminations', function (callInfo) {
       if (undefined !== callInfo.reason
-        && 'success' !== callInfo.reason
-        && 'Call rejected' !== callInfo.reason) {
+          && 'success' !== callInfo.reason
+          && 'Call rejected' !== callInfo.reason) {
         emitter.publish('network-notification', {
           message: callInfo.reason,
           timestamp: new Date()
@@ -111,20 +95,21 @@
     function on(event, handler) {
 
       if ('ready' !== event &&
-        'connecting' !== event &&
-        'connected' !== event &&
-        'updating' !== event &&
-        'needs-refresh' !== event &&
-        'network-notification' !== event &&
-        'call-incoming' !== event &&
-        'conference-invite' !== event &&
-        'call-disconnected' !== event &&
-        'conference-disconnected' !== event &&
-        'disconnecting' !== event &&
-        'disconnected' !== event &&
-        'address-updated' !== event &&
-        'allcallsterminated' !== event &&
-        'error' !== event) {
+          'connecting' !== event &&
+          'connected' !== event &&
+          'updating' !== event &&
+          'needs-refresh' !== event &&
+          'network-notification' !== event &&
+          'call-incoming' !== event &&
+          'conference-invite' !== event &&
+          'call-disconnected' !== event &&
+          'call-canceled' !== event &&
+          'conference-disconnected' !== event &&
+          'disconnecting' !== event &&
+          'disconnected' !== event &&
+          'address-updated' !== event &&
+          'allcallsterminated' !== event &&
+          'error' !== event) {
         throw new Error('Event ' + event + ' not defined');
       }
 
@@ -192,7 +177,7 @@
         rtcManager.refreshSession({
           sessionId : id,
           token : token,
-          success : function () {},
+          success : function () { return; },
           error : function (error) {
             emitter.publish('error', {
               error: error
@@ -203,7 +188,7 @@
     };
 
     this.connect = function connect(options) {
-	     var session = this;
+      var session = this;
       try {
         if (undefined === options) {
           throw ATT.errorDictionary.getSDKError('2002');
@@ -216,7 +201,7 @@
 
           logger.logDebug('Session.connect');
 
-		      token = options.token;
+          token = options.token;
           this.e911Id = options.e911Id;
 
           emitter.publish('connecting');

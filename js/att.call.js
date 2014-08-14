@@ -36,6 +36,7 @@
       state = null,
       codec = [],
       canceled = false,
+      rejected = false,
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager();
@@ -100,7 +101,7 @@
         invitee: invitee,
         id: modId,
         status: status
-      }
+      };
     }
 
     function updateInvitee(modId, status) {
@@ -229,21 +230,63 @@
 
     }
 
+    function onCallConnected(data) {
+
+      that.setState('connected');
+
+      if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
+        if (undefined !== data.remoteSdp) {
+          peerConnection.setRemoteDescription({
+            sdp: data.remoteSdp,
+            type: 'answer'
+          });
+        }
+        return;
+      }
+
+      if ('call' === that.breed()) {
+        if (data.remoteSdp) {
+          rtcManager.setRemoteDescription({
+            remoteDescription: data.remoteSdp,
+            type: 'answer'
+          });
+          that.setRemoteSdp(data.remoteSdp);
+        }
+
+        rtcManager.playStream('remote');
+        return;
+      }
+
+
+    }
+
     function onCallDisconnected(data) {
+      var eventData;
+
       id = null;
 
       if (undefined !== data) {
-        if ('Call rejected' === data.reason) {
+        if ('Call rejected' === data.reason || rejected) {
           setState('rejected');
-        } else if ('canceled' === data.reason) {
+        } else if ('Call canceled' === data.reason || canceled) {
           setState('canceled');
+        } else if (undefined !== data.reason) {
+          state = 'disconnected';
+          eventData = createEventData();
+          eventData.reason = data.reason;
+          emitter.publish('disconnected', eventData);
         } else {
-          setState('disconnected');
+          if ('created' === state) {
+            setState('canceled');
+          } else {
+            setState('disconnected');
+          }
         }
       } else {
         setState('disconnected');
       }
 
+      rtcManager.off('call-connected', onCallConnected);
       rtcManager.off('call-disconnected', onCallDisconnected);
 
       if (2 === ATT.private.pcv) {
@@ -352,7 +395,7 @@
           canceled = false;
 
           onCallDisconnected({
-            reason: 'canceled'
+            reason: 'Call canceled'
           });
           return;
         }
@@ -381,36 +424,6 @@
         rtcManager.on('media-modifications', onMediaModifications);
 
         rtcManager.on('media-mod-terminations', onMediaModTerminations);
-
-        rtcManager.on('call-connected', function (data) {
-
-          that.setState('connected');
-
-          if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
-            if (undefined !== data.remoteSdp) {
-              peerConnection.setRemoteDescription({
-                sdp: data.remoteSdp,
-                type: 'answer'
-              });
-            }
-            return;
-          }
-
-          if ('call' === that.breed()) {
-            if (data.remoteSdp) {
-              rtcManager.setRemoteDescription({
-                remoteDescription: data.remoteSdp,
-                type: 'answer'
-              });
-              that.setRemoteSdp(data.remoteSdp);
-            }
-
-            rtcManager.playStream('remote');
-            return;
-          }
-
-
-        });
 
         if (('call' === breed && 2 === ATT.private.pcv)
             || 'conference' === breed) {
@@ -735,6 +748,8 @@
 
     function reject() {
 
+      rejected = true;
+
       rtcManager.rejectCall({
         callId : id,
         sessionId : sessionInfo.sessionId,
@@ -766,6 +781,8 @@
     if (undefined === options.mediaType) {
       throw new Error('No mediaType provided');
     }
+
+    rtcManager.on('call-connected', onCallConnected);
 
     rtcManager.on('call-disconnected', onCallDisconnected);
 
@@ -851,6 +868,9 @@
     };
     this.canceled = function () {
       return canceled;
+    };
+    this.rejected = function () {
+      return rejected;
     };
 
     this.setRemoteSdp  = setRemoteSdp;
