@@ -24,7 +24,7 @@ describe('Phone', function () {
     factories = ATT.private.factories;
     confOpts = {
       breed: 'conference',
-      peer: '123',
+      peer: '14251234567',
       type: 'abc',
       mediaType: 'video'
     };
@@ -545,7 +545,7 @@ describe('Phone', function () {
         beforeEach(function () {
 
           options = {
-            destination: '12345',
+            destination: '1234561528',
             breed: 'call',
             mediaType: 'video',
             localMedia: localVideo,
@@ -698,12 +698,12 @@ describe('Phone', function () {
             deleteCurrentCallStub;
 
           beforeEach(function () {
-            getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+            //getUserMediaStub = sinon.stub(ums, 'getUserMedia');
             deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
           });
 
           afterEach(function () {
-            getUserMediaStub.restore();
+            //getUserMediaStub.restore();
             deleteCurrentCallStub.restore();
           });
 
@@ -845,7 +845,7 @@ describe('Phone', function () {
             publishStub.restore();
           });
 
-          it.only('[4000] should be published with `error` event if invalid phone number in options', function () {
+          it('[4000] should be published with `error` event if invalid phone number in options', function () {
 
             phone.dial({
               destination: '129934',
@@ -859,10 +859,24 @@ describe('Phone', function () {
             })).to.equal(true);
           });
 
+          it('[4001] should be published with `error` event if invalid SIP URI in options', function () {
+
+            phone.dial({
+              destination: 'john@johnnyfoo@.com',
+              localMedia: 'foo',
+              remoteMedia: 'bar',
+              mediaType: 'video'
+            });
+
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('4001')
+            })).to.equal(true);
+          });
+
           it('[4002] should be published with `error` event if invalid mediaType in options', function () {
 
             phone.dial({
-              destination: '1234',
+              destination: '14251234567',
               localMedia: 'foo',
               remoteMedia: 'bar',
               mediaType: 'foobar'
@@ -875,7 +889,7 @@ describe('Phone', function () {
 
           it('[4003] should be published with `error` event if there is an unknown exception during the operation', function () {
             phone.dial({
-              destination: 1234,
+              destination: '14251234567',
               localMedia: 'foo',
               remoteMedia: 'bar',
               mediaType: 'video'
@@ -893,7 +907,7 @@ describe('Phone', function () {
             session.setId(null);
 
             phone.dial({
-              destination: '1234',
+              destination: '14251234567',
               localMedia: 'foo',
               remoteMedia: 'bar',
               mediaType: 'video'
@@ -908,7 +922,7 @@ describe('Phone', function () {
           it('[4006] should be published with `error` event if localMedia is not defined', function () {
 
             phone.dial({
-              destination: '1234',
+              destination: '14251234567',
               remoteMedia: 'bar',
               mediaType: 'audio'
             });
@@ -922,7 +936,7 @@ describe('Phone', function () {
           it('[4007] should be published with `error` event if remoteMedia is not defined', function () {
 
             phone.dial({
-              destination: '1234',
+              destination: '14251234567',
               localMedia: 'bar',
               mediaType: 'audio'
             });
@@ -1842,7 +1856,7 @@ describe('Phone', function () {
 
           conference = new ATT.rtc.Call({
             breed: 'conference',
-            peer: '1234567',
+            peer: '14251234567',
             type: 'abc',
             mediaType: 'video',
             id: '1234'
@@ -1908,10 +1922,16 @@ describe('Phone', function () {
           }, 50);
         });
 
-        it('should execute call.addParticipant', function () {
-          phone.addParticipants(['4250000001']);
+        it('should clean the `participant` if possible', function () {
+          var participants = ['(425)456-4122'];
 
-          expect(addParticipantStub.calledWith('4250000001')).to.equal(true);
+          phone.addParticipants(participants);
+          expect(addParticipantStub.calledWith('14254564122')).to.equal(true);
+        });
+
+        it('should execute call.addParticipant', function () {
+          phone.addParticipants(['johnny@foo.com']);
+          expect(addParticipantStub.called).to.equal(true);
         });
 
         it('should call `conference.addParticipant` with relevant parameters', function () {
@@ -2085,22 +2105,40 @@ describe('Phone', function () {
 
             conference.participants = function () {
               return {
-                johnny: {
+                4521234567: {
                   participant: 'johnny',
                   status: 'active'
                 },
-                sally: {
+                14521234567: {
                   participant: 'sally',
                   status: 'active'
                 }
               }
             };
 
-            phone.addParticipants(['sally']);
+            phone.addParticipants(['4521234567']);
 
             expect(ATT.errorDictionary.getSDKError('24005')).to.be.an('object');
             expect(publishStub.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('24005')
+            })).to.equal(true);
+          });
+
+          it('[24006] should be published with `error` event if invalid phone number', function () {
+
+            phone.addParticipants(['129934']);
+
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('24006')
+            })).to.equal(true);
+          });
+
+          it('[24007] should be published with `error` event if invalid SIP URI in options', function () {
+
+            phone.addParticipants(['foo@bar@123.com']);
+
+            expect(publishStub.calledWith('error', {
+              error: ATT.errorDictionary.getSDKError('24007')
             })).to.equal(true);
           });
         });
@@ -3461,7 +3499,7 @@ describe('Phone', function () {
             createEmitterStub.restore();
 
             options = {
-              destination: '12345',
+              destination: '14251234567',
               mediaType: 'video',
               localMedia: {},
               remoteMedia: {}

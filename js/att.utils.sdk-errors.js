@@ -760,6 +760,22 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24006",
+      ErrorMessage: "Invalid input parameter",
+      Cause: "Invalid phone number",
+      Resolution: "Please provide valid 10 digit phone number"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addParticipants",
+      ErrorCode: "24007",
+      ErrorMessage: "Invalid input parameter",
+      Cause: "Invalid SIP URI",
+      Resolution: "Please provide valid SIP URI"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "removeParticipant",
       ErrorCode: "25000",
       ErrorMessage: "User is not logged in",

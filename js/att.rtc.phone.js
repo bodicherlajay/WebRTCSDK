@@ -437,11 +437,14 @@
             throw ATT.errorDictionary.getSDKError('4002');
           }
         }
-        console.log(this.cleanPhoneNumber(options.destination));
-        options.destination = this.cleanPhoneNumber(options.destination);
 
-        if (false === options.destination) {
-          throw ATT.errorDictionary.getSDKError('4000');
+        if (options.destination.indexOf('@') === -1) {
+          options.destination = this.cleanPhoneNumber(options.destination);
+          if (false === options.destination) {
+            throw ATT.errorDictionary.getSDKError('4000');
+          }
+        } else if (options.destination.split('@').length > 2) {
+          throw ATT.errorDictionary.getSDKError('4001');
         }
 
 
@@ -1613,6 +1616,21 @@
           emitter.publish('conference:invitation-rejected', data);
         });
 
+        for (counter = 0; counter < participants.length; counter += 1) {
+          invitee = participants[counter];
+          if (invitee.indexOf('@') === -1) {
+            invitee = this.cleanPhoneNumber(invitee);
+            if (false === invitee) {
+              publishError('24006');
+              return;
+            }
+          } else if (invitee.split('@').length > 2) {
+            publishError('24007');
+            return;
+          }
+         participants[counter] = invitee;
+        }
+
         try {
           for (counter = 0; counter < participants.length; counter += 1) {
             invitee = participants[counter];
@@ -1622,6 +1640,7 @@
                 invitee: invitee,
                 timestamp: new Date()
               });
+
               conference.addParticipant(invitee);
               /**
                * Invitation sending event
