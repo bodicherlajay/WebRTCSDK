@@ -49,7 +49,7 @@
     session.on('conference-invite', function (data) {
       /**
        * Conference Invite event.
-       * @desc This event fires when a conference invitation is received.
+       * @desc Participant receives this event after a conference invitation is sent to him/her.
        *
        * @event Phone#conference:invitation-received
        * @type {object}
@@ -654,6 +654,15 @@
           return;
         }
 
+        /**
+         * Answering event.
+         * @desc Fired immediately after the `answer` method is invoked.
+         *
+         * @event Phone#answering
+         * @type {object}
+         * @property {Date} timestamp - Event fire time
+         * @property {Object} data - data
+         */
         emitter.publish('answering', {
           from: call.peer(),
           mediaType: call.mediaType(),
@@ -1123,6 +1132,15 @@
 
         try {
           call.on('disconnecting', function (data) {
+            /**
+             * Call disconnecting event.
+             * @desc Fired immediately after invoking the `hangup` method.
+             *
+             * @event Phone#call-disconnecting
+             * @type {object}
+             * @property {Date} timestamp - Event fire time
+             * @property {Object} data - data
+             */
             emitter.publish('call-disconnecting', data);
           });
           call.disconnect();
@@ -1305,6 +1323,7 @@
      * @memberOf Phone
      * @instance
 
+     * @fires Phone#call-held
      * @fires Phone#error
 
      * @example
@@ -1351,6 +1370,7 @@
      * @instance
 
 
+     * @fires Phone#call-resumed
      * @fires Phone#error
 
      * @example
@@ -1423,6 +1443,14 @@
 
         try {
           session.on('address-updated', function () {
+            /**
+             * Address updated event
+             * @desc Indicates the E911 address has been updated successfully.
+             *
+             * @event Phone#address-updated
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
             emitter.publish('address-updated');
           });
 
