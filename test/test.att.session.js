@@ -1380,7 +1380,7 @@ describe('Session', function () {
 
         describe('disconnected', function () {
 
-          it.only('should publish `call-disconnected` when call publishes `disconnected` with relevant data', function (done) {
+          it('should publish `call-disconnected` when call publishes `disconnected` with relevant data', function (done) {
             var callDisconnectedHandlerSpy = sinon.spy();
 
             session.on('call-disconnected', callDisconnectedHandlerSpy);
