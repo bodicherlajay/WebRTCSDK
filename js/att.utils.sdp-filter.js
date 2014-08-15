@@ -180,7 +180,7 @@ if (!ATT) {
     modificationCount = modificationCount + 1;
   }
 
-  function  holdCall (localdescription) {
+  function  modifyForHoldCall (localSdp) {
     logger.logDebug('holdCall');
 
     if (undefined === localdescription ) {
@@ -189,7 +189,7 @@ if (!ATT) {
     }
 
     try {
-      var sdp = localdescription;
+      var sdp = localSdp;
 
       logger.logTrace('holding call', sdp);
 
@@ -209,7 +209,7 @@ if (!ATT) {
     }
   };
 
-  function resumeCall (localdescription) {
+  function modifyForResumeCall (localSdp) {
 
 
     logger.logDebug('resumeCall');
@@ -220,7 +220,7 @@ if (!ATT) {
     }
 
     try {
-      var sdp = localdescription;
+      var sdp = localSdp;
 
       logger.logTrace('resuming call', sdp);
 
@@ -260,8 +260,8 @@ if (!ATT) {
         return sdp.replace(/sendonly/g, 'sendrecv');
       },
       setupActivePassive: setupActivePassive,
-      holdCall: holdCall,
-      resumeCall : resumeCall
+      modifyForHoldCall: modifyForHoldCall,
+      modifyForResumeCall : modifyForResumeCall
     };
   };
 

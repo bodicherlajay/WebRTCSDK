@@ -288,6 +288,8 @@
 
       rtcManager.off('call-connected', onCallConnected);
       rtcManager.off('call-disconnected', onCallDisconnected);
+      rtcManager.off('media-modifications', onMediaModifications);
+      rtcManager.off('media-mod-terminations', onMediaModTerminations);
 
       if (2 === ATT.private.pcv) {
         if (undefined !== peerConnection) {
@@ -425,9 +427,7 @@
           });
         }
 
-        rtcManager.on('media-modifications', onMediaModifications);
 
-        rtcManager.on('media-mod-terminations', onMediaModTerminations);
 
         if (('call' === breed && 2 === ATT.private.pcv)
             || 'conference' === breed) {
@@ -679,28 +679,26 @@
     }
 
     function hold() {
-      var sdp, localDescription;
-      localDescription = that.localSdp();
+      var localSdp = that.localSdp(),
+        holdSdp;
+
       if (2 === ATT.private.pcv) {
-        sdp = sdpFilter.holdCall(localDescription);
+        holdSdp = sdpFilter.modifyForHoldCall(localSdp);
 
-//        that.peerConnection.setLocalDescription(sdp);
-        localSdp = sdp;
+        localSdp = holdSdp;
 
-        rtcManager.holdCall({ description : sdp,
+        rtcManager.holdCall({
+          description : localSdp,
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
           callId : id,
-          onSuccess : function () {
-            //setState('held');
-          },
+          onSuccess : function () { },
           onError : function (error) {
             emitter.publish('error', {
               error: error
             });
           }
-          });
-
+        });
       } else {
         rtcManager.holdCall({
           onSuccess: function (sdp) {
@@ -715,21 +713,20 @@
     }
 
     function resume() {
-      var sdp, localDescription;
-      localDescription = that.localSdp();
+      var localSdp = that.localSdp(),
+        resumeSdp;
+
       if (2 === ATT.private.pcv) {
-        sdp = sdpFilter.resumeCall(localDescription);
+        resumeSdp = sdpFilter.modifyForResumeCall(localSdp);
 
-        //peerConnection.setLocalDescription(sdp);
-        localSdp = sdp;
+        localSdp = resumeSdp;
 
-        rtcManager.resumeCall({ description : sdp,
+        rtcManager.resumeCall({
+          description : localSdp,
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
           callId : id,
-          onSuccess : function () {
-            setState('resumed');
-          },
+          onSuccess : function () {},
           onError : function (error) {
             emitter.publish('error', {
               error: error
@@ -789,6 +786,10 @@
     rtcManager.on('call-connected', onCallConnected);
 
     rtcManager.on('call-disconnected', onCallDisconnected);
+
+    rtcManager.on('media-modifications', onMediaModifications);
+
+    rtcManager.on('media-mod-terminations', onMediaModTerminations);
 
     // Call attributes
     breed = options.breed;
