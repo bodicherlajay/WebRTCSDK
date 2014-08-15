@@ -394,7 +394,7 @@ describe('Call [PCV2]', function () {
     });
 
     describe('hold', function () {
-      var sdpFilter, sdp, peerconnection, holdCallSDPStub, modsdp;
+      var sdpFilter, sdp, peerconnection, holdCallSDPStub, modsdp, actPassStub;
 
       beforeEach(function () {
         modsdp = '123';
@@ -412,11 +412,13 @@ describe('Call [PCV2]', function () {
           return modsdp;
         });
 
+        actPassStub = sinon.stub(sdpFilter, 'setupActivePassive');
 
       });
 
       afterEach(function () {
         holdCallSDPStub.restore();
+        actPassStub.restore();
       });
 
       it('should call sdpFilter.modifyForHoldCall() method', function () {
@@ -514,7 +516,7 @@ describe('Call [PCV2]', function () {
     });
     describe('resume', function () {
       var sdpFilter, sdp, peerconnection, resumeCallSDPStub, modsdp,
-        rtcMgrResumeCallStub;
+        rtcMgrResumeCallStub, actPassStub;
 
       beforeEach(function () {
         modsdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
@@ -532,12 +534,15 @@ describe('Call [PCV2]', function () {
           return modsdp;
         });
 
+        actPassStub = sinon.stub(sdpFilter, 'setupActivePassive');
+
         rtcMgrResumeCallStub = sinon.stub(rtcMgr, 'resumeCall');
       });
 
       afterEach(function () {
         resumeCallSDPStub.restore();
         rtcMgrResumeCallStub.restore();
+        actPassStub.restore();
       });
 
       it('should call sdpFilter.modifyForResumeCall() method', function () {

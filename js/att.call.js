@@ -136,7 +136,7 @@
           || (2 === ATT.private.pcv && 'call' === breed)) {
         if (undefined !== data.remoteSdp) {
           peerConnection.acceptSdpOffer({
-            remoteSdp: data.remoteSdp,
+            remoteSdp: sdpFilter.setupActivePassive(data.remoteSdp),
             onSuccess: function (description) {
               logger.logInfo('acceptSdpOffer: success');
               rtcManager.acceptMediaModifications({
@@ -144,7 +144,8 @@
                 token: sessionInfo.token,
                 callId: id,
                 breed: breed,
-                sdp: description.sdp
+                sdp: description.sdp,
+                modId: '12345'
               });
             }
           });

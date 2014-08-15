@@ -143,10 +143,10 @@ if (!ATT) {
   function setupActivePassive(description) {
     //FOR CHROME 31: If receiving a call (initial is true), we need to modify the SDP
     //Setup must be set to actpass for the answer to be made correctly
-    if (description['sdp'].indexOf('setup:passive') != -1)
-      description['sdp'] = description['sdp'].replace(/setup:passive/g, 'setup:actpass');
-    else if (description['sdp'].indexOf('setup:active') != -1)
-      description['sdp'] = description['sdp'].replace(/setup:active/g, 'setup:actpass');
+    if (description.indexOf('setup:passive') != -1)
+      description = description.replace(/setup:passive/g, 'setup:actpass');
+    else if (description.indexOf('setup:active') != -1)
+      description = description.replace(/setup:active/g, 'setup:actpass');
 
     return description;
   }
@@ -181,11 +181,11 @@ if (!ATT) {
   }
 
   function  modifyForHoldCall (localSdp) {
-    logger.logDebug('holdCall');
+    logger.logDebug('sdpFilter.modifyForHoldCall');
 
-    if (undefined === localdescription ) {
-      logger.logError('Please pass the correct parameter for holdCall');
-      throw new Error ('localdescription is undefined');
+    if (undefined === localSdp) {
+      logger.logError('Please pass the correct parameter for modifyForHoldCall');
+      throw new Error ('parameter `localSdp` is undefined');
     }
 
     try {
@@ -196,8 +196,8 @@ if (!ATT) {
       // adjust SDP for hold request
       sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
 
-      //sdp.sdp = sdp.sdp.replace(/a=setup:active/g, 'a=setup:actpass');
       sdp.type = 'offer';
+
       this.processChromeSDPOffer(sdp);
       incrementModCount();
 
@@ -211,21 +211,19 @@ if (!ATT) {
 
   function modifyForResumeCall (localSdp) {
 
+    logger.logDebug('sdpFilter.modifyForResumeCall');
 
-    logger.logDebug('resumeCall');
-
-    if (undefined === localdescription ) {
-      logger.logError('Please pass the correct parameter for holdCall');
-      throw new Error ('localdescription is undefined');
+    if (undefined === localSdp ) {
+      logger.logError('Please pass the correct parameter for modifyForResumeCall');
+      throw new Error ('parameter `localSdp` is undefined');
     }
 
     try {
       var sdp = localSdp;
 
-      logger.logTrace('resuming call', sdp);
-
       // adjust SDP for resume request
       sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
+
       sdp.type = 'offer';
       this.processChromeSDPOffer(sdp);
       incrementModCount();
