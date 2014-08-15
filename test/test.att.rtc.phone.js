@@ -720,11 +720,13 @@ describe('Phone', function () {
           });
 
           it('should trigger `call-disconnected` with relevant data when call publishes `disconnected` event', function (done) {
+            var unsubscribeSpy = sinon.spy(emitterCall, 'unsubscribe');
             phone.dial(options);
 
             emitterCall.publish('disconnected', eventData);
             setTimeout(function () {
               try {
+                expect(unsubscribeSpy.calledWith('media-established')).to.equal(true);
                 expect(callDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
                 expect(deleteCurrentCallStub.called).to.equal(true);
                 done();
@@ -1633,6 +1635,8 @@ describe('Phone', function () {
                 }
               }, 50);
             });
+
+
 
           });
 

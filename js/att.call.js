@@ -436,11 +436,12 @@
             remoteMedia = connectOpts.remoteMedia;
           }
         }
-
-        if (undefined !== remoteMedia) {
-          remoteMedia.addEventListener('playing', function () {
-            that.setState('media-established');
-          });
+        if (ATT.private.pcv === 1) {
+          if (undefined !== remoteMedia) {
+            remoteMedia.addEventListener('playing', function () {
+              that.setState('media-established');
+            });
+          }
         }
 
 

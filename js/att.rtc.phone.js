@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  ATT.private.pcv = 2;
+  ATT.private.pcv = 1;
 
   var logManager = ATT.logManager.getInstance();
 
@@ -390,6 +390,17 @@
       }
     }
 
+    function mediaEstablished(data) {
+      /**
+       * Media established event.
+       * @desc This event fires after when audio/video media has started
+       * @event Phone#media-established
+       * @type {object}
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('media-established', data);
+    }
+
     /**
      * @summary Make a call
      * @desc Add description here
@@ -539,16 +550,7 @@
              */
             emitter.publish('call-connected', data);
           });
-          call.on('media-established', function (data) {
-            /**
-             * Media established event.
-             * @desc This event fires after when audio/video media has started
-             * @event Phone#media-established
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('media-established', data);
-          });
+          call.on('media-established', mediaEstablished);
           call.on('held', function (data) {
             /**
              * Call on hold event.
@@ -583,9 +585,11 @@
              * @property {String} codec - The codec of the call.
              * @property {Date} timestamp - Event fire time.
              */
+            call.off('media-established', mediaEstablished);
             emitter.publish('call-disconnected', data);
             session.deleteCurrentCall();
           });
+
 
           call.on('error', function (data) {
             emitter.publish('error', data);
@@ -771,9 +775,7 @@
         call.on('connected', function (data) {
           emitter.publish('call-connected', data);
         });
-        call.on('media-established', function (data) {
-          emitter.publish('media-established', data);
-        });
+        call.on('media-established', mediaEstablished);
         call.on('held', function (data) {
           emitter.publish('call-held', data);
         });
@@ -782,6 +784,7 @@
         });
         call.on('disconnected', function (data) {
           logger.logInfo('call disconnected event by phone layer');
+          call.off('media-established', mediaEstablished);
           emitter.publish('call-disconnected', data);
           session.deleteCurrentCall();
         });
