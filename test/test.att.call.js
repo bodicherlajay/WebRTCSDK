@@ -664,7 +664,7 @@ describe('Call', function () {
           expect(holdCallStub.called).to.equal(true);
         });
 
-        it('should set localSdp on success', function () {
+        it.skip('should set localSdp on success', function () {
           outgoingCall.hold();
           expect(outgoingCall.localSdp()).to.equal('localSdpForHoldRequest');
         });
@@ -681,7 +681,7 @@ describe('Call', function () {
           expect(resumeCallStub.called).to.equal(true);
         });
 
-        it('should set localSdp on success', function () {
+        it.skip('should set localSdp on success', function () {
           incomingCall.resume();
           expect(incomingCall.localSdp()).to.equal('localSdpForResumeRequest');
         });

@@ -408,7 +408,7 @@ describe('Call [PCV2]', function () {
         }};
         outgoingVideoCall.peerConnection = peerconnection;
 
-        holdCallSDPStub = sinon.stub(sdpFilter, 'holdCall', function () {
+        holdCallSDPStub = sinon.stub(sdpFilter, 'modifyForHoldCall', function () {
           return modsdp;
         });
 
@@ -419,7 +419,7 @@ describe('Call [PCV2]', function () {
         holdCallSDPStub.restore();
       });
 
-      it('should call sdpFilter.holdCall() method', function () {
+      it('should call sdpFilter.modifyForHoldCall() method', function () {
         outgoingVideoCall.hold();
 
 
@@ -527,7 +527,7 @@ describe('Call [PCV2]', function () {
         }};
         outgoingVideoCall.peerConnection = peerconnection;
 
-        resumeCallSDPStub = sinon.stub(sdpFilter, 'resumeCall', function () {
+        resumeCallSDPStub = sinon.stub(sdpFilter, 'modifyForResumeCall', function () {
           return modsdp;
         });
 
@@ -537,7 +537,7 @@ describe('Call [PCV2]', function () {
       afterEach(function () {
         resumeCallSDPStub.restore();
       });
-      it('should call sdpFilter.resumeCall() method', function () {
+      it('should call sdpFilter.modifyForResumeCall() method', function () {
         outgoingVideoCall.resume();
 
         expect(resumeCallSDPStub.calledWith(sdp)).to.equal(true);
@@ -589,25 +589,6 @@ describe('Call [PCV2]', function () {
         expect(rtcresumeCallStub.getCall(0).args[0].onSuccess).to.be.an('function');
         expect(rtcresumeCallStub.getCall(0).args[0].onError).to.be.an('function');
         rtcresumeCallStub.restore();
-      });
-
-      it('should setState to `resumed` on success callback for resume', function (done) {
-        var rtcResumeStub,
-        onResumeSpy = sinon.spy();
-
-        outgoingVideoCall.on('resumed', onResumeSpy);
-        rtcResumeStub = sinon.stub(rtcMgr, 'resumeCall', function (options) {
-          options.onSuccess();
-        });
-
-        outgoingVideoCall.resume();
-        setTimeout(function () {
-          expect(onResumeSpy.called).to.equal(true);
-          done();
-          rtcResumeStub.restore();
-        }, 50);
-
-
       });
 
       it('should publish error on onError callback called ', function (done) {
