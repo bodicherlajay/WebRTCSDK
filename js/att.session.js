@@ -313,16 +313,6 @@
       return calls[callId];
     };
 
-    this.moveToBackground = function (call) {
-      console.log('moving!!!!');
-    };
-
-    this.switchCall = function () {
-      var call = this.currentCall;
-      this.currentCall = this.backgroundCall;
-      this.backgroundCall = call;
-    };
-
     this.deleteCurrentCall = function () {
       if (this.currentCall) {
         this.currentCall = null;

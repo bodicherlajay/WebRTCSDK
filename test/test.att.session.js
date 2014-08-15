@@ -206,7 +206,7 @@ describe('Session', function () {
       getTokenStub.restore();
     });
 
-    describe('On', function () {
+    describe('on', function () {
 
       it('Should exist', function () {
         expect(session.on).to.be.a('function');
@@ -232,7 +232,7 @@ describe('Session', function () {
       });
     });
 
-    describe('Connect', function () {
+    describe('connect', function () {
 
       var connectSessionStub;
 
@@ -470,7 +470,7 @@ describe('Session', function () {
 
     });
 
-    describe('Disconnect', function () {
+    describe('disconnect', function () {
       var disconnectSessionStub,
         setIdStub;
 
@@ -574,12 +574,6 @@ describe('Session', function () {
 
     });
 
-    describe('moveToBackground', function () {
-      it('should exist', function () {
-        expect(session.moveToBackground).to.be.a('function');
-      });
-    });
-
     describe('getToken', function () {
       var sessionForGetToken;
 
@@ -669,7 +663,7 @@ describe('Session', function () {
       });
     });
 
-    describe('Update', function () {
+    describe('update', function () {
       var refreshSessionStub;
 
       beforeEach(function () {
@@ -839,7 +833,7 @@ describe('Session', function () {
       });
     });
 
-    describe('AddCall', function () {
+    describe('addCall', function () {
 
       it('Should exist', function () {
         expect(session.addCall).to.be.a('function');
@@ -854,7 +848,7 @@ describe('Session', function () {
 
     });
 
-    describe('GetCall', function () {
+    describe('getCall', function () {
 
       beforeEach(function () {
         session.addCall(call);
@@ -874,7 +868,7 @@ describe('Session', function () {
 
     });
 
-    xdescribe('TerminateCalls', function () {
+    xdescribe('terminateCalls', function () {
 
       beforeEach(function () {
         session.addCall(call);
@@ -900,7 +894,7 @@ describe('Session', function () {
 
     });
 
-    describe('DeleteCall', function () {
+    describe('deleteCall', function () {
 
       beforeEach(function () {
         session.addCall(call);
@@ -940,7 +934,7 @@ describe('Session', function () {
 
     });
 
-    describe('DeleteCurrentCall', function () {
+    describe('deleteCurrentCall', function () {
 
       it('Should exist', function () {
         expect(session.deleteCurrentCall).to.be.a('function');
