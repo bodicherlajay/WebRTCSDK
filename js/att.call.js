@@ -288,6 +288,8 @@
 
       rtcManager.off('call-connected', onCallConnected);
       rtcManager.off('call-disconnected', onCallDisconnected);
+      rtcManager.off('media-modifications', onMediaModifications);
+      rtcManager.off('media-mod-terminations', onMediaModTerminations);
 
       if (2 === ATT.private.pcv) {
         if (undefined !== peerConnection) {
@@ -421,9 +423,7 @@
           });
         }
 
-        rtcManager.on('media-modifications', onMediaModifications);
 
-        rtcManager.on('media-mod-terminations', onMediaModTerminations);
 
         if (('call' === breed && 2 === ATT.private.pcv)
             || 'conference' === breed) {
@@ -785,6 +785,10 @@
     rtcManager.on('call-connected', onCallConnected);
 
     rtcManager.on('call-disconnected', onCallDisconnected);
+
+    rtcManager.on('media-modifications', onMediaModifications);
+
+    rtcManager.on('media-mod-terminations', onMediaModTerminations);
 
     // Call attributes
     breed = options.breed;

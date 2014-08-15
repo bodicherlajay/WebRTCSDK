@@ -345,6 +345,7 @@
         this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.remoteDescription), function () {
           logger.logInfo('Set Remote Description Success');
         }, function (err) {
+          console.log("set Remote description " + err);
           // difference between FF and Chrome
           if (typeof err === 'object') {
             err = err.message;
@@ -354,6 +355,8 @@
           //onPeerConnectionError('Set Remote Description Fail: ' + err);
         });
       } catch (err) {
+
+        console.log("set Remote description " + err);
         // Need to figure out why Chrome throws this event though it works
         //todo get the sdk error
         //onPeerConnectionError('Set Remote Description Fail: ' + err);
