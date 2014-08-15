@@ -813,6 +813,86 @@
       ErrorMessage: "Number Invalid",
       Cause: "Invalid PhoneNumber passed",
       Resolution: "Please check the logs and pass a valid phone number"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27000",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27001",
+      ErrorMessage: "Invalid options provided",
+      Cause: "Input options are not provided",
+      Resolution: "Please include the required parameters"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27002",
+      ErrorMessage: "parameter `localMedia` is not defined",
+      Cause: "LocalMedia is not defined",
+      Resolution: "Please include localMedia parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27003",
+      ErrorMessage: "parameter `remoteMedia` is not defined",
+      Cause: "remoteMedia is not defined",
+      Resolution: "Please include remoteMedia parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27004",
+      ErrorMessage: "parameter `destination` is not defined",
+      Cause: "destination is not defined",
+      Resolution: "Please include destination parameter"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27005",
+      ErrorMessage: "Invalid input parameter",
+      Cause: "Invalid phone number",
+      Resolution: "Please provide valid phone number"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27006",
+      ErrorMessage: "Invalid input parameter",
+      Cause: "Invalid SIP URI",
+      Resolution: "Please provide valid SIP URI"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27007",
+      ErrorMessage: "Invalid media type",
+      Cause: "Invalid media constraints",
+      Resolution: "Please provide use valid Media constraints attributes"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27008",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking dial"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27009",
+      ErrorMessage: "Can not make second call. There is no first call in progress.",
+      Cause: "Invalid operation",
+      Resolution: "Please ensure that there is an existing call in progress before making second call"
     }
 
   ];

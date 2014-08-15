@@ -271,7 +271,8 @@ describe('Call', function () {
 
   describe('Methods', function () {
 
-    var outgoingCall,
+    var emitterCall,
+      outgoingCall,
       incomingCall,
       incomingConf,
       outgoingConf,
@@ -291,6 +292,14 @@ describe('Call', function () {
       errorData = {
         error: error
       };
+
+      emitterCall = factories.createEventEmitter();
+
+      createEventEmitterStub.restore();
+
+      createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+        return emitterCall;
+      });
 
       outgoingCall = new ATT.rtc.Call(optionsOutgoing);
       incomingCall = new ATT.rtc.Call(optionsIncoming);
@@ -339,6 +348,24 @@ describe('Call', function () {
 
         unsubscribeSpy.restore();
         subscribeSpy.restore();
+      });
+    });
+
+    describe('off', function () {
+
+      it('should exist', function () {
+        expect(outgoingCall.off).to.be.a('function');
+      });
+
+      it('Should unregister callback for passed in event', function () {
+        var fn = sinon.spy(),
+          unsubscribeSpy = sinon.spy(emitterCall, 'unsubscribe');
+
+        outgoingCall.off('held', fn);
+
+        expect(unsubscribeSpy.calledWith('held', fn)).to.equal(true);
+
+        unsubscribeSpy.restore();
       });
     });
 
