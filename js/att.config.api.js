@@ -385,7 +385,7 @@ if (!ATT) {
           method: 'put',
           formatters: {
             url: function (params) {
-              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + '/' + params.type + '/' + params.callId;
             },
             headers: {
               'Authorization': function (param) {

@@ -474,7 +474,7 @@
     function acceptMediaModifications(options) {
       var data, type = ('call' === options.breed ? 'calls' : 'conferences');
 
-      if ('call' === type) {
+      if ('calls' === type) {
         data = {
           callsMediaModifications: {
             sdp: options.sdp
@@ -490,11 +490,11 @@
 
       resourceManager.doOperation('acceptModifications', {
         params: {
-          url: [
-            options.sessionId,
-            type,
-            options.callId
-          ],
+          url: {
+            sessionId: options.sessionId,
+            type: type,
+            callId: options.callId
+          },
           headers: {
             'Authorization': 'Bearer ' + options.token,
             'x-modId': options.modId

@@ -131,6 +131,7 @@
     }
 
     function onMediaModifications(data) {
+      var remoteDescription;
 
       if ('conference' === breed
           || (2 === ATT.private.pcv && 'call' === breed)) {
@@ -149,12 +150,14 @@
               });
             }
           });
+
+          remoteDescription = peerConnection.getRemoteDescription();
+
           if (data.remoteSdp.indexOf('recvonly') !== -1) {
             that.setState('held');
             rtcManager.disableMediaStream();
-          } else if (remoteSdp
-              && remoteSdp.indexOf
-              && remoteSdp.indexOf('recvonly') !== -1
+          } else if (remoteDescription.sdp
+              && remoteDescription.sdp.indexOf('recvonly') !== -1
               && data.remoteSdp.indexOf('sendrecv') !== -1) {
             that.setState('resumed');
             rtcManager.enableMediaStream();
@@ -702,10 +705,8 @@
       if (2 === ATT.private.pcv) {
         holdSdp = sdpFilter.modifyForHoldCall(localSdp);
 
-        localSdp = holdSdp;
-
         rtcManager.holdCall({
-          description : localSdp,
+          description : holdSdp,
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
           callId : id,
@@ -736,10 +737,8 @@
       if (2 === ATT.private.pcv) {
         resumeSdp = sdpFilter.modifyForResumeCall(localSdp);
 
-        localSdp = resumeSdp;
-
         rtcManager.resumeCall({
-          description : localSdp,
+          description : resumeSdp,
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
           callId : id,

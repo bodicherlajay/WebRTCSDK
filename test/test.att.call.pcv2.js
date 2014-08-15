@@ -428,19 +428,6 @@ describe('Call [PCV2]', function () {
         expect(holdCallSDPStub.calledWith(sdp)).to.equal(true);
       });
 
-      xit('should set local description on peerConnection', function () {
-        var setLocalDescriptionStub;
-
-        setLocalDescriptionStub = sinon.stub(peerConnection, 'setLocalDescription');
-        outgoingVideoCall.hold();
-
-        expect(sdp.has('recvonly'))
-        expect(holdCallSDPStub.calledWith(sdp)).to.equal(true);
-        expect(setLocalDescriptionStub.calledWith(modsdp)).to.equal(true);
-
-        setLocalDescriptionStub.restore();
-      });
-
       it('should call rtcmanager.holdcall() with valid parameters', function () {
         var options, rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall');
         outgoingVideoCall.sdp = '123';
@@ -476,25 +463,6 @@ describe('Call [PCV2]', function () {
         expect(rtcHoldCallStub.getCall(0).args[0].onSuccess).to.be.an('function');
         expect(rtcHoldCallStub.getCall(0).args[0].onError).to.be.an('function');
         rtcHoldCallStub.restore();
-      });
-
-      xit('should setState to `held` on success callback for hold', function (done) {
-        var rtcholdStub,
-          onHeldSpy = sinon.spy();
-
-        outgoingVideoCall.on('held', onHeldSpy);
-        rtcholdStub = sinon.stub(rtcMgr, 'holdCall', function (options) {
-          options.onSuccess();
-        });
-
-        outgoingVideoCall.hold();
-        setTimeout(function () {
-          expect(onHeldSpy.called).to.equal(true);
-          done();
-          rtcholdStub.restore();
-        }, 50);
-
-
       });
 
       it('should publish error on onError callback called ', function (done) {
