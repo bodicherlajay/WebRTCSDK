@@ -194,6 +194,20 @@
           });
         }
 
+        if (modifications.reason === 'success'
+          && modifications.remoteSdp
+          && modifications.remoteSdp.indexOf('sendonly') !== -1
+          && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+          that.setState('held');
+          rtcManager.disableMediaStream();
+        }
+        if (modifications.reason === 'success'
+          && modifications.remoteSdp
+          && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+          that.setState('resumed');
+          rtcManager.enableMediaStream();
+        }
+
         if ('conference' === modifications.type
             && undefined !== modifications.modificationId) {
           logger.logDebug('onMediaModTerminations:conference');
@@ -205,6 +219,7 @@
             emitter.publish('rejected', createEventData());
           }
         }
+
         return;
       }
 
