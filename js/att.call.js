@@ -698,7 +698,7 @@
       } else {
         rtcManager.holdCall({
           onSuccess: function (sdp) {
-            localSdp = sdp;
+            that.localSdp = sdp;
           },
           callId: id,
           onError: function (error) {
@@ -729,11 +729,10 @@
             });
           }
         });
-
       } else {
         rtcManager.resumeCall({
           onSuccess: function (sdp) {
-            localSdp = sdp;
+            that.localSdp = sdp;
           },
           callId: id,
           onError: function (error) {

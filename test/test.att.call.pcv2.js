@@ -513,10 +513,11 @@ describe('Call [PCV2]', function () {
       });
     });
     describe('resume', function () {
-      var sdpFilter, sdp, peerconnection, resumeCallSDPStub, modsdp;
+      var sdpFilter, sdp, peerconnection, resumeCallSDPStub, modsdp,
+        rtcMgrResumeCallStub;
 
       beforeEach(function () {
-        modsdp = '123';
+        modsdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
         sdpFilter = ATT.sdpFilter.getInstance();
         sdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
         outgoingVideoCall.localSdp = function () { return sdp };
@@ -531,70 +532,39 @@ describe('Call [PCV2]', function () {
           return modsdp;
         });
 
-
+        rtcMgrResumeCallStub = sinon.stub(rtcMgr, 'resumeCall');
       });
 
       afterEach(function () {
         resumeCallSDPStub.restore();
+        rtcMgrResumeCallStub.restore();
       });
+
       it('should call sdpFilter.modifyForResumeCall() method', function () {
         outgoingVideoCall.resume();
 
         expect(resumeCallSDPStub.calledWith(sdp)).to.equal(true);
       });
-      xit('should set local description on peerConnection', function () {
-        var setLocalDescriptionStub;
 
-        setLocalDescriptionStub = sinon.stub(outgoingVideoCall.peerConnection, 'setLocalDescription');
+      it('should call rtcManager.resumeCall() with valid parameters', function () {
+
+        outgoingVideoCall.setId('12345');
+
         outgoingVideoCall.resume();
 
-        expect(resumeCallSDPStub.calledWith(sdp)).to.equal(true);
-        expect(setLocalDescriptionStub.calledWith(modsdp)).to.equal(true);
-
-        setLocalDescriptionStub.restore();
-      });
-
-      it('should call rtcmanager.resumeCall() with valid parameters', function () {
-        var options, rtcresumeCallStub = sinon.stub(rtcMgr, 'resumeCall');
-        outgoingVideoCall.sdp = '123';
-        outgoingVideoCall.setId('123');
-        options = {
-          description: outgoingVideoCall.localDescription,
-          sessionId: optionsOutgoingVideo.sessionInfo.sessionId,
-          callId: outgoingVideoCall.id,
-          token: optionsOutgoingVideo.sessionInfo.token,
-          onSuccess: function () {
-            return;
-          },
-          onError: function () {
-            return;
-          }
-        };
-        outgoingVideoCall.resume();
-
-        expect(rtcresumeCallStub.called).to.equal(true);
-
-        expect(rtcresumeCallStub.getCall(0).args[0].description).to.not.equal(undefined);
-        expect(rtcresumeCallStub.getCall(0).args[0].description).to.equal(outgoingVideoCall.sdp);
-
-        expect(rtcresumeCallStub.getCall(0).args[0].callId).to.not.equal(undefined);
-        expect(rtcresumeCallStub.getCall(0).args[0].callId).to.equal(options.callId);
-
-        expect(rtcresumeCallStub.getCall(0).args[0].sessionId).to.not.equal(undefined);
-        expect(rtcresumeCallStub.getCall(0).args[0].sessionId).to.equal(options.sessionId);
-
-        expect(rtcresumeCallStub.getCall(0).args[0].token).to.not.equal(undefined);
-        expect(rtcresumeCallStub.getCall(0).args[0].token).to.equal(options.token);
-
-        expect(rtcresumeCallStub.getCall(0).args[0].onSuccess).to.be.an('function');
-        expect(rtcresumeCallStub.getCall(0).args[0].onError).to.be.an('function');
-        rtcresumeCallStub.restore();
+        expect(rtcMgrResumeCallStub.getCall(0).args[0].description).to.be.an('object');
+        expect(rtcMgrResumeCallStub.getCall(0).args[0].callId).to.equal('12345');
+        expect(rtcMgrResumeCallStub.getCall(0).args[0].sessionId).to.be.an('string');
+        expect(rtcMgrResumeCallStub.getCall(0).args[0].token).to.be.a('string');
+        expect(rtcMgrResumeCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
+        expect(rtcMgrResumeCallStub.getCall(0).args[0].onError).to.be.a('function');
       });
 
       it('should publish error on onError callback called ', function (done) {
-        var rtcResumeStub;
 
-        rtcResumeStub = sinon.stub(rtcMgr, 'resumeCall', function (options) {
+        rtcMgrResumeCallStub.restore();
+
+        rtcMgrResumeCallStub = sinon.stub(rtcMgr, 'resumeCall', function (options) {
           options.onError(error);
         });
 
@@ -603,9 +573,8 @@ describe('Call [PCV2]', function () {
           expect(onErrorHandlerSpy.called).to.equal(true);
           expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
           done();
-          rtcResumeStub.restore();
+          rtcMgrResumeCallStub.restore();
         }, 50);
-
       });
     });
   });
