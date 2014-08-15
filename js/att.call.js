@@ -352,6 +352,10 @@
       emitter.subscribe(event, handler, this);
     }
 
+    function off(event, handler) {
+      emitter.unsubscribe(event, handler);
+    }
+
     function addStream(stream) {
       localStream = stream;
     }
@@ -878,6 +882,7 @@
     this.setState = setState;
     this.setId = setId;
     this.on = on;
+    this.off = off;
     this.addStream = addStream;
     this.connect = connect;
     this.disconnect = disconnect;

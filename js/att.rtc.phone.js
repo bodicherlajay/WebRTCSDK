@@ -112,6 +112,30 @@
       emitter.publish('error', errorInfo);
     }
 
+    function cleanPhoneNumber(number) {
+      try {
+        return ATT.phoneNumber.cleanPhoneNumber(number);
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
+    function formatNumber(number) {
+
+      try {
+        return ATT.phoneNumber.formatNumber(number);
+
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
     function connectWithMediaStream(options, call, errorCallback) {
 
       call.on('stream-added', function (data) {
@@ -158,7 +182,6 @@
     function getSession() {
       return session;
     }
-
 
     function setSession(newSession) {
       session = newSession;
@@ -452,14 +475,13 @@
         }
 
         if (options.destination.indexOf('@') === -1) {
-          options.destination = this.cleanPhoneNumber(options.destination);
+          options.destination = cleanPhoneNumber(options.destination);
           if (false === options.destination) {
             throw ATT.errorDictionary.getSDKError('4000');
           }
         } else if (options.destination.split('@').length > 2) {
           throw ATT.errorDictionary.getSDKError('4001');
         }
-
 
         try {
           logger.logDebug('Phone.dial');
@@ -587,6 +609,7 @@
         }
 
       } catch (err) {
+        console.log(err.TypeError);
         logger.logError(err);
 
         emitter.publish('error', {
@@ -595,6 +618,66 @@
       }
     }
 
+    function addCall(options) {
+
+      var call;
+
+      function onCallHeld() {
+        call.off('held', onCallHeld);
+        dial(options);
+      }
+
+      try {
+        if (undefined === options) {
+          throw ATT.errorDictionary.getSDKError(27001);
+        }
+        if (undefined === options.localMedia) {
+          throw ATT.errorDictionary.getSDKError(27002);
+        }
+        if (undefined === options.remoteMedia) {
+          throw ATT.errorDictionary.getSDKError(27003);
+        }
+        if (undefined === options.destination) {
+          throw ATT.errorDictionary.getSDKError(27004);
+        }
+        if (options.destination.indexOf('@') === -1) {
+          options.destination = cleanPhoneNumber(options.destination);
+          if (false === options.destination) {
+            throw ATT.errorDictionary.getSDKError(27005);
+          }
+        } else if (options.destination.split('@').length > 2) {
+          throw ATT.errorDictionary.getSDKError(27006);
+        }
+        if (undefined !== options.mediaType) {
+          if ('audio' !== options.mediaType
+              && 'video' !== options.mediaType) {
+            throw ATT.errorDictionary.getSDKError(27007);
+          }
+        }
+        if (null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError(27008);
+        }
+        if (null === session.currentCall) {
+          throw ATT.errorDictionary.getSDKError(27009);
+        }
+
+        try {
+          call = session.currentCall;
+
+          call.on('held', onCallHeld);
+
+          call.hold();
+        } catch (err) {
+          throw ATT.errorDictionary.getSDKError(27000);
+        }
+      } catch (err) {
+        logger.logError(err);
+
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
 
     /**
      * @summary
@@ -1648,7 +1731,7 @@
         for (counter = 0; counter < participants.length; counter += 1) {
           invitee = participants[counter];
           if (invitee.indexOf('@') === -1) {
-            invitee = this.cleanPhoneNumber(invitee);
+            invitee = cleanPhoneNumber(invitee);
             if (false === invitee) {
               publishError('24006');
               return;
@@ -1912,30 +1995,6 @@
       }
     }
 
-    function cleanPhoneNumber(number) {
-      try {
-        return ATT.phoneNumber.cleanPhoneNumber(number);
-      } catch (err) {
-        logger.logError(err);
-        emitter.publish('error', {
-          error: err
-        });
-      }
-    }
-
-    function formatNumber(number) {
-
-      try {
-        return ATT.phoneNumber.formatNumber(number);
-
-      } catch (err) {
-        logger.logError(err);
-        emitter.publish('error', {
-          error: err
-        });
-      }
-    }
-
     // ===================
     // Call interface
     // ===================
@@ -1945,6 +2004,7 @@
     this.login = login;
     this.logout = logout;
     this.dial = dial;
+    this.addCall = addCall;
     this.answer = answer;
     this.mute = mute;
     this.unmute = unmute;
