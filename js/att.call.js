@@ -251,6 +251,12 @@
 
     function onCallConnected(data) {
 
+
+      if (id !== data.id) {
+        return;
+      }
+
+
       that.setState('connected');
 
       if ('conference' === breed
@@ -282,6 +288,10 @@
 
     function onCallDisconnected(data) {
       var eventData;
+
+      if (id !== data.id) {
+        return;
+      }
 
       id = null;
 
