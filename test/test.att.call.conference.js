@@ -980,6 +980,27 @@ describe('Call [Conference]', function () {
         setRemoteDescriptionStub.restore();
       });
 
+      it('Should execute Call.setState with `connected` state', function (done) {
+
+        setTimeout(function () {
+          emitterEM.publish('session-open:' + outgoingVideoConf.id(), {
+            type: 'conference',
+            id: '12345',
+            remoteSdp: 'remoteSdp'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(outgoingVideoConf.getState()).to.equal('connected');
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 10);
+
+      });
+
       it('should execute `peerConnection.setRemoteDescription`', function (done) {
 
         setTimeout(function () {
@@ -1007,16 +1028,23 @@ describe('Call [Conference]', function () {
 
       it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
 
-        emitterEM.publish('session-open', {
-          type: 'conference',
-          remoteSdp: undefined
-        });
-
         setTimeout(function () {
-          expect(setRemoteDescriptionStub.called).to.equal(false);
-          done();
+          emitterEM.publish('session-open', {
+            type: 'conference',
+            remoteSdp: undefined
+          });
+
+          setTimeout(function () {
+            try {
+              expect(setRemoteDescriptionStub.called).to.equal(false);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
         }, 10);
       });
+
     });
 
     describe('invitation-accepted', function () {
