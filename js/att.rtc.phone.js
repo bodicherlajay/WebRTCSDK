@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  ATT.private.pcv = 1;
+  ATT.private.pcv = 2;
 
   var logManager = ATT.logManager.getInstance();
 
