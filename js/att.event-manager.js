@@ -77,7 +77,7 @@
           remoteSdp: event.sdp
         });
         break;
-      case ATT.RTCCallEvents.SESSION_TERMINATED:
+      case s:
         emitter.publish('call-disconnected', {
           type: type,
           id: event.resourceURL.split('/')[6],

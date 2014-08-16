@@ -39,7 +39,8 @@
       rejected = false,
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
-      rtcManager = ATT.private.rtcManager.getRTCManager();
+      rtcManager = ATT.private.rtcManager.getRTCManager(),
+      events = ATT.RTCCallEvents;
 
     // ================
     // Private methods
@@ -130,7 +131,7 @@
       return username;
     }
 
-    function onMediaModifications(data) {
+    function onModReceived(data) {
       var remoteDescription;
 
       if ('conference' === breed
@@ -185,9 +186,9 @@
 
     }
 
-    function onMediaModTerminations(modifications) {
+    function onModTerminated(modifications) {
 
-      logger.logDebug('onMediaModTerminations');
+      logger.logDebug('onModTerminated');
       logger.logTrace(modifications);
 
       if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
@@ -214,7 +215,7 @@
 
         if ('conference' === modifications.type
             && undefined !== modifications.modificationId) {
-          logger.logDebug('onMediaModTerminations:conference');
+          logger.logDebug('onModTerminated:conference');
           if ('success' === modifications.reason) {
             setParticipant(modifications.modificationId, 'active');
           }
@@ -227,7 +228,7 @@
         return;
       }
 
-      logger.logDebug('onMediaModTerminations:call');
+      logger.logDebug('onModTerminated:call');
       if (modifications.remoteSdp) {
         rtcManager.setRemoteDescription({
           remoteDescription: modifications.remoteSdp,
@@ -249,7 +250,7 @@
 
     }
 
-    function onCallConnected(data) {
+    function onSessionOpen(data) {
 
       that.setState('connected');
 
@@ -280,7 +281,7 @@
 
     }
 
-    function onCallDisconnected(data) {
+    function onSessionTerminated(data) {
       var eventData;
 
       id = null;
@@ -306,10 +307,10 @@
         setState('disconnected');
       }
 
-      rtcManager.off('call-connected', onCallConnected);
-      rtcManager.off('call-disconnected', onCallDisconnected);
-      rtcManager.off('media-modifications', onMediaModifications);
-      rtcManager.off('media-mod-terminations', onMediaModTerminations);
+      rtcManager.off('call-connected', onSessionOpen);
+      rtcManager.off('call-disconnected', onSessionTerminated);
+      rtcManager.off('media-modifications', onModReceived);
+      rtcManager.off('media-mod-terminations', onModTerminated);
 
       if (2 === ATT.private.pcv) {
         if (undefined !== peerConnection) {
@@ -380,6 +381,13 @@
       localStream = stream;
     }
 
+    function registerForRTCEvents() {
+      rtcManager.on(events.SESSION_OPEN + ':' + id, onSessionOpen);
+      rtcManager.on(events.SESSION_TERMINATED + ':' + id, onSessionTerminated);
+      rtcManager.on(events.MODIFICATION_RECEIVED + ':' + id, onModReceived);
+      rtcManager.on(events.MODIFICATION_TERMINATED + ':' + id, onModTerminated);
+    }
+
     /*
      * Connect the Call
      * Connects the call based on callType(Incoming|Outgoing)
@@ -401,6 +409,7 @@
             } else {
               setId(responsedata.id);
             }
+            registerForRTCEvents();
           },
           onError: function (error) {
             emitter.publish('error', {
@@ -420,7 +429,7 @@
         if (canceled) {
           canceled = false;
 
-          onCallDisconnected({
+          onSessionTerminated({
             reason: 'Call canceled'
           });
           return;
@@ -770,7 +779,7 @@
         token : sessionInfo.token,
         breed: breed,
         onSuccess : function () {
-          rtcManager.off('call-disconnected', onCallDisconnected);
+          rtcManager.off('call-disconnected', onSessionTerminated);
         },
         onError : function (error) {
           emitter.publish('error', error);
@@ -795,14 +804,6 @@
     if (undefined === options.mediaType) {
       throw new Error('No mediaType provided');
     }
-
-    rtcManager.on('call-connected', onCallConnected);
-
-    rtcManager.on('call-disconnected', onCallDisconnected);
-
-    rtcManager.on('media-modifications', onMediaModifications);
-
-    rtcManager.on('media-mod-terminations', onMediaModTerminations);
 
     // Call attributes
     breed = options.breed;

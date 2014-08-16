@@ -253,32 +253,6 @@ describe('Call', function () {
 
       expect(getRTCManagerStub.called).to.equal(true);
     });
-
-    it('should register for event `call-connected` from RTCManager', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
-
-      expect(onSpy.calledWith('call-connected')).to.equal(true);
-      expect(onSpy.getCall(0).args[1]).to.be.a('function');
-    });
-
-    it('should register for `call-disconnected` event on `RTCManager`', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
-
-      expect(onSpy.calledWith('call-disconnected')).to.equal(true);
-    });
-
-    it('should register for event `media-modifications` from RTCManager', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
-      expect(onSpy.calledWith('media-modifications')).to.equal(true);
-    });
-
-    it('should register for event `media-mod-terminations` from RTCManager', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
-
-      expect(onSpy.calledWith('media-mod-terminations')).to.equal(true);
-    });
-
-
   });
 
   describe('Methods', function () {
