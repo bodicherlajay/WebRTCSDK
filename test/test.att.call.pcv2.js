@@ -526,12 +526,18 @@ describe('Call [PCV2]', function () {
     var incomingCall,
       remoteDesc,
       peerConnection,
-      createPeerConnectionStub;
+      responseData,
+      createPeerConnectionStub,
+      connectConferenceStub;
 
     beforeEach(function () {
       remoteDesc = {
         sdp: 'sdf',
         type: 'offer'
+      };
+
+      responseData = {
+        id: '12345'
       };
 
       peerConnection = {
@@ -543,8 +549,17 @@ describe('Call [PCV2]', function () {
         close: function () {}
       };
 
-      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
+      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
+        setTimeout(function () {
+          options.onSuccess();
+        }, 0);
         return peerConnection;
+      });
+
+      connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
+        setTimeout(function () {
+          options.onSuccess(responseData);
+        }, 0);
       });
 
       incomingCall = new ATT.rtc.Call({
@@ -561,6 +576,7 @@ describe('Call [PCV2]', function () {
 
     afterEach(function () {
       createPeerConnectionStub.restore();
+      connectConferenceStub.restore();
     });
 
     describe('media-modifications', function () {
@@ -673,22 +689,24 @@ describe('Call [PCV2]', function () {
       });
     });
 
-    describe('call-disconnected', function () {
+    describe('session-terminated', function () {
 
       it('should execute `peerConnection.close` if pcv == 2', function (done) {
         var peerConnectionCloseStub = sinon.stub(peerConnection, 'close');
 
-        emitterEM.publish('call-disconnected');
-
         setTimeout(function () {
-          try {
-            expect(peerConnectionCloseStub.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          } finally {
-            peerConnectionCloseStub.restore();
-          }
+          emitterEM.publish('session-terminated:' + incomingCall.id());
+
+          setTimeout(function () {
+            try {
+              expect(peerConnectionCloseStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            } finally {
+              peerConnectionCloseStub.restore();
+            }
+          }, 10);
         }, 10);
 
       });
