@@ -37,7 +37,7 @@
     // get the RTC Manager
     rtcManager = ATT.private.rtcManager.getRTCManager();
 
-    rtcManager.on('invitation-received', function (callInfo) {
+    function onInvitationReceived(callInfo) {
       var eventName,
         sendRecvSdp,
         call;
@@ -79,18 +79,18 @@
           timestamp: new Date()
         });
       }
-    });
+    }
 
-    rtcManager.on('media-mod-terminations', function (callInfo) {
-      if (undefined !== callInfo.reason
-          && 'success' !== callInfo.reason
-          && 'Call rejected' !== callInfo.reason) {
-        emitter.publish('network-notification', {
-          message: callInfo.reason,
-          timestamp: new Date()
-        });
-      }
-    });
+//    rtcManager.on('media-mod-terminations', function (callInfo) {
+//      if (undefined !== callInfo.reason
+//          && 'success' !== callInfo.reason
+//          && 'Call rejected' !== callInfo.reason) {
+//        emitter.publish('network-notification', {
+//          message: callInfo.reason,
+//          timestamp: new Date()
+//        });
+//      }
+//    });
 
     function on(event, handler) {
 
@@ -228,6 +228,8 @@
             },
             onSessionReady: function (data) {
               emitter.publish('ready', data);
+
+              rtcManager.on('invitation-received:' + id, onInvitationReceived);
             },
             onError: function (error) {
               emitter.publish('error', {

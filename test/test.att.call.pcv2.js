@@ -526,12 +526,18 @@ describe('Call [PCV2]', function () {
     var incomingCall,
       remoteDesc,
       peerConnection,
-      createPeerConnectionStub;
+      responseData,
+      createPeerConnectionStub,
+      connectConferenceStub;
 
     beforeEach(function () {
       remoteDesc = {
         sdp: 'sdf',
         type: 'offer'
+      };
+
+      responseData = {
+        id: '12345'
       };
 
       peerConnection = {
@@ -543,8 +549,17 @@ describe('Call [PCV2]', function () {
         close: function () {}
       };
 
-      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
+      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
+        setTimeout(function () {
+          options.onSuccess();
+        }, 0);
         return peerConnection;
+      });
+
+      connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
+        setTimeout(function () {
+          options.onSuccess(responseData);
+        }, 0);
       });
 
       incomingCall = new ATT.rtc.Call({
@@ -561,9 +576,10 @@ describe('Call [PCV2]', function () {
 
     afterEach(function () {
       createPeerConnectionStub.restore();
+      connectConferenceStub.restore();
     });
 
-    describe('media-modifications', function () {
+    describe('mod-received', function () {
 
       var acceptSdpOfferStub,
         setMediaModStub;
@@ -579,44 +595,51 @@ describe('Call [PCV2]', function () {
       });
 
       it('should execute `peerConnection.acceptSdpOffer` if pcv == 2 for breed == call', function (done) {
-        emitterEM.publish('media-modifications', {
-          remoteSdp: 'abdc',
-          modificationId: 'ID'
-        });
 
         setTimeout(function () {
-          try {
-            expect(acceptSdpOfferStub.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
+
+          emitterEM.publish('mod-received:' + incomingCall.id(), {
+            remoteSdp: 'abdc',
+            modificationId: 'ID'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(acceptSdpOfferStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 30);
       });
 
       it('should NOT execute `peerConnection.acceptSdpOffer` if pcv == 1 for breed == call', function (done) {
         ATT.private.pcv = 1;
 
-        emitterEM.publish('media-modifications', {
-          remoteSdp: 'abdc',
-          modificationId: 'ID'
-        });
-
         setTimeout(function () {
-          try {
-            expect(acceptSdpOfferStub.called).to.equal(false);
-            done();
-          } catch (e) {
-            done(e);
-          } finally {
-            ATT.private.pcv = 2;
-          }
-        }, 10);
+
+          emitterEM.publish('mod-received:' + incomingCall.id(), {
+            remoteSdp: 'abdc',
+            modificationId: 'ID'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(acceptSdpOfferStub.called).to.equal(false);
+              done();
+            } catch (e) {
+              done(e);
+            } finally {
+              ATT.private.pcv = 2;
+            }
+          }, 10);
+        }, 30);
       });
 
     });
 
-    describe('media-mod-terminations', function () {
+    describe('mod-terminated', function () {
 
       var setRemoteDescStub;
 
@@ -629,66 +652,75 @@ describe('Call [PCV2]', function () {
       });
 
       it('should execute peerConnection.setRemoteDescription if pcv == 2 for breed = call', function (done) {
-        emitterEM.publish('media-mod-terminations', {
-          remoteSdp: 'abdcX',
-          type: 'call',
-          modificationId: 'ID',
-          reason: 'abdc',
-          from: 'me'
-        });
 
         setTimeout(function () {
-          try {
-            expect(setRemoteDescStub.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
+
+          emitterEM.publish('mod-terminated:' + incomingCall.id(), {
+            remoteSdp: 'abdcX',
+            type: 'call',
+            modificationId: 'ID',
+            reason: 'abdc',
+            from: 'me'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(setRemoteDescStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 30);
 
       });
 
       it('should NOT execute peerConnection.setRemoteDescription if pcv == 1 for breed = call', function (done) {
         ATT.private.pcv = 1;
 
-        emitterEM.publish('media-mod-terminations', {
-          remoteSdp: 'abdcX',
-          type: 'call',
-          modificationId: 'ID',
-          reason: 'abdc',
-          from: 'me'
-        });
-
         setTimeout(function () {
-          try {
-            expect(setRemoteDescStub.called).to.equal(false);
-            done();
-          } catch (e) {
-            done(e);
-          } finally {
-            ATT.private.pcv = 2;
-          }
-        }, 10);
+
+          emitterEM.publish('mod-terminated:' + incomingCall.id(), {
+            remoteSdp: 'abdcX',
+            type: 'call',
+            modificationId: 'ID',
+            reason: 'abdc',
+            from: 'me'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(setRemoteDescStub.called).to.equal(false);
+              done();
+            } catch (e) {
+              done(e);
+            } finally {
+              ATT.private.pcv = 2;
+            }
+          }, 10);
+        }, 30);
 
       });
     });
 
-    describe('call-disconnected', function () {
+    describe('session-terminated', function () {
 
       it('should execute `peerConnection.close` if pcv == 2', function (done) {
         var peerConnectionCloseStub = sinon.stub(peerConnection, 'close');
 
-        emitterEM.publish('call-disconnected');
-
         setTimeout(function () {
-          try {
-            expect(peerConnectionCloseStub.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          } finally {
-            peerConnectionCloseStub.restore();
-          }
+          emitterEM.publish('session-terminated:' + incomingCall.id());
+
+          setTimeout(function () {
+            try {
+              expect(peerConnectionCloseStub.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            } finally {
+              peerConnectionCloseStub.restore();
+            }
+          }, 10);
         }, 10);
 
       });
