@@ -319,6 +319,10 @@
       return calls[callId];
     };
 
+    this.getCalls = function () {
+      return calls;
+    };
+
     this.deleteCurrentCall = function () {
       if (this.currentCall) {
         this.currentCall = null;
