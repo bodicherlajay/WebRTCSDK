@@ -237,10 +237,7 @@ describe('Session', function () {
       var connectSessionStub;
 
       beforeEach(function () {
-
-        connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
-        });
-
+        connectSessionStub = sinon.stub(rtcManager, 'connectSession');
       });
 
       afterEach(function () {
@@ -539,7 +536,7 @@ describe('Session', function () {
             setIdStub.restore();
 
             setIdStub = sinon.stub(session, 'setId', function () {
-              throw error;
+              throw error
             });
 
             session.disconnect();
@@ -795,10 +792,10 @@ describe('Session', function () {
 
     describe('createCall', function () {
 
-      var callOpts;
+      var createCallOpts;
 
       beforeEach(function () {
-        callOpts = {
+        createCallOpts = {
           breed: 'call',
           peer: '12345',
           type: 'incoming',
@@ -813,7 +810,7 @@ describe('Session', function () {
       it('should call ATT.rtc.Call', function () {
         var callConstructorSpy = sinon.spy(ATT.rtc, 'Call');
 
-        session.createCall(callOpts);
+        session.createCall(createCallOpts);
 
         expect(callConstructorSpy.called).to.equal(true);
 
@@ -821,16 +818,85 @@ describe('Session', function () {
       });
 
       it('should return the newly created call object', function () {
-        call = session.createCall(callOpts);
-        expect(call instanceof ATT.rtc.Call).to.equal(true);
-        expect(call.breed()).to.equal('call');
+        var newCall = session.createCall(createCallOpts);
+        expect(newCall instanceof ATT.rtc.Call).to.equal(true);
+        expect(newCall.breed()).to.equal('call');
       });
 
-      it('should set the currentCall as the newly created call', function () {
-        call = session.createCall(callOpts);
+      it('should subscribe to `connected` event on the newly created call', function () {
+        var callOnStub = sinon.stub(call, 'on'),
+          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+            return call;
+          });
 
-        expect(session.currentCall).to.equal(call);
+        session.createCall(createCallOpts);
+
+        expect(callOnStub.calledWith('connected')).to.equal(true);
+
+        callOnStub.restore();
+        callConstructorStub.restore();
       });
+
+      it('should set the pendingCall as the newly created call', function () {
+        var newCall = session.createCall(createCallOpts);
+
+        expect(session.pendingCall).to.equal(newCall);
+      });
+
+      describe('Events on newly created Call', function () {
+
+        var newCall;
+
+        beforeEach(function () {
+          newCall = session.createCall(createCallOpts);
+          newCall.setId('12345');
+        });
+
+        describe('connected', function () {
+
+          it('should set the pending call as the current call', function (done) {
+            newCall.setState('connected');
+
+            setTimeout(function () {
+              try {
+                expect(session.currentCall).to.equal(newCall);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+
+          });
+
+          it('should set the pending call to null', function (done) {
+            newCall.setState('connected');
+
+            setTimeout(function () {
+              try {
+                expect(session.pendingCall).to.equal(null);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+
+          it('should add the currentCall to the calls stack', function (done) {
+            newCall.setState('connected');
+
+            setTimeout(function () {
+              try {
+                expect(session.getCall(newCall.id())).to.equal(newCall);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+
+        });
+      });
+
     });
 
     describe('addCall', function () {

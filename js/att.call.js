@@ -253,7 +253,8 @@
 
       that.setState('connected');
 
-      if ('conference' === breed || (2 === ATT.private.pcv && 'call' === breed)) {
+      if ('conference' === breed
+          || (2 === ATT.private.pcv && 'call' === breed)) {
         if (undefined !== data.remoteSdp) {
           peerConnection.setRemoteDescription({
             sdp: data.remoteSdp,
@@ -447,8 +448,6 @@
           }
         }
 
-
-
         if (('call' === breed && 2 === ATT.private.pcv)
             || 'conference' === breed) {
 
@@ -518,7 +517,6 @@
         });
       }
     }
-
 
     function addParticipant(invitee) {
 

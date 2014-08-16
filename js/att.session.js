@@ -120,7 +120,7 @@
     // public attributes
     this.timeout = null;
     this.e911Id = null;
-    this.backgroundCall = null;
+    this.pendingCall = null;
     this.currentCall = null;
     this.timer = null;
 
@@ -188,7 +188,6 @@
     };
 
     this.connect = function connect(options) {
-      var session = this;
       try {
         if (undefined === options) {
           throw ATT.errorDictionary.getSDKError('2002');
@@ -254,8 +253,6 @@
       try {
         emitter.publish('disconnecting');
 
-        var session = this;
-
         rtcManager.disconnectSession({
           sessionId: session.getId(),
           token: session.getToken(),
@@ -284,15 +281,22 @@
     };
 
     this.createCall = function (options) {
-      var call;
-      ATT.utils.extend(options, {
+
+      var call = new ATT.rtc.Call(ATT.utils.extend(options, {
         sessionInfo: {
           sessionId: this.getId(),
           token: token
         }
+      }));
+
+      call.on('connected', function () {
+        session.currentCall = session.pendingCall;
+        session.pendingCall = null;
+        calls[session.currentCall.id()] = session.currentCall;
       });
-      call = new ATT.rtc.Call(options);
-      session.currentCall = call;
+
+      this.pendingCall = call;
+
       return call;
     };
 

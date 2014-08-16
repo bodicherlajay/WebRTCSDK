@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  ATT.private.pcv = 1;
+  ATT.private.pcv = 2;
 
   var logManager = ATT.logManager.getInstance();
 
@@ -746,7 +746,7 @@
           publishError(5003);
           return;
         }
-        call = session.currentCall;
+        call = session.pendingCall;
 
         if (call === null) {
           publishError(5000);
@@ -972,14 +972,14 @@
         if (null === session || null === session.getId()) {
           throw ATT.errorDictionary.getSDKError('20001');
         }
-        if (null === session.currentCall) {
+        if (null === session.pendingCall) {
           throw ATT.errorDictionary.getSDKError('20002');
         }
 
         try {
           logger.logDebug('Phone.joinConference');
 
-          var conference = session.currentCall;
+          var conference = session.pendingCall;
 
           /**
            * Conference joining event.
@@ -1274,7 +1274,7 @@
      * phone.cancel();
      */
     function cancel() {
-      var call = session.currentCall;
+      var call = session.pendingCall;
 
       try {
         if (null === call) {
@@ -1329,7 +1329,7 @@
      */
     function reject() {
       try {
-        var call = session.currentCall;
+        var call = session.pendingCall;
 
         if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('12000');
@@ -1382,14 +1382,14 @@
         if (null === session || null === session.getId()) {
           throw ATT.errorDictionary.getSDKError('22001');
         }
-        if (null === session.currentCall) {
+        if (null === session.pendingCall) {
           throw ATT.errorDictionary.getSDKError('22002');
         }
 
         try {
           logger.logDebug('Phone.rejectConference');
 
-          var conference = session.currentCall;
+          var conference = session.pendingCall;
 
           conference.reject();
 

@@ -438,7 +438,7 @@ describe('Phone [PCV2]', function () {
 
         incomingCall = new Call(incomingCallOpts);
 
-        session.currentCall = incomingCall;
+        session.pendingCall = incomingCall;
 
         getUserMediaStub = sinon.stub(ums, 'getUserMedia');
       });

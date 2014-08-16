@@ -1062,7 +1062,6 @@ describe('Phone', function () {
 
         it('[5003] should publish `error` event with data if the user is not logged in', function (done) {
 
-
           session.setId(null);
 
           phone.answer(options);
@@ -1074,30 +1073,38 @@ describe('Phone', function () {
           }, 50);
         });
 
-        it('[5000] should publish `error` event with error data if there is no current call', function (done) {
+        it('[5000] should publish `error` event with error data if there is NO pending call', function (done) {
 
-          session.currentCall = null;
+          session.pendingCall = null;
 
           phone.answer(options);
 
           setTimeout(function () {
-            expect(onErrorHandlerSpy.calledOnce).to.equal(true);
-            expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
-            done();
+            try {
+              expect(onErrorHandlerSpy.calledOnce).to.equal(true);
+              expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5000');
+              done();
+            } catch (e) {
+              done(e);
+            }
           }, 50);
 
         });
 
         it('[5002] should publish `error` with data when there\'s an uncaught exception', function (done) {
 
-          session.currentCall = undefined;
+          session.pendingCall = undefined;
 
           phone.answer(options);
 
           setTimeout(function () {
-            expect(onErrorHandlerSpy.calledOnce).to.equal(true);
-            expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
-            done();
+            try {
+              expect(onErrorHandlerSpy.calledOnce).to.equal(true);
+              expect(onErrorHandlerSpy.getCall(0).args[0].error.ErrorCode).to.equal('5002');
+              done();
+            } catch (e) {
+              done(e);
+            }
           }, 50);
         });
 
@@ -1105,13 +1112,17 @@ describe('Phone', function () {
           phone.answer(options);
 
           setTimeout(function () {
-            expect(onAnsweringSpy.called).to.equal(true);
-            expect(onAnsweringSpy.getCall(0).args[0]).to.be.an('object');
-            expect(onAnsweringSpy.getCall(0).args[0].from).to.be.a('string');
-            expect(onAnsweringSpy.getCall(0).args[0].mediaType).to.be.a('string');
-            expect(onAnsweringSpy.getCall(0).args[0].codec).to.be.an('array');
-            expect(typeof onAnsweringSpy.getCall(0).args[0].timestamp).to.equal('object');
-            done();
+            try {
+              expect(onAnsweringSpy.called).to.equal(true);
+              expect(onAnsweringSpy.getCall(0).args[0]).to.be.an('object');
+              expect(onAnsweringSpy.getCall(0).args[0].from).to.be.a('string');
+              expect(onAnsweringSpy.getCall(0).args[0].mediaType).to.be.a('string');
+              expect(onAnsweringSpy.getCall(0).args[0].codec).to.be.an('array');
+              expect(onAnsweringSpy.getCall(0).args[0].timestamp).to.be.a('date');
+              done();
+            } catch (e) {
+              done(e);
+            }
           }, 50);
         });
 
@@ -1320,7 +1331,7 @@ describe('Phone', function () {
 
           session.setId('sessionId');
 
-          session.currentCall = conference;
+          session.pendingCall = conference;
         });
 
         afterEach(function () {
@@ -1342,7 +1353,7 @@ describe('Phone', function () {
               expect(conferenceJoiningSpy.getCall(0).args[0].from).to.be.a('string');
               expect(conferenceJoiningSpy.getCall(0).args[0].mediaType).to.be.a('string');
               expect(conferenceJoiningSpy.getCall(0).args[0].codec).to.be.an('array');
-              expect(typeof conferenceJoiningSpy.getCall(0).args[0].timestamp).to.equal('object');
+              expect(conferenceJoiningSpy.getCall(0).args[0].timestamp).to.be.a('date');
               done();
             } catch (e) {
               done(e);
@@ -1725,7 +1736,7 @@ describe('Phone', function () {
           });
 
           it('[20002] should be published with `error` event if there is no incoming conference invite', function (done) {
-            session.currentCall = null;
+            session.pendingCall = null;
 
             phone.joinConference(options);
 
@@ -2594,7 +2605,7 @@ describe('Phone', function () {
 
         beforeEach(function () {
           onSpy = sinon.spy(call, 'on');
-          session.currentCall = call;
+          session.pendingCall = call;
 
           callCanceledHandlerSpy = sinon.spy();
           deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
@@ -2673,8 +2684,10 @@ describe('Phone', function () {
           });
 
           it('[11000] should be published with `error` event if call has not been initiated', function () {
-            session.currentCall = null;
+            session.pendingCall = null;
+
             phone.cancel();
+
             expect(ATT.errorDictionary.getSDKError('11000')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('11000')
@@ -2735,7 +2748,9 @@ describe('Phone', function () {
           phone.on('call-rejected', callRejectedSpy);
 
           call.setId('123');
-          session.currentCall = call;
+
+          session.pendingCall = call;
+
           deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
         });
 
@@ -2804,8 +2819,10 @@ describe('Phone', function () {
           });
 
           it('[12000] should be published with `error` event if call has not been initiated', function () {
-            session.currentCall = null;
+            session.pendingCall = null;
+
             phone.reject();
+
             expect(ATT.errorDictionary.getSDKError('12000')).to.be.an('object');
             expect(publishStub.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('12000')
@@ -2814,7 +2831,9 @@ describe('Phone', function () {
 
           it('[12001] should be published with `error` event if there is an unknown exception during the operation', function () {
             call.setId('1234');
-            session.currentCall = call;
+
+            session.pendingCall = call;
+
             phone.reject();
 
             expect(ATT.errorDictionary.getSDKError('12001')).to.be.an('object');
@@ -2858,7 +2877,7 @@ describe('Phone', function () {
           onSpy = sinon.spy(conference, 'on');
           rejectStub = sinon.stub(conference, 'reject', function () {});
 
-          session.currentCall = conference;
+          session.pendingCall = conference;
 
           onConfDisconnectedHandlerSpy = sinon.spy();
           phone.on('conference:ended', onConfDisconnectedHandlerSpy);
@@ -2921,7 +2940,7 @@ describe('Phone', function () {
           });
 
           it('[22002] should be published with `error` event if there is no incoming conference invite', function (done) {
-            session.currentCall = null;
+            session.pendingCall = null;
 
             phone.rejectConference();
 
