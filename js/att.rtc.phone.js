@@ -165,6 +165,7 @@
         onMediaEstablished: function () {
           logger.logDebug('getUserMedia: onMediaEstablished');
           emitter.publish('media-established', {
+            id: call.id,
             from: call.peer(),
             timestamp: new Date(),
             mediaType: call.mediaType(),

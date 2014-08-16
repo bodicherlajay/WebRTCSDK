@@ -387,6 +387,7 @@ describe('Event Manager', function () {
 
           setTimeout(function () {
             expect(publishSpy.calledWith('media-modifications', {
+              id : '1111',
               remoteSdp: 'abc',
               modificationId: '12345'
             })).to.equal(true);
@@ -415,6 +416,7 @@ describe('Event Manager', function () {
 
           setTimeout(function () {
             expect(publishSpy.calledWith('media-mod-terminations', {
+              id: '1111',
               type: 'conference',
               remoteSdp: 'abcdefg',
               modificationId: '12345',
@@ -443,6 +445,7 @@ describe('Event Manager', function () {
           setTimeout(function () {
             expect(publishSpy.called).to.equal(true);
             expect(publishSpy.calledWith('media-mod-terminations', {
+              id : '1111',
               type: 'call',
               remoteSdp: 'abcdefg',
               modificationId: '12345',

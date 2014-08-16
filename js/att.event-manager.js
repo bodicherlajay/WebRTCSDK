@@ -58,12 +58,14 @@
         break;
       case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
         emitter.publish('media-modifications', {
+          id : event.resourceURL.split('/')[6],
           remoteSdp: event.sdp,
           modificationId: event.modId
         });
         break;
       case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
         emitter.publish('media-mod-terminations', {
+          id : event.resourceURL.split('/')[6],
           type: type,
           remoteSdp: event.sdp,
           modificationId: event.modId,
