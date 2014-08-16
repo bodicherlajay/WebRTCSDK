@@ -154,13 +154,13 @@
           remoteDescription = peerConnection.getRemoteDescription();
 
           if (data.remoteSdp.indexOf('recvonly') !== -1) {
-            that.setState('held');
             rtcManager.disableMediaStream();
+            that.setState('held');
           } else if (remoteDescription.sdp
               && remoteDescription.sdp.indexOf('recvonly') !== -1
               && data.remoteSdp.indexOf('sendrecv') !== -1) {
-            that.setState('resumed');
             rtcManager.enableMediaStream();
+            that.setState('resumed');
           }
         }
         return;
@@ -202,14 +202,14 @@
           && modifications.remoteSdp
           && modifications.remoteSdp.indexOf('sendonly') !== -1
           && modifications.remoteSdp.indexOf('sendrecv') === -1) {
-          that.setState('held');
           rtcManager.disableMediaStream();
+          that.setState('held');
         }
         if (modifications.reason === 'success'
           && modifications.remoteSdp
           && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-          that.setState('resumed');
           rtcManager.enableMediaStream();
+          that.setState('resumed');
         }
 
         if ('conference' === modifications.type

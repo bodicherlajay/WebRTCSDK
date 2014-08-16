@@ -394,22 +394,17 @@ describe('Call [PCV2]', function () {
     });
 
     describe('hold', function () {
-      var sdpFilter, sdp, peerconnection, holdCallSDPStub, modsdp, actPassStub;
+      var sdpFilter, sdp, holdCallSDPStub, modSdp, actPassStub;
 
       beforeEach(function () {
-        modsdp = '123';
+
         sdpFilter = ATT.sdpFilter.getInstance();
         sdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
+        modSdp = { sdp: 'a=recvonly\r\nb=helloworld\r\no=2323\r\ns=34343535' };
         outgoingVideoCall.localSdp = function () { return sdp };
-        peerconnection = {setLocalDescription: function () {
-          return;
-        }, getLocalDescription : function () {
-          return sdp;
-        }};
-        outgoingVideoCall.peerConnection = peerconnection;
 
         holdCallSDPStub = sinon.stub(sdpFilter, 'modifyForHoldCall', function () {
-          return modsdp;
+          return modSdp;
         });
 
         actPassStub = sinon.stub(sdpFilter, 'setupActivePassive');
@@ -428,40 +423,19 @@ describe('Call [PCV2]', function () {
         expect(holdCallSDPStub.calledWith(sdp)).to.equal(true);
       });
 
-      it('should call rtcmanager.holdcall() with valid parameters', function () {
-        var options, rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall');
-        outgoingVideoCall.sdp = '123';
+      it('should call rtcManager.holdcall() with valid parameters', function () {
+        var rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall');
+
         outgoingVideoCall.setId('123');
-        options = {
-          description: outgoingVideoCall.localDescription,
-          sessionId: optionsOutgoingVideo.sessionInfo.sessionId,
-          callId: outgoingVideoCall.id,
-          token: optionsOutgoingVideo.sessionInfo.token,
-          onSuccess: function () {
-            return;
-          },
-          onError: function () {
-            return;
-          }
-        };
+
         outgoingVideoCall.hold();
 
-        expect(rtcHoldCallStub.called).to.equal(true);
-
-        expect(rtcHoldCallStub.getCall(0).args[0].description).to.not.equal(undefined);
-        expect(rtcHoldCallStub.getCall(0).args[0].description).to.equal(outgoingVideoCall.sdp);
-
-        expect(rtcHoldCallStub.getCall(0).args[0].callId).to.not.equal(undefined);
-        expect(rtcHoldCallStub.getCall(0).args[0].callId).to.equal(options.callId);
-
-        expect(rtcHoldCallStub.getCall(0).args[0].sessionId).to.not.equal(undefined);
-        expect(rtcHoldCallStub.getCall(0).args[0].sessionId).to.equal(options.sessionId);
-
-        expect(rtcHoldCallStub.getCall(0).args[0].token).to.not.equal(undefined);
-        expect(rtcHoldCallStub.getCall(0).args[0].token).to.equal(options.token);
-
-        expect(rtcHoldCallStub.getCall(0).args[0].onSuccess).to.be.an('function');
-        expect(rtcHoldCallStub.getCall(0).args[0].onError).to.be.an('function');
+        expect(rtcHoldCallStub.getCall(0).args[0].description).to.be.an('object');
+        expect(rtcHoldCallStub.getCall(0).args[0].callId).to.equal('123');
+        expect(rtcHoldCallStub.getCall(0).args[0].sessionId).to.be.an('string');
+        expect(rtcHoldCallStub.getCall(0).args[0].token).to.be.a('string');
+        expect(rtcHoldCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
+        expect(rtcHoldCallStub.getCall(0).args[0].onError).to.be.a('function');
         rtcHoldCallStub.restore();
       });
 
@@ -482,24 +456,19 @@ describe('Call [PCV2]', function () {
 
       });
     });
+
     describe('resume', function () {
-      var sdpFilter, sdp, peerconnection, resumeCallSDPStub, modsdp,
+      var sdpFilter, sdp, resumeCallSDPStub, modSdp,
         rtcMgrResumeCallStub, actPassStub;
 
       beforeEach(function () {
-        modsdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
         sdpFilter = ATT.sdpFilter.getInstance();
-        sdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
+        sdp = { sdp: 'a=sendonly\r\nb=helloworld\r\no=2323\r\ns=34343535' };
+        modSdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
         outgoingVideoCall.localSdp = function () { return sdp };
-        peerconnection = {setLocalDescription: function () {
-          return;
-        }, getLocalDescription : function () {
-          return sdp;
-        }};
-        outgoingVideoCall.peerConnection = peerconnection;
 
         resumeCallSDPStub = sinon.stub(sdpFilter, 'modifyForResumeCall', function () {
-          return modsdp;
+          return modSdp;
         });
 
         actPassStub = sinon.stub(sdpFilter, 'setupActivePassive');
