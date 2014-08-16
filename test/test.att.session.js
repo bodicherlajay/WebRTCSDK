@@ -323,7 +323,6 @@ describe('Session', function () {
               }, 0);
             });
 
-            session.connect(options);
           });
 
           afterEach(function () {
@@ -331,6 +330,8 @@ describe('Session', function () {
           });
 
           it('should publish the ready event with data on session', function (done) {
+            session.connect(options);
+
             setTimeout(function () {
               try {
                 expect(onReadyHandlerSpy.calledWith(onSessionReadyData)).to.equal(true);
@@ -341,8 +342,18 @@ describe('Session', function () {
             }, 10);
           });
 
-          it('should register for `invitation-received` event on RTCManager', function () {
-            expect(rtcManagerOnSpy.calledWith('invitation-received:' + session.getId())).to.equal(true);
+          it('should register for `invitation-received` event on RTCManager', function (done) {
+            session.connect(options);
+
+            setTimeout(function () {
+              try {
+                expect(rtcManagerOnSpy.calledWith('invitation-received:' + session.getId())).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+
           });
 
         });
@@ -1264,7 +1275,7 @@ describe('Session', function () {
           return call;
         });
 
-        emitterEM.publish('invitation-received', callInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
 
         setTimeout(function () {
           try {
@@ -1295,7 +1306,7 @@ describe('Session', function () {
           return call;
         });
 
-        emitterEM.publish('invitation-received', callInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
 
         setTimeout(function () {
           try {
@@ -1328,7 +1339,7 @@ describe('Session', function () {
 
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
 
-        emitterEM.publish('invitation-received', callInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
 
         setTimeout(function () {
           try {
@@ -1346,7 +1357,7 @@ describe('Session', function () {
 
       it('should trigger `call-incoming` with relevant data on creating the new call', function (done) {
 
-        emitterEM.publish('invitation-received', callInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
 
         setTimeout(function () {
           try {
@@ -1365,7 +1376,7 @@ describe('Session', function () {
 
       it('should trigger `conference-invite` with relevant data on creating the new conference', function (done) {
 
-        emitterEM.publish('invitation-received', conferenceInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), conferenceInfo);
 
         setTimeout(function () {
           try {
@@ -1414,7 +1425,7 @@ describe('Session', function () {
             return call;
           });
 
-          emitterEM.publish('invitation-received', callInfo);
+          emitterEM.publish('invitation-received:' + session.getId(), callInfo);
         });
 
         afterEach(function () {
