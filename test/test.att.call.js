@@ -41,7 +41,7 @@ describe('Call', function () {
       localDescription : '12X3',
       setRemoteDescription : function () { return; },
       addStream : function () {return; },
-      onaddstream : function () {return;},
+      onaddstream : function () {return; },
       createOffer : function () {return }
     };
 
@@ -175,16 +175,7 @@ describe('Call', function () {
   describe('Constructor', function () {
 
     var call1,
-      call2,
-      onSpy;
-
-    beforeEach(function () {
-      onSpy = sinon.stub(rtcMgr, 'on');
-    });
-
-    afterEach(function () {
-      onSpy.restore();
-    });
+      call2;
 
     it('Should throw an error if invalid options', function () {
       var func = function (options) {
@@ -253,31 +244,6 @@ describe('Call', function () {
 
       expect(getRTCManagerStub.called).to.equal(true);
     });
-
-    it('should register for event `call-connected` from RTCManager', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
-
-      expect(onSpy.calledWith('call-connected')).to.equal(true);
-      expect(onSpy.getCall(0).args[1]).to.be.a('function');
-    });
-
-    it('should register for `call-disconnected` event on `RTCManager`', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
-
-      expect(onSpy.calledWith('call-disconnected')).to.equal(true);
-    });
-
-    it('should register for event `media-modifications` from RTCManager', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
-      expect(onSpy.calledWith('media-modifications')).to.equal(true);
-    });
-
-    it('should register for event `media-mod-terminations` from RTCManager', function () {
-      call1 = new ATT.rtc.Call(optionsOutgoing);
-
-      expect(onSpy.calledWith('media-mod-terminations')).to.equal(true);
-    });
-
 
   });
 
@@ -402,7 +368,6 @@ describe('Call', function () {
         onStub;
 
       beforeEach(function () {
-        ATT.private.pcv = 1;
         connectCallStub = sinon.stub(rtcMgr, 'connectCall');
 
         onStub = sinon.stub(rtcMgr, 'on');
@@ -435,7 +400,8 @@ describe('Call', function () {
         addEventListenerStub.restore();
       });
 
-      describe('Call', function () {
+      //TODO: need to remove PCV 1 related code
+      xdescribe('Call', function () {
 
         it('should execute RTCManager.connectCall for outgoing calls', function () {
           outgoingCall.connect(connectOptions);
@@ -600,7 +566,6 @@ describe('Call', function () {
         unmuteCallStub;
 
       beforeEach(function () {
-        ATT.private.pcv = 1;
         muteCallStub = sinon.stub(rtcMgr, 'muteCall', function (options) {
           options.onSuccess();
         });
@@ -833,7 +798,7 @@ describe('Call', function () {
 
       describe('Success on `rejectCall`', function () {
 
-        it('should call `rtcManager.off` to unsubscribe the current call from `call-disconnected` event', function () {
+        it('should call `rtcManager.off` to unsubscribe the current call from `session-terminated` event', function () {
 
           var offSpy;
 
@@ -855,18 +820,18 @@ describe('Call', function () {
 
       describe('Events for reject', function () {
 
-        describe('call-disconnected', function () {
+        describe('session-terminated', function () {
           var onRejectedSpy;
 
           beforeEach (function () {
             incomingCall.reject();
           });
 
-          it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
+          it('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
 
             incomingCall.setId('notNull');
 
-            emitterEM.publish('call-disconnected');
+            emitterEM.publish('session-terminated');
 
             setTimeout(function () {
               try {
@@ -878,7 +843,7 @@ describe('Call', function () {
             }, 30);
           });
 
-          it('should publish `rejected` with data when rtcManager publishes `call-disconnected` and rejected == true', function (done) {
+          it('should publish `rejected` with data when rtcManager publishes `session-terminated` and rejected == true', function (done) {
 
             var data = {
               reason: 'nothing'
@@ -886,7 +851,7 @@ describe('Call', function () {
             onRejectedSpy = sinon.spy();
             incomingCall.on('rejected', onRejectedSpy);
 
-            emitterEM.publish('call-disconnected', data);
+            emitterEM.publish('session-terminated', data);
 
             setTimeout(function () {
               try {
@@ -901,7 +866,7 @@ describe('Call', function () {
           it('should execute rtcMgr.resetPeerConnection', function (done) {
             var resetPeerConnectionStub = sinon.stub(rtcMgr, 'resetPeerConnection');
 
-            emitterEM.publish('call-disconnected');
+            emitterEM.publish('session-terminated');
 
             setTimeout(function () {
               try {
@@ -915,10 +880,10 @@ describe('Call', function () {
             }, 20);
           });
 
-          it('should de-register from the `call-disconnected` event from `rtcManager`', function (done) {
+          it('should de-register from the `session-terminated` event from `rtcManager`', function (done) {
             var offSpy = sinon.spy(rtcMgr, 'off');
 
-            emitterEM.publish('call-disconnected', {
+            emitterEM.publish('session-terminated', {
               reason: 'Call rejected'
             });
 
@@ -1265,7 +1230,7 @@ describe('Call', function () {
         connectCallStub.restore();
       });
 
-      describe('media-modifications', function () {
+      describe('mod-received', function () {
 
         var modificationsHold,
           modificationsResume,
@@ -1296,7 +1261,7 @@ describe('Call', function () {
         });
 
         it('should execute `RTCManager.setModifications`', function (done) {
-          emitterEM.publish('media-modifications', modificationsHold);
+          emitterEM.publish('mod-received', modificationsHold);
 
           setTimeout(function () {
             try {
@@ -1309,7 +1274,7 @@ describe('Call', function () {
         });
 
         it('should execute setRemoteSdp', function (done) {
-          emitterEM.publish('media-modifications', modificationsHold);
+          emitterEM.publish('mod-received', modificationsHold);
 
           setTimeout(function () {
             try {
@@ -1324,7 +1289,7 @@ describe('Call', function () {
         describe('Hold modification', function () {
 
           it('should execute setState with state `held` if the sdp contains `recvonly`', function (done) {
-            emitterEM.publish('media-modifications', modificationsHold);
+            emitterEM.publish('mod-received', modificationsHold);
 
             setTimeout(function () {
               try {
@@ -1337,7 +1302,7 @@ describe('Call', function () {
           });
 
           it('should execute rtcManager.disableMediaStream if the sdp contains `recvonly`', function (done) {
-            emitterEM.publish('media-modifications', modificationsHold);
+            emitterEM.publish('mod-received', modificationsHold);
 
             setTimeout(function () {
               try {
@@ -1370,7 +1335,7 @@ describe('Call', function () {
 
           it('should execute setState with `resumed` state if the new remoteDescription contains `sendrecv` '
             + '&& the current remoteDescription contains `recvonly`', function (done) {
-            emitterEM.publish('media-modifications', modificationsResume);
+            emitterEM.publish('mod-received', modificationsResume);
 
             setTimeout(function () {
               try {
@@ -1384,7 +1349,7 @@ describe('Call', function () {
 
           it('should execute rtcManager.enableMediaStream if the new remoteDescription contains `sendrecv`'
             + ' && the current remoteDescription contains `recvonly`', function (done) {
-            emitterEM.publish('media-modifications', modificationsResume);
+            emitterEM.publish('mod-received', modificationsResume);
 
             setTimeout(function () {
               try {
@@ -1399,7 +1364,7 @@ describe('Call', function () {
 
       });
 
-      describe('media-mod-terminations', function () {
+      describe('mod-terminated', function () {
 
         var modificationsHold,
           modificationsResume,
@@ -1441,8 +1406,8 @@ describe('Call', function () {
           enableMediaStreamStub.restore();
         });
 
-        it('should execute setRemoteSdp on getting a `media-mod-terminations` event from eventManager', function (done) {
-          emitterEM.publish('media-mod-terminations', modificationsHold);
+        it('should execute setRemoteSdp on getting a `mod-terminated` event from eventManager', function (done) {
+          emitterEM.publish('mod-terminated', modificationsHold);
 
           setTimeout(function () {
             try {
@@ -1455,7 +1420,7 @@ describe('Call', function () {
         });
 
         it('should call `RTCManager.setRemoteDescription` if there is a remoteDescription', function (done) {
-          emitterEM.publish('media-mod-terminations', modificationsHold);
+          emitterEM.publish('mod-terminated', modificationsHold);
 
           setTimeout(function () {
             try {
@@ -1473,7 +1438,7 @@ describe('Call', function () {
         describe('hold', function (done) {
 
           it('should execute setState with `held` state if the sdp contains `sendonly` && but does not contain `sendrecv`', function (done) {
-            emitterEM.publish('media-mod-terminations', modificationsHold);
+            emitterEM.publish('mod-terminated', modificationsHold);
 
             setTimeout(function () {
               try {
@@ -1490,7 +1455,7 @@ describe('Call', function () {
         describe('resume', function () {
 
           it('should execute setState with `resumed` state if the new remoteDescription contains `sendrecv`', function (done) {
-            emitterEM.publish('media-mod-terminations', modificationsResume);
+            emitterEM.publish('mod-terminated', modificationsResume);
 
             setTimeout(function () {
               try {
@@ -1505,7 +1470,7 @@ describe('Call', function () {
         });
       });
 
-      describe('call-connected', function () {
+      describe('session-open', function () {
 
         var setRemoteDescriptionStub,
           playStreamSpy,
@@ -1531,7 +1496,7 @@ describe('Call', function () {
         });
 
         it('Should execute Call.setState with `connected` state', function (done) {
-          emitterEM.publish('call-connected', eventData);
+          emitterEM.publish('session-open', eventData);
 
           setTimeout(function () {
             try {
@@ -1544,7 +1509,7 @@ describe('Call', function () {
         });
 
         it('should execute setRemoteSdp with remote sdp after setState', function (done) {
-          emitterEM.publish('call-connected', eventData);
+          emitterEM.publish('session-open', eventData);
 
           setTimeout(function () {
             try {
@@ -1558,7 +1523,7 @@ describe('Call', function () {
         });
 
         it('should execute RTCManager.setRemoteDescription', function (done) {
-          emitterEM.publish('call-connected', eventData);
+          emitterEM.publish('session-open', eventData);
 
           setTimeout(function () {
             try {
@@ -1579,7 +1544,7 @@ describe('Call', function () {
           ATT.private.pcv = 2;
           call.connect(); // setup the peerConnection
 
-          emitterEM.publish('call-connected', eventData);
+          emitterEM.publish('session-open', eventData);
           setTimeout(function () {
             try {
               expect(pcSetRemoteDescriptionStub.called).to.equal(true);
@@ -1594,7 +1559,7 @@ describe('Call', function () {
 
 
         it('should call `rtcManager.playStream`', function (done) {
-          emitterEM.publish('call-connected', eventData);
+          emitterEM.publish('session-open', eventData);
 
           setTimeout(function () {
             try {
@@ -1609,7 +1574,7 @@ describe('Call', function () {
 
       });
 
-      describe('call-disconnected', function () {
+      describe('session-terminated', function () {
         var setIdSpy,
           resetPeerConnectionStub,
           offStub;
@@ -1626,9 +1591,9 @@ describe('Call', function () {
           offStub.restore();
         });
 
-        it('should set the callId to null when rtcManager publishes `call-disconnected` event', function (done) {
+        it('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
 
-          emitterEM.publish('call-disconnected');
+          emitterEM.publish('session-terminated');
 
           setTimeout(function () {
             try {
@@ -1640,7 +1605,7 @@ describe('Call', function () {
           }, 30);
         });
 
-        it('should publish `disconnected` with data on getting `call-disconnected` with no reason', function (done) {
+        it('should publish `disconnected` with data on getting `session-terminated` with no reason', function (done) {
 
           var data = {
               data : '123'
@@ -1653,7 +1618,7 @@ describe('Call', function () {
 
           call.setState('connected');
 
-          emitterEM.publish('call-disconnected', data); // no reason passed
+          emitterEM.publish('session-terminated', data); // no reason passed
 
           setTimeout(function () {
             try {
@@ -1666,13 +1631,13 @@ describe('Call', function () {
 
         });
 
-        it('should publish `rejected` on getting `call-disconnected` with reason: `Call rejected`', function (done) {
+        it('should publish `rejected` on getting `session-terminated` with reason: `Call rejected`', function (done) {
 
           var rejectedSpy = sinon.spy();
 
           call.on('rejected', rejectedSpy);
 
-          emitterEM.publish('call-disconnected', {
+          emitterEM.publish('session-terminated', {
             reason: 'Call rejected'
           });
 
@@ -1683,13 +1648,13 @@ describe('Call', function () {
 
         });
 
-        it('should publish `canceled` on getting `call-disconnected` with reason: `Call canceled`', function (done) {
+        it('should publish `canceled` on getting `session-terminated` with reason: `Call canceled`', function (done) {
 
           var canceledSpy = sinon.spy();
 
           call.on('canceled', canceledSpy);
 
-          emitterEM.publish('call-disconnected', {
+          emitterEM.publish('session-terminated', {
             reason: 'Call canceled'
           });
 
@@ -1700,13 +1665,13 @@ describe('Call', function () {
 
         });
 
-        it('should publish `canceled` on getting `call-disconnected` when call state is `created`', function (done) {
+        it('should publish `canceled` on getting `session-terminated` when call state is `created`', function (done) {
 
           var canceledSpy = sinon.spy();
 
           call.on('canceled', canceledSpy);
 
-          emitterEM.publish('call-disconnected', {
+          emitterEM.publish('session-terminated', {
             abc: 'abc'
           });
 
@@ -1717,7 +1682,7 @@ describe('Call', function () {
 
         });
 
-        it('should publish `canceled` on getting `call-disconnected` and if Call.canceled = true', function (done) {
+        it('should publish `canceled` on getting `session-terminated` and if Call.canceled = true', function (done) {
 
           var canceledSpy = sinon.spy(),
             eventData = {
@@ -1728,7 +1693,7 @@ describe('Call', function () {
 
           call.disconnect();
 
-          emitterEM.publish('call-disconnected', eventData);
+          emitterEM.publish('session-terminated', eventData);
 
           setTimeout(function () {
             expect(canceledSpy.calledOnce).to.equal(true);
@@ -1737,7 +1702,7 @@ describe('Call', function () {
 
         });
 
-        it('should publish `disconnected` with data.reason on getting `call-disconnected` with any other reason', function (done) {
+        it('should publish `disconnected` with data.reason on getting `session-terminated` with any other reason', function (done) {
 
           var data = {
               reason : 'Other Reason'
@@ -1746,7 +1711,7 @@ describe('Call', function () {
 
           call.on('disconnected', disconnectedSpy);
 
-          emitterEM.publish('call-disconnected', data);
+          emitterEM.publish('session-terminated', data);
 
           setTimeout(function () {
             try {
@@ -1765,12 +1730,12 @@ describe('Call', function () {
 
         });
 
-        it('should unsubscribe the handler for `call-connected`', function (done) {
-          emitterEM.publish('call-disconnected', {});
+        it('should unsubscribe the handler for `session-open`', function (done) {
+          emitterEM.publish('session-terminated', {});
 
           setTimeout(function () {
             try {
-              expect(offStub.calledWith('call-connected')).to.equal(true);
+              expect(offStub.calledWith('session-open')).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1778,12 +1743,12 @@ describe('Call', function () {
           }, 10);
         });
 
-        it('should unsubscribe the handler for `call-disconnected`', function (done) {
-          emitterEM.publish('call-disconnected', {});
+        it('should unsubscribe the handler for `session-terminated`', function (done) {
+          emitterEM.publish('session-terminated', {});
 
           setTimeout(function () {
             try {
-              expect(offStub.calledWith('call-disconnected')).to.equal(true);
+              expect(offStub.calledWith('session-terminated')).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1791,12 +1756,12 @@ describe('Call', function () {
           }, 10);
         });
 
-        it('should unsubscribe the handler for `media-modifications`', function (done) {
-          emitterEM.publish('call-disconnected', {});
+        it('should unsubscribe the handler for `mod-received`', function (done) {
+          emitterEM.publish('session-terminated', {});
 
           setTimeout(function () {
             try {
-              expect(offStub.calledWith('media-modifications')).to.equal(true);
+              expect(offStub.calledWith('mod-received')).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1804,12 +1769,12 @@ describe('Call', function () {
           }, 10);
         });
 
-        it('should unsubscribe the handler for `media-mod-terminations`', function (done) {
-          emitterEM.publish('call-disconnected', {});
+        it('should unsubscribe the handler for `mod-terminated`', function (done) {
+          emitterEM.publish('session-terminated', {});
 
           setTimeout(function () {
             try {
-              expect(offStub.calledWith('media-mod-terminations')).to.equal(true);
+              expect(offStub.calledWith('mod-terminated')).to.equal(true);
               done();
             } catch (e) {
               done(e);
@@ -1818,7 +1783,7 @@ describe('Call', function () {
         });
 
         it('should execute rtcMgr.resetPeerConnection', function (done) {
-          emitterEM.publish('call-disconnected');
+          emitterEM.publish('session-terminated');
 
           setTimeout(function () {
             try {
@@ -1851,7 +1816,7 @@ describe('Call', function () {
         setStateSpy.restore();
       });
 
-      describe('call-connected', function () {
+      describe('session-open', function () {
 
         var eventData,
           playStreamSpy;
@@ -1869,7 +1834,7 @@ describe('Call', function () {
         });
 
         it('Should execute Call.setState with `connected` state', function (done) {
-          emitterEM.publish('call-connected', eventData);
+          emitterEM.publish('session-open', eventData);
 
           setTimeout(function () {
             try {
@@ -1882,7 +1847,7 @@ describe('Call', function () {
         });
 
         it('Should not execute rtcManager.playStream', function (done) {
-          emitterEM.publish('call-connected', eventData);
+          emitterEM.publish('session-open', eventData);
 
           setTimeout(function () {
             try {

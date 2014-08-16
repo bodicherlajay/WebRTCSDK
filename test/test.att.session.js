@@ -65,7 +65,6 @@ describe('Session', function () {
     var session,
       rtcManager,
       createEventEmitterSpy,
-      rtcManagerOnSpy,
       getRTCManagerStub;
 
     beforeEach(function () {
@@ -73,7 +72,6 @@ describe('Session', function () {
       rtcManager = {
         on: function () {}
       };
-      rtcManagerOnSpy = sinon.spy(rtcManager, 'on');
       getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcManager;
       });
@@ -83,7 +81,6 @@ describe('Session', function () {
     afterEach(function () {
       createEventEmitterSpy.restore();
       getRTCManagerStub.restore();
-      rtcManagerOnSpy.restore();
       session = null;
     });
 
@@ -99,13 +96,6 @@ describe('Session', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
-    it('should register for `invitation-received` event on RTCManager', function () {
-      expect(rtcManagerOnSpy.calledWith('invitation-received')).to.equal(true);
-    });
-
-    it('should register for `media-mod-terminations` event on RTCManager', function () {
-      expect(rtcManagerOnSpy.calledWith('media-mod-terminations')).to.equal(true);
-    });
   });
 
   describe('Methods', function () {
@@ -124,6 +114,7 @@ describe('Session', function () {
       onSessionReadyData,
       createEventEmitterStub,
       rtcManager,
+      rtcManagerOnSpy,
       getRTCMgrStub,
       getTokenStub,
       error,
@@ -147,6 +138,7 @@ describe('Session', function () {
       });
 
       rtcManager = new ATT.private.RTCManager(optionsforRTCM);
+      rtcManagerOnSpy = sinon.spy(rtcManager, 'on');
 
       getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcManager;
@@ -202,6 +194,7 @@ describe('Session', function () {
     });
 
     afterEach(function () {
+      rtcManagerOnSpy.restore();
       getRTCMgrStub.restore();
       getTokenStub.restore();
     });
@@ -347,6 +340,11 @@ describe('Session', function () {
               }
             }, 10);
           });
+
+          it('should register for `invitation-received` event on RTCManager', function () {
+            expect(rtcManagerOnSpy.calledWith('invitation-received:' + session.getId())).to.equal(true);
+          });
+
         });
 
         describe('onError', function () {
@@ -1164,6 +1162,7 @@ describe('Session', function () {
 
       var rtcManager,
         session,
+        connectSessionStub,
         callInfo,
         conferenceInfo,
         emitterEM,
@@ -1208,25 +1207,32 @@ describe('Session', function () {
 
         session = new ATT.rtc.Session();
 
-        callIncomingHandlerSpy = sinon.spy();
+        connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
+          session.setId('12345');
 
+          options.onSessionReady();
+        });
+
+        createCallSpyStub = sinon.spy(session, 'createCall');
+
+        callIncomingHandlerSpy = sinon.spy();
         conferenceInviteHandlerSpy = sinon.spy();
 
         session.on('call-incoming', callIncomingHandlerSpy);
-
         session.on('conference-invite', conferenceInviteHandlerSpy);
 
-        createCallSpyStub = sinon.spy(session, 'createCall');
+        session.connect(options);
       });
 
       afterEach(function () {
         getRTCMgrStub.restore();
+        connectSessionStub.restore();
         createCallSpyStub.restore();
       });
 
       it('should execute session.createCall with breed as the type received in event data from event manager', function (done) {
 
-        emitterEM.publish('invitation-received', callInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
 
         setTimeout(function () {
           try {
