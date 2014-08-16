@@ -1198,43 +1198,58 @@ describe('Call [Conference]', function () {
       });
     });
 
-    describe('media-modifications', function () {
+    describe.only('mod-received', function () {
       var acceptSdpOfferStub;
 
       it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
         acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
 
-        emitterEM.publish('media-modifications', {
-          remoteSdp: undefined,
-          modificationId: 'ID'
-        });
-
         setTimeout(function () {
-          expect(acceptSdpOfferStub.called).to.equal(false);
-          acceptSdpOfferStub.restore();
-          done();
+
+          emitterEM.publish('mod-received:' + outgoingVideoConf.id(), {
+            remoteSdp: undefined,
+            modificationId: 'ID'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(acceptSdpOfferStub.called).to.equal(false);
+              acceptSdpOfferStub.restore();
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
         }, 10);
       });
 
       it('should execute `peerConnection.acceptSdpOffer`', function (done) {
         acceptSdpOfferStub = sinon.stub(peerConnection, 'acceptSdpOffer');
 
-        emitterEM.publish('media-modifications', {
-          remoteSdp: 'abdc',
-          modificationId: 'ID'
-        });
-
         setTimeout(function () {
-          expect(acceptSdpOfferStub.called).to.equal(true);
-          expect(acceptSdpOfferStub.getCall(0).args[0].remoteSdp).to.equal('abdc');
-          expect(acceptSdpOfferStub.getCall(0).args[0].onSuccess).to.be.a('function');
-          acceptSdpOfferStub.restore();
-          done();
+
+          emitterEM.publish('mod-received:' + outgoingVideoConf.id(), {
+            remoteSdp: 'abdc',
+            modificationId: 'ID'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(acceptSdpOfferStub.called).to.equal(true);
+              expect(acceptSdpOfferStub.getCall(0).args[0].remoteSdp).to.equal('abdc');
+              expect(acceptSdpOfferStub.getCall(0).args[0].onSuccess).to.be.a('function');
+              acceptSdpOfferStub.restore();
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
         }, 10);
       });
 
       describe('setRemoteDescription: Success', function () {
         var localDescription;
+
         beforeEach(function () {
           localDescription = {
             sdp: 'sdf',
@@ -1254,26 +1269,34 @@ describe('Call [Conference]', function () {
           var acceptMediaModificationsStub = sinon.stub(rtcManager, 'acceptMediaModifications');
 
           outgoingVideoConf.setId('123');
-          emitterEM.publish('media-modifications', {
-            remoteSdp: 'abdc',
-            modificationId: 'ID'
-          });
 
           setTimeout(function () {
-            expect(acceptMediaModificationsStub.called).to.equal(true);
-            expect(acceptMediaModificationsStub.getCall(0).args[0].sessionId).to.be.a('string');
-            expect(acceptMediaModificationsStub.getCall(0).args[0].callId).to.be.a('string');
-            expect(acceptMediaModificationsStub.getCall(0).args[0].token).to.be.a('string');
-            expect(acceptMediaModificationsStub.getCall(0).args[0].sdp).to.be.a('string');
-            expect(acceptMediaModificationsStub.getCall(0).args[0].breed).to.be.a('string');
-            acceptMediaModificationsStub.restore();
-            done();
+
+            emitterEM.publish('mod-received:' + outgoingVideoConf.id(), {
+              remoteSdp: 'abdc',
+              modificationId: 'ID'
+            });
+
+            setTimeout(function () {
+              try {
+                expect(acceptMediaModificationsStub.called).to.equal(true);
+                expect(acceptMediaModificationsStub.getCall(0).args[0].sessionId).to.be.a('string');
+                expect(acceptMediaModificationsStub.getCall(0).args[0].callId).to.be.a('string');
+                expect(acceptMediaModificationsStub.getCall(0).args[0].token).to.be.a('string');
+                expect(acceptMediaModificationsStub.getCall(0).args[0].sdp).to.be.a('string');
+                expect(acceptMediaModificationsStub.getCall(0).args[0].breed).to.be.a('string');
+                acceptMediaModificationsStub.restore();
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
           }, 10);
         });
       });
     });
 
-    describe('media-mod-terminations', function () {
+    describe('mod-terminated', function () {
 
       var setRemoteDescriptionStub;
 
@@ -1286,20 +1309,27 @@ describe('Call [Conference]', function () {
 
       it('should set the remoteSdp if it comes in the event', function (done) {
 
-        emitterEM.publish('media-mod-terminations', {
-          remoteSdp: 'abdcX',
-          type: 'conference',
-          modificationId: 'ID',
-          reason: 'abdc',
-          from: 'me'
-        });
-
         setTimeout(function () {
-          expect(setRemoteDescriptionStub.called).to.equal(true);
-          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('abdcX');
-          // TODO: when should this be offer/answer???
-          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
-          done();
+
+          emitterEM.publish('mod-terminated:' + outgoingVideoConf.id(), {
+            remoteSdp: 'abdcX',
+            type: 'conference',
+            modificationId: 'ID',
+            reason: 'abdc',
+            from: 'me'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(setRemoteDescriptionStub.called).to.equal(true);
+              expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('abdcX');
+              // TODO: when should this be offer/answer???
+              expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('offer');
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
         }, 10);
       })
     });
