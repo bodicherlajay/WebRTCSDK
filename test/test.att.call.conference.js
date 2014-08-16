@@ -5,7 +5,6 @@ describe('Call [Conference]', function () {
   "use strict";
 
   var Call,
-    restClientStub,
     factories,
     optionsOutgoingVideo;
 
@@ -451,8 +450,6 @@ describe('Call [Conference]', function () {
               }, 10);
             });
 
-
-
           });
 
           afterEach(function () {
@@ -526,7 +523,7 @@ describe('Call [Conference]', function () {
               }, 20);
             });
 
-            describe.only('registerForEvents', function () {
+            describe('registerForEvents', function () {
 
               it('should register for event `session-open` from RTCManager', function (done) {
 
@@ -595,11 +592,15 @@ describe('Call [Conference]', function () {
               outgoingVideoConference.connect();
 
               setTimeout(function () {
-                expect(onErrorSpy.calledOnce).to.equal(true);
-                expect(publishStub.called).to.equal(true);
-                expect(publishStub.getCall(0).args[0]).to.equal('error');
-                expect(publishStub.getCall(0).args[1].error).to.equal(cruelError);
-                done();
+                try {
+                  expect(onErrorSpy.calledOnce).to.equal(true);
+                  expect(publishStub.called).to.equal(true);
+                  expect(publishStub.getCall(0).args[0]).to.equal('error');
+                  expect(publishStub.getCall(0).args[1].error).to.equal(cruelError);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
               }, 20);
             });
           });
@@ -848,8 +849,7 @@ describe('Call [Conference]', function () {
 
     describe('disconnectConference', function () {
 
-      var onSpy,
-        confCall;
+      var confCall;
 
       beforeEach(function () {
         confCall = new ATT.rtc.Call({
@@ -893,16 +893,18 @@ describe('Call [Conference]', function () {
 
   describe('Events', function () {
     var emitterEM,
-        createEventEmitterStub,
-        outgoingVideoConf,
-        createPeerConnectionStub,
-        remoteDesc,
-        peerConnection,
-        optionsforRTCM,
-        rtcManager,
-        getRTCManagerStub,
-        resourceManager,
-        apiConfig;
+      responseData,
+      createEventEmitterStub,
+      outgoingVideoConf,
+      createPeerConnectionStub,
+      connectConferenceStub,
+      remoteDesc,
+      peerConnection,
+      optionsforRTCM,
+      rtcManager,
+      getRTCManagerStub,
+      resourceManager,
+      apiConfig;
 
     beforeEach(function () {
 
@@ -933,6 +935,10 @@ describe('Call [Conference]', function () {
         type: 'offer'
       };
 
+      responseData = {
+        id: '12345'
+      };
+
       peerConnection = {
         getRemoteDescription: function () {
           return remoteDesc;
@@ -941,8 +947,17 @@ describe('Call [Conference]', function () {
         acceptSdpOffer: function () {}
       };
 
-      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function () {
+      createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
+        setTimeout(function () {
+          options.onSuccess();
+        }, 0);
         return peerConnection;
+      });
+
+      connectConferenceStub = sinon.stub(rtcManager, 'connectConference', function (options) {
+        setTimeout(function () {
+          options.onSuccess(responseData);
+        }, 0);
       });
 
       outgoingVideoConf.connect();
@@ -951,9 +966,10 @@ describe('Call [Conference]', function () {
     afterEach(function () {
       getRTCManagerStub.restore();
       createPeerConnectionStub.restore();
+      connectConferenceStub.restore();
     });
 
-    describe('call-connected', function () {
+    describe('session-open', function () {
       var setRemoteDescriptionStub;
 
       beforeEach(function () {
@@ -964,24 +980,34 @@ describe('Call [Conference]', function () {
         setRemoteDescriptionStub.restore();
       });
 
-      it('should set the remote description', function (done) {
-
-        emitterEM.publish('call-connected', {
-          type: 'conference',
-          remoteSdp: 'remoteSdp'
-        });
+      it('should execute `peerConnection.setRemoteDescription`', function (done) {
 
         setTimeout(function () {
-          expect(setRemoteDescriptionStub.called).to.equal(true);
-          expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('remoteSdp');
-          expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('answer');
-          done();
-        }, 50);
+
+          emitterEM.publish('session-open:' + outgoingVideoConf.id(), {
+            type: 'conference',
+            id: '12345',
+            remoteSdp: 'remoteSdp'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(setRemoteDescriptionStub.called).to.equal(true);
+              expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('remoteSdp');
+              expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('answer');
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+
+        }, 10);
+
       });
 
       it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
 
-        emitterEM.publish('call-connected', {
+        emitterEM.publish('session-open', {
           type: 'conference',
           remoteSdp: undefined
         });

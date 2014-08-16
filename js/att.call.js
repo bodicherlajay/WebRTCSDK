@@ -307,10 +307,10 @@
         setState('disconnected');
       }
 
-      rtcManager.off('call-connected', onSessionOpen);
-      rtcManager.off('call-disconnected', onSessionTerminated);
-      rtcManager.off('media-modifications', onModReceived);
-      rtcManager.off('media-mod-terminations', onModTerminated);
+      rtcManager.off(events.SESSION_OPEN + ':' + id, onSessionOpen);
+      rtcManager.off(events.SESSION_TERMINATED + ':' + id, onSessionTerminated);
+      rtcManager.off(events.MODIFICATION_RECEIVED + ':' + id, onModReceived);
+      rtcManager.off(events.MODIFICATION_TERMINATED + ':' + id, onModTerminated);
 
       if (2 === ATT.private.pcv) {
         if (undefined !== peerConnection) {
@@ -320,6 +320,14 @@
         return;
       }
       rtcManager.resetPeerConnection();
+    }
+
+
+    function registerForRTCEvents() {
+      rtcManager.on(events.SESSION_OPEN + ':' + id, onSessionOpen);
+      rtcManager.on(events.SESSION_TERMINATED + ':' + id, onSessionTerminated);
+      rtcManager.on(events.MODIFICATION_RECEIVED + ':' + id, onModReceived);
+      rtcManager.on(events.MODIFICATION_TERMINATED + ':' + id, onModTerminated);
     }
 
     // ================
@@ -379,13 +387,6 @@
 
     function addStream(stream) {
       localStream = stream;
-    }
-
-    function registerForRTCEvents() {
-      rtcManager.on(events.SESSION_OPEN + ':' + id, onSessionOpen);
-      rtcManager.on(events.SESSION_TERMINATED + ':' + id, onSessionTerminated);
-      rtcManager.on(events.MODIFICATION_RECEIVED + ':' + id, onModReceived);
-      rtcManager.on(events.MODIFICATION_TERMINATED + ':' + id, onModTerminated);
     }
 
     /*
@@ -773,15 +774,19 @@
 
       rejected = true;
 
+      rtcManager.on('session-terminated:' + id, onSessionTerminated);
+
       rtcManager.rejectCall({
         callId : id,
         sessionId : sessionInfo.sessionId,
         token : sessionInfo.token,
         breed: breed,
         onSuccess : function () {
-          rtcManager.off('call-disconnected', onSessionTerminated);
+          logger.logInfo('rejectCall: onSuccess');
         },
         onError : function (error) {
+          logger.logError(error);
+
           emitter.publish('error', error);
         }
       });
