@@ -1247,7 +1247,6 @@ describe('Call', function () {
       beforeEach(function () {
 
         call = new ATT.rtc.Call(optionsOutgoing);
-        call.setId('123');
 
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
         setStateStub = sinon.stub(call, 'setState');
@@ -1514,9 +1513,7 @@ describe('Call', function () {
           pcSetRemoteDescriptionStub;
 
         beforeEach(function () {
-
           eventData = {
-            id : call.id(),
             type: 'call',
             remoteSdp: 'abcdefg'
           };
@@ -1720,12 +1717,11 @@ describe('Call', function () {
 
         });
 
-        it('should publish `canceled` on getting `call-disconnected` and if Call.canceled = true if the data.id is the same as the callId', function (done) {
+        it('should publish `canceled` on getting `call-disconnected` and if Call.canceled = true', function (done) {
 
           var canceledSpy = sinon.spy(),
             eventData = {
-              abc: 'abc',
-              id: call.id()
+              abc: 'abc'
             };
 
           call.on('canceled', canceledSpy);
