@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit*/
 
-describe('Call [Conference]', function () {
+describe.only('Call [Conference]', function () {
   "use strict";
 
   var Call,
@@ -1084,19 +1084,22 @@ describe('Call [Conference]', function () {
           }
         };
 
-        emitterEM.publish('media-mod-terminations', modifications);
-
         setTimeout(function () {
-          try {
-            var participantInfo = outgoingVideoConf.participants()['johnny'];
-            expect(participantInfo.status).to.equal('active');
 
-            rtcMgrAddParticipantStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 50);
+          emitterEM.publish('mod-terminated:' + outgoingVideoConf.id(), modifications);
+
+          setTimeout(function () {
+            try {
+              var participantInfo = outgoingVideoConf.participants()['johnny'];
+              expect(participantInfo.status).to.equal('active');
+
+              rtcMgrAddParticipantStub.restore();
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 30);
       });
 
       it('should also publish `invite-accepted` after participant was created successfully', function (done) {
@@ -1118,16 +1121,19 @@ describe('Call [Conference]', function () {
 
         outgoingVideoConf.on('invite-accepted', onInviteAcceptedSpy);
 
-        emitterEM.publish('media-mod-terminations', modifications);
-
         setTimeout(function () {
-          try {
-            expect(onInviteAcceptedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 50);
+
+          emitterEM.publish('mod-terminated:' + outgoingVideoConf.id(), modifications);
+
+          setTimeout(function () {
+            try {
+              expect(onInviteAcceptedSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 30);
       });
     });
 
@@ -1156,18 +1162,21 @@ describe('Call [Conference]', function () {
 
         outgoingVideoConf.addParticipant('johnny');
 
-        emitterEM.publish('media-mod-terminations', modifications);
-
         setTimeout(function () {
-          try {
-            var invitationInfo = outgoingVideoConf.invitations()['johnny'];
-            expect(invitationInfo.status).to.equal('rejected');
-            rtcMgrAddParticipantStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
+
+          emitterEM.publish('mod-terminated:' + outgoingVideoConf.id(), modifications);
+
+          setTimeout(function () {
+            try {
+              var invitationInfo = outgoingVideoConf.invitations()['johnny'];
+              expect(invitationInfo.status).to.equal('rejected');
+              rtcMgrAddParticipantStub.restore();
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 30);
       });
 
       it('should publish `rejected`', function (done) {
@@ -1181,24 +1190,27 @@ describe('Call [Conference]', function () {
 
         outgoingVideoConf.on('rejected', onInvitedRejectedSpy);
 
-        emitterEM.publish('media-mod-terminations', modifications);
-
         invitations = outgoingVideoConf.invitations();
 
         setTimeout(function () {
-          try {
-            expect(onInvitedRejectedSpy.calledOnce).to.equal(true);
-            expect(onInvitedRejectedSpy.getCall(0).args[0].invitations).to.equal(invitations);
-            rtcMgrAddParticipantStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
+
+          emitterEM.publish('mod-terminated:' + outgoingVideoConf.id(), modifications);
+
+          setTimeout(function () {
+            try {
+              expect(onInvitedRejectedSpy.calledOnce).to.equal(true);
+              expect(onInvitedRejectedSpy.getCall(0).args[0].invitations).to.equal(invitations);
+              rtcMgrAddParticipantStub.restore();
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 30);
       });
     });
 
-    describe.only('mod-received', function () {
+    describe('mod-received', function () {
       var acceptSdpOfferStub;
 
       it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
