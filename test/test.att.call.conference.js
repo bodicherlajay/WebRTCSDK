@@ -59,7 +59,8 @@ describe('Call [Conference]', function () {
       createEEStub,
       publishStub,
       setStateStub,
-      modId;
+      modId,
+      rtcMgrOnStub;
 
     beforeEach(function () {
 
@@ -101,12 +102,17 @@ describe('Call [Conference]', function () {
       outgoingConference = new ATT.rtc.Call(optionsOutgoing);
 
       setStateStub = sinon.stub(outgoingConference, 'setState');
+
+      rtcMgrOnStub = sinon.stub(rtcMgr, 'on', function (event, handler) {
+        return;
+      });
     });
 
     afterEach(function () {
       getRTCManagerStub.restore();
       createEEStub.restore();
       setStateStub.restore();
+      rtcMgrOnStub.restore();
     });
 
     describe('remoteSdp', function () {
@@ -444,6 +450,9 @@ describe('Call [Conference]', function () {
                 pcOnSuccessSpy.restore();
               }, 10);
             });
+
+
+
           });
 
           afterEach(function () {
@@ -486,6 +495,7 @@ describe('Call [Conference]', function () {
                 options.onSuccess(response);
                 onSuccessSpy.restore();
               });
+
             });
 
             afterEach(function () {
@@ -514,6 +524,50 @@ describe('Call [Conference]', function () {
                 expect(publishStub.getCall(0).args[0]).to.equal('connecting');
                 done();
               }, 20);
+            });
+
+            describe.only('registerForEvents', function () {
+
+              it('should register for event `session-open` from RTCManager', function (done) {
+
+                outgoingVideoConference.connect();
+
+                setTimeout(function () {
+                  expect(rtcMgrOnStub.calledWith('session-open:' + outgoingVideoConference.id())).to.equal(true);
+                  expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+                  done();
+                }, 20);
+              });
+
+              it('should register for `session-terminated` event on `RTCManager`', function (done) {
+                outgoingVideoConference.connect();
+
+                setTimeout(function () {
+                  expect(rtcMgrOnStub.calledWith('session-terminated:' + outgoingVideoConference.id())).to.equal(true);
+                  expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+                  done();
+                }, 20);
+              });
+
+              it('should register for `mod-received` event on `RTCManager`', function (done) {
+                outgoingVideoConference.connect();
+
+                setTimeout(function () {
+                  expect(rtcMgrOnStub.calledWith('mod-received:' + outgoingVideoConference.id())).to.equal(true);
+                  expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+                  done();
+                }, 20);
+              });
+
+              it('should register for `mod-terminated` event on `RTCManager`', function (done) {
+                outgoingVideoConference.connect();
+
+                setTimeout(function () {
+                  expect(rtcMgrOnStub.calledWith('mod-terminated:' + outgoingVideoConference.id())).to.equal(true);
+                  expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+                  done();
+                }, 20);
+              });
             });
           });
 
@@ -798,7 +852,6 @@ describe('Call [Conference]', function () {
         confCall;
 
       beforeEach(function () {
-        onSpy = sinon.spy(rtcMgr, 'on');
         confCall = new ATT.rtc.Call({
           breed: 'conference',
           peer: '12345',
@@ -806,10 +859,6 @@ describe('Call [Conference]', function () {
           type: ATT.CallTypes.OUTGOING,
           sessionInfo : {sessionId : '12345', token : '123'}
         });
-      });
-
-      afterEach(function () {
-        onSpy.restore();
       });
 
       it('Should exist', function () {
@@ -906,6 +955,7 @@ describe('Call [Conference]', function () {
 
     describe('call-connected', function () {
       var setRemoteDescriptionStub;
+
       beforeEach(function () {
         setRemoteDescriptionStub = sinon.stub(peerConnection, 'setRemoteDescription');
       });
@@ -926,7 +976,7 @@ describe('Call [Conference]', function () {
           expect(setRemoteDescriptionStub.getCall(0).args[0].sdp).to.equal('remoteSdp');
           expect(setRemoteDescriptionStub.getCall(0).args[0].type).to.equal('answer');
           done();
-        }, 10);
+        }, 50);
       });
 
       it('should NOT set the remote description if it doesn\'t come in the event data', function (done) {
