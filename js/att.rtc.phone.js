@@ -1565,7 +1565,7 @@
       }
     }
 
-    /**
+    /* TODO: Removing because this is not part of the public API
      * @summary
      * Add participant
      * @desc
