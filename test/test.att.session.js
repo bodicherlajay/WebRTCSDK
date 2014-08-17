@@ -1568,7 +1568,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 50);
+        }, 10);
       });
     });
   });

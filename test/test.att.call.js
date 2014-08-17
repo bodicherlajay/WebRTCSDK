@@ -766,11 +766,17 @@ describe('Call', function () {
 
           describe('session-terminated', function () {
 
-            xit('should publish `canceled` on getting `session-terminated` when call state is `created`', function (done) {
+            beforeEach(function () {
+              ATT.private.pcv = 2;
+              outgoingCall.connect();
+              outgoingCall.disconnect();
+            });
 
-              var canceledSpy = sinon.spy();
+            afterEach(function () {
+              ATT.private.pcv = 1;
+            });
 
-              outgoingCall.on('canceled', canceledSpy);
+            it('should publish `canceled` on getting `session-terminated` when call state is `created`', function (done) {
 
               setTimeout(function () {
                 emitterEM.publish('session-terminated:' + outgoingCall.id(), {
@@ -789,13 +795,12 @@ describe('Call', function () {
 
             });
 
-            it.only('should publish `canceled` on getting `session-terminated` and if Call.canceled = true', function (done) {
-
-              emitterEM.publish('session-terminated:' + outgoingCall.id(), eventData);
+            it('should publish `canceled` when disconnecting before PeerConnection Success and if Call.canceled = true', function (done) {
 
               setTimeout(function () {
                 try {
-                  expect(canceledSpy.calledOnce).to.equal(true);
+                    console.log(outgoingCall.id());
+                    expect(canceledSpy.called).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
