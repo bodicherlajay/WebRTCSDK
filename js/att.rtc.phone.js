@@ -627,8 +627,9 @@
 
       var call;
 
-      function onCallHeld() {
-        call.off('held', onCallHeld);
+      function dialSecondCall() {
+        call.off('held', dialSecondCall);
+        session.addCall(call);
         dial(options);
       }
 
@@ -669,7 +670,7 @@
         try {
           call = session.currentCall;
 
-          call.on('held', onCallHeld);
+          call.on('held', dialSecondCall);
 
           call.hold();
         } catch (err) {
