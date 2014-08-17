@@ -776,7 +776,8 @@ describe('Call', function () {
               ATT.private.pcv = 1;
             });
 
-            it('should publish `canceled` on getting `session-terminated` when call state is `created`', function (done) {
+            // TODO: Review if this is needed, or if it even belongs in here
+            it.skip('should publish `canceled` on getting `session-terminated` when call state is `created`', function (done) {
 
               setTimeout(function () {
                 emitterEM.publish('session-terminated:' + outgoingCall.id(), {
