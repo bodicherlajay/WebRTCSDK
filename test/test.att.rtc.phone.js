@@ -3127,6 +3127,30 @@ describe('Phone', function () {
         });
       });
 
+      describe('isCallInProgress', function () {
+        var currentCall;
+
+        beforeEach(function () {
+          currentCall = session.currentCall;
+        });
+
+        afterEach(function () {
+          session.currentCall = currentCall;
+        });
+
+        it('should exist', function () {
+          expect(phone.isCallInProgress).to.be.a('function');
+        });
+
+        it('should return `true` if session.currentCall !== null', function () {
+          session.currentCall = {
+            call: 'i am a call'
+          };
+
+          expect(phone.isCallInProgress()).to.equal(true);
+        });
+      });
+
       describe('[US245682] updateE911Id', function () {
 
         var optionsUpdateE911Id,

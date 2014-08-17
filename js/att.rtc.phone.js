@@ -1197,6 +1197,22 @@
     }
 
     /**
+     * @summary
+     * Returns true if there is a call in progress
+     * @memberOf Phone
+     * @instance
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.isCallInProgress()
+     */
+    function isCallInProgress() {
+      var call = session.currentCall;
+
+      return (call !== null);
+    }
+
+    /**
      * @summary Hangup existing call
      * @desc Add description here
      *
@@ -2013,6 +2029,7 @@
     this.mute = mute;
     this.unmute = unmute;
     this.getMediaType = getMediaType;
+    this.isCallInProgress = isCallInProgress;
     this.hangup = hangup;
     this.hold = hold;
     this.resume = resume;
