@@ -1533,7 +1533,28 @@ describe('Call [Conference]', function () {
             }
           }, 10);
         }, 10);
-      })
+      });
+
+      it('should publish notification on receiving a `mod-terminated` event with an unhandled reason', function (done) {
+        var onCallNotificationSpy = sinon.spy();
+
+        outgoingVideoConf.on('notification', onCallNotificationSpy);
+
+        setTimeout(function () {
+          emitterEM.publish('mod-terminated:'+ outgoingVideoConf.id(), {
+            reason: 'something we dont know about'
+          });
+
+          setTimeout(function () {
+            try {
+              expect(onCallNotificationSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 20);
+      });
     });
 
   });

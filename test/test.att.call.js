@@ -789,7 +789,7 @@ describe('Call', function () {
 
             });
 
-            it.only('should publish `canceled` on getting `session-terminated` and if Call.canceled = true', function (done) {
+            xit('should publish `canceled` on getting `session-terminated` and if Call.canceled = true', function (done) {
 
               emitterEM.publish('session-terminated:' + outgoingCall.id(), eventData);
 
@@ -916,7 +916,7 @@ describe('Call', function () {
           it('should publish `rejected` with data when rtcManager publishes `session-terminated` and rejected == true', function (done) {
 
             var data = {
-              reason: 'nothing'
+              abc: 'nothing'
             };
             onRejectedSpy = sinon.spy();
             incomingCall.on('rejected', onRejectedSpy);
