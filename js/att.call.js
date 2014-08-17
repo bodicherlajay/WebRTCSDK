@@ -225,6 +225,13 @@
           }
         }
 
+        if ('success' !== modifications.reason
+            && 'Call rejected' !== modifications.reason) {
+          emitter.publish('notification', ATT.utils.extend(createEventData(), {
+            message: modifications.reason
+          }));
+        }
+
         return;
       }
 
@@ -283,11 +290,10 @@
     function onSessionTerminated(data) {
       var eventData;
 
-      console.log('here');
-
       id = null;
 
       if (undefined !== data) {
+
         if ('Call rejected' === data.reason || rejected) {
           setState('rejected');
         } else if ('Call canceled' === data.reason || canceled) {

@@ -712,151 +712,153 @@ describe('Phone [Conference]', function () {
       });
     });
 
-    describe('Events', function () {
-      var outgoingAudioConference,
-        createCallStub,
-        emitterConf,
-        createEventEmitterStub;
+  });
 
-      beforeEach(function () {
-        emitterConf = factories.createEventEmitter();
-        createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
-          return emitterConf;
-        });
-        outgoingAudioConference = new Call({
-          breed: 'conference',
-          mediaType: 'audio',
-          type: ATT.CallTypes.OUTGOING,
-          sessionInfo : {sessionId : '12345', token : '123'}
-        });
+  describe('Events', function () {
+    var outgoingAudioConference,
+      createCallStub,
+      emitterConf,
+      createEventEmitterStub;
 
-        createCallStub = sinon.stub(session, 'createCall', function () {
-          return outgoingAudioConference;
-        });
+    beforeEach(function () {
+      emitterConf = factories.createEventEmitter();
+      createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+        return emitterConf;
+      });
+      outgoingAudioConference = new Call({
+        breed: 'conference',
+        mediaType: 'audio',
+        type: ATT.CallTypes.OUTGOING,
+        sessionInfo : {sessionId : '12345', token : '123'}
       });
 
-      afterEach(function () {
-        createEventEmitterStub.restore();
-        createCallStub.restore();
-      });
-
-      it('should publish `conference:connected` when conference publishes `connected`', function (done) {
-        var connectedSpy = sinon.spy(),
-          getUserMediaStub;
-        userMediaService = ATT.UserMediaService;
-
-        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
-        phone.on('conference:connected', connectedSpy);
-        phone.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType : 'video'
-        });
-
-        outgoingAudioConference.setState('connected');
-
-        setTimeout(function () {
-          try {
-            expect(connectedSpy.called).to.equal(true);
-            expect(connectedSpy.calledOnce).to.equal(true);
-            getUserMediaStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
-
-      });
-
-      it('should publish `conference:ended` when conference publishes `disconnected`', function (done) {
-        var disconnectedSpy = sinon.spy(),
-          getUserMediaStub = sinon.stub(ums, 'getUserMedia'),
-          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
-
-        phone.on('conference:ended', disconnectedSpy);
-        phone.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType : 'video'
-        });
-
-        outgoingAudioConference.setState('disconnected');
-
-        setTimeout(function () {
-          try {
-            expect(disconnectedSpy.calledOnce).to.equal(true);
-            expect(deleteCurrentCallStub.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          } finally {
-            getUserMediaStub.restore();
-            deleteCurrentCallStub.restore();
-          }
-        }, 20);
-
-      });
-
-      it('should execute userMediaSvc.showStream when conference publishes `stream-added`', function (done) {
-        var data,
-          showStreamStub = sinon.stub(ATT.UserMediaService, 'showStream');
-
-        data = {
-          stream: {
-            abc: 'stream'
-          }
-        };
-
-        phone.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType : 'video'
-        });
-
-        emitterConf.publish('stream-added', data);
-
-        setTimeout(function () {
-          try {
-            expect(showStreamStub.calledWith({
-              localOrRemote: 'remote',
-              stream: {
-                abc: 'stream'
-              }
-            })).to.equal(true);
-            showStreamStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-      });
-
-      it('should publish `error` when conference publishes `error`', function (done) {
-        var errorSpy = sinon.spy(),
-          getUserMediaStub;
-        userMediaService = ATT.UserMediaService;
-
-        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
-        phone.on('error', errorSpy);
-        phone.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType : 'video'
-        });
-
-        outgoingAudioConference.setState('error');
-
-        setTimeout(function () {
-          try {
-            expect(errorSpy.called).to.equal(true);
-            getUserMediaStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
-
+      createCallStub = sinon.stub(session, 'createCall', function () {
+        return outgoingAudioConference;
       });
     });
+
+    afterEach(function () {
+      createEventEmitterStub.restore();
+      createCallStub.restore();
+    });
+
+    it('should publish `conference:connected` when conference publishes `connected`', function (done) {
+      var connectedSpy = sinon.spy(),
+        getUserMediaStub;
+      userMediaService = ATT.UserMediaService;
+
+      getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+      phone.on('conference:connected', connectedSpy);
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('connected');
+
+      setTimeout(function () {
+        try {
+          expect(connectedSpy.called).to.equal(true);
+          expect(connectedSpy.calledOnce).to.equal(true);
+          getUserMediaStub.restore();
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 20);
+
+    });
+
+    it('should publish `conference:ended` when conference publishes `disconnected`', function (done) {
+      var disconnectedSpy = sinon.spy(),
+        getUserMediaStub = sinon.stub(ums, 'getUserMedia'),
+        deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+
+      phone.on('conference:ended', disconnectedSpy);
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('disconnected');
+
+      setTimeout(function () {
+        try {
+          expect(disconnectedSpy.calledOnce).to.equal(true);
+          expect(deleteCurrentCallStub.called).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        } finally {
+          getUserMediaStub.restore();
+          deleteCurrentCallStub.restore();
+        }
+      }, 20);
+
+    });
+
+    it('should execute userMediaSvc.showStream when conference publishes `stream-added`', function (done) {
+      var data,
+        showStreamStub = sinon.stub(ATT.UserMediaService, 'showStream');
+
+      data = {
+        stream: {
+          abc: 'stream'
+        }
+      };
+
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      emitterConf.publish('stream-added', data);
+
+      setTimeout(function () {
+        try {
+          expect(showStreamStub.calledWith({
+            localOrRemote: 'remote',
+            stream: {
+              abc: 'stream'
+            }
+          })).to.equal(true);
+          showStreamStub.restore();
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 10);
+    });
+
+    it('should publish `error` when conference publishes `error`', function (done) {
+      var errorSpy = sinon.spy(),
+        getUserMediaStub;
+      userMediaService = ATT.UserMediaService;
+
+      getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+      phone.on('error', errorSpy);
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('error');
+
+      setTimeout(function () {
+        try {
+          expect(errorSpy.called).to.equal(true);
+          getUserMediaStub.restore();
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 20);
+
+    });
   });
+
 });
