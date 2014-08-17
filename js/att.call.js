@@ -326,6 +326,8 @@
         }
         return;
       }
+
+      // reset the old peerConnection
       rtcManager.resetPeerConnection();
     }
 
@@ -725,7 +727,9 @@
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
           callId : id,
-          onSuccess : function () { },
+          onSuccess : function () {
+            setState('held');
+          },
           onError : function (error) {
             emitter.publish('error', {
               error: error

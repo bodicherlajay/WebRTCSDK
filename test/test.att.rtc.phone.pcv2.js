@@ -361,7 +361,7 @@ describe('Phone [PCV2]', function () {
         })).to.equal(true);
       });
 
-      it('should register for `held` event on current call', function () {
+      it('should register handler to dial the second call when getting the `held` event', function () {
 
         phone.addCall(addCallOpts);
 
@@ -383,7 +383,7 @@ describe('Phone [PCV2]', function () {
 
         describe('held', function () {
 
-          it('should unsubscribe for held event on current call', function (done) {
+          it('should de-register handler to dial a second call', function (done) {
 
             emitterCall.publish('held', eventData);
 
@@ -398,7 +398,36 @@ describe('Phone [PCV2]', function () {
 
           });
 
-          it('should publish `dialing` (assuming it calls dial)', function (done) {
+          it('should put the held call on the stack', function (done) {
+            var calls,
+              keys,
+              callOnHold;
+
+            call.setId('123');
+            session.currentCall = call;
+
+            // assume call.hold is successful
+            call.setState('held');
+
+            phone.addCall(addCallOpts);
+
+            setTimeout(function () {
+              try {
+
+                calls = session.getCalls();
+                keys = Object.keys(calls);
+                callOnHold = calls[keys[0]];
+
+                expect(keys.length).to.equal(1);
+                expect(callOnHold.getState()).to.equal('held');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 20);
+          });
+
+          it('[should call dial method] should publish `dialing` (assuming it calls dial)', function (done) {
 
             emitterCall.publish('held', eventData);
 
