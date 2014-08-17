@@ -664,6 +664,8 @@
 
           call.hold();
         } catch (err) {
+          logger.logError(err);
+
           throw ATT.errorDictionary.getSDKError(27000);
         }
       } catch (err) {
