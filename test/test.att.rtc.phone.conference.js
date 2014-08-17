@@ -9,12 +9,10 @@ describe('Phone [Conference]', function () {
     Phone,
     createPeerConnectionStub,
     restClientStub,
-    userMediaService,
-    logger,
+    ums,
     phone,
     session,
     factories,
-    ums,
     sessionStub;
 
   beforeEach(function () {
@@ -41,8 +39,6 @@ describe('Phone [Conference]', function () {
   describe('Conference Methods', function () {
 
     beforeEach(function () {
-      logger = ATT.logManager.getInstance().addLoggerForModule('Phone');
-      userMediaService = ATT.UserMediaService;
       restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
       createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
         return {};
@@ -101,7 +97,7 @@ describe('Phone [Conference]', function () {
       describe('Input Validation', function () {
 
         beforeEach(function () {
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia');
         });
 
         afterEach(function () {
@@ -268,7 +264,7 @@ describe('Phone [Conference]', function () {
         var phone2;
 
         phone2 = new Phone();
-        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+        getUserMediaStub = sinon.stub(ums, 'getUserMedia');
         phone2.startConference({
           localMedia : {},
           remoteMedia : {},
@@ -297,7 +293,7 @@ describe('Phone [Conference]', function () {
           onUserMediaDummy = function () {};
           onUserMediaSpy = sinon.spy(onUserMediaDummy);
 
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
             setTimeout(function () {
               onUserMediaSpy = sinon.spy(options, 'onUserMedia');
               options.onUserMedia(userMedia);
@@ -349,9 +345,8 @@ describe('Phone [Conference]', function () {
         it('should publish `media-established` when onMediaEstablished  is invoked', function (done) {
           var connectedSpy = sinon.spy(),
             getUserMediaStub;
-          userMediaService = ATT.UserMediaService;
 
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
             options.onMediaEstablished();
           });
           phone.on('media-established', connectedSpy);
@@ -380,7 +375,7 @@ describe('Phone [Conference]', function () {
 
         beforeEach(function () {
 
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
             options.onUserMediaError();
           });
 
@@ -745,9 +740,8 @@ describe('Phone [Conference]', function () {
     it('should publish `conference:connected` when conference publishes `connected`', function (done) {
       var connectedSpy = sinon.spy(),
         getUserMediaStub;
-      userMediaService = ATT.UserMediaService;
 
-      getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+      getUserMediaStub = sinon.stub(ums, 'getUserMedia');
       phone.on('conference:connected', connectedSpy);
       phone.startConference({
         localMedia : {},
@@ -801,7 +795,7 @@ describe('Phone [Conference]', function () {
 
     it('should execute userMediaSvc.showStream when conference publishes `stream-added`', function (done) {
       var data,
-        showStreamStub = sinon.stub(ATT.UserMediaService, 'showStream');
+        showStreamStub = sinon.stub(ums, 'showStream');
 
       data = {
         stream: {
@@ -836,9 +830,8 @@ describe('Phone [Conference]', function () {
     it('should publish `error` when conference publishes `error`', function (done) {
       var errorSpy = sinon.spy(),
         getUserMediaStub;
-      userMediaService = ATT.UserMediaService;
 
-      getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+      getUserMediaStub = sinon.stub(ums, 'getUserMedia');
       phone.on('error', errorSpy);
       phone.startConference({
         localMedia : {},

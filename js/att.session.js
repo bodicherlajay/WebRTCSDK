@@ -50,16 +50,6 @@
         mediaType: callInfo.mediaType
       });
 
-      call.on('canceled', function (data) {
-        emitter.publish('call-canceled', data);
-        session.deleteCurrentCall();
-      });
-
-      call.on('disconnected', function (data) {
-        emitter.publish('call-disconnected', data);
-        session.deleteCurrentCall();
-      });
-
       if (undefined !== call) {
         if (callInfo.sdp) {
           sendRecvSdp = sdpFilter.replaceSendOnlyWithSendRecv(callInfo.sdp);

@@ -44,6 +44,18 @@
        */
       logger.logInfo('call incoming event  by phone layer');
       emitter.publish('call-incoming', data);
+
+      if (session.pendingCall) {
+        session.pendingCall.on('canceled', function (data) {
+          emitter.publish('call-canceled', data);
+          session.deletePendingCall();
+        });
+
+        session.pendingCall.on('disconnected', function (data) {
+          emitter.publish('call-disconnected', data);
+          session.deletePendingCall();
+        });
+      }
     });
 
     session.on('conference-invite', function (data) {
@@ -58,36 +70,14 @@
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
+      logger.logInfo('conference:invitation-received event  by phone layer');
       emitter.publish('conference:invitation-received', data);
-    });
-
-    session.on('call-canceled', function (data) {
-      logger.logInfo('call canceled event by phone layer');
-      emitter.publish('call-canceled', data);
-    });
-
-    session.on('call-disconnected', function (data) {
-      logger.logInfo('call disconnected event by phone layer');
-      emitter.publish('call-disconnected', data);
     });
 
     session.on('error', function (data) {
       logger.logError("Error in Session");
       logger.logTrace(data);
       emitter.publish('error', data);
-    });
-
-    session.on('network-notification', function (data) {
-      /**
-       * Network notification event
-       * @desc Unhandled messages from the network will be published through this event.
-       *
-       * @event Phone#network:notification
-       * @type {object}
-       * @property {String} message - The message.
-       * @property {Date} timestamp - Event fire time.
-       */
-      emitter.publish('network:notification', data);
     });
 
     function getError(errorNumber) {

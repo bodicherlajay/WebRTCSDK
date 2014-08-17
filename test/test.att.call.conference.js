@@ -849,7 +849,8 @@ describe('Call [Conference]', function () {
 
     describe('disconnectConference', function () {
 
-      var confCall;
+      var confCall,
+        disconnectCallStub;
 
       beforeEach(function () {
         confCall = new ATT.rtc.Call({
@@ -859,6 +860,12 @@ describe('Call [Conference]', function () {
           type: ATT.CallTypes.OUTGOING,
           sessionInfo : {sessionId : '12345', token : '123'}
         });
+
+        disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
+      });
+
+      afterEach(function () {
+        disconnectCallStub.restore();
       });
 
       it('Should exist', function () {
@@ -874,8 +881,6 @@ describe('Call [Conference]', function () {
       });
 
       it('should call rtcManager.disconnectCall', function () {
-        var disconnectCallStub = sinon.stub(rtcMgr, 'disconnectCall');
-
         confCall.disconnectConference();
 
         expect(disconnectCallStub.called).to.equal(true);
@@ -885,8 +890,6 @@ describe('Call [Conference]', function () {
         expect(disconnectCallStub.getCall(0).args[0].token).not.to.be.a('undefined');
         expect(disconnectCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
         expect(disconnectCallStub.getCall(0).args[0].onError).to.be.a('function');
-
-        disconnectCallStub.restore();
       });
     });
   });
