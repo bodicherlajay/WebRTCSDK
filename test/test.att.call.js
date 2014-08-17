@@ -936,7 +936,7 @@ describe('Call', function () {
               } catch (e) {
                 done(e);
               }
-            }, 10);
+            }, 20);
           });
 
           it('should execute rtcMgr.resetPeerConnection', function (done) {

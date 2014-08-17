@@ -713,7 +713,8 @@ describe('Phone [Conference]', function () {
     var outgoingAudioConference,
       createCallStub,
       emitterConf,
-      createEventEmitterStub;
+      createEventEmitterStub,
+      getUserMediaStub;
 
     beforeEach(function () {
       emitterConf = factories.createEventEmitter();
@@ -730,19 +731,21 @@ describe('Phone [Conference]', function () {
       createCallStub = sinon.stub(session, 'createCall', function () {
         return outgoingAudioConference;
       });
+
+      getUserMediaStub = sinon.stub(ums, 'getUserMedia');
     });
 
     afterEach(function () {
       createEventEmitterStub.restore();
       createCallStub.restore();
+      getUserMediaStub.restore();
     });
 
     it('should publish `conference:connected` when conference publishes `connected`', function (done) {
-      var connectedSpy = sinon.spy(),
-        getUserMediaStub;
+      var connectedSpy = sinon.spy();
 
-      getUserMediaStub = sinon.stub(ums, 'getUserMedia');
       phone.on('conference:connected', connectedSpy);
+
       phone.startConference({
         localMedia : {},
         remoteMedia : {},
@@ -755,21 +758,20 @@ describe('Phone [Conference]', function () {
         try {
           expect(connectedSpy.called).to.equal(true);
           expect(connectedSpy.calledOnce).to.equal(true);
-          getUserMediaStub.restore();
           done();
         } catch (e) {
           done(e);
         }
-      }, 20);
+      }, 50);
 
     });
 
     it('should publish `conference:ended` when conference publishes `disconnected`', function (done) {
       var disconnectedSpy = sinon.spy(),
-        getUserMediaStub = sinon.stub(ums, 'getUserMedia'),
         deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
 
       phone.on('conference:ended', disconnectedSpy);
+
       phone.startConference({
         localMedia : {},
         remoteMedia : {},
@@ -786,10 +788,9 @@ describe('Phone [Conference]', function () {
         } catch (e) {
           done(e);
         } finally {
-          getUserMediaStub.restore();
           deleteCurrentCallStub.restore();
         }
-      }, 20);
+      }, 50);
 
     });
 
@@ -828,11 +829,10 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `error` when conference publishes `error`', function (done) {
-      var errorSpy = sinon.spy(),
-        getUserMediaStub;
+      var errorSpy = sinon.spy();
 
-      getUserMediaStub = sinon.stub(ums, 'getUserMedia');
       phone.on('error', errorSpy);
+
       phone.startConference({
         localMedia : {},
         remoteMedia : {},
@@ -844,12 +844,11 @@ describe('Phone [Conference]', function () {
       setTimeout(function () {
         try {
           expect(errorSpy.called).to.equal(true);
-          getUserMediaStub.restore();
           done();
         } catch (e) {
           done(e);
         }
-      }, 20);
+      }, 50);
 
     });
   });

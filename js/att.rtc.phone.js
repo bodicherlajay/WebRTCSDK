@@ -529,7 +529,7 @@
              * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('call-rejected', data);
-            session.deleteCurrentCall();
+            session.deletePendingCall();
           });
           call.on('connected', function (data) {
             /**
@@ -1344,10 +1344,12 @@
         }
 
         try {
+
           call.on('rejected', function (data) {
             emitter.publish('call-rejected', data);
-            session.deleteCurrentCall();
+            session.deletePendingCall();
           });
+
           call.reject();
         } catch (err) {
           logger.logError(err);

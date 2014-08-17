@@ -1081,14 +1081,6 @@ describe('Session', function () {
 
   describe('Events', function () {
 
-    var eventData;
-
-    beforeEach(function () {
-      eventData = {
-        abc: 'abc'
-      };
-    });
-
     describe('needs-refresh', function () {
 
       var onNeedsRefreshSpy,
