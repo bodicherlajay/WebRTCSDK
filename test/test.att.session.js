@@ -942,6 +942,24 @@ describe('Session', function () {
       });
 
     });
+    describe('getCalls',function () {
+
+      it('Should exist', function () {
+        expect(session.getCalls).to.be.a('function');
+      });
+
+      it('Should return all the calls in the session', function () {
+
+        session.addCall({
+          id: function () { return '1'; }
+        });
+
+        session.addCall({
+          id: function () { return '2'; }
+        });
+        expect(Object.keys(session.getCalls()).length).to.equal(2);
+      });
+    });
 
     xdescribe('terminateCalls', function () {
 
