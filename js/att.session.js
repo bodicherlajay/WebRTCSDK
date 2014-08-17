@@ -287,7 +287,7 @@
       call.on('connected', function () {
         session.currentCall = session.pendingCall;
         session.pendingCall = null;
-        this.addCall(session.currentCall());
+        session.addCall(session.currentCall);
       });
 
       this.pendingCall = call;
