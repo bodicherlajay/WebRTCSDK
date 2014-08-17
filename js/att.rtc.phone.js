@@ -26,7 +26,8 @@
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
       userMediaSvc = ATT.UserMediaService,
-      logger = logManager.addLoggerForModule('Phone');
+      logger = logManager.addLoggerForModule('Phone'),
+      that = this;
 
     logger.logInfo('Creating new instance of Phone');
 
@@ -107,6 +108,17 @@
       call.off('media-established', mediaEstablished);
       emitter.publish('call-disconnected', data);
       session.deleteCurrentCall();
+
+      var calls,
+          keys;
+
+      calls = session.getCalls();
+      keys = Object.keys(calls);
+      if (keys.length > 0) {
+        session.currentCall = calls[keys[0]];
+        that.resume();
+      }
+
     }
 
     function getError(errorNumber) {
