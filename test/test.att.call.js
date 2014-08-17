@@ -684,14 +684,33 @@ describe('Call', function () {
 
     describe('disconnect', function () {
 
-      var onSpy;
+      var onSpy,
+        responseData,
+        connectConferenceStub;
 
       beforeEach(function () {
         onSpy = sinon.spy(rtcMgr, 'on');
+
+        responseData = {
+          id: '12345'
+        };
+
+        createPeerConnectionStub.restore();
+
+        createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
+          options.onSuccess();
+        });
+
+        connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
+          options.onSuccess(responseData);
+        });
+
+        outgoingCall.connect();
       });
 
       afterEach(function () {
         onSpy.restore();
+        connectConferenceStub.restore();
       });
 
       it('Should exist', function () {
@@ -699,11 +718,9 @@ describe('Call', function () {
       });
 
       it('Should execute Call.setState with `disconnecting` state', function () {
-
         outgoingCall.disconnect();
 
         expect(outgoingCall.getState()).to.equal('disconnecting');
-
       });
 
       describe('Cancel Call [call.remoteSdp === null]', function () {
@@ -729,6 +746,66 @@ describe('Call', function () {
 
           cancelCallStub.restore();
         });
+
+        describe('Events for cancel', function () {
+
+          var canceledSpy,
+            eventData;
+
+          beforeEach(function () {
+            canceledSpy = sinon.spy();
+
+            eventData = {
+              abc: 'abc'
+            };
+
+            outgoingCall.on('canceled', canceledSpy);
+
+            outgoingCall.disconnect();
+          });
+
+          describe('session-terminated', function () {
+
+            xit('should publish `canceled` on getting `session-terminated` when call state is `created`', function (done) {
+
+              var canceledSpy = sinon.spy();
+
+              outgoingCall.on('canceled', canceledSpy);
+
+              setTimeout(function () {
+                emitterEM.publish('session-terminated:' + outgoingCall.id(), {
+                  abc: 'abc'
+                });
+
+                setTimeout(function () {
+                  try {
+                    expect(canceledSpy.calledOnce).to.equal(true);
+                    done();
+                  } catch (e) {
+                    done(e);
+                  }
+                }, 10);
+              }, 10);
+
+            });
+
+            it.only('should publish `canceled` on getting `session-terminated` and if Call.canceled = true', function (done) {
+
+              emitterEM.publish('session-terminated:' + outgoingCall.id(), eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(canceledSpy.calledOnce).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 10);
+
+            });
+
+          });
+        })
 
       });
 
@@ -1568,228 +1645,6 @@ describe('Call', function () {
 
       });
 
-      describe('session-terminated', function () {
-        var setIdSpy,
-          resetPeerConnectionStub,
-          offStub;
-
-        beforeEach(function () {
-          setIdSpy = sinon.spy(call, 'setId');
-          resetPeerConnectionStub = sinon.stub(rtcMgr, 'resetPeerConnection');
-          offStub = sinon.stub(rtcMgr, 'off');
-        });
-
-        afterEach(function () {
-          setIdSpy.restore();
-          resetPeerConnectionStub();
-          offStub.restore();
-        });
-
-        it('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
-
-          emitterEM.publish('session-terminated');
-
-          setTimeout(function () {
-            try {
-              expect(call.id()).to.equal(null);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 30);
-        });
-
-        it('should publish `disconnected` with data on getting `session-terminated` with no reason', function (done) {
-
-          var data = {
-              data : '123'
-            },
-            disconnectedSpy = sinon.spy();
-
-          setStateStub.restore();
-
-          call.on('disconnected', disconnectedSpy);
-
-          call.setState('connected');
-
-          emitterEM.publish('session-terminated', data); // no reason passed
-
-          setTimeout(function () {
-            try {
-              expect(disconnectedSpy.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 100);
-
-        });
-
-        it('should publish `rejected` on getting `session-terminated` with reason: `Call rejected`', function (done) {
-
-          var rejectedSpy = sinon.spy();
-
-          call.on('rejected', rejectedSpy);
-
-          emitterEM.publish('session-terminated', {
-            reason: 'Call rejected'
-          });
-
-          setTimeout(function () {
-            expect(rejectedSpy.calledOnce).to.equal(true);
-            done();
-          }, 100);
-
-        });
-
-        it('should publish `canceled` on getting `session-terminated` with reason: `Call canceled`', function (done) {
-
-          var canceledSpy = sinon.spy();
-
-          call.on('canceled', canceledSpy);
-
-          emitterEM.publish('session-terminated', {
-            reason: 'Call canceled'
-          });
-
-          setTimeout(function () {
-            expect(canceledSpy.calledOnce).to.equal(true);
-            done();
-          }, 10);
-
-        });
-
-        it('should publish `canceled` on getting `session-terminated` when call state is `created`', function (done) {
-
-          var canceledSpy = sinon.spy();
-
-          call.on('canceled', canceledSpy);
-
-          emitterEM.publish('session-terminated', {
-            abc: 'abc'
-          });
-
-          setTimeout(function () {
-            expect(canceledSpy.calledOnce).to.equal(true);
-            done();
-          }, 10);
-
-        });
-
-        it('should publish `canceled` on getting `session-terminated` and if Call.canceled = true', function (done) {
-
-          var canceledSpy = sinon.spy(),
-            eventData = {
-              abc: 'abc'
-            };
-
-          call.on('canceled', canceledSpy);
-
-          call.disconnect();
-
-          emitterEM.publish('session-terminated', eventData);
-
-          setTimeout(function () {
-            expect(canceledSpy.calledOnce).to.equal(true);
-            done();
-          }, 10);
-
-        });
-
-        it('should publish `disconnected` with data.reason on getting `session-terminated` with any other reason', function (done) {
-
-          var data = {
-              reason : 'Other Reason'
-            },
-            disconnectedSpy = sinon.spy();
-
-          call.on('disconnected', disconnectedSpy);
-
-          emitterEM.publish('session-terminated', data);
-
-          setTimeout(function () {
-            try {
-              expect(disconnectedSpy.called).to.equal(true);
-              expect(disconnectedSpy.getCall(0).args[0]).to.be.an('object');
-              expect(disconnectedSpy.getCall(0).args[0].reason).to.equal(data.reason);
-              expect(disconnectedSpy.getCall(0).args[0].to).to.equal(call.peer());
-              expect(disconnectedSpy.getCall(0).args[0].mediaType).to.equal(call.mediaType());
-              expect(disconnectedSpy.getCall(0).args[0].codec).to.equal(call.codec());
-              expect(disconnectedSpy.getCall(0).args[0].timestamp).to.be.a('date');
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 10);
-
-        });
-
-        it('should unsubscribe the handler for `session-open`', function (done) {
-          emitterEM.publish('session-terminated', {});
-
-          setTimeout(function () {
-            try {
-              expect(offStub.calledWith('session-open')).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 10);
-        });
-
-        it('should unsubscribe the handler for `session-terminated`', function (done) {
-          emitterEM.publish('session-terminated', {});
-
-          setTimeout(function () {
-            try {
-              expect(offStub.calledWith('session-terminated')).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 10);
-        });
-
-        it('should unsubscribe the handler for `mod-received`', function (done) {
-          emitterEM.publish('session-terminated', {});
-
-          setTimeout(function () {
-            try {
-              expect(offStub.calledWith('mod-received')).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 10);
-        });
-
-        it('should unsubscribe the handler for `mod-terminated`', function (done) {
-          emitterEM.publish('session-terminated', {});
-
-          setTimeout(function () {
-            try {
-              expect(offStub.calledWith('mod-terminated')).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 10);
-        });
-
-        it('should execute rtcMgr.resetPeerConnection', function (done) {
-          emitterEM.publish('session-terminated');
-
-          setTimeout(function () {
-            try {
-              expect(resetPeerConnectionStub.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 20);
-        });
-
-      });
     });
 
   });

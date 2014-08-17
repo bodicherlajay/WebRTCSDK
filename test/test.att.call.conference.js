@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150 */
 /*global ATT, describe, it, afterEach, beforeEach, before, after, sinon, expect, assert, xit*/
 
-describe.only('Call [Conference]', function () {
+describe('Call [Conference]', function () {
   "use strict";
 
   var Call,
@@ -944,7 +944,8 @@ describe.only('Call [Conference]', function () {
           return remoteDesc;
         },
         setRemoteDescription: function () {},
-        acceptSdpOffer: function () {}
+        acceptSdpOffer: function () {},
+        close: function () {}
       };
 
       createPeerConnectionStub = sinon.stub(factories, 'createPeerConnection', function (options) {
@@ -1037,6 +1038,195 @@ describe.only('Call [Conference]', function () {
           setTimeout(function () {
             try {
               expect(setRemoteDescriptionStub.called).to.equal(false);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 10);
+      });
+
+    });
+
+    describe('session-terminated', function () {
+      var setIdSpy,
+        resetPeerConnectionStub,
+        offStub;
+
+      beforeEach(function () {
+        setIdSpy = sinon.spy(outgoingVideoConf, 'setId');
+        resetPeerConnectionStub = sinon.stub(rtcManager, 'resetPeerConnection');
+        offStub = sinon.stub(rtcManager, 'off');
+      });
+
+      afterEach(function () {
+        setIdSpy.restore();
+        resetPeerConnectionStub();
+        offStub.restore();
+      });
+
+      it('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
+
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id());
+
+          setTimeout(function () {
+            try {
+              expect(outgoingVideoConf.id()).to.equal(null);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 10);
+
+      });
+
+      it('should publish `disconnected` with data on getting `session-terminated` with no reason', function (done) {
+
+        var data = {
+            data : '123'
+          },
+          disconnectedSpy = sinon.spy();
+
+        outgoingVideoConf.on('disconnected', disconnectedSpy);
+
+        outgoingVideoConf.setState('connected');
+
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id(), data); // no reason passed
+
+          setTimeout(function () {
+            try {
+              expect(disconnectedSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 10);
+
+      });
+
+      it('should publish `rejected` on getting `session-terminated` with reason: `Call rejected`', function (done) {
+
+        var rejectedSpy = sinon.spy();
+
+        outgoingVideoConf.on('rejected', rejectedSpy);
+
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id(), {
+            reason: 'Call rejected'
+          });
+
+          setTimeout(function () {
+            expect(rejectedSpy.calledOnce).to.equal(true);
+            done();
+          }, 10);
+        }, 10);
+
+      });
+
+      it('should publish `canceled` on getting `session-terminated` with reason: `Call canceled`', function (done) {
+
+        var canceledSpy = sinon.spy();
+
+        outgoingVideoConf.on('canceled', canceledSpy);
+
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id(), {
+            reason: 'Call canceled'
+          });
+
+          setTimeout(function () {
+            expect(canceledSpy.calledOnce).to.equal(true);
+            done();
+          }, 10);
+        }, 10);
+      });
+
+      it('should publish `disconnected` with data.reason on getting `session-terminated` with any other reason', function (done) {
+
+        var data = {
+            reason : 'Other Reason'
+          },
+          onNotificationSpy = sinon.spy();
+
+        outgoingVideoConf.on('notification', onNotificationSpy);
+
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id(), data);
+
+          setTimeout(function () {
+            try {
+              expect(onNotificationSpy.called).to.equal(true);
+              expect(onNotificationSpy.getCall(0).args[0]).to.be.an('object');
+              expect(onNotificationSpy.getCall(0).args[0].reason).to.equal(data.reason);
+              expect(onNotificationSpy.getCall(0).args[0].to).to.equal(outgoingVideoConf.peer());
+              expect(onNotificationSpy.getCall(0).args[0].mediaType).to.equal(outgoingVideoConf.mediaType());
+              expect(onNotificationSpy.getCall(0).args[0].codec).to.equal(outgoingVideoConf.codec());
+              expect(onNotificationSpy.getCall(0).args[0].timestamp).to.be.a('date');
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 10);
+
+      });
+
+      it('should unsubscribe the handler for `session-open`', function (done) {
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id(), {});
+
+          setTimeout(function () {
+            try {
+              expect(offStub.calledWith('session-open:' + outgoingVideoConf.id())).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 10);
+      });
+
+      it('should unsubscribe the handler for `session-terminated`', function (done) {
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id(), {});
+
+          setTimeout(function () {
+            try {
+              expect(offStub.calledWith('session-terminated:' + outgoingVideoConf.id())).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 10);
+      });
+
+      it('should unsubscribe the handler for `mod-received`', function (done) {
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id(), {});
+
+          setTimeout(function () {
+            try {
+              expect(offStub.calledWith('mod-received:' + outgoingVideoConf.id())).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 10);
+        }, 10);
+      });
+
+      it('should unsubscribe the handler for `mod-terminated`', function (done) {
+        setTimeout(function () {
+          emitterEM.publish('session-terminated:' + outgoingVideoConf.id(), {});
+
+          setTimeout(function () {
+            try {
+              expect(offStub.calledWith('mod-terminated:' + outgoingVideoConf.id())).to.equal(true);
               done();
             } catch (e) {
               done(e);

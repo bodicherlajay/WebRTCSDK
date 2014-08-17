@@ -278,11 +278,12 @@
         return;
       }
 
-
     }
 
     function onSessionTerminated(data) {
       var eventData;
+
+      console.log('here');
 
       id = null;
 
@@ -295,7 +296,7 @@
           state = 'disconnected';
           eventData = createEventData();
           eventData.reason = data.reason;
-          emitter.publish('disconnected', eventData);
+          emitter.publish('notification', eventData);
         } else {
           if ('created' === state) {
             setState('canceled');
@@ -321,7 +322,6 @@
       }
       rtcManager.resetPeerConnection();
     }
-
 
     function registerForRTCEvents() {
       rtcManager.on(events.SESSION_OPEN + ':' + id, onSessionOpen);
@@ -373,8 +373,9 @@
           'held' !== event &&
           'resumed' !== event &&
           'disconnecting' !== event &&
-          'disconnected' !== event) {
-        throw new Error('Event not defined');
+          'disconnected' !== event &&
+          'notification' !== event) {
+        throw new Error('Event ' + event + ' not defined');
       }
 
       emitter.unsubscribe(event, handler);
