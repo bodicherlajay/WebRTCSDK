@@ -200,15 +200,15 @@
         }
 
         if (modifications.reason === 'success'
-          && modifications.remoteSdp
-          && modifications.remoteSdp.indexOf('sendonly') !== -1
-          && modifications.remoteSdp.indexOf('sendrecv') === -1) {
+            && modifications.remoteSdp
+            && modifications.remoteSdp.indexOf('sendonly') !== -1
+            && modifications.remoteSdp.indexOf('sendrecv') === -1) {
           rtcManager.disableMediaStream();
           that.setState('held');
         }
         if (modifications.reason === 'success'
-          && modifications.remoteSdp
-          && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
+            && modifications.remoteSdp
+            && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
           rtcManager.enableMediaStream();
           that.setState('resumed');
         }
