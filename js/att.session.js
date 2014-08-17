@@ -81,17 +81,6 @@
       }
     }
 
-//    rtcManager.on('media-mod-terminations', function (callInfo) {
-//      if (undefined !== callInfo.reason
-//          && 'success' !== callInfo.reason
-//          && 'Call rejected' !== callInfo.reason) {
-//        emitter.publish('network-notification', {
-//          message: callInfo.reason,
-//          timestamp: new Date()
-//        });
-//      }
-//    });
-
     function on(event, handler) {
 
       if ('ready' !== event &&
@@ -282,6 +271,10 @@
       }
     };
 
+    this.addCall = function (call) {
+      calls[call.id()] = call;
+    };
+
     this.createCall = function (options) {
 
       var call = new ATT.rtc.Call(ATT.utils.extend(options, {
@@ -294,12 +287,20 @@
       call.on('connected', function () {
         session.currentCall = session.pendingCall;
         session.pendingCall = null;
-        calls[session.currentCall.id()] = session.currentCall;
+        this.addCall(session.currentCall());
       });
 
       this.pendingCall = call;
 
       return call;
+    };
+
+    this.getCall = function (callId) {
+      return calls[callId];
+    };
+
+    this.getCalls = function () {
+      return calls;
     };
 
     this.terminateCalls = function () {
@@ -311,25 +312,7 @@
       }
     };
 
-    this.addCall = function (call) {
-      calls[call.id()] = call;
-    };
-
-    this.getCall = function (callId) {
-      return calls[callId];
-    };
-
-    this.getCalls = function () {
-      return calls;
-    };
-
-    this.deleteCurrentCall = function () {
-      if (this.currentCall) {
-        this.currentCall = null;
-      }
-    };
-
-    this.deleteCall =   function deleteCall(callId) {
+    this.deleteCall = function (callId) {
 
       if (calls[callId] === undefined) {
         throw new Error("Call not found");
@@ -339,6 +322,17 @@
 
       if (0 === Object.keys(calls).length) {
         emitter.publish('allcallsterminated');
+      }
+    };
+
+    this.deletePendingCall = function () {
+      this.pendingCall = null;
+    };
+
+    this.deleteCurrentCall = function () {
+      if (this.currentCall) {
+        this.deleteCall(this.currentCall.id());
+        this.currentCall = null;
       }
     };
 

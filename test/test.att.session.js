@@ -165,7 +165,11 @@ describe('Session', function () {
         id: '12345',
         peer: '12345',
         type: 'abc',
-        mediaType: 'audio'
+        mediaType: 'audio',
+        sessionInfo: {
+          sessionId: 'sessionId',
+          token: 'token'
+        }
       });
 
       secondCall = new ATT.rtc.Call({
@@ -173,7 +177,11 @@ describe('Session', function () {
         id: '98765',
         peer: '12452',
         type: 'abc',
-        mediaType: 'video'
+        mediaType: 'video',
+        sessionInfo: {
+          sessionId: 'sessionId',
+          token: 'token'
+        }
       });
 
       onConnectingSpy = sinon.spy();
@@ -222,6 +230,164 @@ describe('Session', function () {
 
         unsubscribeSpy.restore();
         subscribeSpy.restore();
+      });
+    });
+
+    describe('getToken', function () {
+      var sessionForGetToken;
+
+      beforeEach(function () {
+        sessionForGetToken = new ATT.rtc.Session();
+        sessionForGetToken.setId('123');
+      });
+
+      it('should exist', function () {
+        expect(sessionForGetToken.getToken).to.be.a('function');
+      });
+
+      it('return the current token', function () {
+        expect(sessionForGetToken.getToken()).to.equal(null);
+        sessionForGetToken.update({
+          token: 'bogus',
+          timeout: 1000000 // so big that it will never hit the network for refreshSession
+        });
+        expect(sessionForGetToken.getToken()).to.equal('bogus');
+      });
+    });
+
+    describe('getId', function () {
+
+      it('Should exist', function () {
+        expect(session.getId).to.be.a('function');
+      });
+
+      it('Should return the session id', function () {
+        session.setId('12345');
+        expect(session.getId()).to.equal('12345');
+      });
+    });
+
+    describe('setId', function () {
+
+      it('Should publish the `connected` event', function (done) {
+        var sessionId = '12345';
+
+        session.setId(sessionId);
+
+        setTimeout(function () {
+          try {
+            expect(onConnectedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+      it('Should publish `disconnected` event if id is null', function (done) {
+
+        session.setId(null);
+        setTimeout(function () {
+          try {
+            expect(onDisconnectedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+
+      });
+
+      it('should execute rtcManager.stopUserMedia on `disconnected` event', function (done) {
+        var stopUserMediaStub = sinon.stub(rtcManager, 'stopUserMedia');
+
+        session.setId(null);
+
+        setTimeout(function () {
+          try {
+            expect(stopUserMediaStub.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+
+        stopUserMediaStub.restore();
+      });
+
+      it('should update the id of the session', function () {
+        session.setId('1334');
+        expect(session.getId()).to.equal('1334');
+      });
+
+    });
+
+    describe('update', function () {
+      var refreshSessionStub;
+
+      beforeEach(function () {
+        session.setId('123');
+        options = { timeout : 123};
+        refreshSessionStub = sinon.stub(rtcManager, 'refreshSession');
+      });
+
+      afterEach(function () {
+        refreshSessionStub.restore();
+      });
+
+      it('Should exist', function () {
+        expect(session.update).to.be.a('function');
+      });
+
+      it('Should throw and error if no options', function () {
+        expect(session.update.bind(session)).to.throw('No options provided');
+      });
+
+      it('Should trigger onUpdating callback with options', function (done) {
+
+        session.update(options);
+
+        setTimeout(function () {
+          try {
+            expect(onUpdatingSpy.calledWith(options)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+      describe('timeout', function () {
+
+        it('Should throw an error if the timeout value is not a number', function () {
+
+          options.timeout = '123';
+          expect(session.update.bind(session, options)).to.throw('Timeout is not a number.');
+
+        });
+
+        it('Should set the timeout', function () {
+          session.update(options);
+          expect(session.timeout).to.equal(123);
+        });
+
+        it('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function (done) {
+          var onNeedsRefreshSpy = sinon.spy();
+          options.timeout = 60020;
+          session.on('needs-refresh', onNeedsRefreshSpy);
+          session.update(options);
+          expect(session.timer).to.be.a('number');
+          setTimeout(function () {
+            try {
+              expect(onNeedsRefreshSpy.called).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 30);
+
+        });
+
       });
     });
 
@@ -580,223 +746,19 @@ describe('Session', function () {
 
     });
 
-    describe('getToken', function () {
-      var sessionForGetToken;
-
-      beforeEach(function () {
-        sessionForGetToken = new ATT.rtc.Session();
-        sessionForGetToken.setId('123');
-      });
-
-      it('should exist', function () {
-        expect(sessionForGetToken.getToken).to.be.a('function');
-      });
-
-      it('return the current token', function () {
-        expect(sessionForGetToken.getToken()).to.equal(null);
-        sessionForGetToken.update({
-          token: 'bogus',
-          timeout: 1000000 // so big that it will never hit the network for refreshSession
-        });
-        expect(sessionForGetToken.getToken()).to.equal('bogus');
-      });
-    });
-
-    describe('setId', function () {
-
-      it('Should publish the `connected` event', function (done) {
-        var sessionId = '12345';
-
-        session.setId(sessionId);
-
-        setTimeout(function () {
-          try {
-            expect(onConnectedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-      });
-
-      it('Should publish `disconnected` event if id is null', function (done) {
-
-        session.setId(null);
-        setTimeout(function () {
-          try {
-            expect(onDisconnectedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-
-      });
-
-      it('should execute rtcManager.stopUserMedia on `disconnected` event', function (done) {
-        var stopUserMediaStub = sinon.stub(rtcManager, 'stopUserMedia');
-
-        session.setId(null);
-          
-        setTimeout(function () {
-          try {
-            expect(stopUserMediaStub.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-
-        stopUserMediaStub.restore();
-      });
-
-      it('should update the id of the session', function () {
-        session.setId('1334');
-        expect(session.getId()).to.equal('1334');
-      });
-
-    });
-
-    describe('getId', function () {
+    describe('addCall', function () {
 
       it('Should exist', function () {
-        expect(session.getId).to.be.a('function');
+        expect(session.addCall).to.be.a('function');
       });
 
-      it('Should return the session id', function () {
-        session.setId('12345');
-        expect(session.getId()).to.equal('12345');
-      });
-    });
+      it('Should add a call to the session', function () {
 
-    describe('update', function () {
-      var refreshSessionStub;
+        session.addCall(call);
 
-      beforeEach(function () {
-        session.setId('123');
-        options = { timeout : 123};
-        refreshSessionStub = sinon.stub(rtcManager, 'refreshSession');
+        expect(session.getCall(call.id())).to.equal(call);
       });
 
-      afterEach(function () {
-        refreshSessionStub.restore();
-      });
-
-      it('Should exist', function () {
-        expect(session.update).to.be.a('function');
-      });
-
-      it('Should throw and error if no options', function () {
-        expect(session.update.bind(session)).to.throw('No options provided');
-      });
-
-      it('Should trigger onUpdating callback with options', function (done) {
-
-        session.update(options);
-
-        setTimeout(function () {
-          try {
-            expect(onUpdatingSpy.calledWith(options)).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-      });
-
-      describe('timeout', function () {
-
-        it('Should throw an error if the timeout value is not a number', function () {
-
-          options.timeout = '123';
-          expect(session.update.bind(session, options)).to.throw('Timeout is not a number.');
-
-        });
-
-        it('Should set the timeout', function () {
-          session.update(options);
-          expect(session.timeout).to.equal(123);
-        });
-
-        it('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function (done) {
-          var onNeedsRefreshSpy = sinon.spy();
-          options.timeout = 60020;
-          session.on('needs-refresh', onNeedsRefreshSpy);
-          session.update(options);
-          expect(session.timer).to.be.a('number');
-          setTimeout(function () {
-            try {
-              expect(onNeedsRefreshSpy.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 30);
-
-        });
-
-      });
-    });
-
-    describe('updateE911Id', function () {
-      var updateE911stub, updateOptions, onSuccessCall = function () {
-      }, onError = function () {};
-
-      beforeEach(function () {
-        updateOptions = {
-          e911Id: '1234',
-          sessionId: session.getId(),
-          token: session.getToken(),
-          onSuccess: onSuccessCall,
-          onError: onError
-        };
-
-        options = { timeout : 123};
-        updateE911stub = sinon.stub(rtcManager, 'updateSessionE911Id', function (options) {
-          options.onSuccess();
-        });
-      });
-
-      afterEach(function () {
-        updateE911stub.restore();
-      });
-      it('Should exist', function () {
-        expect(session.updateE911Id).to.be.a('function');
-      });
-
-      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
-        session.token = 'dsfgdsdf';
-        session.updateE911Id({e911Id : '1234'});
-        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
-        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
-        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
-
-      });
-
-      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
-        session.token = 'dsfgdsdf';
-        session.updateE911Id({e911Id : '1234'});
-        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
-        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
-        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
-      });
-
-      it('Should publish `updatedE911` on success callback ', function (done) {
-        var  onNeedsRefreshSpy = sinon.spy();
-
-        session.on('address-updated', onNeedsRefreshSpy);
-        session.updateE911Id({e911Id : '1234'});
-
-        setTimeout(function () {
-          try {
-            expect(onNeedsRefreshSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 30);
-
-      });
     });
 
     describe('createCall', function () {
@@ -908,21 +870,6 @@ describe('Session', function () {
 
     });
 
-    describe('addCall', function () {
-
-      it('Should exist', function () {
-        expect(session.addCall).to.be.a('function');
-      });
-
-      it('Should add a call to the session', function () {
-
-        session.addCall(call);
-
-        expect(session.getCall(call.id())).to.equal(call);
-      });
-
-    });
-
     describe('getCall', function () {
 
       beforeEach(function () {
@@ -942,7 +889,8 @@ describe('Session', function () {
       });
 
     });
-    describe('getCalls',function () {
+
+    describe('getCalls', function () {
 
       it('Should exist', function () {
         expect(session.getCalls).to.be.a('function');
@@ -961,7 +909,7 @@ describe('Session', function () {
       });
     });
 
-    xdescribe('terminateCalls', function () {
+    describe('terminateCalls', function () {
 
       beforeEach(function () {
         session.addCall(call);
@@ -1027,20 +975,108 @@ describe('Session', function () {
 
     });
 
+    describe('deletePendingCall', function () {
+
+      it('should exist', function () {
+        expect(session.deletePendingCall).to.be.a('function');
+      });
+
+      it('should set the pendingCall to null', function () {
+        session.pendingCall = call;
+
+        session.deletePendingCall();
+
+        expect(session.pendingCall).to.equal(null);
+      });
+    });
+
     describe('deleteCurrentCall', function () {
 
       it('Should exist', function () {
         expect(session.deleteCurrentCall).to.be.a('function');
       });
 
+      it('should delete the current call from the calls stack', function () {
+        session.currentCall = call;
+        session.addCall(call);
+
+        session.deleteCurrentCall();
+
+        expect(session.getCall(call.id())).to.equal(undefined);
+      });
+
       it('Should delete the current Call', function () {
         session.currentCall = call;
+        session.addCall(call);
 
         session.deleteCurrentCall();
 
         expect(session.currentCall).to.equal(null);
       });
+
     });
+
+    describe('updateE911Id', function () {
+      var updateE911stub, updateOptions, onSuccessCall = function () {
+      }, onError = function () {};
+
+      beforeEach(function () {
+        updateOptions = {
+          e911Id: '1234',
+          sessionId: session.getId(),
+          token: session.getToken(),
+          onSuccess: onSuccessCall,
+          onError: onError
+        };
+
+        options = { timeout : 123};
+        updateE911stub = sinon.stub(rtcManager, 'updateSessionE911Id', function (options) {
+          options.onSuccess();
+        });
+      });
+
+      afterEach(function () {
+        updateE911stub.restore();
+      });
+      it('Should exist', function () {
+        expect(session.updateE911Id).to.be.a('function');
+      });
+
+      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
+        session.token = 'dsfgdsdf';
+        session.updateE911Id({e911Id : '1234'});
+        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
+        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
+        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
+
+      });
+
+      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
+        session.token = 'dsfgdsdf';
+        session.updateE911Id({e911Id : '1234'});
+        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
+        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
+        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
+      });
+
+      it('Should publish `updatedE911` on success callback ', function (done) {
+        var  onNeedsRefreshSpy = sinon.spy();
+
+        session.on('address-updated', onNeedsRefreshSpy);
+        session.updateE911Id({e911Id : '1234'});
+
+        setTimeout(function () {
+          try {
+            expect(onNeedsRefreshSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 30);
+
+      });
+    });
+
   });
 
   describe('Events', function () {
