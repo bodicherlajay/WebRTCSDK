@@ -905,20 +905,6 @@ describe('Call', function () {
             incomingCall.reject();
           });
 
-          xit('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
-
-            emitterEM.publish('session-terminated:' + incomingCall.id());
-
-            setTimeout(function () {
-              try {
-                expect(incomingCall.id()).to.equal(null);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 10);
-          });
-
           it('should publish `rejected` with data when rtcManager publishes `session-terminated` and rejected == true', function (done) {
 
             var data = {

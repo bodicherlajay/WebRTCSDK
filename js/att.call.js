@@ -264,6 +264,7 @@
       if ('conference' === breed
           || (2 === ATT.private.pcv && 'call' === breed)) {
         if (undefined !== data.remoteSdp) {
+          that.setRemoteSdp(data.remoteSdp);
           peerConnection.setRemoteDescription({
             sdp: data.remoteSdp,
             type: 'answer'
@@ -291,7 +292,6 @@
       var eventData;
 
       if (undefined !== data) {
-
         if ('Call rejected' === data.reason || rejected) {
           setState('rejected');
         } else if ('Call canceled' === data.reason || canceled) {
@@ -586,7 +586,7 @@
 
       setState('disconnecting');
 
-      if (null === remoteSdp) {
+      if (null === this.remoteSdp()) {
         logger.logInfo('Canceling...');
 
         canceled = true;
@@ -726,9 +726,11 @@
           token : sessionInfo.token,
           callId : id,
           onSuccess : function () {
-            setState('held');
+            logger.logInfo('holdCall request: success');
           },
           onError : function (error) {
+            logger.logError('holdCall request: error');
+            logger.logError(error);
             emitter.publish('error', {
               error: error
             });
@@ -894,7 +896,7 @@
         return remoteSdp;
       }
       description = peerConnection.getRemoteDescription();
-      return description.sdp;
+      return description ? description.sdp : null;
     };
     this.localStream = function () {
       return localStream;
