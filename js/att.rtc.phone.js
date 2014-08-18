@@ -26,7 +26,8 @@
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
       userMediaSvc = ATT.UserMediaService,
-      logger = logManager.addLoggerForModule('Phone');
+      logger = logManager.addLoggerForModule('Phone'),
+      that = this;
 
     logger.logInfo('Creating new instance of Phone');
 
@@ -79,6 +80,48 @@
       logger.logTrace(data);
       emitter.publish('error', data);
     });
+
+    function mediaEstablished(data) {
+      /**
+       * Media established event.
+       * @desc This event fires after when audio/video media has started
+       * @event Phone#media-established
+       * @type {object}
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('media-established', data);
+    }
+
+    function onCallDisconnected(call, data) {
+      var calls,
+        keys;
+
+      logger.logInfo('call disconnected event by phone layer');
+      /**
+       * Call disconnected event.
+       * @desc Indicates a call has been disconnected
+       *
+       * @event Phone#call-disconnected
+       * @type {object}
+       * @property {String} from - The ID of the caller.
+       * @property {String} mediaType - The type of call.
+       * @property {String} codec - The codec of the call.
+       * @property {Date} timestamp - Event fire time.
+       */
+      call.off('media-established', mediaEstablished);
+      emitter.publish('call-disconnected', data);
+      session.deleteCurrentCall();
+
+      calls = session.getCalls();
+
+      keys = Object.keys(calls);
+      if (keys.length > 0) {
+        session.currentCall = calls[keys[0]];
+        that.resume();
+        return;
+      }
+
+    }
 
     function getError(errorNumber) {
       return errorDictionary.getSDKError(errorNumber);
@@ -381,17 +424,6 @@
       }
     }
 
-    function mediaEstablished(data) {
-      /**
-       * Media established event.
-       * @desc This event fires after when audio/video media has started
-       * @event Phone#media-established
-       * @type {object}
-       * @property {Date} timestamp - Event fire time.
-       */
-      emitter.publish('media-established', data);
-    }
-
     /**
      * @summary Make a call
      * @desc Add description here
@@ -564,21 +596,7 @@
           });
 
           call.on('disconnected', function (data) {
-            logger.logInfo('call disconnected event by phone layer');
-            /**
-             * Call disconnected event.
-             * @desc Indicates a call has been disconnected
-             *
-             * @event Phone#call-disconnected
-             * @type {object}
-             * @property {String} from - The ID of the caller.
-             * @property {String} mediaType - The type of call.
-             * @property {String} codec - The codec of the call.
-             * @property {Date} timestamp - Event fire time.
-             */
-            call.off('media-established', mediaEstablished);
-            emitter.publish('call-disconnected', data);
-            session.deleteCurrentCall();
+            onCallDisconnected(call, data);
           });
 
 
@@ -777,10 +795,7 @@
           emitter.publish('call-resumed', data);
         });
         call.on('disconnected', function (data) {
-          logger.logInfo('call disconnected event by phone layer');
-          call.off('media-established', mediaEstablished);
-          emitter.publish('call-disconnected', data);
-          session.deleteCurrentCall();
+          onCallDisconnected(call, data);
         });
         call.on('error', function (data) {
           publishError(5002, data);

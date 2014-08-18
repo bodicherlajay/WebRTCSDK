@@ -726,9 +726,11 @@
           token : sessionInfo.token,
           callId : id,
           onSuccess : function () {
-            setState('held');
+            logger.logInfo('holdCall request: success');
           },
           onError : function (error) {
+            logger.logError('holdCall request: error');
+            logger.logError(error);
             emitter.publish('error', {
               error: error
             });
