@@ -27,6 +27,7 @@ describe('Call [Conference]', function () {
     };
 
     incomingVideoOpts = {
+      id: 'confId',
       breed: 'conference',
       peer: '12345',
       mediaType: 'video',
@@ -576,7 +577,7 @@ describe('Call [Conference]', function () {
 
                 setTimeout(function () {
                   try {
-                    expect(rtcMgrOnStub.called).to.equal(false);
+                    expect(rtcMgrOnStub.calledAfter(connectConferenceStub)).to.equal(false);
                     done();
                   } catch (e) {
                     done(e);
@@ -1253,7 +1254,7 @@ describe('Call [Conference]', function () {
           type: 'conference',
           modificationId: 'abc321',
           reason: 'success'
-        },
+        };
         rtcMgrAddParticipantStub = sinon.stub(rtcManager, 'addParticipant');
         onInviteAcceptedSpy = sinon.spy();
       });

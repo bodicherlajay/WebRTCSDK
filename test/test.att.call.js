@@ -16,7 +16,7 @@ describe('Call', function () {
     emitterEM,
     eventManager,
     rtcMgr,
-    rtcMgrOnStub,
+    rtcMgrOnSpy,
     peerConnection,
     createEventEmitterStub,
     createEventManagerStub,
@@ -71,6 +71,7 @@ describe('Call', function () {
     };
 
     optionsIncoming = {
+      id: 'callId',
       breed: 'call',
       peer: '12345',
       mediaType: 'audio',
@@ -140,7 +141,7 @@ describe('Call', function () {
     });
 
     rtcMgr = new ATT.private.RTCManager(optionsForRTCM);
-    rtcMgrOnStub = sinon.stub(rtcMgr, 'on');
+    rtcMgrOnSpy = sinon.spy(rtcMgr, 'on');
 
     getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
       return rtcMgr;
@@ -149,6 +150,7 @@ describe('Call', function () {
     rtcPCStub = sinon.stub(window, 'RTCPeerConnection', function () {
       return rtcPC;
     });
+
     peerConnection = factories.createPeerConnection({
       stream : {},
       mediaType : 'video',
@@ -168,7 +170,7 @@ describe('Call', function () {
     doOperationStub.restore();
     createEventEmitterStub.restore();
     createEventManagerStub.restore();
-    rtcMgrOnStub.restore();
+    rtcMgrOnSpy.restore();
     getRTCManagerStub.restore();
     createPeerConnectionStub.restore();
   });
@@ -267,29 +269,29 @@ describe('Call', function () {
       it('should register for event `session-open` from RTCManager', function () {
         incomingCall = new ATT.rtc.Call(incomingCallOpts);
 
-        expect(rtcMgrOnStub.calledWith('session-open:' + incomingCall.id())).to.equal(true);
-        expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+        expect(rtcMgrOnSpy.calledWith('session-open:' + incomingCall.id())).to.equal(true);
+        expect(rtcMgrOnSpy.getCall(0).args[1]).to.be.a('function');
       });
 
       it('should register for `session-terminated` event on `RTCManager`', function () {
         incomingCall = new ATT.rtc.Call(incomingCallOpts);
 
-        expect(rtcMgrOnStub.calledWith('session-terminated:' + incomingCall.id())).to.equal(true);
-        expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+        expect(rtcMgrOnSpy.calledWith('session-terminated:' + incomingCall.id())).to.equal(true);
+        expect(rtcMgrOnSpy.getCall(0).args[1]).to.be.a('function');
       });
 
       it('should register for `mod-received` event on `RTCManager`', function () {
         incomingCall = new ATT.rtc.Call(incomingCallOpts);
 
-        expect(rtcMgrOnStub.calledWith('mod-received:' + incomingCall.id())).to.equal(true);
-        expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+        expect(rtcMgrOnSpy.calledWith('mod-received:' + incomingCall.id())).to.equal(true);
+        expect(rtcMgrOnSpy.getCall(0).args[1]).to.be.a('function');
       });
 
       it('should register for `mod-terminated` event on `RTCManager`', function () {
         incomingCall = new ATT.rtc.Call(incomingCallOpts);
 
-        expect(rtcMgrOnStub.calledWith('mod-terminated:' + incomingCall.id())).to.equal(true);
-        expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+        expect(rtcMgrOnSpy.calledWith('mod-terminated:' + incomingCall.id())).to.equal(true);
+        expect(rtcMgrOnSpy.getCall(0).args[1]).to.be.a('function');
       });
     });
 
@@ -298,7 +300,7 @@ describe('Call', function () {
       it('should NOT register for event `session-open` from RTCManager', function () {
         outgoingCall = new ATT.rtc.Call(outgoingCallOpts);
 
-        expect(rtcMgrOnStub.called).to.equal(false);
+        expect(rtcMgrOnSpy.called).to.equal(false);
       });
 
     });
@@ -328,9 +330,9 @@ describe('Call', function () {
         error: error
       };
 
-      emitterCall = factories.createEventEmitter();
-
       createEventEmitterStub.restore();
+
+      emitterCall = factories.createEventEmitter();
 
       createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
         return emitterCall;
@@ -849,7 +851,6 @@ describe('Call', function () {
 
               setTimeout(function () {
                 try {
-                    console.log(outgoingCall.id());
                     expect(canceledSpy.called).to.equal(true);
                   done();
                 } catch (e) {
@@ -891,9 +892,8 @@ describe('Call', function () {
       var rejectCallStub;
 
       beforeEach(function () {
-        incomingCall.setId('123');
-
         rejectCallStub = sinon.stub(rtcMgr, 'rejectCall');
+        incomingCall = new ATT.rtc.Call(optionsIncoming);
       });
 
       afterEach(function () {
@@ -915,8 +915,8 @@ describe('Call', function () {
 
         setTimeout(function () {
           try {
-            expect(rtcMgrOnStub.calledWith('session-terminated:' + incomingCall.id())).to.equal(true);
-            expect(rtcMgrOnStub.getCall(0).args[1]).to.be.a('function');
+            expect(rtcMgrOnSpy.calledWith('session-terminated:' + incomingCall.id())).to.equal(true);
+            expect(rtcMgrOnSpy.getCall(0).args[1]).to.be.a('function');
             done();
           } catch (e) {
             done(e);
@@ -948,6 +948,7 @@ describe('Call', function () {
           var onRejectedSpy;
 
           beforeEach (function () {
+            // restore for actual event register
             incomingCall.reject();
           });
 
