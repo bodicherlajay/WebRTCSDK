@@ -299,7 +299,7 @@
         } else if (undefined !== data.reason) {
           state = 'disconnected';
           eventData = createEventData();
-          eventData.reason = data.reason;
+          eventData.message = data.reason;
           emitter.publish('notification', eventData);
         } else {
           if ('created' === state) {
