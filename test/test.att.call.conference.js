@@ -598,12 +598,12 @@ describe('Call [Conference]', function () {
                 setTimeout(function () {
                   onErrorSpy = sinon.spy(options, 'onError');
                   options.onError(cruelError);
-                  onErrorSpy.restore();
                 }, 0);
               });
             });
 
             afterEach(function () {
+              onErrorSpy.restore();
               connectConferenceStub.restore();
             });
 
