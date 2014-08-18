@@ -905,7 +905,7 @@ describe('Call', function () {
             incomingCall.reject();
           });
 
-          it('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
+          xit('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
 
             emitterEM.publish('session-terminated:' + incomingCall.id());
 

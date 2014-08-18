@@ -76,6 +76,12 @@ describe('[US221924] addCall', function () {
       type: 'abc',
       mediaType: 'video'
     });
+    createEventEmitterStub.restore();
+
+    emitterCall = factories.createEventEmitter();
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+      return emitterCall;
+    });
     secondCall = new Call({
       id: 'secondCall',
       breed: 'call',
@@ -331,6 +337,9 @@ describe('[US221924] addCall', function () {
       beforeEach(function (done) {
 
         createCallStub = sinon.stub(session, 'createCall', function () {
+          session.currentCall = firstCall;
+          session.pendingCall = null;
+          session.addCall(firstCall);
           return firstCall;
         });
 
@@ -339,11 +348,15 @@ describe('[US221924] addCall', function () {
 
         // add a second call & hold the first one
         createCallStub = sinon.stub(session, 'createCall', function () {
+          // simulate successful dial of a Second Call
+          session.currentCall = secondCall;
+          session.pendingCall = null;
+          session.addCall(secondCall);
           return secondCall;
         });
         phone.addCall(addCallOpts);
 
-
+        // simulate successful holding of the first call
         firstCall.setState('held');
 
         setTimeout(function () {
@@ -357,20 +370,17 @@ describe('[US221924] addCall', function () {
           keys,
           callOnHold;
 
-        // simulate successful dial
-        session.currentCall = secondCall;
-        session.pendingCall = null;
-
         // Assume disconnect of the secondCall was successful
+        console.log('test',session.currentCall.id());
         session.currentCall.setState('disconnected');
 
         setTimeout(function () {
           try {
-
             calls = session.getCalls();
+//            console.log('keys:', calls);
             keys = Object.keys(calls);
             callOnHold = calls[keys[0]];
-            console.log('call:' + callOnHold.id());
+//            console.log('currentcall:' + session.currentCall.id());
 
             expect(session.currentCall.id()).to.equal(firstCall.id());
             done();

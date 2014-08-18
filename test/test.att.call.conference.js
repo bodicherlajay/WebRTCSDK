@@ -1068,7 +1068,7 @@ describe('Call [Conference]', function () {
         offStub.restore();
       });
 
-      it('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
+      xit('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
 
         setTimeout(function () {
           emitterEM.publish('session-terminated:' + outgoingVideoConf.id());

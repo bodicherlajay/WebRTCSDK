@@ -290,8 +290,6 @@
     function onSessionTerminated(data) {
       var eventData;
 
-      id = null;
-
       if (undefined !== data) {
 
         if ('Call rejected' === data.reason || rejected) {
