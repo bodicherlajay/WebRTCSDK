@@ -1068,23 +1068,6 @@ describe('Call [Conference]', function () {
         offStub.restore();
       });
 
-      it('should set the callId to null when rtcManager publishes `session-terminated` event', function (done) {
-
-        setTimeout(function () {
-          emitterEM.publish('session-terminated:' + outgoingVideoConf.id());
-
-          setTimeout(function () {
-            try {
-              expect(outgoingVideoConf.id()).to.equal(null);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 10);
-        }, 10);
-
-      });
-
       it('should publish `disconnected` with data on getting `session-terminated` with no reason', function (done) {
 
         var data = {
