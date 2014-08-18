@@ -416,8 +416,8 @@
               setState('connecting');
             } else {
               setId(responsedata.id);
+              registerForRTCEvents();
             }
-            registerForRTCEvents();
           },
           onError: function (error) {
             emitter.publish('error', {
@@ -826,6 +826,7 @@
       id = null;
     } else {
       id = options.id;
+      registerForRTCEvents(); // register for events if the call id is available
     }
 
     state = 'created';
