@@ -599,7 +599,6 @@
             onCallDisconnected(call, data);
           });
 
-
           call.on('error', function (data) {
             emitter.publish('error', data);
           });

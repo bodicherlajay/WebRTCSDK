@@ -785,8 +785,6 @@
 
       rejected = true;
 
-//      rtcManager.on('session-terminated:' + id, onSessionTerminated);
-
       rtcManager.rejectCall({
         callId : id,
         sessionId : sessionInfo.sessionId,
