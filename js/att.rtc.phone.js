@@ -16,7 +16,6 @@
 
    @fires Phone#call-incoming
    @fires Phone#conference:invitation-received
-   @fires Phone#network:notification
    @fires Phone#error
 
    */
@@ -32,6 +31,7 @@
     logger.logInfo('Creating new instance of Phone');
 
     session.on('call-incoming', function (data) {
+      logger.logInfo('call incoming event  by phone layer');
       /**
        * Call incoming event.
        * @desc This event fires when a call is incoming.
@@ -43,7 +43,6 @@
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
-      logger.logInfo('call incoming event  by phone layer');
       emitter.publish('call-incoming', data);
 
       if (session.pendingCall) {
@@ -60,6 +59,7 @@
     });
 
     session.on('conference-invite', function (data) {
+      logger.logInfo('conference:invitation-received event  by phone layer');
       /**
        * Conference Invite event.
        * @desc Participant receives this event after a conference invitation is sent to him/her.
@@ -71,7 +71,6 @@
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
-      logger.logInfo('conference:invitation-received event  by phone layer');
       emitter.publish('conference:invitation-received', data);
     });
 
@@ -82,6 +81,7 @@
     });
 
     function mediaEstablished(data) {
+      logger.logInfo('media established event by phone layer');
       /**
        * Media established event.
        * @desc This event fires after when audio/video media has started
@@ -236,7 +236,7 @@
 
       if ('session:ready' !== event
           && 'session:disconnected' !== event
-          && 'network:notification' !== event
+          && 'notification' !== event
           && 'dialing' !== event
           && 'answering' !== event
           && 'call-incoming' !== event
@@ -454,6 +454,7 @@
      * @fires Phone#call-held
      * @fires Phone#call-resumed
      * @fires Phone#call-disconnected
+     * @fires Phone#notification
      * @fires Phone#error
 
      * @example
@@ -575,6 +576,7 @@
           });
           call.on('media-established', mediaEstablished);
           call.on('held', function (data) {
+            logger.logInfo('call held event by phone layer');
             /**
              * Call on hold event.
              * @desc This event fires when a call has been put on hold
@@ -585,6 +587,7 @@
             emitter.publish('call-held', data);
           });
           call.on('resumed', function (data) {
+            logger.logInfo('call resumed by phone layer');
             /**
              * Call resumed event.
              * @desc This event fires when a call has been resumed
@@ -599,6 +602,18 @@
             onCallDisconnected(call, data);
           });
 
+          call.on('notification', function (data) {
+            logger.logInfo('notification event by phone layer');
+            /**
+             * Notification event.
+             * @desc This event fires when the call ends for a reason
+             * @event Phone#notification
+             * @type {object}
+             * @property {Date} timestamp - Event fire time.
+             */
+            emitter.publish('notification', data);
+            session.deleteCurrentCall();
+          });
 
           call.on('error', function (data) {
             emitter.publish('error', data);
@@ -724,6 +739,7 @@
      * @fires Phone#call-held
      * @fires Phone#call-resumed
      * @fires Phone#call-disconnected
+     * @fires Phone#notification
      * @fires Phone#error
 
      * @example
@@ -796,6 +812,10 @@
         });
         call.on('disconnected', function (data) {
           onCallDisconnected(call, data);
+        });
+        call.on('notification', function (data) {
+          emitter.publish('notification', data);
+          session.deleteCurrentCall();
         });
         call.on('error', function (data) {
           publishError(5002, data);
@@ -1022,16 +1042,24 @@
              * @property {String} codec - The codec used by the conference.
              * @property {Date} timestamp - Event fire time.
              */
+            logger.logInfo('conference connecting event by phone layer');
             emitter.publish('conference:connecting', data);
           });
 
           conference.on('connected', function (data) {
+            logger.logInfo('conference connected event by phone layer');
             emitter.publish('conference:connected', data);
           });
 
           conference.on('disconnected', function (data) {
-            logger.logInfo('conference ended  event by phone layer');
+            logger.logInfo('conference ended event by phone layer');
             emitter.publish('conference:ended', data);
+            session.deleteCurrentCall();
+          });
+
+          conference.on('notification', function (data) {
+            logger.logInfo('Notification event by phone layer');
+            emitter.publish('notification', data);
             session.deleteCurrentCall();
           });
 
@@ -1721,6 +1749,7 @@
      * @fires Phone#conference:invitation-sent
      * @fires Phone#conference:invitation-accepted
      * @fires Phone#conference:invitation-rejected
+     * @fires Phone#notification
      * @fires Phone#error
 
      * @example
@@ -1812,6 +1841,10 @@
            * @property {Date} timestamp - Event fire time.
            */
           emitter.publish('conference:invitation-rejected', data);
+        });
+
+        conference.on('notification', function (data) {
+          emitter.publish('notification', data);
         });
 
         for (counter = 0; counter < participants.length; counter += 1) {

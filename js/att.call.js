@@ -299,7 +299,7 @@
         } else if (undefined !== data.reason) {
           state = 'disconnected';
           eventData = createEventData();
-          eventData.reason = data.reason;
+          eventData.message = data.reason;
           emitter.publish('notification', eventData);
         } else {
           if ('created' === state) {
@@ -416,8 +416,8 @@
               setState('connecting');
             } else {
               setId(responsedata.id);
+              registerForRTCEvents();
             }
-            registerForRTCEvents();
           },
           onError: function (error) {
             emitter.publish('error', {
@@ -790,8 +790,6 @@
 
       rejected = true;
 
-      rtcManager.on('session-terminated:' + id, onSessionTerminated);
-
       rtcManager.rejectCall({
         callId : id,
         sessionId : sessionInfo.sessionId,
@@ -833,6 +831,7 @@
       id = null;
     } else {
       id = options.id;
+      registerForRTCEvents(); // register for events if the call id is available
     }
 
     state = 'created';

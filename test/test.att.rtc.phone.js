@@ -521,6 +521,7 @@ describe('Phone', function () {
           callConnectStub,
           callConnectingHandlerSpy,
           callDisconnectedHandlerSpy,
+          notificationHandlerSpy,
           callRejectedHandlerSpy,
           mediaEstablishedHandlerSpy,
           callHoldHandlerSpy,
@@ -546,6 +547,7 @@ describe('Phone', function () {
           onDialingSpy = sinon.spy();
           callConnectingHandlerSpy = sinon.spy();
           callDisconnectedHandlerSpy = sinon.spy();
+          notificationHandlerSpy = sinon.spy();
           callRejectedHandlerSpy = sinon.spy();
           mediaEstablishedHandlerSpy = sinon.spy();
           callHoldHandlerSpy = sinon.spy();
@@ -554,6 +556,7 @@ describe('Phone', function () {
           phone.on('dialing', onDialingSpy);
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-disconnected', callDisconnectedHandlerSpy);
+          phone.on('notification', notificationHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
           phone.on('media-established', mediaEstablishedHandlerSpy);
           phone.on('call-held', callHoldHandlerSpy);
@@ -653,6 +656,12 @@ describe('Phone', function () {
           expect(onSpy.calledWith('rejected')).to.equal(true);
         });
 
+        it('should register for the `notification` event on the call object', function () {
+          phone.dial(options);
+
+          expect(onSpy.calledWith('notification')).to.equal(true);
+        });
+
         it('should register for the `error` event on the call object', function () {
           phone.dial(options);
 
@@ -703,6 +712,20 @@ describe('Phone', function () {
               try {
                 expect(unsubscribeSpy.calledWith('media-established')).to.equal(true);
                 expect(callDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(deleteCurrentCallStub.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 50);
+          });
+
+          it('should trigger `notification` with relevant data when call publishes `notification` event', function (done) {
+            emitterCall.publish('notification', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(notificationHandlerSpy.calledWith(eventData)).to.equal(true);
                 expect(deleteCurrentCallStub.called).to.equal(true);
                 done();
               } catch (e) {
@@ -930,6 +953,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy,
           callConnectedHandlerSpy,
           callDisconnectedHandlerSpy,
+          notificationHandlerSpy,
           callCanceledHandlerSpy,
           callRejectedHandlerSpy,
           mediaEstablishedHandlerSpy,
@@ -954,6 +978,7 @@ describe('Phone', function () {
           callConnectingHandlerSpy = sinon.spy();
           callConnectedHandlerSpy = sinon.spy();
           callDisconnectedHandlerSpy = sinon.spy();
+          notificationHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
           callRejectedHandlerSpy = sinon.spy();
           mediaEstablishedHandlerSpy = sinon.spy();
@@ -973,6 +998,7 @@ describe('Phone', function () {
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-connected', callConnectedHandlerSpy);
           phone.on('call-disconnected', callDisconnectedHandlerSpy);
+          phone.on('notification', notificationHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
           phone.on('call-rejected', callRejectedHandlerSpy);
           phone.on('media-established', mediaEstablishedHandlerSpy);
@@ -1112,6 +1138,14 @@ describe('Phone', function () {
           expect(onSpy.calledWith('disconnected')).to.equal(true);
         });
 
+
+        it('should register for the `notification` event on the call object', function () {
+          phone.answer(answerOptions);
+
+          expect(onSpy.calledWith('notification')).to.equal(true);
+        });
+
+
         it('should register for the `media-established` event on the call object', function () {
           phone.answer(answerOptions);
 
@@ -1190,6 +1224,20 @@ describe('Phone', function () {
             setTimeout(function () {
               try {
                 expect(callDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(deleteCurrentCallStub.called).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 50);
+          });
+
+          it('should trigger `notification` with relevant data when call publishes `notification` event', function (done) {
+            emitterCall.publish('notification', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(notificationHandlerSpy.calledWith(eventData)).to.equal(true);
                 expect(deleteCurrentCallStub.called).to.equal(true);
                 done();
               } catch (e) {
@@ -1356,6 +1404,12 @@ describe('Phone', function () {
           phone.joinConference(options);
 
           expect(onSpy.calledWith('disconnected')).to.equal(true);
+        });
+
+        it('should register for `notification` event from call', function () {
+          phone.joinConference(options);
+
+          expect(onSpy.calledWith('notification')).to.equal(true);
         });
 
         it('should register for `stream-added` event from call', function () {
@@ -1544,22 +1598,25 @@ describe('Phone', function () {
 
         describe('joinConference events', function () {
 
-          var onConfConnectingHandlerSpy,
-            conferenceConnectedSpy,
-            conferenceDisconnectedSpy,
-            conferenceErrorSpy,
+          var confConnectingHandlerSpy,
+            confConnectedHandlerSpy,
+            confDisconnectedHandlerSpy,
+            notificationHandlerSpy,
+            confErrorHandlerSpy,
             deleteCurrentCallStub;
 
           beforeEach(function () {
-            onConfConnectingHandlerSpy = sinon.spy();
-            conferenceConnectedSpy = sinon.spy();
-            conferenceDisconnectedSpy = sinon.spy();
-            conferenceErrorSpy = sinon.spy();
+            confConnectingHandlerSpy = sinon.spy();
+            confConnectedHandlerSpy = sinon.spy();
+            confDisconnectedHandlerSpy = sinon.spy();
+            notificationHandlerSpy = sinon.spy();
+            confErrorHandlerSpy = sinon.spy();
 
-            phone.on('conference:connecting', onConfConnectingHandlerSpy);
-            phone.on('conference:connected', conferenceConnectedSpy);
-            phone.on('conference:ended', conferenceDisconnectedSpy);
-            phone.on('error', conferenceErrorSpy);
+            phone.on('conference:connecting', confConnectingHandlerSpy);
+            phone.on('conference:connected', confConnectedHandlerSpy);
+            phone.on('conference:ended', confDisconnectedHandlerSpy);
+            phone.on('notification', notificationHandlerSpy);
+            phone.on('error', confErrorHandlerSpy);
 
             deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
 
@@ -1577,7 +1634,7 @@ describe('Phone', function () {
 
               setTimeout(function () {
                 try {
-                  expect(onConfConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
+                  expect(confConnectingHandlerSpy.calledWith(eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
@@ -1593,7 +1650,7 @@ describe('Phone', function () {
 
               setTimeout(function () {
                 try {
-                  expect(conferenceConnectedSpy.calledWith(eventData)).to.equal(true);
+                  expect(confConnectedHandlerSpy.calledWith(eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
@@ -1609,7 +1666,7 @@ describe('Phone', function () {
 
               setTimeout(function () {
                 try {
-                  expect(conferenceDisconnectedSpy.calledWith(eventData)).to.equal(true);
+                  expect(confDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
                   expect(deleteCurrentCallStub.called).to.equal(true);
                   done();
                 } catch (e) {
@@ -1618,7 +1675,23 @@ describe('Phone', function () {
               }, 50);
             });
 
+          });
 
+          describe('notification', function () {
+
+            it('should publish `notification` with event data on getting a `notification` event from conference', function (done) {
+              emitterConference.publish('notification', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(notificationHandlerSpy.calledWith(eventData)).to.equal(true);
+                  expect(deleteCurrentCallStub.called).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 50);
+            });
 
           });
 
@@ -1653,7 +1726,7 @@ describe('Phone', function () {
 
               setTimeout(function () {
                 try {
-                  expect(conferenceErrorSpy.calledWith(eventData)).to.equal(true);
+                  expect(confErrorHandlerSpy.calledWith(eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);
@@ -1845,6 +1918,13 @@ describe('Phone', function () {
           expect(onSpy.calledWith('invite-accepted')).to.equal(true);
         });
 
+        it('should register for `notification` event on the conference object', function () {
+          phone.addParticipants(['4250000001']);
+
+          expect(onSpy.called).to.equal(true);
+          expect(onSpy.calledWith('notification')).to.equal(true);
+        });
+
         it('should register for `rejected` event on the conference object', function () {
           phone.addParticipants(['4250000001']);
 
@@ -1955,6 +2035,24 @@ describe('Phone', function () {
               setTimeout(function () {
                 try {
                   expect(publishStub.calledWith('conference:invitation-rejected', eventData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
+
+          describe('notification', function () {
+
+            it('should publish `notification` when conference publishes `notification`', function (done) {
+              phone.addParticipants(['4250000001']);
+
+              emitterConference.publish('notification', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(publishStub.calledWith('notification', eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);

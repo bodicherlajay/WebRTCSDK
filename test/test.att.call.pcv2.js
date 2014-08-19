@@ -582,6 +582,7 @@ describe('Call [PCV2]', function () {
       });
 
       incomingCall = new ATT.rtc.Call({
+        id: 'callId',
         breed: 'call',
         peer: '12345',
         mediaType: 'audio',
