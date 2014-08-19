@@ -800,8 +800,16 @@
      */
     function answer(options) {
 
-      var call, currentCall;
-      logger.logInfo('Answering ... ');
+      var event,
+        call,
+        currentCall;
+
+      function answerSecondCall() {
+        event = options.action === 'end' ? 'disconnected' : 'held';
+        currentCall.off(event, answerSecondCall);
+
+        answerCall(call, options);
+      }
 
       try {
         if (undefined === options) {
@@ -836,22 +844,17 @@
             return;
           }
         }
+        logger.logInfo('Answering ... ');
 
         currentCall = session.currentCall;
 
         if (null !== currentCall) {
           if ('hold' === options.action) {
-            currentCall.on('held', function () {
-              answerCall(call, options);
-            });
-
+            currentCall.on('held', answerSecondCall);
             currentCall.hold();
           }
           if ('end' === options.action) {
-            currentCall.on('disconnected', function () {
-              answerCall(call, options);
-            });
-
+            currentCall.on('disconnected', answerSecondCall);
             currentCall.disconnect();
           }
           return;
