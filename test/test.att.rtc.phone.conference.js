@@ -240,6 +240,12 @@ describe('Phone [Conference]', function () {
           expect(conferenceOnStub.calledWith('connected')).to.equal(true);
         });
 
+        it('it should subscribe to the `held` event on the conference', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.calledWith('held')).to.equal(true);
+        });
+
         it('it should subscribe to the `error` event on the conference', function () {
           phone.startConference(startConfOpts);
 

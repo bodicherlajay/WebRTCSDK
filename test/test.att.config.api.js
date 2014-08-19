@@ -100,6 +100,19 @@ describe('APIConfig', function () {
       expect(currentConfiguration.modifyCall.headers).to.be.an('object');
     });
 
+    it('should have a valid method modifyConference method and returns Authorization and url', function () {
+      var  params = {
+        sessionId: '1234',
+        callId: 'callId'
+      };
+      expect(currentConfiguration.modifyConference).to.be.an('object');
+      expect(currentConfiguration.modifyConference.method).to.equal('PUT');
+      expect(currentConfiguration.modifyConference.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/1234/conferences/callId');
+      expect(currentConfiguration.modifyConference.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
+      expect(currentConfiguration.modifyConference.headers).to.be.an('object');
+      expect(currentConfiguration.connectCall.formatters.headers.options['x-conference-action']('call-action')).to.equal('call-action');
+    });
+
     it('should have a valid method connectCall', function () {
       var params = {
         sessionId: 'sessionId',

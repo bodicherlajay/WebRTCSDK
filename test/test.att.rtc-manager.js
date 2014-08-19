@@ -1898,6 +1898,7 @@ describe('RTC Manager', function () {
                 sdp: localSdp,
                 type: 'offer'
               },
+              breed: 'call',
               onSuccess: onSuccessSpy,
               onError: onErrorSpy
             };
@@ -1921,12 +1922,14 @@ describe('RTC Manager', function () {
               callId: options.callId,
               sessionId: options.sessionId,
               token: options.token,
+              breed: 'call',
               description : options.description
             })).to.throw('No success callback provided');
             expect(rtcManager.holdCall.bind(rtcManager, {
               callId: options.callId,
               sessionId: options.sessionId,
               token: options.token,
+              breed: 'call',
               description : options.description,
               onSuccess: options.onSuccess
             })).to.throw('No error callback provided');
@@ -1934,6 +1937,7 @@ describe('RTC Manager', function () {
               callId: options.callId,
               sessionId: options.sessionId,
               token: options.token,
+              breed: 'call',
               description : options.description,
               onSuccess: options.onSuccess,
               onError: options.onError
@@ -1963,6 +1967,7 @@ describe('RTC Manager', function () {
                 move: true,
                 sessionId: 'sessionId',
                 token: 'token',
+                breed: 'call',
                 description: {
                   sdp: localSdp,
                   type: 'offer'
@@ -1984,7 +1989,49 @@ describe('RTC Manager', function () {
               expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
               expect(doOperationStub.getCall(0).args[1].params.headers['x-calls-action']).to.equal('initiate-call-move');
             });
-          })
+          });
+
+          describe('[breed===`conference]`', function () {
+            it('should throw an error if `breed` is not passed in', function () {
+              expect(rtcManager.holdCall.bind(rtcManager, {
+                callId: options.callId,
+                sessionId: options.sessionId,
+                token: options.token,
+                description : options.description,
+                onSuccess: options.onSuccess,
+                onError: function () {}
+              })).to.throw('No breed provided');
+            });
+
+            it('should call resourceManager.doOperation with conference params', function () {
+              options = {
+                callId: 'callId',
+                move: true,
+                sessionId: 'sessionId',
+                token: 'token',
+                breed: 'conference',
+                description: {
+                  sdp: localSdp,
+                  type: 'offer'
+                },
+                onSuccess: onSuccessSpy,
+                onError: onErrorSpy
+              };
+              rtcManager.holdCall(options);
+
+              expect(doOperationStub.called).to.equal(true);
+              expect(doOperationStub.getCall(0).args[0]).to.equal('modifyConference');
+              expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(options.sessionId);
+              expect(doOperationStub.getCall(0).args[1].params.url.callId).to.equal(options.callId);
+              expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(options.description.sdp);
+              expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+              expect(doOperationStub.getCall(0).args[1].params.headers['x-conference-action']).to.equal('initiate-hold');
+            });
+          });
 
           describe('Success on `hold modifyCall`', function () {
             var response;
