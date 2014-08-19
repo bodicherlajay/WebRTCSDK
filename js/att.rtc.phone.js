@@ -710,6 +710,55 @@
       }
     }
 
+    function answerCall(call, options) {
+      /**
+       * Answering event.
+       * @desc Fired immediately after the `answer` method is invoked.
+       *
+       * @event Phone#answering
+       * @type {object}
+       * @property {Date} timestamp - Event fire time
+       * @property {Object} data - data
+       */
+      emitter.publish('answering', {
+        from: call.peer(),
+        mediaType: call.mediaType(),
+        codec: call.codec(),
+        timestamp: new Date()
+      });
+
+      call.on('connecting', function (data) {
+        emitter.publish('call-connecting', data);
+      });
+      call.on('connected', function (data) {
+        emitter.publish('call-connected', data);
+      });
+      call.on('media-established', mediaEstablished);
+      call.on('held', function (data) {
+        emitter.publish('call-held', data);
+      });
+      call.on('resumed', function (data) {
+        emitter.publish('call-resumed', data);
+      });
+      call.on('disconnected', function (data) {
+        onCallDisconnected(call, data);
+      });
+      call.on('notification', function (data) {
+        emitter.publish('notification', data);
+        session.deleteCurrentCall();
+      });
+      call.on('error', function (data) {
+        publishError(5002, data);
+      });
+
+      if (2 === ATT.private.pcv) {
+        connectWithMediaStream(options, call);
+        return;
+      }
+
+      call.connect(options);
+    }
+
     /**
      * @summary
      * Answer an incoming call
@@ -751,7 +800,7 @@
      */
     function answer(options) {
 
-      var call;
+      var call, currentCall;
       logger.logInfo('Answering ... ');
 
       try {
@@ -782,70 +831,33 @@
         }
 
         if (undefined !== options.action) {
-          if ('held' !== options.action && 'end' !== options.action) {
+          if ('hold' !== options.action && 'end' !== options.action) {
             publishError(5005);
             return;
           }
         }
 
-//        if currentCall
-//          if hold
-//            register for held, handler
-//              answer
-//            hold current call
-//          else
-//            register for disconnected, handler
-//              answer
-//            end current call
-//        else
-//          answer
+        currentCall = session.currentCall;
 
-        /**
-         * Answering event.
-         * @desc Fired immediately after the `answer` method is invoked.
-         *
-         * @event Phone#answering
-         * @type {object}
-         * @property {Date} timestamp - Event fire time
-         * @property {Object} data - data
-         */
-        emitter.publish('answering', {
-          from: call.peer(),
-          mediaType: call.mediaType(),
-          codec: call.codec(),
-          timestamp: new Date()
-        });
+        if (null !== currentCall) {
+          if ('hold' === options.action) {
+            currentCall.on('held', function () {
+              answerCall(call, options);
+            });
 
-        call.on('connecting', function (data) {
-          emitter.publish('call-connecting', data);
-        });
-        call.on('connected', function (data) {
-          emitter.publish('call-connected', data);
-        });
-        call.on('media-established', mediaEstablished);
-        call.on('held', function (data) {
-          emitter.publish('call-held', data);
-        });
-        call.on('resumed', function (data) {
-          emitter.publish('call-resumed', data);
-        });
-        call.on('disconnected', function (data) {
-          onCallDisconnected(call, data);
-        });
-        call.on('notification', function (data) {
-          emitter.publish('notification', data);
-          session.deleteCurrentCall();
-        });
-        call.on('error', function (data) {
-          publishError(5002, data);
-        });
+            currentCall.hold();
+          }
+          if ('end' === options.action) {
+            currentCall.on('disconnected', function () {
+              answerCall(call, options);
+            });
 
-        if (2 === ATT.private.pcv) {
-          connectWithMediaStream(options, call);
+            currentCall.disconnect();
+          }
           return;
         }
 
-        call.connect(options);
+        answerCall(call, options);
 
       } catch (err) {
         publishError('5002', err);
