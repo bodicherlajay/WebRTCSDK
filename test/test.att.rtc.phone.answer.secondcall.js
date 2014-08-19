@@ -3,19 +3,36 @@
  before: true, sinon: true, expect: true, xit: true, URL: true, assert, after*/
 
 
-describe.only('[US293718] Answer SecondCall', function () {
+describe('[US293718] Answer SecondCall', function () {
   'use strict';
 
   var phone,
+    session,
+    incomingCall,
     emitterPhone,
     createEventEmitterStub,
     factories,
     Phone,
+    Call,
+    incomingCallOpts,
     publishStub;
 
   before(function () {
     factories = ATT.private.factories;
     Phone = ATT.private.Phone;
+    Call = ATT.rtc.Call;
+
+    incomingCallOpts = {
+      breed: 'call',
+      id: 'callId',
+      type: ATT.CallTypes.INCOMING,
+      peer: '12345',
+      mediaType: 'video',
+      sessionInfo: {
+        sessionId: 'sessionId',
+        token: 'token'
+      }
+    };
   });
 
   beforeEach(function () {
@@ -28,6 +45,14 @@ describe.only('[US293718] Answer SecondCall', function () {
     phone = new Phone();
 
     publishStub = sinon.stub(emitterPhone, 'publish');
+
+    session = phone.getSession();
+
+    session.setId('sessionId');
+
+    incomingCall = new Call(incomingCallOpts);
+
+    session.pendingCall = incomingCall;
   });
 
   afterEach(function () {

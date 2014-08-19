@@ -781,8 +781,8 @@
           return;
         }
 
-        if (undefined === options.action) {
-          if ('held' !== options.action || 'end' !== options.action) {
+        if (undefined !== options.action) {
+          if ('held' !== options.action && 'end' !== options.action) {
             publishError(5005);
             return;
           }
