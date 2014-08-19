@@ -763,11 +763,49 @@
         if (undefined === options.description) {
           throw new Error('No sdp provided');
         }
+        if (undefined === options.breed){
+          throw new Error('No breed provided');
+        }
         if (undefined === options.onSuccess) {
           throw new Error('No success callback provided');
         }
         if (undefined === options.onError) {
           throw new Error('No error callback provided');
+        }
+
+        if ('conference' === options.breed) {
+          data = {
+            conferenceModifications: {
+              sdp: options.description.sdp,
+              type: options.description.type
+            }
+          };
+
+          resourceManager.doOperation('modifyConference', {
+            params: {
+              url: {
+                sessionId: options.sessionId,
+                callId: options.callId
+              },
+              headers: {
+                'Authorization': 'Bearer ' + options.token,
+                'x-conference-action': 'initiate-hold'
+              }
+            },
+            data: data,
+            success: function (response) {
+              if (response.getResponseStatus() === 204) {
+                logger.logTrace('resourceManager.doOperation(`modifyConference`)');
+                options.onSuccess();
+              } else {
+                options.onError();
+              }
+            },
+            error: function (error) {
+              options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'hold', 'RTC'));
+            }
+          });
+          return;
         }
 
         data = {

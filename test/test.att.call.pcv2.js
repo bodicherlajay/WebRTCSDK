@@ -425,6 +425,7 @@ describe('Call [PCV2]', function () {
         expect(rtcHoldCallStub.getCall(0).args[0].callId).to.equal('123');
         expect(rtcHoldCallStub.getCall(0).args[0].sessionId).to.be.an('string');
         expect(rtcHoldCallStub.getCall(0).args[0].token).to.be.a('string');
+        expect(rtcHoldCallStub.getCall(0).args[0].breed).to.be.equal('call' || 'conference');
         expect(rtcHoldCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
         expect(rtcHoldCallStub.getCall(0).args[0].onError).to.be.a('function');
         rtcHoldCallStub.restore();

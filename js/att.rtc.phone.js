@@ -260,6 +260,7 @@
           && 'conference:invitation-sent' !== event
           && 'conference:invitation-accepted' !== event
           && 'conference:participant-removed' !== event
+          && 'conference:held' !== event
           && 'conference:disconnecting' !== event
           && 'conference:ended' !== event
           && 'conference:connected' !== event
@@ -553,6 +554,7 @@
              */
             emitter.publish('call-connecting', data);
           });
+
           call.on('rejected', function (data) {
             /**
              * Call rejected event.
@@ -564,6 +566,7 @@
             emitter.publish('call-rejected', data);
             session.deletePendingCall();
           });
+
           call.on('connected', function (data) {
             /**
              * Call connected event.
@@ -575,6 +578,7 @@
             emitter.publish('call-connected', data);
           });
           call.on('media-established', mediaEstablished);
+
           call.on('held', function (data) {
             logger.logInfo('call held event by phone layer');
             /**
@@ -586,6 +590,7 @@
              */
             emitter.publish('call-held', data);
           });
+
           call.on('resumed', function (data) {
             logger.logInfo('call resumed by phone layer');
             /**
@@ -892,6 +897,7 @@
      * @fires Phone#conference:connecting
      * @fires Phone#conference:connected
      * @fires Phone#media-established
+     * @fires Phone#conference:held
      * @fires Phone#conference:ended
      * @fires Phone#error
 
@@ -966,6 +972,24 @@
            * @property {Object} data - data
            */
           emitter.publish('conference:connected', data);
+        });
+
+        conference.on('held', function (data) {
+          logger.logInfo('held conference event published to UI');
+          /**
+           * conference held event.
+           * @desc A conference has been put on hold.
+           *
+           * @event Phone#conference:held
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @type {object}
+           * @property {String} from - The ID of the caller.
+           * @property {String} mediaType - The media type of the conference (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:held', data);
         });
 
         conference.on('disconnected', function (data) {
@@ -1080,6 +1104,11 @@
           conference.on('connected', function (data) {
             logger.logInfo('conference connected event by phone layer');
             emitter.publish('conference:connected', data);
+          });
+
+          conference.on('held', function (data) {
+            logger.logInfo('conference held event by phone layer');
+            emitter.publish('conference:held', data);
           });
 
           conference.on('disconnected', function (data) {

@@ -1382,37 +1382,43 @@ describe('Phone', function () {
           }, 50);
         });
 
-        it('should register for `connecting` event from call', function () {
+        it('should register for `connecting` event from conference', function () {
           phone.joinConference(options);
 
           expect(onSpy.calledWith('connecting')).to.equal(true);
         });
 
-        it('should register for `error` event from call', function () {
+        it('should register for `error` event from conference', function () {
           phone.joinConference(options);
 
           expect(onSpy.calledWith('error')).to.equal(true);
         });
 
-        it('should register for `connected` event from call', function () {
+        it('should register for `connected` event from conference', function () {
           phone.joinConference(options);
 
           expect(onSpy.calledWith('connected')).to.equal(true);
         });
 
-        it('should register for `disconnected` event from call', function () {
+        it('should register for `held` event from conference', function () {
+          phone.joinConference(options);
+
+          expect(onSpy.calledWith('held')).to.equal(true);
+        });
+
+        it('should register for `disconnected` event from conference', function () {
           phone.joinConference(options);
 
           expect(onSpy.calledWith('disconnected')).to.equal(true);
         });
 
-        it('should register for `notification` event from call', function () {
+        it('should register for `notification` event from conference', function () {
           phone.joinConference(options);
 
           expect(onSpy.calledWith('notification')).to.equal(true);
         });
 
-        it('should register for `stream-added` event from call', function () {
+        it('should register for `stream-added` event from conference', function () {
           phone.joinConference(options);
 
           expect(onSpy.calledWith('stream-added')).to.equal(true);

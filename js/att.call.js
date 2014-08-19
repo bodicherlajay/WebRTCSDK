@@ -715,7 +715,7 @@
       }
     }
 
-    function hold(move) {
+    function hold(moveFlag) {
       var localSdp = that.localSdp(),
         holdSdp;
 
@@ -726,8 +726,9 @@
           description : holdSdp,
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
+          breed: breed,
           callId : id,
-          move: move || undefined,
+          move: moveFlag || undefined,
           onSuccess : function () {
             logger.logInfo('holdCall request: success');
           },

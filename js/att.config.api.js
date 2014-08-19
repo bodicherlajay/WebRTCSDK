@@ -303,6 +303,27 @@ if (!ATT) {
           },
           headers: DEFAULTS.headers
         },
+        /**
+         * Modify Conference via RTCEndpoint
+         * @memberof ATT.APIConfigs
+         */
+        modifyConference: {
+          method: 'PUT',
+          formatters: {
+            url: function (params) {
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + '/conferences/' + params.callId;
+            },
+            headers: {
+              'Authorization': function (param) {
+                return param;
+              },
+              'x-conference-action': function (param) {
+                return param;
+              }
+            }
+          },
+          headers: DEFAULTS.headers
+        },
         connectCall: {
           method: 'PUT',
           formatters: {
