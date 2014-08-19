@@ -781,6 +781,25 @@
           return;
         }
 
+        if (undefined !== options.action) {
+          if ('held' !== options.action && 'end' !== options.action) {
+            publishError(5005);
+            return;
+          }
+        }
+
+//        if currentCall
+//          if hold
+//            register for held, handler
+//              answer
+//            hold current call
+//          else
+//            register for disconnected, handler
+//              answer
+//            end current call
+//        else
+//          answer
+
         /**
          * Answering event.
          * @desc Fired immediately after the `answer` method is invoked.
