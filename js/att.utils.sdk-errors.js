@@ -265,6 +265,14 @@
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
+      ErrorCode: "5003",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking answer"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "answer",
       ErrorCode: "5004",
       ErrorMessage: "Mandatory fields can not be empty",
       Cause: "One of the Mandatory Parameters is empty",
@@ -273,10 +281,10 @@
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
-      ErrorCode: "5003",
-      ErrorMessage: "User is not logged in",
-      Cause: "Invalid operation",
-      Resolution: "Please login first before invoking answer"
+      ErrorCode: "5005",
+      ErrorMessage: "Invalid Action parameter",
+      Cause: "Action can only be `hold` or `end`",
+      Resolution: "Please provide a valid action (hold or end)"
     },
     {
       JSObject: "ATT.rtc.Phone",
