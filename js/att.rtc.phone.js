@@ -16,6 +16,7 @@
 
    @fires Phone#call-incoming
    @fires Phone#conference:invitation-received
+   @fires Phone#notification
    @fires Phone#error
 
    */
@@ -56,6 +57,11 @@
           session.deletePendingCall();
         });
       }
+    });
+
+    session.on('notification', function (data) {
+      logger.logInfo('notification event from session');
+      emitter.publish('notification', data);
     });
 
     session.on('conference-invite', function (data) {

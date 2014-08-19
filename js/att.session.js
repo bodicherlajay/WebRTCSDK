@@ -42,6 +42,28 @@
         sendRecvSdp,
         call;
 
+      if (null !== session.pendingCall) {
+        emitter.publish('notification', {
+          from: callInfo.from,
+          mediaType: callInfo.mediaType,
+          type: callInfo.type,
+          timestamp: new Date(),
+          message: 'A pending call exist. Will ignore incoming call'
+        });
+        return;
+      }
+
+      if (Object.keys(calls).length >= 2) {
+        emitter.publish('notification', {
+          from: callInfo.from,
+          mediaType: callInfo.mediaType,
+          type: callInfo.type,
+          timestamp: new Date(),
+          message: 'There are two existing calls in progress. Unable to handle a third incoming call'
+        });
+        return;
+      }
+
       call = session.createCall({
         breed: callInfo.type,
         id: callInfo.id,
@@ -78,7 +100,7 @@
           'connected' !== event &&
           'updating' !== event &&
           'needs-refresh' !== event &&
-          'network-notification' !== event &&
+          'notification' !== event &&
           'call-incoming' !== event &&
           'conference-invite' !== event &&
           'call-disconnected' !== event &&
