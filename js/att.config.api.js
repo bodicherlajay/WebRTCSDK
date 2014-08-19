@@ -287,10 +287,10 @@ if (!ATT) {
          * @memberof ATT.APIConfigs
          */
         modifyCall: {
-          method: 'put',
+          method: 'PUT',
           formatters: {
             url: function (params) {
-              return DEFAULTS.RTCEndpoint + '/sessions/' + params[0] + '/calls/' + params[1];
+              return DEFAULTS.RTCEndpoint + '/sessions/' + params.sessionId + '/calls/' + params.callId;
             },
             headers: {
               'Authorization': function (param) {

@@ -765,6 +765,7 @@
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
           callId : id,
+          breed: breed,
           onSuccess : function () {},
           onError : function (error) {
             emitter.publish('error', {

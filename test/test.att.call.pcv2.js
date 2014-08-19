@@ -509,6 +509,7 @@ describe('Call [PCV2]', function () {
         expect(rtcMgrResumeCallStub.getCall(0).args[0].callId).to.equal('12345');
         expect(rtcMgrResumeCallStub.getCall(0).args[0].sessionId).to.be.an('string');
         expect(rtcMgrResumeCallStub.getCall(0).args[0].token).to.be.a('string');
+        expect(rtcMgrResumeCallStub.getCall(0).args[0].breed).to.equal('call' || 'conference');
         expect(rtcMgrResumeCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
         expect(rtcMgrResumeCallStub.getCall(0).args[0].onError).to.be.a('function');
       });

@@ -261,6 +261,7 @@
           && 'conference:invitation-accepted' !== event
           && 'conference:participant-removed' !== event
           && 'conference:held' !== event
+          && 'conference:resumed' !== event
           && 'conference:disconnecting' !== event
           && 'conference:ended' !== event
           && 'conference:connected' !== event
@@ -901,6 +902,7 @@
      * @fires Phone#conference:connected
      * @fires Phone#media-established
      * @fires Phone#conference:held
+     * @fires Phone#conference:resumed
      * @fires Phone#conference:ended
      * @fires Phone#error
 
@@ -977,6 +979,18 @@
           emitter.publish('conference:connected', data);
         });
 
+        conference.on('resumed', function (data) {
+          logger.logInfo('conference resumed by phone layer');
+          /**
+           * Conference resumed event.
+           * @desc This event fires when a conference has been resumed
+           * @event Phone#conference:resumed
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:resumed', data);
+        });
+
         conference.on('held', function (data) {
           logger.logInfo('held conference event published to UI');
           /**
@@ -1041,6 +1055,8 @@
      * @fires Phone#conference:joining
      * @fires Phone#conference:connecting
      * @fires Phone#conference:connected
+     * @fires Phone#conference:held
+     * @fires Phone#conference:resumed
      * @fires Phone#conference:ended
      * @fires Phone#media-established
      * @fires Phone#error
@@ -1112,6 +1128,11 @@
           conference.on('held', function (data) {
             logger.logInfo('conference held event by phone layer');
             emitter.publish('conference:held', data);
+          });
+
+          conference.on('resumed', function (data) {
+            logger.logInfo('conference resumed event by phone layer');
+            emitter.publish('conference:resumed', data);
           });
 
           conference.on('disconnected', function (data) {

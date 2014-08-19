@@ -246,6 +246,12 @@ describe('Phone [Conference]', function () {
           expect(conferenceOnStub.calledWith('held')).to.equal(true);
         });
 
+        it('it should subscribe to the `resumed` event on the conference', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.calledWith('resumed')).to.equal(true);
+        });
+
         it('it should subscribe to the `error` event on the conference', function () {
           phone.startConference(startConfOpts);
 
@@ -770,6 +776,54 @@ describe('Phone [Conference]', function () {
         }
       }, 50);
 
+    });
+
+    it('should publish `conference:held` when conference publishes `held`', function (done) {
+      var heldSpy = sinon.spy();
+
+      phone.on('conference:held', heldSpy);
+
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('held');
+
+      setTimeout(function () {
+        try {
+          expect(heldSpy.called).to.equal(true);
+          expect(heldSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `conference:resumed` when conference publishes `resume`', function (done) {
+      var resumedSpy = sinon.spy();
+
+      phone.on('conference:resumed', resumedSpy);
+
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('resumed');
+
+      setTimeout(function () {
+        try {
+          expect(resumedSpy.called).to.equal(true);
+          expect(resumedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
     });
 
     it('should publish `conference:ended` when conference publishes `disconnected`', function (done) {

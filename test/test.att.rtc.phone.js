@@ -1406,6 +1406,12 @@ describe('Phone', function () {
           expect(onSpy.calledWith('held')).to.equal(true);
         });
 
+        it('should register for `resumed` event from conference', function () {
+          phone.joinConference(options);
+
+          expect(onSpy.calledWith('resumed')).to.equal(true);
+        });
+
         it('should register for `disconnected` event from conference', function () {
           phone.joinConference(options);
 
@@ -1606,6 +1612,8 @@ describe('Phone', function () {
 
           var confConnectingHandlerSpy,
             confConnectedHandlerSpy,
+            confHeldHandlerSpy,
+            confResumedHandlerSpy,
             confDisconnectedHandlerSpy,
             notificationHandlerSpy,
             confErrorHandlerSpy,
@@ -1614,12 +1622,16 @@ describe('Phone', function () {
           beforeEach(function () {
             confConnectingHandlerSpy = sinon.spy();
             confConnectedHandlerSpy = sinon.spy();
+            confHeldHandlerSpy = sinon.spy();
+            confResumedHandlerSpy = sinon.spy();
             confDisconnectedHandlerSpy = sinon.spy();
             notificationHandlerSpy = sinon.spy();
             confErrorHandlerSpy = sinon.spy();
 
             phone.on('conference:connecting', confConnectingHandlerSpy);
             phone.on('conference:connected', confConnectedHandlerSpy);
+            phone.on('conference:held', confConnectedHandlerSpy);
+            phone.on('conference:resumed', confResumedHandlerSpy);
             phone.on('conference:ended', confDisconnectedHandlerSpy);
             phone.on('notification', notificationHandlerSpy);
             phone.on('error', confErrorHandlerSpy);
@@ -1657,6 +1669,38 @@ describe('Phone', function () {
               setTimeout(function () {
                 try {
                   expect(confConnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
+
+          describe('held', function () {
+
+            it('should publish `conference:held` when call publishes `held` event', function (done) {
+              emitterConference.publish('held', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(confConnectedHandlerSpy.calledWith(eventData)).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 50);
+            });
+          });
+
+          describe('resumed', function () {
+
+            it('should publish `conference:resumed` when call publishes `resumed` event', function (done) {
+              emitterConference.publish('resumed', eventData);
+
+              setTimeout(function () {
+                try {
+                  expect(confResumedHandlerSpy.calledWith(eventData)).to.equal(true);
                   done();
                 } catch (e) {
                   done(e);

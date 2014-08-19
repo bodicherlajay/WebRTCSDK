@@ -92,10 +92,13 @@ describe('APIConfig', function () {
     });
 
     it('should have a valid method modifyCall method and returns Authorization and url', function () {
-      var  params = ["param1", "param2"];
+      var  params = {
+        sessionId: '1234',
+        callId: '12345'
+      };
       expect(currentConfiguration.modifyCall).to.be.an('object');
-      expect(currentConfiguration.modifyCall.method).to.equal('put');
-      expect(currentConfiguration.modifyCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/param1/calls/param2');
+      expect(currentConfiguration.modifyCall.method).to.equal('PUT');
+      expect(currentConfiguration.modifyCall.formatters.url(params)).to.equal(appConfig.RTCEndpoint + '/sessions/1234/calls/12345');
       expect(currentConfiguration.modifyCall.formatters.headers.Authorization('authtoken')).to.equal('authtoken');
       expect(currentConfiguration.modifyCall.headers).to.be.an('object');
     });

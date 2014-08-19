@@ -763,7 +763,7 @@
         if (undefined === options.description) {
           throw new Error('No sdp provided');
         }
-        if (undefined === options.breed){
+        if (undefined === options.breed) {
           throw new Error('No breed provided');
         }
         if (undefined === options.onSuccess) {
@@ -819,10 +819,10 @@
 
         resourceManager.doOperation('modifyCall', {
           params: {
-            url: [
-              options.sessionId,
-              options.callId
-            ],
+            url: {
+              sessionId: options.sessionId,
+              callId: options.callId
+            },
             headers: {
               'Authorization': 'Bearer ' + options.token,
               'x-calls-action': true === options.move ? 'initiate-call-move' : 'initiate-call-hold'
@@ -865,6 +865,7 @@
 
     function resumeCall(options) {
       var data;
+
       if (2 === ATT.private.pcv) {
         if (undefined === options) {
           throw new Error('No options provided');
@@ -881,12 +882,52 @@
         if (undefined === options.description) {
           throw new Error('No sdp provided');
         }
+        if (undefined === options.breed) {
+          throw new Error('No breed provided');
+        }
         if (undefined === options.onSuccess) {
           throw new Error('No success callback provided');
         }
         if (undefined === options.onError) {
           throw new Error('No error callback provided');
         }
+
+        if ('conference' === options.breed) {
+          data = {
+            conferenceModifications: {
+              sdp: options.description.sdp,
+              type: options.description.type
+            }
+          };
+
+          logger.logTrace('doOperation: modifyConference');
+          resourceManager.doOperation('modifyConference', {
+            params: {
+              url: {
+                sessionId: options.sessionId,
+                callId: options.callId
+              },
+              headers: {
+                'Authorization': 'Bearer ' + options.token,
+                'x-conference-action': 'initiate-resume'
+              }
+            },
+            data: data,
+            success: function (response) {
+              if (response.getResponseStatus() === 204) {
+                logger.logTrace('resume request sent...');
+                options.onSuccess();
+              } else {
+                options.onError();
+              }
+            },
+            error: function (error) {
+              options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'resume', 'RTC'));
+            }
+          });
+          return;
+        }
+
         data = {
           callsMediaModifications: {
             sdp: options.description.sdp,
@@ -896,10 +937,10 @@
         logger.logTrace('doOperation: modifyCall');
         resourceManager.doOperation('modifyCall', {
           params: {
-            url: [
-              options.sessionId,
-              options.callId
-            ],
+            url: {
+              sessionId: options.sessionId,
+              callId: options.callId
+            },
             headers: {
               'Authorization': 'Bearer ' + options.token,
               'x-calls-action': 'initiate-call-resume'
