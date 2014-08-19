@@ -1166,7 +1166,7 @@ describe('Call [Conference]', function () {
             try {
               expect(onNotificationSpy.called).to.equal(true);
               expect(onNotificationSpy.getCall(0).args[0]).to.be.an('object');
-              expect(onNotificationSpy.getCall(0).args[0].reason).to.equal(data.reason);
+              expect(onNotificationSpy.getCall(0).args[0].message).to.equal(data.reason);
               expect(onNotificationSpy.getCall(0).args[0].to).to.equal(outgoingVideoConf.peer());
               expect(onNotificationSpy.getCall(0).args[0].mediaType).to.equal(outgoingVideoConf.mediaType());
               expect(onNotificationSpy.getCall(0).args[0].codec).to.equal(outgoingVideoConf.codec());
