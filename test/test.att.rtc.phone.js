@@ -134,6 +134,10 @@ describe('Phone', function () {
         expect(onSpy.calledWith('conference-invite')).to.equal(true);
       });
 
+      it('should register for `notification` event on session object', function () {
+        expect(onSpy.calledWith('notification')).to.equal(true);
+      });
+
       it('should register for `error` event on session object', function () {
         expect(onSpy.calledWith('error')).to.equal(true);
       });
@@ -3522,6 +3526,7 @@ describe('Phone', function () {
           onCallCanceledHandlerSpy,
           onConferenceDisconnectedHandlerSpy,
           onConferenceInviteHandlerSpy,
+          notificationHandlerSpy,
           onErrorHandlerSpy;
 
         beforeEach(function () {
@@ -3567,6 +3572,7 @@ describe('Phone', function () {
           onCallCanceledHandlerSpy = sinon.spy();
           onConferenceDisconnectedHandlerSpy = sinon.spy();
           onConferenceInviteHandlerSpy = sinon.spy();
+          notificationHandlerSpy = sinon.spy();
           onErrorHandlerSpy = sinon.spy();
 
           phone = new Phone();
@@ -3576,6 +3582,7 @@ describe('Phone', function () {
           phone.on('call-canceled', onCallCanceledHandlerSpy);
           phone.on('call-disconnected', onCallDisconnectedHandlerSpy);
           phone.on('conference:ended', onConferenceDisconnectedHandlerSpy);
+          phone.on('notification', notificationHandlerSpy);
           phone.on('error', onErrorHandlerSpy);
         });
 
@@ -3693,6 +3700,24 @@ describe('Phone', function () {
 
         });
 
+        describe('notification', function () {
+
+          it('should publish `notification` event with the relevant data on getting an `notificaiton` from session', function (done) {
+
+            emitterSession.publish('notification', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(notificationHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 50);
+          });
+
+        });
+
         describe('error', function () {
 
           it('should publish `error` event with the error data on getting an `error` from session', function (done) {
@@ -3711,6 +3736,7 @@ describe('Phone', function () {
               }
             }, 50);
           });
+
         });
 
       });

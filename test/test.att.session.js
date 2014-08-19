@@ -1228,7 +1228,8 @@ describe('Session', function () {
         createCallSpyStub,
         setRemoteSdpSpy,
         callIncomingHandlerSpy,
-        conferenceInviteHandlerSpy;
+        conferenceInviteHandlerSpy,
+        notificationHandlerSpy;
 
       beforeEach(function () {
         callInfo = {
@@ -1274,9 +1275,11 @@ describe('Session', function () {
 
         callIncomingHandlerSpy = sinon.spy();
         conferenceInviteHandlerSpy = sinon.spy();
+        notificationHandlerSpy = sinon.spy();
 
         session.on('call-incoming', callIncomingHandlerSpy);
         session.on('conference-invite', conferenceInviteHandlerSpy);
+        session.on('notification', notificationHandlerSpy);
 
         session.connect(options);
       });
@@ -1285,6 +1288,60 @@ describe('Session', function () {
         getRTCMgrStub.restore();
         connectSessionStub.restore();
         createCallSpyStub.restore();
+      });
+
+      it('should publish `notification` event with a message if there is already a pending Call', function (done) {
+        session.pendingCall = {
+          id: 'dummyCall'
+        };
+
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(notificationHandlerSpy.called).to.equal(true);
+            expect(notificationHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(notificationHandlerSpy.getCall(0).args[0].from).to.equal(callInfo.from);
+            expect(notificationHandlerSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
+            expect(notificationHandlerSpy.getCall(0).args[0].type).to.equal(callInfo.type);
+            expect(notificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            expect(notificationHandlerSpy.getCall(0).args[0].message).to.equal('A pending call exist. Will ignore incoming call');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+      it('should publish `notification` event with a message if there are two existing calls in the calls stack', function (done) {
+        session.addCall({
+          id: function () {
+            return 'firstcall';
+          }
+        });
+
+        session.addCall({
+          id: function () {
+            return 'secondcall';
+          }
+        });
+
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(notificationHandlerSpy.called).to.equal(true);
+            expect(notificationHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(notificationHandlerSpy.getCall(0).args[0].from).to.equal(callInfo.from);
+            expect(notificationHandlerSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
+            expect(notificationHandlerSpy.getCall(0).args[0].type).to.equal(callInfo.type);
+            expect(notificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            expect(notificationHandlerSpy.getCall(0).args[0].message).to.equal('There are two existing calls in progress. Unable to handle a third incoming call');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
       });
 
       it('should execute session.createCall with breed as the type received in event data from event manager', function (done) {
