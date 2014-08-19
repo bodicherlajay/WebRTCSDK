@@ -152,16 +152,17 @@
             }
           });
 
-          remoteDescription = peerConnection.getRemoteDescription();
+          if ('call' === breed) {
+            remoteDescription = peerConnection.getRemoteDescription();
 
-          if (data.remoteSdp.indexOf('recvonly') !== -1) {
-            rtcManager.disableMediaStream();
-            that.setState('held');
-          } else if (remoteDescription.sdp
-              && remoteDescription.sdp.indexOf('recvonly') !== -1
+            if (data.remoteSdp.indexOf('recvonly') !== -1) {
+              rtcManager.disableMediaStream();
+              that.setState('held');
+            } else if ( 'held' === state
               && data.remoteSdp.indexOf('sendrecv') !== -1) {
-            rtcManager.enableMediaStream();
-            that.setState('resumed');
+              rtcManager.enableMediaStream();
+              that.setState('resumed');
+            }
           }
         }
         return;
@@ -206,11 +207,12 @@
           rtcManager.disableMediaStream();
           that.setState('held');
         }
-        if (modifications.reason === 'success'
+        if ('held' === state
+            && modifications.reason === 'success'
             && modifications.remoteSdp
             && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-          rtcManager.enableMediaStream();
-          that.setState('resumed');
+            rtcManager.enableMediaStream();
+            that.setState('resumed');
         }
 
         if ('conference' === modifications.type
