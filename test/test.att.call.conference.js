@@ -808,7 +808,6 @@ describe('Call [Conference]', function () {
                 expect(publishStub.getCall(0).args[1].stream).to.equal(myStream);
                 done();
               }, 10);
-
             });
           });
           describe('onError', function () {

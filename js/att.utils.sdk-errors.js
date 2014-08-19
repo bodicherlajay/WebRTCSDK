@@ -893,8 +893,31 @@
       ErrorMessage: "Can not make second call. There is no first call in progress.",
       Cause: "Invalid operation",
       Resolution: "Please ensure that there is an existing call in progress before making second call"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "move",
+      ErrorCode: "28000",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking move"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "move",
+      ErrorCode: "28001",
+      ErrorMessage: "Move failed - call is not in progress",
+      Cause: "Cannot move. There is no active call in progress.",
+      Resolution: "Please make a call first ensure an active call is in progress before trying to move the call"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "move",
+      ErrorCode: "28002",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
     }
-
   ];
 
   // freezes a list of objects

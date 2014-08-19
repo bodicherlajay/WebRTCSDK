@@ -1935,6 +1935,7 @@ describe('RTC Manager', function () {
               onError: options.onError
             })).not.to.throw(Error);
           });
+
           it('should call resourceManager.doOperation for holdcall', function () {
             rtcManager.holdCall(options);
 
@@ -1948,7 +1949,38 @@ describe('RTC Manager', function () {
             expect(doOperationStub.getCall(0).args[1].data.callsMediaModifications.sdp).to.equal(options.description.sdp);
             expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
             expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+            expect(doOperationStub.getCall(0).args[1].params.headers['x-calls-action']).to.equal('initiate-call-hold');
           });
+
+          describe('[move===true]', function () {
+            it('should call resourceManager.doOperation with `initiate-call-move` header', function () {
+              options = {
+                callId: 'callId',
+                move: true,
+                sessionId: 'sessionId',
+                token: 'token',
+                description: {
+                  sdp: localSdp,
+                  type: 'offer'
+                },
+                onSuccess: onSuccessSpy,
+                onError: onErrorSpy
+              };
+              rtcManager.holdCall(options);
+
+              expect(doOperationStub.called).to.equal(true);
+              expect(doOperationStub.getCall(0).args[0]).to.equal('modifyCall');
+              expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('array');
+              expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(options.sessionId);
+              expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal(options.callId);
+              expect(doOperationStub.getCall(0).args[1].data.callsMediaModifications.sdp).to.equal(options.description.sdp);
+              expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+              expect(doOperationStub.getCall(0).args[1].params.headers['x-calls-action']).to.equal('initiate-call-move');
+            });
+          })
 
           describe('Success on `hold modifyCall`', function () {
             var response;

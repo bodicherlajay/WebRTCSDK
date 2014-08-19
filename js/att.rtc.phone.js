@@ -1530,6 +1530,62 @@
 
     /**
      * @summary
+     * Move the current call
+     * @desc Use this method to move the existing call to other devices
+     *
+     * **Error Codes**
+     *
+     *   - 28000 - User is not logged in
+     *   - 28001 - Call is not in progress
+     *   - 28002 - Internal error occurred
+     *
+     * @memberOf Phone
+     * @instance
+
+     * @fires Phone#
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.move();
+     */
+    function move() {
+
+      var call;
+
+      try {
+
+        if (null === session || null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('28000');
+        }
+
+        call = session.currentCall;
+
+        if (null === call || null === call.id()) {
+          throw  ATT.errorDictionary.getSDKError('28001');
+        }
+
+        try {
+          logger.logDebug('Phone.move');
+
+          // pass `true` for move operation in RTC Manager
+          call.hold(true);
+
+        } catch (err) {
+          logger.logError(err);
+          throw ATT.errorDictionary.getSDKError('28002');
+        }
+
+      } catch (err) {
+        logger.logError(err);
+        emitter.publish('error', {
+          error: err
+        });
+      }
+
+    }
+
+    /**
+     * @summary
      * Update e911Id
      * @desc Add description here
      * **Error Codes**
@@ -2043,6 +2099,7 @@
     this.hangup = hangup;
     this.hold = hold;
     this.resume = resume;
+    this.move = move;
     this.cancel = cancel;
     this.reject = reject;
     this.updateE911Id = updateE911Id;

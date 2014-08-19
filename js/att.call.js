@@ -713,7 +713,7 @@
       }
     }
 
-    function hold() {
+    function hold(move) {
       var localSdp = that.localSdp(),
         holdSdp;
 
@@ -725,6 +725,7 @@
           sessionId : sessionInfo.sessionId,
           token : sessionInfo.token,
           callId : id,
+          move: move || undefined,
           onSuccess : function () {
             logger.logInfo('holdCall request: success');
           },
@@ -779,6 +780,10 @@
           }
         });
       }
+    }
+
+    function move() {
+
     }
 
     function reject() {
@@ -924,6 +929,7 @@
     this.unmute = unmute;
     this.hold = hold;
     this.resume = resume;
+    this.move = move;
     this.reject = reject;
   }
 

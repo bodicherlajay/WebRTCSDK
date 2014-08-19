@@ -740,7 +740,13 @@
     }
 
     function holdCall(options) {
-      var data;
+      var data,
+        type;
+
+      if (undefined !== options) {
+        type = options.move ? 'move' : 'hold';
+      }
+
       if (2 === ATT.private.pcv) {
         if (undefined === options) {
           throw new Error('No options provided');
@@ -772,6 +778,7 @@
         };
 
         logger.logTrace('doOperation: modifyCall');
+
         resourceManager.doOperation('modifyCall', {
           params: {
             url: [
@@ -780,20 +787,20 @@
             ],
             headers: {
               'Authorization': 'Bearer ' + options.token,
-              'x-calls-action': 'initiate-call-hold'
+              'x-calls-action': true === options.move ? 'initiate-call-move' : 'initiate-call-hold'
             }
           },
           data: data,
           success: function (response) {
             if (response.getResponseStatus() === 204) {
-              logger.logTrace('Hold request sent...');
+              logger.logTrace(type + 'request sent...');
               options.onSuccess();
             } else {
               options.onError();
             }
           },
           error: function (error) {
-            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'hold', 'RTC'));
+            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', type, 'RTC'));
           }
         });
       } else {

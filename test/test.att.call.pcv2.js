@@ -439,6 +439,25 @@ describe('Call [PCV2]', function () {
         rtcHoldCallStub.restore();
       });
 
+      describe('[move === true]', function () {
+        it('should call rtcManager.holdcall(move:true) if passed in', function () {
+          var rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall');
+
+          outgoingVideoCall.setId('123');
+
+          outgoingVideoCall.hold(true);
+
+          expect(rtcHoldCallStub.getCall(0).args[0].description).to.be.an('object');
+          expect(rtcHoldCallStub.getCall(0).args[0].callId).to.equal('123');
+          expect(rtcHoldCallStub.getCall(0).args[0].move).to.equal(true);
+          expect(rtcHoldCallStub.getCall(0).args[0].sessionId).to.be.an('string');
+          expect(rtcHoldCallStub.getCall(0).args[0].token).to.be.a('string');
+          expect(rtcHoldCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
+          expect(rtcHoldCallStub.getCall(0).args[0].onError).to.be.a('function');
+          rtcHoldCallStub.restore();
+        });
+      });
+
       it('should publish error on onError callback called ', function (done) {
         var rtcholdStub;
 

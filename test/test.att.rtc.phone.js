@@ -3086,6 +3086,77 @@ describe('Phone', function () {
 
       });
 
+      describe('[US221390] move', function () {
+
+        var publishStub,
+          callMoveStub;
+
+        beforeEach(function () {
+
+          session.currentCall = call;
+          session.setId('123');
+          call.setId('1234');
+
+          publishStub = sinon.stub(emitter, 'publish', function () {});
+          callMoveStub = sinon.stub(call, 'hold', function () {
+            throw error;
+          });
+        });
+
+        afterEach(function () {
+          publishStub.restore();
+          callMoveStub.restore();
+        });
+
+        it('should exist', function () {
+          expect(phone.move).to.be.a('function');
+        });
+
+        it('should execute call.hold(true)', function () {
+          phone.move();
+
+          expect(callMoveStub.calledWith(true)).to.equal(true);
+        });
+
+        describe('Error handling', function () {
+          it('[28000] should be thrown if user is not logged in', function () {
+            session.setId(null);
+
+            phone.move();
+
+            expect(ATT.errorDictionary.getSDKError('28000')).to.be.an('object');
+            expect(publishStub.calledWithMatch('error', {
+              error: ATT.errorDictionary.getSDKError('28000')
+            })).to.equal(true);
+          });
+
+          it('[28001] should be thrown if the call is not in progress', function () {
+
+            session.setId('123');
+            session.currentCall = null;
+
+            phone.move();
+
+            expect(ATT.errorDictionary.getSDKError('28001')).to.be.an('object');
+            expect(publishStub.calledWithMatch('error', {
+              error: ATT.errorDictionary.getSDKError('28001')
+            })).to.equal(true);
+
+          });
+
+          it('[28002] should be thrown if an internal error occurs', function () {
+
+            phone.move();
+
+            expect(ATT.errorDictionary.getSDKError('28002')).to.be.an('object');
+            expect(publishStub.calledWithMatch('error', {
+              error: ATT.errorDictionary.getSDKError('28002')
+            })).to.equal(true);
+
+          });
+        });
+      });
+
       describe('getMediaType', function () {
 
         it('should Exist', function () {
