@@ -21,6 +21,7 @@ describe('[US293718] Answer SecondCall', function () {
     answerHoldOpts,
     answerEndOpts,
     callOnSpy,
+    callOffSpy,
     callHoldStub,
     callDisconnectStub,
     getUserMediaStub,
@@ -97,6 +98,7 @@ describe('[US293718] Answer SecondCall', function () {
     session.pendingCall = incomingCall;
 
     callOnSpy = sinon.spy(firstCall, 'on');
+    callOffSpy = sinon.spy(firstCall, 'off');
     callHoldStub = sinon.stub(firstCall, 'hold');
     callDisconnectStub = sinon.stub(firstCall, 'disconnect');
   });
@@ -104,6 +106,7 @@ describe('[US293718] Answer SecondCall', function () {
   afterEach(function () {
     getUserMediaStub.restore();
     callOnSpy.restore();
+    callOffSpy.restore();
     callHoldStub.restore();
     callDisconnectStub.restore();
     publishStub.restore();
@@ -169,6 +172,21 @@ describe('[US293718] Answer SecondCall', function () {
         phone.answer(answerHoldOpts);
       });
 
+      it('should deregister from `held` event', function (done) {
+        setTimeout(function () {
+          firstCall.setState('held');
+          setTimeout(function () {
+            try {
+              expect(callOffSpy.calledWith('held')).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 50);
+
+        }, 10);
+      });
+
       it('should execute ums.getUserMedia', function (done) {
         setTimeout(function () {
           firstCall.setState('held');
@@ -181,7 +199,7 @@ describe('[US293718] Answer SecondCall', function () {
             } catch (e) {
               done(e);
             }
-          }, 50);
+          }, 10);
 
         }, 10);
 
@@ -191,6 +209,21 @@ describe('[US293718] Answer SecondCall', function () {
 
         beforeEach(function () {
           phone.answer(answerEndOpts);
+        });
+
+        it('should deregister from `disconnected` event', function (done) {
+          setTimeout(function () {
+            firstCall.setState('disconnected');
+            setTimeout(function () {
+              try {
+                expect(callOffSpy.calledWith('disconnected')).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+
+          }, 10);
         });
 
         it('should execute ums.getUserMedia', function (done) {
