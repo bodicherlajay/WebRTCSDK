@@ -530,7 +530,10 @@ describe('Call [PCV2]', function () {
       createPeerConnectionStub,
       connectConferenceStub;
 
-    beforeEach(function () {
+    // `done` function passed to control when to
+    // start executing the tests. Test should not start
+    // running before the `beforeEach` is done.
+    beforeEach(function (done) {
       remoteDesc = {
         sdp: 'sdf',
         type: 'offer'
@@ -559,6 +562,10 @@ describe('Call [PCV2]', function () {
       connectConferenceStub = sinon.stub(rtcMgr, 'connectConference', function (options) {
         setTimeout(function () {
           options.onSuccess(responseData);
+
+          // make sure the beforeEach block is executed completely
+          // before trying to run any tests
+          done();
         }, 0);
       });
 
@@ -638,6 +645,66 @@ describe('Call [PCV2]', function () {
         }, 30);
       });
 
+      describe('mod-received', function () {
+
+        describe('hold [evt.sdp contains `recvonly`]', function () {
+
+          var modificationsHold;
+
+          beforeEach(function () {
+            modificationsHold = {
+              remoteSdp: 'abc recvonly',
+              modificationId: '123'
+            };
+          });
+
+          it('should set the state as `held`', function (done) {
+
+            // simulate `mod-received` event
+            emitterEM.publish('mod-received:'+ incomingCall.id(), modificationsHold);
+
+            setTimeout(function () {
+              try {
+                expect(incomingCall.getState()).to.equal('held');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+        });
+
+        describe('resume [evt.sdp contains `sendrecv`]', function () {
+
+          var modificationsResume;
+
+          beforeEach(function () {
+            modificationsResume = {
+              remoteSdp: 'abcsendrecv',
+              modificationId: '12345',
+              reason: 'success'
+            };
+
+            // simulate a `held` call
+            incomingCall.setState('held');
+          });
+
+          it('should set the state as `resumed`', function (done) {
+
+            // simulate `mod-received` event
+            emitterEM.publish('mod-received:'+ incomingCall.id(), modificationsResume);
+
+            setTimeout(function () {
+              try {
+                expect(incomingCall.getState()).to.equal('resumed');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+        });
+      });
     });
 
     describe('mod-terminated', function () {
