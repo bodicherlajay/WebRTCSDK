@@ -14,17 +14,8 @@ describe('Call [PCV2]', function () {
     emitterEM,
     createEventEmitterStub,
     peerConnection,
-    createPeerConnectionStub,
     rtcpcStub,
     rtcPC;
-
-  before(function () {
-    ATT.private.pcv = 2;
-  });
-
-  after(function () {
-    ATT.private.pcv = 1;
-  });
 
   beforeEach(function () {
     rtcPC = {

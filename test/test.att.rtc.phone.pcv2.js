@@ -21,14 +21,6 @@ describe('Phone [PCV2]', function () {
     createEventEmitterStub,
     publishStub;
 
-  before(function () {
-    ATT.private.pcv = 2;
-  });
-
-  after(function () {
-    ATT.private.pcv = 1;
-  });
-
   beforeEach(function () {
     factories = ATT.private.factories;
     ums = ATT.UserMediaService;
@@ -219,7 +211,6 @@ describe('Phone [PCV2]', function () {
       });
 
       it('should execute ums.getUserMedia if pcv == 2', function () {
-        phone.pcv = 2;
         phone.answer(answerOpts);
 
         expect(getUserMediaStub.called).to.equal(true);
@@ -244,7 +235,6 @@ describe('Phone [PCV2]', function () {
         });
 
         it('should call `Call.connect`', function () {
-          phone.pcv = 2;
           phone.answer(answerOpts);
 
           expect(callConnectStub.called).to.equal(true);

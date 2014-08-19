@@ -54,7 +54,11 @@ describe('RTC Manager', function () {
 
   });
 
-  before(function () {
+  after(function () {
+    ATT.private.pcv = 2;
+  });
+
+  beforeEach(function () {
     resourceManager = factories.createResourceManager(apiConfig);
 
     optionsForEM = {
@@ -87,7 +91,7 @@ describe('RTC Manager', function () {
     };
   });
 
-  after(function () {
+  afterEach(function () {
     createEventManagerStub.restore();
     createEventEmitterStub.restore();
   });
