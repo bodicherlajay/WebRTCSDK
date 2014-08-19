@@ -3408,7 +3408,7 @@ describe('Phone', function () {
         });
       });
 
-      describe('formateNumebr', function () {
+      describe('formatNumber', function () {
         it('should exists', function () {
           expect(phone.formatNumber).to.be.an('function');
         });
