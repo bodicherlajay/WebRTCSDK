@@ -330,7 +330,7 @@ describe('[US221924] addCall', function () {
 
     });
 
-    describe('`disconnected` event from call when a call is on hold', function () {
+    describe('disconnected', function () {
 
       var createCallStub;
 
@@ -365,29 +365,52 @@ describe('[US221924] addCall', function () {
         }, 20);
       });
 
-      it('should resume the call on hold', function (done) {
-        var calls,
-          keys,
-          callOnHold;
+      describe('`disconnected` event from the Active call when a call is on hold', function () {
 
-        // Assume disconnect of the secondCall was successful
-        console.log('test',session.currentCall.id());
-        session.currentCall.setState('disconnected');
+        it('should resume the call on hold', function (done) {
+          var calls,
+            keys,
+            callOnHold;
 
-        setTimeout(function () {
-          try {
-            calls = session.getCalls();
+          // Assume disconnect of the secondCall was successful
+          console.log('test', session.currentCall.id());
+          session.currentCall.setState('disconnected');
+
+          setTimeout(function () {
+            try {
+              calls = session.getCalls();
 //            console.log('keys:', calls);
-            keys = Object.keys(calls);
-            callOnHold = calls[keys[0]];
+              keys = Object.keys(calls);
+              callOnHold = calls[keys[0]];
 //            console.log('currentcall:' + session.currentCall.id());
 
-            expect(session.currentCall.id()).to.equal(firstCall.id());
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
+              expect(session.currentCall.id()).to.equal(firstCall.id());
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 20);
+        });
+      });
+
+      describe('`disconnected event from the Call on hold when there\'s an active call', function () {
+        it('should delete the call on hold', function (done) {
+          var calls = phone.getSession().getCalls();
+
+          // Assume disconnect of the call that is on hold
+          firstCall.setState('disconnected');
+
+          setTimeout(function () {
+            try {
+              console.log(Object.keys(calls));
+              expect(calls[firstCall.id()]).to.equal(undefined);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 20);
+
+        });
       });
     });
   });

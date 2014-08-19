@@ -116,16 +116,20 @@
        */
       call.off('media-established', mediaEstablished);
       emitter.publish('call-disconnected', data);
-      session.deleteCurrentCall();
 
-      calls = session.getCalls();
+      if (call.id() === session.currentCall.id()) {
+        session.deleteCurrentCall();
+        calls = session.getCalls();
 
-      keys = Object.keys(calls);
-      if (keys.length > 0) {
-        session.currentCall = calls[keys[0]];
-        that.resume();
+        keys = Object.keys(calls);
+        if (keys.length > 0) {
+          session.currentCall = calls[keys[0]];
+          that.resume();
+        }
         return;
       }
+
+      session.deleteCall(call.id());
 
     }
 
