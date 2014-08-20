@@ -2726,22 +2726,32 @@ describe('Phone', function () {
       describe('[US248581] cancel', function () {
 
         var onSpy,
-        callCanceledHandlerSpy,
-        deleteCurrentCallStub;
+          callCanceledHandlerSpy,
+          deletePendingCallStub,
+          callDisconnectStub,
+          publishSpy;
 
         beforeEach(function () {
           onSpy = sinon.spy(call, 'on');
+          callDisconnectStub = sinon.stub(call, 'disconnect');
+
+          call.setId('1234');
+
           session.pendingCall = call;
 
           callCanceledHandlerSpy = sinon.spy();
-          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+          deletePendingCallStub = sinon.stub(session, 'deletePendingCall');
+
+          publishSpy = sinon.spy(emitter, 'publish');
 
           phone.on('call-canceled', callCanceledHandlerSpy);
         });
 
         afterEach(function () {
           onSpy.restore();
-          deleteCurrentCallStub.restore();
+          deletePendingCallStub.restore();
+          callDisconnectStub.restore();
+          publishSpy.restore();
         });
 
         it('should exist', function () {
@@ -2754,59 +2764,22 @@ describe('Phone', function () {
           expect(onSpy.calledWith('canceled')).to.equal(true);
         });
 
-        xit('should publish `call-canceled` immediately if [null == call.id]', function () {
-          call.setId(null);
-          var publishStub = sinon.stub(emitter, 'publish', function () {});
-
-          phone.cancel();
-
-          expect(publishStub.calledWith('call-canceled')).to.equal(true);
-          expect(publishStub.getCall(0).args[1].to).to.equal(call.peer());
-          expect(publishStub.getCall(0).args[1].mediaType).to.equal(call.mediaType());
-          expect(typeof publishStub.getCall(0).args[1].timestamp).to.equal('object');
-
-          publishStub.restore();
-        });
-
-        xit('should follow up by calling session.deleteCurrentCall after publishing `call-canceled`', function () {
-          var deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
-          call.setId(null);
-
-          phone.cancel();
-
-          expect(deleteCurrentCallStub.called).to.equal(true);
-
-          deleteCurrentCallStub.restore();
-        });
-
         it('should execute call.disconnect', function () {
-          var callDisconnectStub = sinon.stub(call, 'disconnect');
           call.setId('123');
+
           phone.cancel();
 
           expect(callDisconnectStub.called).to.equal(true);
-          callDisconnectStub.restore();
         });
 
         describe('Error Handling', function () {
 
-          var publishStub,
-            callCancelStub;
-
           beforeEach(function () {
-            session.currentCall = call;
-            call.setId('1234');
-            publishStub = sinon.stub(emitter, 'publish', function () {});
-
-            callCancelStub = sinon.stub(call, 'disconnect', function () {
+            callDisconnectStub.restore();
+            callDisconnectStub = sinon.stub(call, 'disconnect', function () {
               throw error;
             });
 
-          });
-
-          afterEach(function () {
-            publishStub.restore();
-            callCancelStub.restore();
           });
 
           it('[11000] should be published with `error` event if call has not been initiated', function () {
@@ -2815,18 +2788,16 @@ describe('Phone', function () {
             phone.cancel();
 
             expect(ATT.errorDictionary.getSDKError('11000')).to.be.an('object');
-            expect(publishStub.calledWith('error', {
+            expect(publishSpy.calledWith('error', {
               error: ATT.errorDictionary.getSDKError('11000')
             })).to.equal(true);
           });
 
           it('[11001] should be published with `error` event if there is an unknown exception during the operation', function () {
-            call.setId('1234');
-            session.currentCall = call;
             phone.cancel();
 
             expect(ATT.errorDictionary.getSDKError('11001')).to.be.an('object');
-            expect(publishStub.calledWithMatch('error', {
+            expect(publishSpy.calledWithMatch('error', {
               error: ATT.errorDictionary.getSDKError('11001')
             })).to.equal(true);
           });
@@ -2834,15 +2805,17 @@ describe('Phone', function () {
 
         describe('Canceled Events', function () {
 
-          it('should publish `call-canceled` when call publishes `canceled`', function (done) {
+          beforeEach(function () {
             phone.cancel();
+          });
 
+          it('should publish `call-canceled` when call publishes `canceled`', function (done) {
             emitterCall.publish('canceled', eventData);
 
             setTimeout(function () {
               try {
                 expect(callCanceledHandlerSpy.calledWith(eventData)).to.equal(true);
-                expect(deleteCurrentCallStub.called).to.equal(true);
+                expect(deletePendingCallStub.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);

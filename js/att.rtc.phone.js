@@ -1441,7 +1441,7 @@
              * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('call-canceled', data);
-            session.deleteCurrentCall();
+            session.deletePendingCall();
           });
 
           call.disconnect();
