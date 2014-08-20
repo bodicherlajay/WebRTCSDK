@@ -284,6 +284,7 @@
     };
 
     this.addCall = function (call) {
+      logger.logInfo('session:addCall');
       calls[call.id()] = call;
     };
 

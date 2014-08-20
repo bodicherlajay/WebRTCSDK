@@ -714,6 +714,7 @@
     }
 
     function hold(moveFlag) {
+      logger.logInfo('call:hold');
       var localSdp = that.localSdp(),
         holdSdp;
 
