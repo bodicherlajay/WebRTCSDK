@@ -51,11 +51,12 @@ describe('Phone [PCV2]', function () {
     publishStub = sinon.stub(emitterPhone, 'publish');
 
     phone = new Phone();
+
+    createEventEmitterStub.restore();
   });
 
   afterEach(function () {
     sessionStub.restore();
-    createEventEmitterStub.restore();
     publishStub.restore();
   });
 
@@ -240,6 +241,100 @@ describe('Phone [PCV2]', function () {
           expect(callConnectStub.called).to.equal(true);
         });
       });
+    });
+  });
+
+  describe('Events', function () {
+
+    var createCallStub,
+      callConnectStub,
+      localVideo,
+      remoteVideo;
+
+
+    var dialOpts,
+      outgoingCallOpts,
+      outgoingCall,
+      emitterCall;
+
+    beforeEach(function () {
+
+      localVideo = document.createElement('video');
+      remoteVideo = document.createElement('video');
+
+      dialOpts = {
+        destination: '1231234538',
+        mediaType: 'video',
+        localMedia: {},
+        remoteMedia: {}
+      };
+
+      outgoingCallOpts = {
+        id: 'ABC',
+        peer: '1234567123',
+        breed : 'call',
+        mediaType: 'video',
+        type: ATT.CallTypes.OUTGOING,
+        sessionInfo: {sessionId: '12345', token: '123'}
+      };
+
+      emitterCall = factories.createEventEmitter();
+      createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+        return emitterCall;
+      });
+
+      outgoingCall = new Call(outgoingCallOpts);
+
+      createEventEmitterStub.restore();
+
+      createCallStub = sinon.stub(session, 'createCall', function () {
+        // simulate successfully creating a call
+        session.currentCall = outgoingCall;
+        session.pendingCall = null;
+        session.addCall(outgoingCall);
+        return outgoingCall;
+      });
+
+      getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+
+      phone.dial({
+        destination: '1234567890',
+        localMedia: 'foo',
+        remoteMedia: 'bar',
+        mediaType: 'video'
+      });
+
+      console.log('pcv: ' + ATT.private.pcv);
+    });
+
+    afterEach(function () {
+      createCallStub.restore();
+      getUserMediaStub.restore();
+    });
+
+    it('should trigger `call-disconnected` with relevant data when a call publishes the `disconnected` event', function (done) {
+
+      var offSpy;
+
+      offSpy = sinon.spy(outgoingCall, 'off');
+
+      emitterCall.publish('disconnected', {
+        data: 'some data'
+      });
+
+      setTimeout(function () {
+        try {
+
+          expect(publishStub.calledWith('call-disconnected')).to.equal(true);
+          expect(offSpy.calledWith('media-established')).to.equal(true);
+
+          done();
+        } catch (e) {
+          done(e);
+        } finally {
+          offSpy.restore();
+        }
+      }, 50);
     });
   });
 });
