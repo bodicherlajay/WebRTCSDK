@@ -1341,7 +1341,7 @@ describe('Session', function () {
           } catch (e) {
             done(e);
           }
-        }, 10);
+        }, 100);
       });
 
       it('should execute session.createCall with breed as the type received in event data from event manager', function (done) {
