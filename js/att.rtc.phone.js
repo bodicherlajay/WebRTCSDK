@@ -260,6 +260,7 @@
           && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-connected' !== event
+          && 'call-switched' !== event
           && 'call-disconnecting' !== event
           && 'call-disconnected' !== event
           && 'call-muted' !== event
@@ -749,6 +750,9 @@
       });
       call.on('connected', function (data) {
         emitter.publish('call-connected', data);
+        if (Object.keys(session.getCalls()).length >= 2) {
+          emitter.publish('call-switched', data);
+        }
       });
       call.on('media-established', mediaEstablished);
       call.on('held', function (data) {

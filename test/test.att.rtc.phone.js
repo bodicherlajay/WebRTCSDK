@@ -958,6 +958,7 @@ describe('Phone', function () {
           onAnsweringSpy,
           callConnectingHandlerSpy,
           callConnectedHandlerSpy,
+          callSwitchedHandlerSpy,
           callDisconnectedHandlerSpy,
           notificationHandlerSpy,
           callCanceledHandlerSpy,
@@ -983,6 +984,7 @@ describe('Phone', function () {
           onAnsweringSpy = sinon.spy();
           callConnectingHandlerSpy = sinon.spy();
           callConnectedHandlerSpy = sinon.spy();
+          callSwitchedHandlerSpy = sinon.spy();
           callDisconnectedHandlerSpy = sinon.spy();
           notificationHandlerSpy = sinon.spy();
           callCanceledHandlerSpy = sinon.spy();
@@ -1003,6 +1005,7 @@ describe('Phone', function () {
           phone.on('answering', onAnsweringSpy);
           phone.on('call-connecting', callConnectingHandlerSpy);
           phone.on('call-connected', callConnectedHandlerSpy);
+          phone.on('call-switched', callSwitchedHandlerSpy);
           phone.on('call-disconnected', callDisconnectedHandlerSpy);
           phone.on('notification', notificationHandlerSpy);
           phone.on('call-canceled', callCanceledHandlerSpy);
@@ -1223,6 +1226,43 @@ describe('Phone', function () {
             }, 50);
 
           });
+
+          it('should trigger `call-switched` when call publishes `connected` event and there are more than one calls under session', function (done) {
+            session.addCall({
+              id: function () {
+                return 'dummyCall';
+              }
+            });
+
+            emitterCall.publish('connected', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(callSwitchedHandlerSpy.calledWith(eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 50);
+
+          });
+
+          it('should not trigger `call-switched` when call publishes `connected` event and if there is only one call under session', function (done) {
+
+            emitterCall.publish('connected', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(callSwitchedHandlerSpy.called).to.equal(false);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 50);
+
+          });
+
+
           // TODO: ignore because it uses PCV1
           xit('should trigger `call-disconnected` with relevant data when call publishes `disconnected` event', function (done) {
             emitterCall.publish('disconnected', eventData);
