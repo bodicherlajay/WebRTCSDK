@@ -8,19 +8,22 @@ describe('Phone', function () {
   var factories,
     eventData,
     error,
+    outgoingCallOpts,
     localVideo,
     remoteVideo,
     getRTCManagerStub,
     createPeerConnectionStub,
     restClientStub,
     ums,
-    Phone;
+    Phone,
+    Call;
 
   before(function () {
     ATT.private.pcv = 1;
     ums = ATT.UserMediaService;
     factories = ATT.private.factories;
     Phone = ATT.private.Phone;
+    Call = ATT.rtc.Call;
 
     eventData = {
       abc: 'abc'
@@ -28,6 +31,13 @@ describe('Phone', function () {
 
     error = {
       ErrorMessage: 'Test Error'
+    };
+
+    outgoingCallOpts = {
+      breed: 'call',
+      peer: '1234567',
+      type: 'outgoing',
+      mediaType: 'video'
     };
   });
 
@@ -167,12 +177,7 @@ describe('Phone', function () {
           return emitterCall;
         });
 
-        call = new ATT.rtc.Call({
-          breed: 'call',
-          peer: '1234567',
-          type: 'abc',
-          mediaType: 'video'
-        });
+        call = new Call(outgoingCallOpts);
 
         callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
           return call;
@@ -201,6 +206,8 @@ describe('Phone', function () {
         });
 
         phone = new Phone();
+
+        createEventEmitterStub.restore();
 
         onErrorHandlerSpy = sinon.spy();
 
@@ -300,7 +307,7 @@ describe('Phone', function () {
           phone.setSession(undefined);
           phone.login(options);
 
-          expect(phone.getSession()).not.to.be.undefined;
+          expect(phone.getSession()).not.to.be.an('undefined');
         });
 
         it('should register for event `ready` from Session', function () {
@@ -951,8 +958,7 @@ describe('Phone', function () {
       describe('[US198535] answer', function () {
 
         var answerOptions,
-          createCallOptions,
-          incomingCall,
+          holdAndAnswerOptions,
           onSpy,
           callConnectStub,
           onAnsweringSpy,
@@ -974,11 +980,10 @@ describe('Phone', function () {
             remoteMedia: remoteVideo
           };
 
-          createCallOptions = {
-            id: '123',
-            peer: '1234567',
-            type: 'abc',
-            mediaType: 'video'
+          holdAndAnswerOptions = {
+            localMedia: localVideo,
+            remoteMedia: remoteVideo,
+            action: 'hold'
           };
 
           onAnsweringSpy = sinon.spy();
@@ -994,13 +999,16 @@ describe('Phone', function () {
           callResumeHandlerSpy = sinon.spy();
 
           session.setId('ABC');
-          incomingCall = session.createCall(createCallOptions);
 
-          incomingCall.setRemoteSdp('abc');
+          call.setId('incomingCallId');
 
-          onSpy = sinon.spy(incomingCall, 'on');
+          session.pendingCall = call;
 
-          callConnectStub = sinon.stub(incomingCall, 'connect');
+          call.setRemoteSdp('abc');
+
+          onSpy = sinon.spy(call, 'on');
+
+          callConnectStub = sinon.stub(call, 'connect');
 
           phone.on('answering', onAnsweringSpy);
           phone.on('call-connecting', callConnectingHandlerSpy);
@@ -1227,26 +1235,6 @@ describe('Phone', function () {
 
           });
 
-          it('should trigger `call-switched` when call publishes `connected` event and there are more than one calls under session', function (done) {
-            session.addCall({
-              id: function () {
-                return 'dummyCall';
-              }
-            });
-
-            emitterCall.publish('connected', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(callSwitchedHandlerSpy.calledWith(eventData)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 50);
-
-          });
-
           it('should not trigger `call-switched` when call publishes `connected` event and if there is only one call under session', function (done) {
 
             emitterCall.publish('connected', eventData);
@@ -1348,6 +1336,7 @@ describe('Phone', function () {
           });
 
         });
+
       });
 
       describe('[US272608] joinConference', function () {
@@ -1375,7 +1364,7 @@ describe('Phone', function () {
 
           callConstructorStub.restore();
 
-          conference = new ATT.rtc.Call({
+          conference = new Call({
             breed: 'conference',
             peer: '1234567',
             type: 'abc',
@@ -1970,7 +1959,7 @@ describe('Phone', function () {
             return emitterConference;
           });
 
-          conference = new ATT.rtc.Call({
+          conference = new Call({
             breed: 'conference',
             peer: '14251234567',
             type: 'abc',
@@ -2062,7 +2051,7 @@ describe('Phone', function () {
           var publishStub;
 
           beforeEach(function () {
-            conference = new ATT.rtc.Call({
+            conference = new Call({
               breed: 'conference',
               peer: '1234567',
               type: 'abc',
@@ -2192,7 +2181,7 @@ describe('Phone', function () {
 
           callConstructorStub.restore();
 
-          conference = new ATT.rtc.Call({
+          conference = new Call({
             breed: 'conference',
             peer: '1234567',
             type: 'abc',
@@ -2898,7 +2887,7 @@ describe('Phone', function () {
 
           callConstructorStub.restore();
 
-          conference = new ATT.rtc.Call({
+          conference = new Call({
             breed: 'conference',
             peer: '1234567',
             type: 'abc',
@@ -3448,7 +3437,7 @@ describe('Phone', function () {
             return emitterCall;
           });
 
-          incomingCall = new ATT.rtc.Call({
+          incomingCall = new Call({
             breed: 'call',
             peer: '12345',
             type: ATT.CallTypes.INCOMING,

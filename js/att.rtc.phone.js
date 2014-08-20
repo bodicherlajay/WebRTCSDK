@@ -787,7 +787,7 @@
       }
     }
 
-    function answerCall(call, options) {
+    function answerCall(call, options, bSwitched) {
       /**
        * Answering event.
        * @desc Fired immediately after the `answer` method is invoked.
@@ -809,7 +809,7 @@
       });
       call.on('connected', function (data) {
         emitter.publish('call-connected', data);
-        if (Object.keys(session.getCalls()).length >= 2) {
+        if (bSwitched) {
           emitter.publish('call-switched', data);
         }
       });
@@ -891,7 +891,7 @@
         event = options.action === 'end' ? 'disconnected' : 'held';
         currentCall.off(event, answerSecondCall);
 
-        answerCall(call, options);
+        answerCall(call, options, true);
       }
 
       try {
@@ -946,6 +946,7 @@
         answerCall(call, options);
 
       } catch (err) {
+        logger.logError(err);
         publishError('5002', err);
         return;
       }
