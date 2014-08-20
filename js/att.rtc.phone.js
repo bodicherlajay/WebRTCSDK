@@ -2055,6 +2055,7 @@
                     invitee: invitee,
                     timestamp: new Date()
                   });
+                  return;
                 }
               }
             }
