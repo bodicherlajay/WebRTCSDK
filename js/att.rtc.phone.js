@@ -810,6 +810,15 @@
       call.on('connected', function (data) {
         emitter.publish('call-connected', data);
         if (bSwitched) {
+          /**
+           * call- switched event.
+           * @desc Fired immediately after the `call-connected ` event triggred and a call switched
+           *
+           * @event Phone# call-switched
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - data
+           */
           emitter.publish('call-switched', data);
         }
       });
