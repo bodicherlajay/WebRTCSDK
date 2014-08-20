@@ -38,7 +38,8 @@
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager(),
-      events = ATT.RTCCallEvents;
+      events = ATT.RTCCallEvents,
+      lastModID = '';
 
     // ================
     // Private methods
@@ -131,6 +132,8 @@
 
     function onModReceived(data) {
 
+      lastModID = data.modificationId;
+
       if ('conference' === breed
           || (2 === ATT.private.pcv && 'call' === breed)) {
         if (undefined !== data.remoteSdp) {
@@ -144,8 +147,10 @@
                 callId: id,
                 breed: breed,
                 sdp: description.sdp,
-                modId: '12345'
+                modId: lastModID
               });
+
+              lastModID = '';
             }
           });
 
