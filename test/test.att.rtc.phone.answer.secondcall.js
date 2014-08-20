@@ -10,6 +10,7 @@ describe('[US293718] Answer SecondCall', function () {
     session,
     firstCall,
     incomingCall,
+    emitterCall,
     emitterPhone,
     createEventEmitterStub,
     factories,
@@ -24,14 +25,20 @@ describe('[US293718] Answer SecondCall', function () {
     callOffSpy,
     callHoldStub,
     callDisconnectStub,
+    callSwitchedHandlerSpy,
     getUserMediaStub,
-    publishStub;
+    publishStub,
+    eventData;
 
   before(function () {
     factories = ATT.private.factories;
     ums = ATT.UserMediaService;
     Phone = ATT.private.Phone;
     Call = ATT.rtc.Call;
+
+    eventData = {
+      data: 'data'
+    };
 
     firstCallOpts = {
       id: 'firstCallId',
@@ -92,7 +99,16 @@ describe('[US293718] Answer SecondCall', function () {
     session.setId('sessionId');
 
     firstCall = new Call(firstCallOpts);
+
+    emitterCall = factories.createEventEmitter();
+
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+      return emitterCall;
+    });
+
     incomingCall = new Call(incomingCallOpts);
+
+    createEventEmitterStub.restore();
 
     session.currentCall = firstCall;
     session.pendingCall = incomingCall;
@@ -101,6 +117,9 @@ describe('[US293718] Answer SecondCall', function () {
     callOffSpy = sinon.spy(firstCall, 'off');
     callHoldStub = sinon.stub(firstCall, 'hold');
     callDisconnectStub = sinon.stub(firstCall, 'disconnect');
+
+    callSwitchedHandlerSpy = sinon.spy();
+    phone.on('call-switched', callSwitchedHandlerSpy);
   });
 
   afterEach(function () {
@@ -205,47 +224,76 @@ describe('[US293718] Answer SecondCall', function () {
 
       });
 
-      describe('disconnected', function () {
+      describe.only('Events on second Call', function () {
 
         beforeEach(function () {
-          phone.answer(answerEndOpts);
+          callHoldStub.restore();
+          callHoldStub = sinon.stub(firstCall, 'hold', function () {
+            firstCall.setState('held');
+          });
         });
 
-        it('should deregister from `disconnected` event', function (done) {
+        it.only('should trigger `call-switched` when second call publishes `connected` event after answering the second call', function (done) {
+
           setTimeout(function () {
-            firstCall.setState('disconnected');
+            emitterCall.publish('connected', eventData);
+
             setTimeout(function () {
               try {
-                expect(callOffSpy.calledWith('disconnected')).to.equal(true);
+                expect(callSwitchedHandlerSpy.calledWith(eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
               }
             }, 10);
-
           }, 10);
-        });
 
-        it('should execute ums.getUserMedia', function (done) {
+        });
+      });
+
+    });
+
+    describe('disconnected', function () {
+
+      beforeEach(function () {
+        phone.answer(answerEndOpts);
+      });
+
+      it('should deregister from `disconnected` event', function (done) {
+        setTimeout(function () {
+          firstCall.setState('disconnected');
           setTimeout(function () {
-            firstCall.setState('disconnected');
-
-            setTimeout(function () {
-              try {
-                expect(getUserMediaStub.called).to.equal(true);
-                expect(getUserMediaStub.calledAfter(callDisconnectStub)).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 50);
-
+            try {
+              expect(callOffSpy.calledWith('disconnected')).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
           }, 10);
 
-        });
+        }, 10);
+      });
+
+      it('should execute ums.getUserMedia', function (done) {
+        setTimeout(function () {
+          firstCall.setState('disconnected');
+
+          setTimeout(function () {
+            try {
+              expect(getUserMediaStub.called).to.equal(true);
+              expect(getUserMediaStub.calledAfter(callDisconnectStub)).to.equal(true);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 50);
+
+        }, 10);
 
       });
+
     });
+
   });
 
 });
