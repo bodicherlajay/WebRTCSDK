@@ -663,11 +663,59 @@
       }
     }
 
+    /**
+     * @summary Add a second call while having an active call.
+     * @desc Automatically holds the active call and dials second call.
+     *
+     * **Error codes**
+     *
+     *  - 27001 - Input options are not provided
+     *  - 27002 - LocalMedia is not defined
+     *  - 27003 - remoteMedia is not defined
+     *  - 27004 - destination is not defined
+     *  - 27005 - Invalid phone number
+     *  - 27006 - Invalid SIP URI
+     *  - 27007 - Invalid media constraints
+     *  - 27008 - User is not logged in
+     *  - 27009 - Can not make second call. There is no first call in progress.
+     *
+     * @param {Object} options
+     * @memberOf Phone
+     * @instance
+     * @param {String} options.destination The Phone Number or User Id of the called party.
+     * @param {HTMLVideoElement} options.localMedia
+     * @param {HTMLVideoElement} options.remoteMedia
+     * @param {String} options.mediaType `audio` or `video`
+
+     * @fires Phone#dialing
+     * @fires Phone#call-connecting
+     * @fires Phone#call-canceled
+     * @fires Phone#call-rejected
+     * @fires Phone#call-connected
+     * @fires Phone#media-established
+     * @fires Phone#call-held
+     * @fires Phone#call-resumed
+     * @fires Phone#call-disconnected
+     * @fires Phone#notification
+     * @fires Phone#error
+
+     * @example
+     // Add a video call with an ICMN User
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.addCall({
+       destination: '1231231234',
+       mediaType: 'video',
+       localMedia: document.getElementById('localVideo'),
+       remoteMedia: document.getElementById('remoteVideo')
+     });
+     */
     function addCall(options) {
+      logger.logInfo('addCall');
 
       var call;
 
       function dialSecondCall() {
+        logger.logInfo('phone:dialSecondCall');
         call.off('held', dialSecondCall);
         session.addCall(call);
         dial(options);
@@ -675,36 +723,45 @@
 
       try {
         if (undefined === options) {
-          throw ATT.errorDictionary.getSDKError(27001);
+          publishError('27001');
+          return;
         }
         if (undefined === options.localMedia) {
-          throw ATT.errorDictionary.getSDKError(27002);
+          publishError('27002');
+          return;
         }
         if (undefined === options.remoteMedia) {
-          throw ATT.errorDictionary.getSDKError(27003);
+          publishError('27003');
+          return;
         }
         if (undefined === options.destination) {
-          throw ATT.errorDictionary.getSDKError(27004);
+          publishError('27004');
+          return;
         }
         if (options.destination.indexOf('@') === -1) {
           options.destination = cleanPhoneNumber(options.destination);
           if (false === options.destination) {
-            throw ATT.errorDictionary.getSDKError(27005);
+            publishError('27005');
+            return;
           }
         } else if (options.destination.split('@').length > 2) {
-          throw ATT.errorDictionary.getSDKError(27006);
+          publishError('27006');
+          return;
         }
         if (undefined !== options.mediaType) {
           if ('audio' !== options.mediaType
               && 'video' !== options.mediaType) {
-            throw ATT.errorDictionary.getSDKError(27007);
+            publishError('27007');
+            return;
           }
         }
         if (null === session.getId()) {
-          throw ATT.errorDictionary.getSDKError(27008);
+          publishError('27008');
+          return;
         }
         if (null === session.currentCall) {
-          throw ATT.errorDictionary.getSDKError(27009);
+          publishError('27009');
+          return;
         }
 
         try {
@@ -714,11 +771,13 @@
 
           call.hold();
         } catch (err) {
-          logger.logError(err);
+          logger.logError('Error while trying to hold call');
 
-          throw ATT.errorDictionary.getSDKError(27000);
+          publishError('27000', err);
+          return;
         }
       } catch (err) {
+        logger.logError('addCall:error');
         logger.logError(err);
 
         emitter.publish('error', {
@@ -797,7 +856,7 @@
      * @param {Object} options
      * @param {HTMLElement} options.localVideo
      * @param {HTMLElement} options.remoteVideo
-     * @param {HTMLElement} options.action Optional. Action to perform on the current call
+     * @param {String} [options.action] `end|hold` Action to perform on the current call
 
      * @fires Phone#answering
      * @fires Phone#call-connecting
@@ -814,8 +873,8 @@
      var phone = ATT.rtc.Phone.getPhone();
      phone.answer({
           localMedia: document.getElementById('localVideo'),
-          remoteMedia: document.getElementById('remoteVideo')
-          action: ['hold' or 'end']
+          remoteMedia: document.getElementById('remoteVideo'),
+          [action: 'hold|end']
         });
      */
     function answer(options) {
@@ -1386,13 +1445,15 @@
 
     /**
      * @summary
-     * Returns true if there is a call in progress
+     * Returns `true` if there is a call in progress.
      * @memberOf Phone
      * @instance
+     *
+     * @returns {Boolean} `true` if there's an active call, `false` otherwise.
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
-     phone.isCallInProgress()
+     phone.isCallInProgress();
      */
     function isCallInProgress() {
       var call = session.currentCall;
