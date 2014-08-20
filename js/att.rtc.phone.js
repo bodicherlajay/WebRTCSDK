@@ -980,6 +980,10 @@
      * @fires Phone#media-established
      * @fires Phone#conference:held
      * @fires Phone#conference:resumed
+     * @fires Phone#conference:invitation-sent
+     * @fires Phone#conference:invitation-accepted
+     * @fires Phone#conference:invitation-rejected
+     * @fires Phone#conference:participant-removed
      * @fires Phone#conference:ended
      * @fires Phone#error
 
@@ -1138,6 +1142,22 @@
 
         conference.on('notification', function (data) {
           emitter.publish('notification', data);
+        });
+
+        conference.on('participant-removed', function (data) {
+          /**
+           * Participant removed
+           * @desc Host side: this event fires when a host has successfully removed a participant.
+           *
+           * @event Phone#conference:participant-removed
+           * @type {object}
+           * @property {Object} participants - The participants list.
+           * @property {Object} invitations - The invitations list.
+           * @property {String} mediaType - The media type of the conference (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:participant-removed', data);
         });
 
         conference.on('disconnected', function (data) {
@@ -2213,7 +2233,6 @@
      * @memberOf Phone
      * @instance
      *
-     * @fires Phone#conference:participant-removed
      * @fires Phone#error
 
      * @example
@@ -2245,21 +2264,6 @@
         }
 
         try {
-          conference.on('participant-removed', function (data) {
-            /**
-             * Participant removed
-             * @desc Host side: this event fires when a host has successfully removed a participant.
-             *
-             * @event Phone#conference:participant-removed
-             * @type {object}
-             * @property {Object} participants - The participants list.
-             * @property {Object} invitations - The invitations list.
-             * @property {String} mediaType - The media type of the conference (audio or video).
-             * @property {String} codec - The codec used by the conference.
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('conference:participant-removed', data);
-          });
 
           conference.removeParticipant(participant);
         } catch (err) {

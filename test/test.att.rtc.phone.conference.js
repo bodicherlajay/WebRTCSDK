@@ -300,6 +300,13 @@ describe('Phone [Conference]', function () {
           expect(conferenceOnStub.calledWith('rejected')).to.equal(true);
           expect(conferenceOnStub.called).to.equal(true);
         });
+
+        it('should register for `participant-removed` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.called).to.equal(true);
+          expect(conferenceOnStub.calledWith('participant-removed')).to.equal(true);
+        });
       });
 
       it('should get the local userMedia', function () {
@@ -600,7 +607,6 @@ describe('Phone [Conference]', function () {
         onSpy,
         callConstructorStub,
         removeParticipantStub,
-        onParticipantRemovedHandlerSpy,
         createEventEmitterStub;
 
       beforeEach(function () {
@@ -639,9 +645,6 @@ describe('Phone [Conference]', function () {
         removeParticipantStub  = sinon.stub(conference, 'removeParticipant');
 
         onSpy = sinon.spy(conference, 'on');
-        onParticipantRemovedHandlerSpy = sinon.spy();
-
-        phone.on('conference:participant-removed', onParticipantRemovedHandlerSpy);
 
         session.currentCall = conference;
         session.setId('1234');
@@ -658,31 +661,10 @@ describe('Phone [Conference]', function () {
         expect(phone.removeParticipant).to.be.a('function');
       });
 
-      it('should register for the `participant-removed` event on the conference object', function () {
-        phone.removeParticipant('waldo');
-
-        expect(onSpy.calledWith('participant-removed')).to.equal(true);
-      });
-
       it('should execute conference.removeParticipant', function () {
         phone.removeParticipant('joe');
 
         expect(removeParticipantStub.calledWith('joe')).to.equal(true);
-      });
-
-      it('should trigger `conference:participant-removed` with relevant data when call publishes `participant-removed` event', function (done) {
-        phone.removeParticipant('sally');
-
-        emitterConf.publish('participant-removed', eventData);
-
-        setTimeout(function () {
-          try {
-            expect(onParticipantRemovedHandlerSpy.calledWith(eventData)).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
       });
 
       describe('Error handling', function () {
@@ -921,6 +903,30 @@ describe('Phone [Conference]', function () {
         try {
           expect(onInvitationRejectedSpy.called).to.equal(true);
           expect(onInvitationRejectedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `conference:participant-removed` when conference publishes `participant-removed`', function (done) {
+      var onParticipantRemovedSpy = sinon.spy();
+
+      phone.on('conference:participant-removed', onParticipantRemovedSpy);
+
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('participant-removed');
+
+      setTimeout(function () {
+        try {
+          expect(onParticipantRemovedSpy.called).to.equal(true);
+          expect(onParticipantRemovedSpy.calledOnce).to.equal(true);
           done();
         } catch (e) {
           done(e);
