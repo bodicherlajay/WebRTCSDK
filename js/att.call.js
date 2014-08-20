@@ -10,8 +10,6 @@
 
   /**
   * Call Prototype
-  * @param {String} peer The peer
-  * @param {String} mediaType The mediaType
   */
   function Call(options) {
 
@@ -40,7 +38,8 @@
       logger = logManager.addLoggerForModule('Call'),
       emitter = factories.createEventEmitter(),
       rtcManager = ATT.private.rtcManager.getRTCManager(),
-      events = ATT.RTCCallEvents;
+      events = ATT.RTCCallEvents,
+      lastModID = '';
 
     // ================
     // Private methods
@@ -132,7 +131,8 @@
     }
 
     function onModReceived(data) {
-      var remoteDescription;
+
+      lastModID = data.modificationId;
 
       if ('conference' === breed
           || (2 === ATT.private.pcv && 'call' === breed)) {
@@ -147,22 +147,20 @@
                 callId: id,
                 breed: breed,
                 sdp: description.sdp,
-                modId: '12345'
+                modId: lastModID
               });
+
+              lastModID = '';
             }
           });
 
-          if ('call' === breed) {
-            remoteDescription = peerConnection.getRemoteDescription();
-
-            if (data.remoteSdp.indexOf('recvonly') !== -1) {
-              rtcManager.disableMediaStream();
-              that.setState('held');
-            } else if ( 'held' === state
-              && data.remoteSdp.indexOf('sendrecv') !== -1) {
-              rtcManager.enableMediaStream();
-              that.setState('resumed');
-            }
+          if (data.remoteSdp.indexOf('recvonly') !== -1) {
+            rtcManager.disableMediaStream();
+            that.setState('held');
+          } else if ( 'held' === state
+            && data.remoteSdp.indexOf('sendrecv') !== -1) {
+            rtcManager.enableMediaStream();
+            that.setState('resumed');
           }
         }
         return;
@@ -716,6 +714,7 @@
     }
 
     function hold(moveFlag) {
+      logger.logInfo('call:hold');
       var localSdp = that.localSdp(),
         holdSdp;
 
@@ -784,10 +783,6 @@
           }
         });
       }
-    }
-
-    function move() {
-
     }
 
     function reject() {
@@ -897,9 +892,6 @@
     this.remoteSdp = function () {
       var description;
 
-      // TODO: Remove comment when every call has its own PeerConnection
-      // Only calls of `breed` 'conference' have a private
-      // peerconnection, but it's only created after you call conf.connect
       if (undefined === peerConnection) {
         return remoteSdp;
       }
@@ -932,7 +924,6 @@
     this.unmute = unmute;
     this.hold = hold;
     this.resume = resume;
-    this.move = move;
     this.reject = reject;
   }
 

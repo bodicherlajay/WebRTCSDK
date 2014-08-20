@@ -241,7 +241,7 @@ describe('[US221924] addCall', function () {
     phone.addCall(addCallOpts);
 
     expect(ATT.errorDictionary.getSDKError('27000')).to.be.an('object');
-    expect(publishStub.calledWith('error', {
+    expect(publishStub.calledWithMatch('error', {
       error: ATT.errorDictionary.getSDKError('27000')
     })).to.equal(true);
   });

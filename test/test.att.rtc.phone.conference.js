@@ -234,6 +234,9 @@ describe('Phone [Conference]', function () {
           expect(createCallStub.getCall(0).args[0].type).to.be.an('string');
         });
 
+      });
+
+      describe('registrations', function () {
         it('it should subscribe to the `connected` event on the conference', function () {
           phone.startConference(startConfOpts);
 
@@ -270,6 +273,33 @@ describe('Phone [Conference]', function () {
           expect(conferenceOnStub.calledWith('disconnected')).to.equal(true);
         });
 
+        it('should register for `response-pending` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.called).to.equal(true);
+          expect(conferenceOnStub.calledWith('response-pending')).to.equal(true);
+        });
+
+        it('should register for `invite-accepted` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.called).to.equal(true);
+          expect(conferenceOnStub.calledWith('invite-accepted')).to.equal(true);
+        });
+
+        it('should register for `notification` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.called).to.equal(true);
+          expect(conferenceOnStub.calledWith('notification')).to.equal(true);
+        });
+
+        it('should register for `rejected` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.calledWith('rejected')).to.equal(true);
+          expect(conferenceOnStub.called).to.equal(true);
+        });
       });
 
       it('should get the local userMedia', function () {
@@ -824,6 +854,102 @@ describe('Phone [Conference]', function () {
           done(e);
         }
       }, 50);
+    });
+
+    it('should publish `conference:invitation-sent` when conference publishes `response-pending`', function (done) {
+      var onInvitationSentSpy = sinon.spy();
+
+      phone.on('conference:invitation-sent', onInvitationSentSpy);
+
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('response-pending');
+
+      setTimeout(function () {
+        try {
+          expect(onInvitationSentSpy.called).to.equal(true);
+          expect(onInvitationSentSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 100);
+    });
+
+    it('should publish `conference:invitation-accepted` when conference publishes `invite-accepted`', function (done) {
+      var onInvitationAcceptedSpy = sinon.spy();
+
+      phone.on('conference:invitation-accepted', onInvitationAcceptedSpy);
+
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('invite-accepted');
+
+      setTimeout(function () {
+        try {
+          expect(onInvitationAcceptedSpy.called).to.equal(true);
+          expect(onInvitationAcceptedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `conference:invitation-rejected` when conference publishes `rejected`', function (done) {
+      var onInvitationRejectedSpy = sinon.spy();
+
+      phone.on('conference:invitation-rejected', onInvitationRejectedSpy);
+
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('rejected');
+
+      setTimeout(function () {
+        try {
+          expect(onInvitationRejectedSpy.called).to.equal(true);
+          expect(onInvitationRejectedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `notification` when conference publishes `notification`', function (done) {
+      var onNotificationSpy = sinon.spy();
+
+      phone.on('notification', onNotificationSpy);
+
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
+      });
+
+      outgoingAudioConference.setState('notification');
+
+      setTimeout(function () {
+        try {
+          expect(onNotificationSpy.called).to.equal(true);
+          expect(onNotificationSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 100);
     });
 
     it('should publish `conference:ended` when conference publishes `disconnected`', function (done) {
