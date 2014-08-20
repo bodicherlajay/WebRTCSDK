@@ -1960,34 +1960,6 @@ describe('Phone', function () {
           expect(phone.addParticipants).to.be.a('function');
         });
 
-        it('should register for `response-pending` event on the conference object', function () {
-          phone.addParticipants(['4250000001']);
-
-          expect(onSpy.called).to.equal(true);
-          expect(onSpy.calledWith('response-pending')).to.equal(true);
-        });
-
-        it('should register for `invite-accepted` event on the conference object', function () {
-          phone.addParticipants(['4250000001']);
-
-          expect(onSpy.called).to.equal(true);
-          expect(onSpy.calledWith('invite-accepted')).to.equal(true);
-        });
-
-        it('should register for `notification` event on the conference object', function () {
-          phone.addParticipants(['4250000001']);
-
-          expect(onSpy.called).to.equal(true);
-          expect(onSpy.calledWith('notification')).to.equal(true);
-        });
-
-        it('should register for `rejected` event on the conference object', function () {
-          phone.addParticipants(['4250000001']);
-
-          expect(onSpy.calledWith('rejected')).to.equal(true);
-          expect(onSpy.called).to.equal(true);
-        });
-
         it('should publish `conference:invitation-sending` immediately', function (done) {
           var onInvitationSendingHandlerSpy = sinon.spy();
 
@@ -2042,79 +2014,6 @@ describe('Phone', function () {
 
           afterEach(function () {
             publishStub.restore();
-          });
-
-          describe('conference:invitation-sent', function () {
-
-            it('should publish `conference:invitation-sent` with event data on getting a `response-pending`', function (done) {
-              phone.addParticipants(['4250000001']);
-
-              emitterConference.publish('response-pending', eventData);
-
-              setTimeout(function () {
-                try {
-                  expect(publishStub.called).to.equal(true);
-                  expect(publishStub.calledWith('conference:invitation-sent', eventData)).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 100);
-            });
-          });
-
-          describe('conference:invitation-accepted', function () {
-
-            it('should publish `conference:invitation-accepted` when conference publishes `invite-accepted`', function (done) {
-              phone.addParticipants(['4250000001']);
-
-              emitterConference.publish('invite-accepted', eventData);
-
-              setTimeout(function () {
-                try {
-                  expect(publishStub.calledWith('conference:invitation-accepted', eventData)).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 50);
-            });
-          });
-
-          describe('conference:invitation-rejected', function () {
-
-            it('should publish `conference:invitation-rejected` when conference publishes `rejected`', function (done) {
-              phone.addParticipants(['4250000001']);
-
-              emitterConference.publish('rejected', eventData);
-
-              setTimeout(function () {
-                try {
-                  expect(publishStub.calledWith('conference:invitation-rejected', eventData)).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 50);
-            });
-          });
-
-          describe('notification', function () {
-
-            it('should publish `notification` when conference publishes `notification`', function (done) {
-              phone.addParticipants(['4250000001']);
-
-              emitterConference.publish('notification', eventData);
-
-              setTimeout(function () {
-                try {
-                  expect(publishStub.calledWith('notification', eventData)).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 50);
-            });
           });
         });
 
@@ -2820,12 +2719,9 @@ describe('Phone', function () {
               } catch (e) {
                 done(e);
               }
-            }, 10);
-
+            }, 100);
           });
-
         });
-
       });
 
       describe('[US248577] reject', function () {

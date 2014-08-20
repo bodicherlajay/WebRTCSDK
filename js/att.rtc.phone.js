@@ -1023,6 +1023,60 @@
           emitter.publish('conference:held', data);
         });
 
+        conference.on('response-pending', function (data) {
+          /**
+           * Invitation Sent event
+           * @desc Host side: this event fires when an invitation has been successfully sent.
+           *
+           * @event Phone#conference:invitation-sent
+           * @type {object}
+           * @property {String} to - The ID of the callee.
+           * @property {Object} invitations - The invitations list.
+           * @property {Object} participants - The participants list.
+           * @property {String} mediaType - The media type of the call (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:invitation-sent', data);
+        });
+
+        conference.on('invite-accepted', function (data) {
+          /**
+           * Invitation accepted event
+           * @desc Host side: this event fires when an invitation has been accepted
+           *
+           * @event Phone#conference:invitation-accepted
+           * @type {object}
+           * @property {String} to - The ID of the callee.
+           * @property {Object} participants - The participants list.
+           * @property {String} mediaType - The media type of the call (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:invitation-accepted', data);
+        });
+
+        conference.on('rejected', function (data) {
+          /**
+           * Invitation rejected event
+           * @desc Host side: this event fires when an invitation has been rejected
+           *
+           * @event Phone#conference:invitation-rejected
+           * @type {object}
+           * @property {String} to - The ID of the callee.
+           * @property {Object} participants - The participants list.
+           * @property {Object} invitations - The invitations list.
+           * @property {String} mediaType - The media type of the conference (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:invitation-rejected', data);
+        });
+
+        conference.on('notification', function (data) {
+          emitter.publish('notification', data);
+        });
+
         conference.on('disconnected', function (data) {
           logger.logInfo('conference ended  event by phone layer');
           /**
@@ -1889,60 +1943,6 @@
         }
 
         currentParticipants = conference.participants();
-
-        conference.on('response-pending', function (data) {
-          /**
-           * Invitation Sent event
-           * @desc Host side: this event fires when an invitation has been successfully sent.
-           *
-           * @event Phone#conference:invitation-sent
-           * @type {object}
-           * @property {String} to - The ID of the callee.
-           * @property {Object} invitations - The invitations list.
-           * @property {Object} participants - The participants list.
-           * @property {String} mediaType - The media type of the call (audio or video).
-           * @property {String} codec - The codec used by the conference.
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('conference:invitation-sent', data);
-        });
-
-        conference.on('invite-accepted', function (data) {
-          /**
-           * Invitation accepted event
-           * @desc Host side: this event fires when an invitation has been accepted
-           *
-           * @event Phone#conference:invitation-accepted
-           * @type {object}
-           * @property {String} to - The ID of the callee.
-           * @property {Object} participants - The participants list.
-           * @property {String} mediaType - The media type of the call (audio or video).
-           * @property {String} codec - The codec used by the conference.
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('conference:invitation-accepted', data);
-        });
-
-        conference.on('rejected', function (data) {
-          /**
-           * Invitation rejected event
-           * @desc Host side: this event fires when an invitation has been rejected
-           *
-           * @event Phone#conference:invitation-rejected
-           * @type {object}
-           * @property {String} to - The ID of the callee.
-           * @property {Object} participants - The participants list.
-           * @property {Object} invitations - The invitations list.
-           * @property {String} mediaType - The media type of the conference (audio or video).
-           * @property {String} codec - The codec used by the conference.
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('conference:invitation-rejected', data);
-        });
-
-        conference.on('notification', function (data) {
-          emitter.publish('notification', data);
-        });
 
         for (counter = 0; counter < participants.length; counter += 1) {
           invitee = participants[counter];
