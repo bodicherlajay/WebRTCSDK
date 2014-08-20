@@ -10,8 +10,6 @@
 
   /**
   * Call Prototype
-  * @param {String} peer The peer
-  * @param {String} mediaType The mediaType
   */
   function Call(options) {
 
@@ -888,9 +886,6 @@
     this.remoteSdp = function () {
       var description;
 
-      // TODO: Remove comment when every call has its own PeerConnection
-      // Only calls of `breed` 'conference' have a private
-      // peerconnection, but it's only created after you call conf.connect
       if (undefined === peerConnection) {
         return remoteSdp;
       }
