@@ -132,7 +132,6 @@
     }
 
     function onModReceived(data) {
-      var remoteDescription;
 
       if ('conference' === breed
           || (2 === ATT.private.pcv && 'call' === breed)) {
@@ -152,17 +151,13 @@
             }
           });
 
-          if ('call' === breed) {
-            remoteDescription = peerConnection.getRemoteDescription();
-
-            if (data.remoteSdp.indexOf('recvonly') !== -1) {
-              rtcManager.disableMediaStream();
-              that.setState('held');
-            } else if ( 'held' === state
-              && data.remoteSdp.indexOf('sendrecv') !== -1) {
-              rtcManager.enableMediaStream();
-              that.setState('resumed');
-            }
+          if (data.remoteSdp.indexOf('recvonly') !== -1) {
+            rtcManager.disableMediaStream();
+            that.setState('held');
+          } else if ( 'held' === state
+            && data.remoteSdp.indexOf('sendrecv') !== -1) {
+            rtcManager.enableMediaStream();
+            that.setState('resumed');
           }
         }
         return;
