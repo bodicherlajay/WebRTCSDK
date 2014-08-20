@@ -61,6 +61,14 @@
 
     session.on('notification', function (data) {
       logger.logInfo('notification event from session');
+      /**
+       * Notification event.
+       * @desc This event fires when the SDK is unable to support a behaviour that is not an error
+       * @event Phone#notification
+       * @type {object}
+       * @property {String} message - A message for the notification.
+       * @property {Date} timestamp - Event fire time.
+       */
       emitter.publish('notification', data);
     });
 
@@ -620,13 +628,6 @@
 
           call.on('notification', function (data) {
             logger.logInfo('notification event by phone layer');
-            /**
-             * Notification event.
-             * @desc This event fires when the call ends for a reason
-             * @event Phone#notification
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
             emitter.publish('notification', data);
             session.deleteCurrentCall();
           });
@@ -789,12 +790,14 @@
      *   - 5002 - Internal error occurred
      *   - 5003 - User is not logged in
      *   - 5004 - Mandatory fields can not be empty
+     *   - 5005 - Invalid Action parameter
      *
      * @memberof Phone
      * @instance
      * @param {Object} options
      * @param {HTMLElement} options.localVideo
      * @param {HTMLElement} options.remoteVideo
+     * @param {HTMLElement} options.action Optional. Action to perform on the current call
 
      * @fires Phone#answering
      * @fires Phone#call-connecting
@@ -812,6 +815,7 @@
      phone.answer({
           localMedia: document.getElementById('localVideo'),
           remoteMedia: document.getElementById('remoteVideo')
+          action: ['hold' or 'end']
         });
      */
     function answer(options) {
