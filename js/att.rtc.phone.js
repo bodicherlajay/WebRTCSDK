@@ -1679,7 +1679,7 @@
     }
 
     /**
-     * @summary Put the current call on hold
+     * @summary Put the current call or conference on hold
      * @desc Add description here
      *
      * **Error codes**
@@ -1724,7 +1724,7 @@
 
     /**
      * @summary
-     * Resume the current call
+     * Resume the current call or conference
      * @desc Add description here
      *
      * **Error Codes**
@@ -1786,8 +1786,6 @@
      *
      * @memberOf Phone
      * @instance
-
-     * @fires Phone#
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
