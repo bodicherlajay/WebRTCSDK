@@ -765,8 +765,12 @@
           token : sessionInfo.token,
           callId : id,
           breed: breed,
-          onSuccess : function () {},
+          onSuccess : function () {
+            logger.logInfo('resumeCall request: success');
+          },
           onError : function (error) {
+            logger.logError('resumeCall request: error');
+            logger.logError(error);
             emitter.publish('error', {
               error: error
             });
