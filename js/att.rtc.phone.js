@@ -1391,13 +1391,15 @@
 
     /**
      * @summary
-     * Returns true if there is a call in progress
+     * Returns `true` if there is a call in progress.
      * @memberOf Phone
      * @instance
+     *
+     * @returns {Boolean} `true` if there's an active call, `false` otherwise.
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
-     phone.isCallInProgress()
+     phone.isCallInProgress();
      */
     function isCallInProgress() {
       var call = session.currentCall;
