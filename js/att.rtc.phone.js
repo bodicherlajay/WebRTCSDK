@@ -2020,7 +2020,8 @@
         }
 
         conference = session.currentCall;
-        if (null === conference || 'conference' !== conference.breed()) {
+
+        if ('conference' !== conference.breed()) {
           logger.logError('Conference not initiated ');
           publishError('24003');
           return;

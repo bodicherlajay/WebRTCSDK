@@ -2102,6 +2102,8 @@ describe('Phone', function () {
           });
 
           it('[24003] should be thrown if conference has not been started', function () {
+            session.currentCall = conference;
+
             conference.breed = function () {
               return 'call';
             };
@@ -2120,6 +2122,8 @@ describe('Phone', function () {
               throw error;
             });
 
+            session.currentCall = conference;
+
             phone.addParticipants(['4250000001']);
 
             expect(ATT.errorDictionary.getSDKError('24004')).to.be.an('object');
@@ -2131,6 +2135,8 @@ describe('Phone', function () {
           });
 
           it('[24005] should be thrown if the invitee is already a participant', function () {
+
+            session.currentCall = conference;
 
             conference.participants = function () {
               return {
