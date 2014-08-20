@@ -25,7 +25,6 @@ describe('[US293718] Answer SecondCall', function () {
     callOffSpy,
     callHoldStub,
     callDisconnectStub,
-    callSwitchedHandlerSpy,
     getUserMediaStub,
     publishStub,
     eventData;
@@ -117,9 +116,6 @@ describe('[US293718] Answer SecondCall', function () {
     callOffSpy = sinon.spy(firstCall, 'off');
     callHoldStub = sinon.stub(firstCall, 'hold');
     callDisconnectStub = sinon.stub(firstCall, 'disconnect');
-
-    callSwitchedHandlerSpy = sinon.spy();
-    phone.on('call-switched', callSwitchedHandlerSpy);
   });
 
   afterEach(function () {
@@ -194,6 +190,7 @@ describe('[US293718] Answer SecondCall', function () {
       it('should deregister from `held` event', function (done) {
         setTimeout(function () {
           firstCall.setState('held');
+
           setTimeout(function () {
             try {
               expect(callOffSpy.calledWith('held')).to.equal(true);
@@ -224,23 +221,20 @@ describe('[US293718] Answer SecondCall', function () {
 
       });
 
-      describe.only('Events on second Call', function () {
+      describe('Events on second Call', function () {
 
         beforeEach(function () {
-          callHoldStub.restore();
-          callHoldStub = sinon.stub(firstCall, 'hold', function () {
-            firstCall.setState('held');
-          });
+          firstCall.setState('held');
         });
 
-        it.only('should trigger `call-switched` when second call publishes `connected` event after answering the second call', function (done) {
+        it('should trigger `call-switched` when second call publishes `connected` event after answering the second call', function (done) {
 
           setTimeout(function () {
             emitterCall.publish('connected', eventData);
 
             setTimeout(function () {
               try {
-                expect(callSwitchedHandlerSpy.calledWith(eventData)).to.equal(true);
+                expect(publishStub.calledWith('call-switched', eventData)).to.equal(true);
                 done();
               } catch (e) {
                 done(e);
@@ -290,6 +284,30 @@ describe('[US293718] Answer SecondCall', function () {
 
         }, 10);
 
+      });
+
+      describe('Events on second Call', function () {
+
+        beforeEach(function () {
+          firstCall.setState('disconnected');
+        });
+
+        it('should trigger `call-switched` when second call publishes `connected` event after answering the second call', function (done) {
+
+          setTimeout(function () {
+            emitterCall.publish('connected', eventData);
+
+            setTimeout(function () {
+              try {
+                expect(publishStub.calledWith('call-switched', eventData)).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          }, 10);
+
+        });
       });
 
     });
