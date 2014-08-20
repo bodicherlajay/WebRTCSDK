@@ -781,10 +781,6 @@
       }
     }
 
-    function move() {
-
-    }
-
     function reject() {
 
       rejected = true;
@@ -927,7 +923,6 @@
     this.unmute = unmute;
     this.hold = hold;
     this.resume = resume;
-    this.move = move;
     this.reject = reject;
   }
 
