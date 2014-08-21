@@ -1077,6 +1077,21 @@ describe('Session', function () {
       });
     });
 
+    describe('off', function () {
+      it('Should exist', function () {
+        expect(session.off).to.be.a('function');
+      });
+
+      it('Should call session `unsubscribe` when off methos is called', function () {
+        var unsubscribeStub = sinon.stub(emitter, 'unsubscribe'),
+          dummy = function () {return; };
+       session.off('ready', dummy);
+
+        expect(unsubscribeStub.calledWith('ready', dummy)).to.equal(true);
+        unsubscribeStub.restore();
+      });
+    });
+
   });
 
   describe('Events', function () {

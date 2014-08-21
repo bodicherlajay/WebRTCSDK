@@ -93,6 +93,10 @@
       }
     }
 
+    function off(event, handler) {
+      emitter.unsubscribe(event, handler);
+    }
+
     function on(event, handler) {
 
       if ('ready' !== event &&
@@ -127,6 +131,8 @@
 
     // public methods
     this.on = on.bind(this);
+
+    this.off = off.bind(this);
 
     this.getToken = function () {
       return token;

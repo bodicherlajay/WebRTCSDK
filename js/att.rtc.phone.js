@@ -141,6 +141,35 @@
 
     }
 
+    function onSessionReady(data) {
+      /**
+       * Session Ready event.
+       * @desc This event fires when the SDK is initialized and ready to make, receive calls
+       *
+       * @event Phone#session:ready
+       * @type {object}
+       * @property {String} sessionId - The ID of the session.
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('session:ready', data);
+    }
+
+
+    function onSessionDisconnected(data) {
+      /**
+       * Session Disconnected event.
+       * @desc This event fires when the session was successfully disconnected.
+       *
+       * @event Phone#session:disconnected
+       * @type {object}
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('session:disconnected', data);
+
+      session.off('ready', onSessionReady);
+      session.off('disconnected', onSessionDisconnected);
+    }
+
     function getError(errorNumber) {
       return errorDictionary.getSDKError(errorNumber);
     }
@@ -341,19 +370,7 @@
 
           session.connect(options);
 
-
-          session.on('ready', function (data) {
-            /**
-             * Session Ready event.
-             * @desc This event fires when the SDK is initialized and ready to make, receive calls
-             *
-             * @event Phone#session:ready
-             * @type {object}
-             * @property {String} sessionId - The ID of the session.
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('session:ready', data);
-          });
+          session.on('ready', onSessionReady);
 
         } catch (err) {
           logger.logError(err);
@@ -415,22 +432,11 @@
 
         try {
           logger.logDebug('Phone.logout');
-
-          session.on('disconnected', function (data) {
-            /**
-             * Session Disconnected event.
-             * @desc This event fires when the session was successfully disconnected.
-             *
-             * @event Phone#session:disconnected
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('session:disconnected', data);
-          });
+          session.on('disconnected', onSessionDisconnected);
 
           session.disconnect();
 
-          setSession(undefined);
+//          setSession(undefined);
 
         } catch (err) {
           logger.logError(err);
