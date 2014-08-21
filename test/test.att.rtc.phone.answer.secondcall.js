@@ -174,6 +174,21 @@ describe('[US293718] Answer SecondCall', function () {
     expect(callDisconnectStub.calledAfter(callOnSpy)).to.equal(true);
   });
 
+  it('should NOT trigger Call.hold if action == `hold` and firstCall.state = `held`', function () {
+    firstCall.setState('held');
+    phone.answer(answerHoldOpts);
+
+    expect(callOnSpy.called).to.equal(false);
+    expect(callHoldStub.called).to.equal(false);
+  });
+
+  it('should trigger ums.getUserMedia if action == `hold` and firstCall.state = `held`', function () {
+    firstCall.setState('held');
+    phone.answer(answerHoldOpts);
+
+    expect(getUserMediaStub.called).to.equal(true);
+  });
+
   it('should NOT execute ums.getUserMedia if there is a currentCall', function () {
     phone.answer(answerEndOpts);
     expect(getUserMediaStub.called).to.equal(false);

@@ -323,27 +323,36 @@ describe('Session', function () {
     });
 
     describe('update', function () {
-      var refreshSessionStub;
+      var refreshSessionStub,
+        publishSpy,
+        setIntervalStub;
 
       beforeEach(function () {
         session.setId('123');
         options = { timeout : 123};
+        publishSpy = sinon.spy(emitter, 'publish');
         refreshSessionStub = sinon.stub(rtcManager, 'refreshSession');
+        setIntervalStub = sinon.stub(window, 'setInterval', function (fn) {
+          fn();
+          return 1;
+        });
       });
 
       afterEach(function () {
         refreshSessionStub.restore();
+        setIntervalStub.restore();
+        publishSpy.restore();
       });
 
       it('Should exist', function () {
         expect(session.update).to.be.a('function');
       });
 
-      it('Should throw and error if no options', function () {
+      it('Should throw an error if no options', function () {
         expect(session.update.bind(session)).to.throw('No options provided');
       });
 
-      it('Should trigger onUpdating callback with options', function (done) {
+      it('Should trigger `updating` event with options', function (done) {
 
         session.update(options);
 
@@ -360,32 +369,24 @@ describe('Session', function () {
       describe('timeout', function () {
 
         it('Should throw an error if the timeout value is not a number', function () {
-
           options.timeout = '123';
-          expect(session.update.bind(session, options)).to.throw('Timeout is not a number.');
 
+          expect(session.update.bind(session, options)).to.throw('Timeout is not a number.');
         });
 
         it('Should set the timeout', function () {
           session.update(options);
+
           expect(session.timeout).to.equal(123);
         });
 
-        it('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function (done) {
-          var onNeedsRefreshSpy = sinon.spy();
+        it('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function () {
           options.timeout = 60020;
-          session.on('needs-refresh', onNeedsRefreshSpy);
-          session.update(options);
-          expect(session.timer).to.be.a('number');
-          setTimeout(function () {
-            try {
-              expect(onNeedsRefreshSpy.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 30);
 
+          session.update(options);
+
+          expect(session.timer).to.be.a('number');
+          expect(publishSpy.calledWith('needs-refresh')).to.equal(true);
         });
 
       });
@@ -1074,6 +1075,21 @@ describe('Session', function () {
           }
         }, 30);
 
+      });
+    });
+
+    describe('off', function () {
+      it('Should exist', function () {
+        expect(session.off).to.be.a('function');
+      });
+
+      it('Should call session `unsubscribe` when off methos is called', function () {
+        var unsubscribeStub = sinon.stub(emitter, 'unsubscribe'),
+          dummy = function () {return; };
+       session.off('ready', dummy);
+
+        expect(unsubscribeStub.calledWith('ready', dummy)).to.equal(true);
+        unsubscribeStub.restore();
       });
     });
 

@@ -175,20 +175,23 @@
       logger.logDebug('connectSession');
 
       var doOperationSuccess = function (response) {
+        var onListening;
         try {
           logger.logInfo('Successfully created web rtc session on blackflag');
 
           var sessionInfo = extractSessionInformation(response);
 
           options.onSessionConnected(sessionInfo);
-
-          eventManager.on('listening', function () {
+          onListening = function () {
             logger.logInfo('listening@eventManager');
 
             options.onSessionReady({
               sessionId: sessionInfo.sessionId
             });
-          });
+            eventManager.off('listening', onListening);
+          };
+
+          eventManager.on('listening', onListening);
 
           eventManager.setup({
             sessionId: sessionInfo.sessionId,
@@ -201,8 +204,8 @@
             }
           });
 
-        } catch(err) {
-          logger.logError (err);
+        } catch (err) {
+          logger.logError(err);
 
           options.onError({
             error: ATT.errorDictionary.getSDKError('2004')
@@ -231,7 +234,7 @@
         success: doOperationSuccess,
         error: function (error) {
           logger.logError(error);
-          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","login","RTC"));
+          options.onError(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "login", "RTC"));
         }
       });
 

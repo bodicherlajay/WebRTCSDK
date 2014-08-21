@@ -139,6 +139,35 @@
 
     }
 
+    function onSessionReady(data) {
+      /**
+       * Session Ready event.
+       * @desc This event fires when the SDK is initialized and ready to make, receive calls
+       *
+       * @event Phone#session:ready
+       * @type {object}
+       * @property {String} sessionId - The ID of the session.
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('session:ready', data);
+    }
+
+
+    function onSessionDisconnected(data) {
+      /**
+       * Session Disconnected event.
+       * @desc This event fires when the session was successfully disconnected.
+       *
+       * @event Phone#session:disconnected
+       * @type {object}
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('session:disconnected', data);
+
+      session.off('ready', onSessionReady);
+      session.off('disconnected', onSessionDisconnected);
+    }
+
     function getError(errorNumber) {
       return errorDictionary.getSDKError(errorNumber);
     }
@@ -377,19 +406,7 @@
 
           session.connect(options);
 
-
-          session.on('ready', function (data) {
-            /**
-             * Session Ready event.
-             * @desc This event fires when the SDK is initialized and ready to make, receive calls
-             *
-             * @event Phone#session:ready
-             * @type {object}
-             * @property {String} sessionId - The ID of the session.
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('session:ready', data);
-          });
+          session.on('ready', onSessionReady);
 
         } catch (err) {
           logger.logError(err);
@@ -451,22 +468,11 @@
 
         try {
           logger.logDebug('Phone.logout');
-
-          session.on('disconnected', function (data) {
-            /**
-             * Session Disconnected event.
-             * @desc This event fires when the session was successfully disconnected.
-             *
-             * @event Phone#session:disconnected
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('session:disconnected', data);
-          });
+          session.on('disconnected', onSessionDisconnected);
 
           session.disconnect();
 
-          setSession(undefined);
+//          setSession(undefined);
 
         } catch (err) {
           logger.logError(err);
@@ -823,7 +829,7 @@
       }
     }
 
-    function answerCall(call, options, bSwitched) {
+    function answerCall(call, options, bSwitching) {
       /**
        * Answering event.
        * @desc Fired immediately after the `answer` method is invoked.
@@ -845,10 +851,10 @@
       });
       call.on('connected', function (data) {
         emitter.publish('call-connected', data);
-        if (bSwitched) {
+        if (bSwitching) {
           /**
            * call- switched event.
-           * @desc Fired immediately after the `call-connected ` event triggred and a call switched
+           * @desc fires when the second incoming call is answered and is connected
            *
            * @event Phone# call-switched
            * @type {object}
@@ -915,6 +921,7 @@
      * @fires Phone#call-held
      * @fires Phone#call-resumed
      * @fires Phone#call-disconnected
+     * @fires Phone#call-switched
      * @fires Phone#notification
      * @fires Phone#error
 
@@ -978,8 +985,12 @@
 
         if (null !== currentCall) {
           if ('hold' === options.action) {
-            currentCall.on('held', answerSecondCall);
-            currentCall.hold();
+            if ('held' !== currentCall.getState()) {
+              currentCall.on('held', answerSecondCall);
+              currentCall.hold();
+              return;
+            }
+            answerSecondCall(call, options, true);
           }
           if ('end' === options.action) {
             currentCall.on('disconnected', answerSecondCall);
