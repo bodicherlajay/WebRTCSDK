@@ -848,7 +848,7 @@
         if (bSwitched) {
           /**
            * call- switched event.
-           * @desc Fired immediately after the `call-connected ` event triggred and a call switched
+           * @desc fires when the second incoming call is answered and is connected
            *
            * @event Phone# call-switched
            * @type {object}
@@ -915,6 +915,7 @@
      * @fires Phone#call-held
      * @fires Phone#call-resumed
      * @fires Phone#call-disconnected
+     * @fires Phone#call-switched
      * @fires Phone#notification
      * @fires Phone#error
 
