@@ -155,11 +155,15 @@
           });
 
           if (data.remoteSdp.indexOf('recvonly') !== -1) {
-            rtcManager.disableMediaStream();
+            if ('call' === breed) {
+              rtcManager.disableMediaStream();
+            }
             that.setState('held');
           } else if ( 'held' === state
             && data.remoteSdp.indexOf('sendrecv') !== -1) {
-            rtcManager.enableMediaStream();
+            if ('call' === breed) {
+              rtcManager.enableMediaStream();
+            }
             that.setState('resumed');
           }
         }
@@ -202,14 +206,20 @@
             && modifications.remoteSdp
             && modifications.remoteSdp.indexOf('sendonly') !== -1
             && modifications.remoteSdp.indexOf('sendrecv') === -1) {
-          rtcManager.disableMediaStream();
+
+          if ('call' === breed) {
+            rtcManager.disableMediaStream();
+          }
           that.setState('held');
         }
         if ('held' === state
             && modifications.reason === 'success'
             && modifications.remoteSdp
             && modifications.remoteSdp.indexOf('sendrecv') !== -1) {
-            rtcManager.enableMediaStream();
+
+            if ('call' === breed) {
+              rtcManager.enableMediaStream();
+            }
             that.setState('resumed');
         }
 
