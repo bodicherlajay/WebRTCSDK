@@ -132,7 +132,6 @@
         keys = Object.keys(calls);
         if (keys.length > 0) {
           session.currentCall = calls[keys[0]];
-          that.resume();
         }
         return;
       }
@@ -630,7 +629,7 @@
           call.on('notification', function (data) {
             logger.logInfo('notification event by phone layer');
             emitter.publish('notification', data);
-            session.deleteCurrentCall();
+            session.pendingCall = null;
           });
 
           call.on('error', function (data) {
@@ -2326,6 +2325,27 @@
     this.addParticipants = addParticipants;
     this.getParticipants = getParticipants;
     this.removeParticipant = removeParticipant;
+
+    // ==================
+    // Utility methods
+    // ===================
+    this.getCalls = function () {
+
+      var calls = session.getCalls(),
+        key,
+        list = [];
+
+      for (key in calls) {
+        if (calls.hasOwnProperty(key)) {
+          list.push({
+            peer: calls[key].peer(),
+            state: calls[key].getState()
+          });
+        }
+      }
+
+      return list;
+    };
   }
 
   if (undefined === ATT.private) {
