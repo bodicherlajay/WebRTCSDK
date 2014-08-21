@@ -180,7 +180,7 @@
 
       this.timer = setInterval(function () {
         emitter.publish('needs-refresh');
-        console.log('needs-refresh');
+
         rtcManager.refreshSession({
           sessionId : id,
           token : token,
