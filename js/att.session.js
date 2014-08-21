@@ -164,34 +164,40 @@
         throw new Error('Timeout is not a number.');
       }
 
-      if (options.timeout < 60000) {
-        this.timeout = options.timeout;
-      } else {
-        this.timeout = options.timeout - 60000;
-      }
+      emitter.publish('updating', options);
+
       token = options.token || token;
       this.e911Id = options.e911Id || this.e911Id;
 
-      emitter.publish('updating', options);
+      if (undefined !== options.timeout) {
+        if (options.timeout < 60000) {
+          this.timeout = options.timeout;
+        } else {
+          this.timeout = options.timeout - 60000;
+        }
 
-      if (this.timer !== null) {
-        clearInterval(this.timer);
+        if (this.timer !== null) {
+          clearInterval(this.timer);
+        }
+
+        this.timer = setInterval(function () {
+          emitter.publish('needs-refresh');
+
+          rtcManager.refreshSession({
+            sessionId: id,
+            token: token,
+            success: function () {
+              return;
+            },
+            error: function (error) {
+              emitter.publish('error', {
+                error: error
+              });
+            }
+          });
+        }, this.timeout);
+
       }
-
-      this.timer = setInterval(function () {
-        emitter.publish('needs-refresh');
-
-        rtcManager.refreshSession({
-          sessionId : id,
-          token : token,
-          success : function () { return; },
-          error : function (error) {
-            emitter.publish('error', {
-              error: error
-            });
-          }
-        });
-      }, this.timeout);
     };
 
     this.connect = function connect(options) {

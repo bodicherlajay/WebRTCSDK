@@ -248,8 +248,7 @@ describe('Session', function () {
       it('return the current token', function () {
         expect(sessionForGetToken.getToken()).to.equal(null);
         sessionForGetToken.update({
-          token: 'bogus',
-          timeout: 1000000 // so big that it will never hit the network for refreshSession
+          token: 'bogus'
         });
         expect(sessionForGetToken.getToken()).to.equal('bogus');
       });
@@ -1018,19 +1017,13 @@ describe('Session', function () {
     });
 
     describe('updateE911Id', function () {
-      var updateE911stub, updateOptions, onSuccessCall = function () {
-      }, onError = function () {};
+      var updateE911stub;
 
       beforeEach(function () {
-        updateOptions = {
-          e911Id: '1234',
-          sessionId: session.getId(),
-          token: session.getToken(),
-          onSuccess: onSuccessCall,
-          onError: onError
+        options = {
+          timeout : 123
         };
 
-        options = { timeout : 123};
         updateE911stub = sinon.stub(rtcManager, 'updateSessionE911Id', function (options) {
           options.onSuccess();
         });
@@ -1039,22 +1032,26 @@ describe('Session', function () {
       afterEach(function () {
         updateE911stub.restore();
       });
+
       it('Should exist', function () {
         expect(session.updateE911Id).to.be.a('function');
       });
 
       it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
         session.token = 'dsfgdsdf';
+
         session.updateE911Id({e911Id : '1234'});
+
         expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
         expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
         expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
-
       });
 
       it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
         session.token = 'dsfgdsdf';
+
         session.updateE911Id({e911Id : '1234'});
+
         expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
         expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
         expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
@@ -1101,6 +1098,7 @@ describe('Session', function () {
 
       var onNeedsRefreshSpy,
         refreshSessionStub,
+        setIntervalStub,
         rtcManager,
         getRTCManagerStub;
 
@@ -1110,10 +1108,15 @@ describe('Session', function () {
           return rtcManager;
         });
         refreshSessionStub = sinon.stub(rtcManager, 'refreshSession');
+        setIntervalStub = sinon.stub(window, 'setInterval', function (fn) {
+          fn();
+          return 1;
+        });
       });
 
       afterEach(function () {
         refreshSessionStub.restore();
+        setIntervalStub.restore();
         getRTCManagerStub.restore();
       });
 
@@ -1203,7 +1206,9 @@ describe('Session', function () {
       });
 
       it('should call rtcManager.refreshSession', function (done) {
-        var session4 = new ATT.rtc.Session();
+        var callArgs,
+          session4 = new ATT.rtc.Session();
+
         session4.setId('123');
         session4.update({
           token: 'bogus',
@@ -1214,13 +1219,11 @@ describe('Session', function () {
         setTimeout(function () {
           try {
             expect(refreshSessionStub.called).to.equal(true);
-
-//            callArgs = refreshSessionSpy.getCall(0).args[0];
-//            expect(callArgs.sessionId !== undefined).to.equal(true);
-//            expect(callArgs.token).to.equal('bogus');
-//            expect(refreshSessionSpy.getCall(0).args[0].success).to.be.a('function');
-//            expect(refreshSessionSpy.getCall(0).args[0].error).to.be.a('function');
-
+            callArgs = refreshSessionStub.getCall(0).args[0];
+            expect(callArgs.sessionId !== undefined).to.equal(true);
+            expect(callArgs.token).to.equal('bogus');
+            expect(refreshSessionStub.getCall(0).args[0].success).to.be.a('function');
+            expect(refreshSessionStub.getCall(0).args[0].error).to.be.a('function');
             done();
           } catch (e) {
             done(e);
