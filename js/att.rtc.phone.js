@@ -26,8 +26,7 @@
       session = new ATT.rtc.Session(),
       errorDictionary = ATT.errorDictionary,
       userMediaSvc = ATT.UserMediaService,
-      logger = logManager.addLoggerForModule('Phone'),
-      that = this;
+      logger = logManager.addLoggerForModule('Phone');
 
     logger.logInfo('Creating new instance of Phone');
 
@@ -290,6 +289,22 @@
 
       emitter.unsubscribe(event, handler);
       emitter.subscribe(event, handler, this);
+    }
+
+    function getCalls() {
+      var calls = session.getCalls(),
+        key,
+        list = [];
+
+      for (key in calls) {
+        if (calls.hasOwnProperty(key)) {
+          list.push({
+            peer: calls[key].peer(),
+            state: calls[key].getState()
+          });
+        }
+      }
+      return list;
     }
 
     /**
@@ -1833,7 +1848,7 @@
         call = session.currentCall;
 
         if (null === call || null === call.id()) {
-          throw  ATT.errorDictionary.getSDKError('28001');
+          throw ATT.errorDictionary.getSDKError('28001');
         }
 
         try {
@@ -2073,18 +2088,20 @@
               conference.addParticipant(invitee);
             } else {
               for (participant in currentParticipants) {
-                if (invitee !== participant) {
-                  emitter.publish('conference:invitation-sending', {
-                    invitee: invitee,
-                    timestamp: new Date()
-                  });
-                  conference.addParticipant(invitee);
-                } else if (invitee === participant) {
-                  publishError('24005', {
-                    invitee: invitee,
-                    timestamp: new Date()
-                  });
-                  return;
+                if (currentParticipants.hasOwnProperty(participant)) {
+                  if (invitee !== participant) {
+                    emitter.publish('conference:invitation-sending', {
+                      invitee: invitee,
+                      timestamp: new Date()
+                    });
+                    conference.addParticipant(invitee);
+                  } else if (invitee === participant) {
+                    publishError('24005', {
+                      invitee: invitee,
+                      timestamp: new Date()
+                    });
+                    return;
+                  }
                 }
               }
             }
@@ -2329,23 +2346,7 @@
     // ==================
     // Utility methods
     // ===================
-    this.getCalls = function () {
-
-      var calls = session.getCalls(),
-        key,
-        list = [];
-
-      for (key in calls) {
-        if (calls.hasOwnProperty(key)) {
-          list.push({
-            peer: calls[key].peer(),
-            state: calls[key].getState()
-          });
-        }
-      }
-
-      return list;
-    };
+    this.getCalls = getCalls;
   }
 
   if (undefined === ATT.private) {
