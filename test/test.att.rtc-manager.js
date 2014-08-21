@@ -443,12 +443,6 @@ describe('RTC Manager', function () {
 
       });
 
-      describe('playStream', function () {
-        it('should exist', function () {
-          expect(rtcManager.playStream).to.be.a('function');
-        });
-      });
-
       describe('refreshSession', function () {
 
         beforeEach(function () {
