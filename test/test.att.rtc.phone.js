@@ -487,7 +487,7 @@ describe('Phone', function () {
           }, 50);
         });
 
-        it.only('Should unsubscribe on event `ready` on receiving a `disconnected` event from Session', function (done) {
+        it('Should unsubscribe on event `ready` on receiving a `disconnected` event from Session', function (done) {
           var sessionOffStub = sinon.stub(session, 'off');
 
           phone.logout();
