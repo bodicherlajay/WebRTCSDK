@@ -829,7 +829,7 @@
       }
     }
 
-    function answerCall(call, options, bSwitched) {
+    function answerCall(call, options, bSwitching) {
       /**
        * Answering event.
        * @desc Fired immediately after the `answer` method is invoked.
@@ -851,7 +851,7 @@
       });
       call.on('connected', function (data) {
         emitter.publish('call-connected', data);
-        if (bSwitched) {
+        if (bSwitching) {
           /**
            * call- switched event.
            * @desc fires when the second incoming call is answered and is connected
@@ -985,8 +985,12 @@
 
         if (null !== currentCall) {
           if ('hold' === options.action) {
-            currentCall.on('held', answerSecondCall);
-            currentCall.hold();
+            if ('held' !== currentCall.getState()) {
+              currentCall.on('held', answerSecondCall);
+              currentCall.hold();
+              return;
+            }
+            answerSecondCall(call, options, true);
           }
           if ('end' === options.action) {
             currentCall.on('disconnected', answerSecondCall);
