@@ -17,7 +17,6 @@ describe('RTCManager [Conference]', function () {
     apiConfig = ATT.private.config.api;
     userMediaSvc = ATT.UserMediaService;
     peerConnSvc = ATT.PeerConnectionService;
-
   });
 
   describe('Methods', function () {

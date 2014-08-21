@@ -740,7 +740,8 @@ describe('Call', function () {
     describe('disconnect', function () {
 
       var responseData,
-        connectConferenceStub;
+        connectConferenceStub,
+        connectCallStub;
 
       beforeEach(function () {
         responseData = {
@@ -757,11 +758,14 @@ describe('Call', function () {
           options.onSuccess(responseData);
         });
 
+        connectCallStub = sinon.stub(rtcMgr, 'connectCall');
+
         outgoingCall.connect();
       });
 
       afterEach(function () {
         connectConferenceStub.restore();
+        connectCallStub.restore();
       });
 
       it('Should exist', function () {

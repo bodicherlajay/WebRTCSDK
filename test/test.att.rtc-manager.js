@@ -160,10 +160,7 @@ describe('RTC Manager', function () {
 
         rtcManager = new ATT.private.RTCManager(optionsForRTCM);
 
-        doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
-          return;
-        });
-
+        doOperationStub = sinon.stub(resourceManager, 'doOperation');
       });
 
       afterEach(function () {
