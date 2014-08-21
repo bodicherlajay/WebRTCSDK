@@ -175,20 +175,23 @@
       logger.logDebug('connectSession');
 
       var doOperationSuccess = function (response) {
+        var onListening;
         try {
           logger.logInfo('Successfully created web rtc session on blackflag');
 
           var sessionInfo = extractSessionInformation(response);
 
           options.onSessionConnected(sessionInfo);
-
-          eventManager.on('listening', function () {
+          onListening = function () {
             logger.logInfo('listening@eventManager');
 
             options.onSessionReady({
               sessionId: sessionInfo.sessionId
             });
-          });
+            eventManager.off('listening', onListening);
+          };
+
+          eventManager.on('listening', onListening);
 
           eventManager.setup({
             sessionId: sessionInfo.sessionId,
