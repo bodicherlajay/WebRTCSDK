@@ -775,7 +775,7 @@ describe('Phone', function () {
             setTimeout(function () {
               try {
                 expect(notificationHandlerSpy.calledWith(eventData)).to.equal(true);
-                expect(session.pendingCall).to.equal(null);
+                expect(deletePendingCallStub.called).to.equal(true);
                 done();
               } catch (e) {
                 done(e);

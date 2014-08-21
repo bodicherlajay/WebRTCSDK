@@ -672,7 +672,7 @@
           call.on('notification', function (data) {
             logger.logInfo('notification event by phone layer');
             emitter.publish('notification', data);
-            session.pendingCall = null;
+            session.deletePendingCall();
           });
 
           call.on('error', function (data) {
