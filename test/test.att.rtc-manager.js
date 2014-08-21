@@ -350,6 +350,21 @@ describe('RTC Manager', function () {
               }, 20);
             });
 
+            it('should should unsubscribe for `listening` event  on receiving a `listening` event', function (done) {
+              var eventchannelOffStub = sinon.stub(eventManager, 'off');
+              rtcManager.connectSession(optionsForConn);
+
+              setTimeout(function () {
+                try {
+
+                  expect(eventchannelOffStub.calledWith('listening')).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 20);
+            });
+
           });
 
           describe('error', function () {
