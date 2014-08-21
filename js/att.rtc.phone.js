@@ -294,14 +294,36 @@
     function getCalls() {
       var calls = session.getCalls(),
         key,
-        list = [];
+        list = [],
+        call,
+        p,
+        participants;
 
       for (key in calls) {
         if (calls.hasOwnProperty(key)) {
-          list.push({
-            peer: calls[key].peer(),
-            state: calls[key].getState()
-          });
+
+          call = {
+            state: calls[key].getState(),
+            type: calls[key].breed(),
+            isIncoming: calls[key].type() === ATT.CallTypes.INCOMING
+          };
+
+          if (calls[key].type() === ATT.CallTypes.INCOMING) {
+            call.participants = [];
+            participants = calls[key].participants();
+            for (p in participants) {
+              if (participants.hasOwnProperty(p)) {
+                call.participants.push({
+                  id: 'john@domain.com',
+                  status: 'invitation-sent'
+                });
+              }
+            }
+          } else if (calls[key].type() === ATT.CallTypes.OUTGOING) {
+            call.peer = calls[key].peer();
+          }
+
+          list.push(call);
         }
       }
       return list;

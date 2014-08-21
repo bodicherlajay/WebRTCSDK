@@ -72,7 +72,7 @@ describe('getCalls', function () {
       id: 'firstCall',
       breed: 'call',
       peer: '1234567',
-      type: 'abc',
+      type: ATT.CallTypes.OUTGOING,
       mediaType: 'video'
     });
     createEventEmitterStub.restore();
@@ -85,7 +85,19 @@ describe('getCalls', function () {
       id: 'secondCall',
       breed: 'call',
       peer: '1234567',
-      type: 'abc',
+      type: ATT.CallTypes.OUTGOING,
+      mediaType: 'video'
+    });
+    createEventEmitterStub.restore();
+
+    emitterCall = factories.createEventEmitter();
+    createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+      return emitterCall;
+    });
+    conference = new Call({
+      id: 'conference1',
+      breed: 'conference',
+      type: ATT.CallTypes.INCOMING,
       mediaType: 'video'
     });
     createEventEmitterStub.restore();
@@ -131,17 +143,39 @@ describe('getCalls', function () {
 
     callsInSession[firstCall.id()] = firstCall;
     callsInSession[secondCall.id()] = secondCall;
+    callsInSession[conference.id()] = conference;
+
+    participants = conference.participants();
+    participants['id'] = {
+      status: 'none'
+    };
 
     calls = phone.getCalls();
+    console.log(calls);
     expect(Object.keys(callsInSession).length).to.equal(calls.length);
     expect([
       {
         peer: firstCall.peer(),
-        state: firstCall.getState()
+        state: firstCall.getState(),
+        type: firstCall.breed(),
+        isIncoming: false
       },
       {
         peer: secondCall.peer(),
-        state: secondCall.getState()
+        state: secondCall.getState(),
+        type: secondCall.breed(),
+        isIncoming: false
+      },
+      {
+        participants: [
+          {
+            id: 'john@domain.com',
+            status: 'invitation-sent'
+          }
+        ],
+        state: conference.getState(),
+        type: conference.breed(),
+        isIncoming: true
       }
     ]).to.eql(calls);
   });
