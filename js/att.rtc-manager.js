@@ -201,8 +201,8 @@
             }
           });
 
-        } catch(err) {
-          logger.logError (err);
+        } catch (err) {
+          logger.logError(err);
 
           options.onError({
             error: ATT.errorDictionary.getSDKError('2004')
@@ -231,7 +231,7 @@
         success: doOperationSuccess,
         error: function (error) {
           logger.logError(error);
-          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","login","RTC"));
+          options.onError(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "login", "RTC"));
         }
       });
 
