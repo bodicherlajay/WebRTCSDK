@@ -237,6 +237,15 @@ describe('Phone [Conference]', function () {
       });
 
       describe('registrations', function () {
+
+        beforeEach(function () {
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+        });
+
+        afterEach(function () {
+          getUserMediaStub.restore();
+        });
+
         it('it should subscribe to the `connected` event on the conference', function () {
           phone.startConference(startConfOpts);
 
@@ -738,13 +747,26 @@ describe('Phone [Conference]', function () {
       createCallStub,
       emitterConf,
       createEventEmitterStub,
-      getUserMediaStub;
+      getUserMediaStub,
+      deleteCurrentCallStub,
+      connectedSpy,
+      heldSpy,
+      resumedSpy,
+      onInvitationSentSpy,
+      onInvitationAcceptedSpy,
+      onInvitationRejectedSpy,
+      onParticipantRemovedSpy,
+      onNotificationSpy,
+      disconnectedSpy,
+      errorSpy;
 
     beforeEach(function () {
       emitterConf = factories.createEventEmitter();
+
       createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
         return emitterConf;
       });
+
       outgoingAudioConference = new Call({
         breed: 'conference',
         mediaType: 'audio',
@@ -757,25 +779,46 @@ describe('Phone [Conference]', function () {
       });
 
       getUserMediaStub = sinon.stub(ums, 'getUserMedia');
-    });
 
-    afterEach(function () {
-      createEventEmitterStub.restore();
-      createCallStub.restore();
-      getUserMediaStub.restore();
-    });
+      deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
 
-    it('should publish `conference:connected` when conference publishes `connected`', function (done) {
-      var connectedSpy = sinon.spy();
+      connectedSpy = sinon.spy();
+      heldSpy = sinon.spy();
+      resumedSpy = sinon.spy();
+      onInvitationSentSpy = sinon.spy();
+      onInvitationAcceptedSpy = sinon.spy();
+      onInvitationRejectedSpy = sinon.spy();
+      onParticipantRemovedSpy = sinon.spy();
+      onNotificationSpy = sinon.spy();
+      disconnectedSpy = sinon.spy();
+      errorSpy = sinon.spy();
 
       phone.on('conference:connected', connectedSpy);
+      phone.on('conference:held', heldSpy);
+      phone.on('conference:resumed', resumedSpy);
+      phone.on('conference:invitation-sent', onInvitationSentSpy);
+      phone.on('conference:invitation-accepted', onInvitationAcceptedSpy);
+      phone.on('conference:invitation-rejected', onInvitationRejectedSpy);
+      phone.on('conference:participant-removed', onParticipantRemovedSpy);
+      phone.on('notification', onNotificationSpy);
+      phone.on('conference:ended', disconnectedSpy);
+      phone.on('error', errorSpy);
 
       phone.startConference({
         localMedia : {},
         remoteMedia : {},
         mediaType : 'video'
       });
+    });
 
+    afterEach(function () {
+      createEventEmitterStub.restore();
+      createCallStub.restore();
+      getUserMediaStub.restore();
+      deleteCurrentCallStub.restore();
+    });
+
+    it('should publish `conference:connected` when conference publishes `connected`', function (done) {
       outgoingAudioConference.setState('connected');
 
       setTimeout(function () {
@@ -791,16 +834,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `conference:held` when conference publishes `held`', function (done) {
-      var heldSpy = sinon.spy();
-
-      phone.on('conference:held', heldSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('held');
 
       setTimeout(function () {
@@ -815,16 +848,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `conference:resumed` when conference publishes `resume`', function (done) {
-      var resumedSpy = sinon.spy();
-
-      phone.on('conference:resumed', resumedSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('resumed');
 
       setTimeout(function () {
@@ -839,16 +862,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `conference:invitation-sent` when conference publishes `response-pending`', function (done) {
-      var onInvitationSentSpy = sinon.spy();
-
-      phone.on('conference:invitation-sent', onInvitationSentSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('response-pending');
 
       setTimeout(function () {
@@ -863,16 +876,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `conference:invitation-accepted` when conference publishes `invite-accepted`', function (done) {
-      var onInvitationAcceptedSpy = sinon.spy();
-
-      phone.on('conference:invitation-accepted', onInvitationAcceptedSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('invite-accepted');
 
       setTimeout(function () {
@@ -887,16 +890,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `conference:invitation-rejected` when conference publishes `rejected`', function (done) {
-      var onInvitationRejectedSpy = sinon.spy();
-
-      phone.on('conference:invitation-rejected', onInvitationRejectedSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('rejected');
 
       setTimeout(function () {
@@ -911,16 +904,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `conference:participant-removed` when conference publishes `participant-removed`', function (done) {
-      var onParticipantRemovedSpy = sinon.spy();
-
-      phone.on('conference:participant-removed', onParticipantRemovedSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('participant-removed');
 
       setTimeout(function () {
@@ -935,16 +918,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `notification` when conference publishes `notification`', function (done) {
-      var onNotificationSpy = sinon.spy();
-
-      phone.on('notification', onNotificationSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('notification');
 
       setTimeout(function () {
@@ -959,17 +932,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `conference:ended` when conference publishes `disconnected`', function (done) {
-      var disconnectedSpy = sinon.spy(),
-        deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
-
-      phone.on('conference:ended', disconnectedSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('disconnected');
 
       setTimeout(function () {
@@ -979,8 +941,6 @@ describe('Phone [Conference]', function () {
           done();
         } catch (e) {
           done(e);
-        } finally {
-          deleteCurrentCallStub.restore();
         }
       }, 50);
 
@@ -995,13 +955,6 @@ describe('Phone [Conference]', function () {
           abc: 'stream'
         }
       };
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       emitterConf.publish('stream-added', data);
 
       setTimeout(function () {
@@ -1021,16 +974,6 @@ describe('Phone [Conference]', function () {
     });
 
     it('should publish `error` when conference publishes `error`', function (done) {
-      var errorSpy = sinon.spy();
-
-      phone.on('error', errorSpy);
-
-      phone.startConference({
-        localMedia : {},
-        remoteMedia : {},
-        mediaType : 'video'
-      });
-
       outgoingAudioConference.setState('error');
 
       setTimeout(function () {

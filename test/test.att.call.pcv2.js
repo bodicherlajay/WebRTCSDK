@@ -385,10 +385,14 @@ describe('Call [PCV2]', function () {
     });
 
     describe('hold', function () {
-      var sdpFilter, sdp, holdCallSDPStub, modSdp, actPassStub;
+      var sdpFilter,
+        sdp,
+        holdCallSDPStub,
+        modSdp,
+        actPassStub,
+        rtcHoldCallStub;
 
       beforeEach(function () {
-
         sdpFilter = ATT.sdpFilter.getInstance();
         sdp = { sdp: 'a=sendrecv\r\nb=helloworld\r\no=2323\r\ns=34343535' };
         modSdp = { sdp: 'a=recvonly\r\nb=helloworld\r\no=2323\r\ns=34343535' };
@@ -399,24 +403,22 @@ describe('Call [PCV2]', function () {
         });
 
         actPassStub = sinon.stub(sdpFilter, 'setupActivePassive');
-
+        rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall');
       });
 
       afterEach(function () {
         holdCallSDPStub.restore();
         actPassStub.restore();
+        rtcHoldCallStub.restore();
       });
 
       it('should call sdpFilter.modifyForHoldCall() method', function () {
         outgoingVideoCall.hold();
 
-
         expect(holdCallSDPStub.calledWith(sdp)).to.equal(true);
       });
 
       it('should call rtcManager.holdcall() with valid parameters', function () {
-        var rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall');
-
         outgoingVideoCall.setId('123');
 
         outgoingVideoCall.hold();
@@ -428,13 +430,10 @@ describe('Call [PCV2]', function () {
         expect(rtcHoldCallStub.getCall(0).args[0].breed).to.be.equal('call' || 'conference');
         expect(rtcHoldCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
         expect(rtcHoldCallStub.getCall(0).args[0].onError).to.be.a('function');
-        rtcHoldCallStub.restore();
       });
 
       describe('[move === true]', function () {
         it('should call rtcManager.holdcall(move:true) if passed in', function () {
-          var rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall');
-
           outgoingVideoCall.setId('123');
 
           outgoingVideoCall.hold(true);
@@ -446,24 +445,29 @@ describe('Call [PCV2]', function () {
           expect(rtcHoldCallStub.getCall(0).args[0].token).to.be.a('string');
           expect(rtcHoldCallStub.getCall(0).args[0].onSuccess).to.be.a('function');
           expect(rtcHoldCallStub.getCall(0).args[0].onError).to.be.a('function');
-          rtcHoldCallStub.restore();
         });
       });
 
       it('should publish error on onError callback called ', function (done) {
-        var rtcholdStub;
+        rtcHoldCallStub.restore();
 
-        rtcholdStub = sinon.stub(rtcMgr, 'holdCall', function (options) {
+        rtcHoldCallStub = sinon.stub(rtcMgr, 'holdCall', function (options) {
           options.onError(error);
         });
 
         outgoingVideoCall.hold();
+
         setTimeout(function () {
-          expect(onErrorHandlerSpy.called).to.equal(true);
-          expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
-          done();
-          rtcholdStub.restore();
-        }, 50);
+          try {
+            expect(onErrorHandlerSpy.called).to.equal(true);
+            expect(onErrorHandlerSpy.calledWith(errorData)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          } finally {
+            rtcHoldCallStub.restore();
+          }
+        }, 10);
 
       });
     });
