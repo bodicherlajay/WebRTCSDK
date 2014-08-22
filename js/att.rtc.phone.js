@@ -1786,6 +1786,10 @@
 
         if ('held' === call.getState()) {
           logger.logWarning('Call is already on hold');
+          emitter.publish('warning', {
+            message: 'Call is already on hold',
+            timestamp: new Date()
+          });
           return;
         }
 

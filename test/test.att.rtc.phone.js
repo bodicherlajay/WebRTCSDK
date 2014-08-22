@@ -3032,11 +3032,9 @@ describe('Phone', function () {
 
         beforeEach(function () {
 
-          callHoldStub = sinon.stub(call, 'hold', function () {
-          });
+          callHoldStub = sinon.stub(call, 'hold');
 
-          callResumeStub = sinon.stub(call, 'resume', function () {
-          });
+          callResumeStub = sinon.stub(call, 'resume');
 
           session.currentCall = call;
 
@@ -3061,7 +3059,6 @@ describe('Phone', function () {
             phone.hold();
 
             expect(callHoldStub.called).to.equal(false);
-
           });
 
           it('should execute call.hold', function () {
