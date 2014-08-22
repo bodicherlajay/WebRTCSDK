@@ -721,6 +721,7 @@
      *  - 27007 - Invalid media constraints
      *  - 27008 - User is not logged in
      *  - 27009 - Can not make second call. There is no first call in progress.
+     *  - 27010 - Cannot make a third call.
      *
      * @param {Object} options
      * @memberOf Phone
@@ -756,6 +757,11 @@
       logger.logInfo('addCall');
 
       var call;
+
+      if (2 <= getCalls().length) {
+        publishError('27010');
+        return;
+      }
 
       function dialSecondCall() {
         logger.logInfo('phone:dialSecondCall');

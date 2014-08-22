@@ -904,6 +904,14 @@
     },
     {
       JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27010",
+      ErrorMessage: "Cannot make a third call.",
+      Cause: "Trying to make a third call.",
+      Resolution: "Please end one of the calls."
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
       JSMethod: "move",
       ErrorCode: "28000",
       ErrorMessage: "User is not logged in",
