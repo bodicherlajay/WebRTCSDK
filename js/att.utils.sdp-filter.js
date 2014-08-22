@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, node: true, debug: true, todo: true, indent: 2, maxlen: 150*/
-/*global ATT:true*/
+/*global ATT:true, incrementModCount: true*/
 
 //todo this module does not need to be exposed
 if (!ATT) {
@@ -29,7 +29,7 @@ if (!ATT) {
       sdp = sdp.substr(0, indexof);
     }
     return sdp;
-  };
+  }
 
   /**
   * Change video port to 0 in sdp
@@ -50,7 +50,7 @@ if (!ATT) {
       });
 
       return replaced;
-  };
+  }
 
   /**
   * Remote an attribute from SDP
@@ -66,7 +66,7 @@ if (!ATT) {
       sdp = sdp.replace(attribute, "");
     }
     return sdp;
-  };
+  }
 
   /**
   * Modify SDP
@@ -79,7 +79,7 @@ if (!ATT) {
     var regex = new RegExp(oldString, 'g');
     sdp = sdp.replace(regex, newString);
     return sdp;
-  };
+  }
 
   /**
   * Function to increment SDP
@@ -138,7 +138,7 @@ if (!ATT) {
     sdp = sdp.replace(/a=group:BUNDLE audio\r\n/g, "");
 
     return sdp;
-  };
+  }
 
   function setupActivePassive(description) {
     //FOR CHROME 31: If receiving a call (initial is true), we need to modify the SDP
@@ -146,7 +146,7 @@ if (!ATT) {
 
     incrementModCount();
 
-    if (description.indexOf('setup:passive') != -1)
+    if (description.indexOf('setup:passive') !== -1)
       description = description.replace(/setup:passive/g, 'setup:actpass');
     else if (description.indexOf('setup:active') != -1)
       description = description.replace(/setup:active/g, 'setup:actpass');
