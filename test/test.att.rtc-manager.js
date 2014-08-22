@@ -54,7 +54,11 @@ describe('RTC Manager', function () {
 
   });
 
-  before(function () {
+  after(function () {
+    ATT.private.pcv = 2;
+  });
+
+  beforeEach(function () {
     resourceManager = factories.createResourceManager(apiConfig);
 
     optionsForEM = {
@@ -87,7 +91,7 @@ describe('RTC Manager', function () {
     };
   });
 
-  after(function () {
+  afterEach(function () {
     createEventManagerStub.restore();
     createEventEmitterStub.restore();
   });
@@ -156,10 +160,7 @@ describe('RTC Manager', function () {
 
         rtcManager = new ATT.private.RTCManager(optionsForRTCM);
 
-        doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
-          return;
-        });
-
+        doOperationStub = sinon.stub(resourceManager, 'doOperation');
       });
 
       afterEach(function () {
@@ -346,6 +347,21 @@ describe('RTC Manager', function () {
               }, 20);
             });
 
+            it('should should unsubscribe for `listening` event  on receiving a `listening` event', function (done) {
+              var eventchannelOffStub = sinon.stub(eventManager, 'off');
+              rtcManager.connectSession(optionsForConn);
+
+              setTimeout(function () {
+                try {
+
+                  expect(eventchannelOffStub.calledWith('listening')).to.equal(true);
+                  done();
+                } catch (e) {
+                  done(e);
+                }
+              }, 20);
+            });
+
           });
 
           describe('error', function () {
@@ -425,12 +441,6 @@ describe('RTC Manager', function () {
           });
         });
 
-      });
-
-      describe('playStream', function () {
-        it('should exist', function () {
-          expect(rtcManager.playStream).to.be.a('function');
-        });
       });
 
       describe('refreshSession', function () {
@@ -1894,6 +1904,7 @@ describe('RTC Manager', function () {
                 sdp: localSdp,
                 type: 'offer'
               },
+              breed: 'call',
               onSuccess: onSuccessSpy,
               onError: onErrorSpy
             };
@@ -1917,12 +1928,14 @@ describe('RTC Manager', function () {
               callId: options.callId,
               sessionId: options.sessionId,
               token: options.token,
+              breed: 'call',
               description : options.description
             })).to.throw('No success callback provided');
             expect(rtcManager.holdCall.bind(rtcManager, {
               callId: options.callId,
               sessionId: options.sessionId,
               token: options.token,
+              breed: 'call',
               description : options.description,
               onSuccess: options.onSuccess
             })).to.throw('No error callback provided');
@@ -1930,11 +1943,13 @@ describe('RTC Manager', function () {
               callId: options.callId,
               sessionId: options.sessionId,
               token: options.token,
+              breed: 'call',
               description : options.description,
               onSuccess: options.onSuccess,
               onError: options.onError
             })).not.to.throw(Error);
           });
+
           it('should call resourceManager.doOperation for holdcall', function () {
             rtcManager.holdCall(options);
 
@@ -1942,12 +1957,86 @@ describe('RTC Manager', function () {
             expect(doOperationStub.getCall(0).args[0]).to.equal('modifyCall');
             expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
             expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
-            expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('array');
-            expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(options.sessionId);
-            expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal(options.callId);
+            expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('object');
+            expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(options.sessionId);
+            expect(doOperationStub.getCall(0).args[1].params.url.callId).to.equal(options.callId);
             expect(doOperationStub.getCall(0).args[1].data.callsMediaModifications.sdp).to.equal(options.description.sdp);
             expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
             expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+            expect(doOperationStub.getCall(0).args[1].params.headers['x-calls-action']).to.equal('initiate-call-hold');
+          });
+
+          describe('[move===true]', function () {
+            it('should call resourceManager.doOperation with `initiate-call-move` header', function () {
+              options = {
+                callId: 'callId',
+                move: true,
+                sessionId: 'sessionId',
+                token: 'token',
+                breed: 'call',
+                description: {
+                  sdp: localSdp,
+                  type: 'offer'
+                },
+                onSuccess: onSuccessSpy,
+                onError: onErrorSpy
+              };
+              rtcManager.holdCall(options);
+
+              expect(doOperationStub.called).to.equal(true);
+              expect(doOperationStub.getCall(0).args[0]).to.equal('modifyCall');
+              expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(options.sessionId);
+              expect(doOperationStub.getCall(0).args[1].params.url.callId).to.equal(options.callId);
+              expect(doOperationStub.getCall(0).args[1].data.callsMediaModifications.sdp).to.equal(options.description.sdp);
+              expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+              expect(doOperationStub.getCall(0).args[1].params.headers['x-calls-action']).to.equal('initiate-call-move');
+            });
+          });
+
+          describe('[breed===`conference]`', function () {
+            it('should throw an error if `breed` is not passed in', function () {
+              expect(rtcManager.holdCall.bind(rtcManager, {
+                callId: options.callId,
+                sessionId: options.sessionId,
+                token: options.token,
+                description : options.description,
+                onSuccess: options.onSuccess,
+                onError: function () {}
+              })).to.throw('No breed provided');
+            });
+
+            it('should call resourceManager.doOperation(modifyConference)', function () {
+              options = {
+                callId: 'callId',
+                move: true,
+                sessionId: 'sessionId',
+                token: 'token',
+                breed: 'conference',
+                description: {
+                  sdp: localSdp,
+                  type: 'offer'
+                },
+                onSuccess: onSuccessSpy,
+                onError: onErrorSpy
+              };
+              rtcManager.holdCall(options);
+
+              expect(doOperationStub.called).to.equal(true);
+              expect(doOperationStub.getCall(0).args[0]).to.equal('modifyConference');
+              expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(options.sessionId);
+              expect(doOperationStub.getCall(0).args[1].params.url.callId).to.equal(options.callId);
+              expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(options.description.sdp);
+              expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+              expect(doOperationStub.getCall(0).args[1].params.headers['x-conference-action']).to.equal('initiate-hold');
+            });
           });
 
           describe('Success on `hold modifyCall`', function () {
@@ -2047,6 +2136,7 @@ describe('RTC Manager', function () {
               callId: 'callId',
               sessionId: 'sessionId',
               token: 'token',
+              breed: 'call',
               description: {
                 sdp: localSdp,
                 type: 'offer'
@@ -2074,6 +2164,7 @@ describe('RTC Manager', function () {
               callId: options.callId,
               sessionId: options.sessionId,
               token: options.token,
+              breed: options.breed,
               description : options.description
             })).to.throw('No success callback provided');
             expect(rtcManager.resumeCall.bind(rtcManager, {
@@ -2081,6 +2172,7 @@ describe('RTC Manager', function () {
               sessionId: options.sessionId,
               token: options.token,
               description : options.description,
+              breed: options.breed,
               onSuccess: options.onSuccess
             })).to.throw('No error callback provided');
             expect(rtcManager.resumeCall.bind(rtcManager, {
@@ -2088,10 +2180,12 @@ describe('RTC Manager', function () {
               sessionId: options.sessionId,
               token: options.token,
               description : options.description,
+              breed: options.breed,
               onSuccess: options.onSuccess,
               onError: options.onError
             })).not.to.throw(Error);
           });
+
           it('should call resourceManager.doOperation for resumeCall', function () {
             rtcManager.resumeCall(options);
 
@@ -2099,12 +2193,43 @@ describe('RTC Manager', function () {
             expect(doOperationStub.getCall(0).args[0]).to.equal('modifyCall');
             expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
             expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
-            expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('array');
-            expect(doOperationStub.getCall(0).args[1].params.url[0]).to.equal(options.sessionId);
-            expect(doOperationStub.getCall(0).args[1].params.url[1]).to.equal(options.callId);
+            expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('object');
+            expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(options.sessionId);
+            expect(doOperationStub.getCall(0).args[1].params.url.callId).to.equal(options.callId);
             expect(doOperationStub.getCall(0).args[1].data.callsMediaModifications.sdp).to.equal(options.description.sdp);
             expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
             expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+          });
+
+          describe('[breed===conference]', function () {
+            it('should call resourceManager.doOperation(modifyConference) if conference breed', function () {
+              options = {
+                callId: 'callId',
+                move: true,
+                sessionId: 'sessionId',
+                token: 'token',
+                breed: 'conference',
+                description: {
+                  sdp: localSdp,
+                  type: 'offer'
+                },
+                onSuccess: onSuccessSpy,
+                onError: onErrorSpy
+              };
+              rtcManager.resumeCall(options);
+
+              expect(doOperationStub.called).to.equal(true);
+              expect(doOperationStub.getCall(0).args[0]).to.equal('modifyConference');
+              expect(doOperationStub.getCall(0).args[1]).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.url.sessionId).to.equal(options.sessionId);
+              expect(doOperationStub.getCall(0).args[1].params.url.callId).to.equal(options.callId);
+              expect(doOperationStub.getCall(0).args[1].data.conferenceModifications.sdp).to.equal(options.description.sdp);
+              expect(doOperationStub.getCall(0).args[1].params.headers).to.be.an('object');
+              expect(doOperationStub.getCall(0).args[1].params.headers.Authorization).to.equal('Bearer ' + options.token);
+              expect(doOperationStub.getCall(0).args[1].params.headers['x-conference-action']).to.equal('initiate-resume');
+            });
           });
 
           describe('Success on `resume modifyCall`', function () {

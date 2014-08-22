@@ -37,10 +37,32 @@
     // get the RTC Manager
     rtcManager = ATT.private.rtcManager.getRTCManager();
 
-    rtcManager.on('invitation-received', function (callInfo) {
+    function onInvitationReceived(callInfo) {
       var eventName,
         sendRecvSdp,
         call;
+
+      if (null !== session.pendingCall) {
+        emitter.publish('notification', {
+          from: callInfo.from,
+          mediaType: callInfo.mediaType,
+          type: callInfo.type,
+          timestamp: new Date(),
+          message: 'A pending call exist. Will ignore incoming call'
+        });
+        return;
+      }
+
+      if (Object.keys(calls).length >= 2) {
+        emitter.publish('notification', {
+          from: callInfo.from,
+          mediaType: callInfo.mediaType,
+          type: callInfo.type,
+          timestamp: new Date(),
+          message: 'There are two existing calls in progress. Unable to handle a third incoming call'
+        });
+        return;
+      }
 
       call = session.createCall({
         breed: callInfo.type,
@@ -48,16 +70,6 @@
         peer: callInfo.from,
         type: ATT.CallTypes.INCOMING,
         mediaType: callInfo.mediaType
-      });
-
-      call.on('canceled', function (data) {
-        emitter.publish('call-canceled', data);
-        session.deleteCurrentCall();
-      });
-
-      call.on('disconnected', function (data) {
-        emitter.publish('call-disconnected', data);
-        session.deleteCurrentCall();
       });
 
       if (undefined !== call) {
@@ -79,18 +91,11 @@
           timestamp: new Date()
         });
       }
-    });
+    }
 
-    rtcManager.on('media-mod-terminations', function (callInfo) {
-      if (undefined !== callInfo.reason
-          && 'success' !== callInfo.reason
-          && 'Call rejected' !== callInfo.reason) {
-        emitter.publish('network-notification', {
-          message: callInfo.reason,
-          timestamp: new Date()
-        });
-      }
-    });
+    function off(event, handler) {
+      emitter.unsubscribe(event, handler);
+    }
 
     function on(event, handler) {
 
@@ -99,7 +104,7 @@
           'connected' !== event &&
           'updating' !== event &&
           'needs-refresh' !== event &&
-          'network-notification' !== event &&
+          'notification' !== event &&
           'call-incoming' !== event &&
           'conference-invite' !== event &&
           'call-disconnected' !== event &&
@@ -120,12 +125,14 @@
     // public attributes
     this.timeout = null;
     this.e911Id = null;
-    this.backgroundCall = null;
+    this.pendingCall = null;
     this.currentCall = null;
     this.timer = null;
 
     // public methods
     this.on = on.bind(this);
+
+    this.off = off.bind(this);
 
     this.getToken = function () {
       return token;
@@ -157,38 +164,43 @@
         throw new Error('Timeout is not a number.');
       }
 
-      if (options.timeout < 60000) {
-        this.timeout = options.timeout;
-      } else {
-        this.timeout = options.timeout - 60000;
-      }
+      emitter.publish('updating', options);
+
       token = options.token || token;
       this.e911Id = options.e911Id || this.e911Id;
 
-      emitter.publish('updating', options);
+      if (undefined !== options.timeout) {
+        if (options.timeout < 60000) {
+          this.timeout = options.timeout;
+        } else {
+          this.timeout = options.timeout - 60000;
+        }
 
-      if (this.timer !== null) {
-        clearInterval(this.timer);
+        if (this.timer !== null) {
+          clearInterval(this.timer);
+        }
+
+        this.timer = setInterval(function () {
+          emitter.publish('needs-refresh');
+
+          rtcManager.refreshSession({
+            sessionId: id,
+            token: token,
+            success: function () {
+              return;
+            },
+            error: function (error) {
+              emitter.publish('error', {
+                error: error
+              });
+            }
+          });
+        }, this.timeout);
+
       }
-
-      this.timer = setInterval(function () {
-        emitter.publish('needs-refresh');
-        console.log('needs-refresh');
-        rtcManager.refreshSession({
-          sessionId : id,
-          token : token,
-          success : function () { return; },
-          error : function (error) {
-            emitter.publish('error', {
-              error: error
-            });
-          }
-        });
-      }, this.timeout);
     };
 
     this.connect = function connect(options) {
-      var session = this;
       try {
         if (undefined === options) {
           throw ATT.errorDictionary.getSDKError('2002');
@@ -229,6 +241,8 @@
             },
             onSessionReady: function (data) {
               emitter.publish('ready', data);
+
+              rtcManager.on('invitation-received:' + id, onInvitationReceived);
             },
             onError: function (error) {
               emitter.publish('error', {
@@ -253,8 +267,6 @@
     this.disconnect = function () {
       try {
         emitter.publish('disconnecting');
-
-        var session = this;
 
         rtcManager.disconnectSession({
           sessionId: session.getId(),
@@ -283,17 +295,37 @@
       }
     };
 
+    this.addCall = function (call) {
+      logger.logInfo('session:addCall');
+      calls[call.id()] = call;
+    };
+
     this.createCall = function (options) {
-      var call;
-      ATT.utils.extend(options, {
+
+      var call = new ATT.rtc.Call(ATT.utils.extend(options, {
         sessionInfo: {
           sessionId: this.getId(),
           token: token
         }
+      }));
+
+      call.on('connected', function () {
+        session.currentCall = session.pendingCall;
+        session.pendingCall = null;
+        session.addCall(session.currentCall);
       });
-      call = new ATT.rtc.Call(options);
-      session.currentCall = call;
+
+      this.pendingCall = call;
+
       return call;
+    };
+
+    this.getCall = function (callId) {
+      return calls[callId];
+    };
+
+    this.getCalls = function () {
+      return calls;
     };
 
     this.terminateCalls = function () {
@@ -305,21 +337,7 @@
       }
     };
 
-    this.addCall = function (call) {
-      calls[call.id()] = call;
-    };
-
-    this.getCall = function (callId) {
-      return calls[callId];
-    };
-
-    this.deleteCurrentCall = function () {
-      if (this.currentCall) {
-        this.currentCall = null;
-      }
-    };
-
-    this.deleteCall =   function deleteCall(callId) {
+    this.deleteCall = function (callId) {
 
       if (calls[callId] === undefined) {
         throw new Error("Call not found");
@@ -329,6 +347,17 @@
 
       if (0 === Object.keys(calls).length) {
         emitter.publish('allcallsterminated');
+      }
+    };
+
+    this.deletePendingCall = function () {
+      this.pendingCall = null;
+    };
+
+    this.deleteCurrentCall = function () {
+      if (this.currentCall) {
+        this.deleteCall(this.currentCall.id());
+        this.currentCall = null;
       }
     };
 

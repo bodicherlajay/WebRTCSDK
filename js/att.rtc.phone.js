@@ -16,7 +16,7 @@
 
    @fires Phone#call-incoming
    @fires Phone#conference:invitation-received
-   @fires Phone#network:notification
+   @fires Phone#notification
    @fires Phone#error
 
    */
@@ -31,6 +31,7 @@
     logger.logInfo('Creating new instance of Phone');
 
     session.on('call-incoming', function (data) {
+      logger.logInfo('call incoming event  by phone layer');
       /**
        * Call incoming event.
        * @desc This event fires when a call is incoming.
@@ -42,11 +43,36 @@
        * @property {String} codec - The codec used by the incoming call.
        * @property {Date} timestamp - Event fire time.
        */
-      logger.logInfo('call incoming event  by phone layer');
       emitter.publish('call-incoming', data);
+
+      if (session.pendingCall) {
+        session.pendingCall.on('canceled', function (data) {
+          emitter.publish('call-canceled', data);
+          session.deletePendingCall();
+        });
+
+        session.pendingCall.on('disconnected', function (data) {
+          emitter.publish('call-disconnected', data);
+          session.deletePendingCall();
+        });
+      }
+    });
+
+    session.on('notification', function (data) {
+      logger.logInfo('notification event from session');
+      /**
+       * Notification event.
+       * @desc This event fires when the SDK is unable to support a behaviour that is not an error
+       * @event Phone#notification
+       * @type {object}
+       * @property {String} message - A message for the notification.
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('notification', data);
     });
 
     session.on('conference-invite', function (data) {
+      logger.logInfo('conference:invitation-received event  by phone layer');
       /**
        * Conference Invite event.
        * @desc Participant receives this event after a conference invitation is sent to him/her.
@@ -61,34 +87,86 @@
       emitter.publish('conference:invitation-received', data);
     });
 
-    session.on('call-canceled', function (data) {
-      logger.logInfo('call canceled event by phone layer');
-      emitter.publish('call-canceled', data);
-    });
-
-    session.on('call-disconnected', function (data) {
-      logger.logInfo('call disconnected event by phone layer');
-      emitter.publish('call-disconnected', data);
-    });
-
     session.on('error', function (data) {
       logger.logError("Error in Session");
       logger.logTrace(data);
       emitter.publish('error', data);
     });
 
-    session.on('network-notification', function (data) {
+    function mediaEstablished(data) {
+      logger.logInfo('media established event by phone layer');
       /**
-       * Network notification event
-       * @desc Unhandled messages from the network will be published through this event.
-       *
-       * @event Phone#network:notification
+       * Media established event.
+       * @desc This event fires after when audio/video media has started
+       * @event Phone#media-established
        * @type {object}
-       * @property {String} message - The message.
        * @property {Date} timestamp - Event fire time.
        */
-      emitter.publish('network:notification', data);
-    });
+      emitter.publish('media-established', data);
+    }
+
+    function onCallDisconnected(call, data) {
+      var calls,
+        keys;
+
+      logger.logInfo('call disconnected event by phone layer');
+      /**
+       * Call disconnected event.
+       * @desc Indicates a call has been disconnected
+       *
+       * @event Phone#call-disconnected
+       * @type {object}
+       * @property {String} from - The ID of the caller.
+       * @property {String} mediaType - The type of call.
+       * @property {String} codec - The codec of the call.
+       * @property {Date} timestamp - Event fire time.
+       */
+      call.off('media-established', mediaEstablished);
+      emitter.publish('call-disconnected', data);
+
+      if (call.id() === session.currentCall.id()) {
+        session.deleteCurrentCall();
+        calls = session.getCalls();
+
+        keys = Object.keys(calls);
+        if (keys.length > 0) {
+          session.currentCall = calls[keys[0]];
+        }
+        return;
+      }
+
+      session.deleteCall(call.id());
+
+    }
+
+    function onSessionReady(data) {
+      /**
+       * Session Ready event.
+       * @desc This event fires when the SDK is initialized and ready to make, receive calls
+       *
+       * @event Phone#session:ready
+       * @type {object}
+       * @property {String} sessionId - The ID of the session.
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('session:ready', data);
+    }
+
+
+    function onSessionDisconnected(data) {
+      /**
+       * Session Disconnected event.
+       * @desc This event fires when the session was successfully disconnected.
+       *
+       * @event Phone#session:disconnected
+       * @type {object}
+       * @property {Date} timestamp - Event fire time.
+       */
+      emitter.publish('session:disconnected', data);
+
+      session.off('ready', onSessionReady);
+      session.off('disconnected', onSessionDisconnected);
+    }
 
     function getError(errorNumber) {
       return errorDictionary.getSDKError(errorNumber);
@@ -165,6 +243,7 @@
         onMediaEstablished: function () {
           logger.logDebug('getUserMedia: onMediaEstablished');
           emitter.publish('media-established', {
+            id: call.id,
             from: call.peer(),
             timestamp: new Date(),
             mediaType: call.mediaType(),
@@ -202,12 +281,13 @@
 
       if ('session:ready' !== event
           && 'session:disconnected' !== event
-          && 'network:notification' !== event
+          && 'notification' !== event
           && 'dialing' !== event
           && 'answering' !== event
           && 'call-incoming' !== event
           && 'call-connecting' !== event
           && 'call-connected' !== event
+          && 'call-switched' !== event
           && 'call-disconnecting' !== event
           && 'call-disconnected' !== event
           && 'call-muted' !== event
@@ -226,6 +306,8 @@
           && 'conference:invitation-sent' !== event
           && 'conference:invitation-accepted' !== event
           && 'conference:participant-removed' !== event
+          && 'conference:held' !== event
+          && 'conference:resumed' !== event
           && 'conference:disconnecting' !== event
           && 'conference:ended' !== event
           && 'conference:connected' !== event
@@ -236,6 +318,44 @@
 
       emitter.unsubscribe(event, handler);
       emitter.subscribe(event, handler, this);
+    }
+
+    function getCalls() {
+      var calls = session.getCalls(),
+        key,
+        list = [],
+        call,
+        p,
+        participants;
+
+      for (key in calls) {
+        if (calls.hasOwnProperty(key)) {
+
+          call = {
+            state: calls[key].getState(),
+            type: calls[key].breed(),
+            isIncoming: calls[key].type() === ATT.CallTypes.INCOMING
+          };
+
+          if (calls[key].type() === ATT.CallTypes.INCOMING) {
+            call.participants = [];
+            participants = calls[key].participants();
+            for (p in participants) {
+              if (participants.hasOwnProperty(p)) {
+                call.participants.push({
+                  id: 'john@domain.com',
+                  status: 'invitation-sent'
+                });
+              }
+            }
+          } else if (calls[key].type() === ATT.CallTypes.OUTGOING) {
+            call.peer = calls[key].peer();
+          }
+
+          list.push(call);
+        }
+      }
+      return list;
     }
 
     /**
@@ -286,19 +406,7 @@
 
           session.connect(options);
 
-
-          session.on('ready', function (data) {
-            /**
-             * Session Ready event.
-             * @desc This event fires when the SDK is initialized and ready to make, receive calls
-             *
-             * @event Phone#session:ready
-             * @type {object}
-             * @property {String} sessionId - The ID of the session.
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('session:ready', data);
-          });
+          session.on('ready', onSessionReady);
 
         } catch (err) {
           logger.logError(err);
@@ -360,22 +468,11 @@
 
         try {
           logger.logDebug('Phone.logout');
-
-          session.on('disconnected', function (data) {
-            /**
-             * Session Disconnected event.
-             * @desc This event fires when the session was successfully disconnected.
-             *
-             * @event Phone#session:disconnected
-             * @type {object}
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('session:disconnected', data);
-          });
+          session.on('disconnected', onSessionDisconnected);
 
           session.disconnect();
 
-          setSession(undefined);
+//          setSession(undefined);
 
         } catch (err) {
           logger.logError(err);
@@ -388,17 +485,6 @@
           error: err
         });
       }
-    }
-
-    function mediaEstablished(data) {
-      /**
-       * Media established event.
-       * @desc This event fires after when audio/video media has started
-       * @event Phone#media-established
-       * @type {object}
-       * @property {Date} timestamp - Event fire time.
-       */
-      emitter.publish('media-established', data);
     }
 
     /**
@@ -431,6 +517,7 @@
      * @fires Phone#call-held
      * @fires Phone#call-resumed
      * @fires Phone#call-disconnected
+     * @fires Phone#notification
      * @fires Phone#error
 
      * @example
@@ -529,6 +616,7 @@
              */
             emitter.publish('call-connecting', data);
           });
+
           call.on('rejected', function (data) {
             /**
              * Call rejected event.
@@ -538,8 +626,9 @@
              * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('call-rejected', data);
-            session.deleteCurrentCall();
+            session.deletePendingCall();
           });
+
           call.on('connected', function (data) {
             /**
              * Call connected event.
@@ -551,7 +640,9 @@
             emitter.publish('call-connected', data);
           });
           call.on('media-established', mediaEstablished);
+
           call.on('held', function (data) {
+            logger.logInfo('call held event by phone layer');
             /**
              * Call on hold event.
              * @desc This event fires when a call has been put on hold
@@ -561,7 +652,9 @@
              */
             emitter.publish('call-held', data);
           });
+
           call.on('resumed', function (data) {
+            logger.logInfo('call resumed by phone layer');
             /**
              * Call resumed event.
              * @desc This event fires when a call has been resumed
@@ -573,23 +666,14 @@
           });
 
           call.on('disconnected', function (data) {
-            logger.logInfo('call disconnected event by phone layer');
-            /**
-             * Call disconnected event.
-             * @desc Indicates a call has been disconnected
-             *
-             * @event Phone#call-disconnected
-             * @type {object}
-             * @property {String} from - The ID of the caller.
-             * @property {String} mediaType - The type of call.
-             * @property {String} codec - The codec of the call.
-             * @property {Date} timestamp - Event fire time.
-             */
-            call.off('media-established', mediaEstablished);
-            emitter.publish('call-disconnected', data);
-            session.deleteCurrentCall();
+            onCallDisconnected(call, data);
           });
 
+          call.on('notification', function (data) {
+            logger.logInfo('notification event by phone layer');
+            emitter.publish('notification', data);
+            session.deletePendingCall();
+          });
 
           call.on('error', function (data) {
             emitter.publish('error', data);
@@ -622,65 +706,194 @@
       }
     }
 
+    /**
+     * @summary Add a second call while having an active call.
+     * @desc Automatically holds the active call and dials second call.
+     *
+     * **Error codes**
+     *
+     *  - 27001 - Input options are not provided
+     *  - 27002 - LocalMedia is not defined
+     *  - 27003 - remoteMedia is not defined
+     *  - 27004 - destination is not defined
+     *  - 27005 - Invalid phone number
+     *  - 27006 - Invalid SIP URI
+     *  - 27007 - Invalid media constraints
+     *  - 27008 - User is not logged in
+     *  - 27009 - Can not make second call. There is no first call in progress.
+     *  - 27010 - Cannot make a third call.
+     *
+     * @param {Object} options
+     * @memberOf Phone
+     * @instance
+     * @param {String} options.destination The Phone Number or User Id of the called party.
+     * @param {HTMLVideoElement} options.localMedia
+     * @param {HTMLVideoElement} options.remoteMedia
+     * @param {String} options.mediaType `audio` or `video`
+
+     * @fires Phone#dialing
+     * @fires Phone#call-connecting
+     * @fires Phone#call-canceled
+     * @fires Phone#call-rejected
+     * @fires Phone#call-connected
+     * @fires Phone#media-established
+     * @fires Phone#call-held
+     * @fires Phone#call-resumed
+     * @fires Phone#call-disconnected
+     * @fires Phone#notification
+     * @fires Phone#error
+
+     * @example
+     // Add a video call with an ICMN User
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.addCall({
+       destination: '1231231234',
+       mediaType: 'video',
+       localMedia: document.getElementById('localVideo'),
+       remoteMedia: document.getElementById('remoteVideo')
+     });
+     */
     function addCall(options) {
+      logger.logInfo('addCall');
 
       var call;
 
-      function onCallHeld() {
-        call.off('held', onCallHeld);
+      if (2 <= getCalls().length) {
+        publishError('27010');
+        return;
+      }
+
+      function dialSecondCall() {
+        logger.logInfo('phone:dialSecondCall');
+        call.off('held', dialSecondCall);
+        session.addCall(call);
         dial(options);
       }
 
       try {
         if (undefined === options) {
-          throw ATT.errorDictionary.getSDKError(27001);
+          publishError('27001');
+          return;
         }
         if (undefined === options.localMedia) {
-          throw ATT.errorDictionary.getSDKError(27002);
+          publishError('27002');
+          return;
         }
         if (undefined === options.remoteMedia) {
-          throw ATT.errorDictionary.getSDKError(27003);
+          publishError('27003');
+          return;
         }
         if (undefined === options.destination) {
-          throw ATT.errorDictionary.getSDKError(27004);
+          publishError('27004');
+          return;
         }
         if (options.destination.indexOf('@') === -1) {
           options.destination = cleanPhoneNumber(options.destination);
           if (false === options.destination) {
-            throw ATT.errorDictionary.getSDKError(27005);
+            publishError('27005');
+            return;
           }
         } else if (options.destination.split('@').length > 2) {
-          throw ATT.errorDictionary.getSDKError(27006);
+          publishError('27006');
+          return;
         }
         if (undefined !== options.mediaType) {
           if ('audio' !== options.mediaType
               && 'video' !== options.mediaType) {
-            throw ATT.errorDictionary.getSDKError(27007);
+            publishError('27007');
+            return;
           }
         }
         if (null === session.getId()) {
-          throw ATT.errorDictionary.getSDKError(27008);
+          publishError('27008');
+          return;
         }
         if (null === session.currentCall) {
-          throw ATT.errorDictionary.getSDKError(27009);
+          publishError('27009');
+          return;
         }
 
         try {
           call = session.currentCall;
 
-          call.on('held', onCallHeld);
+          call.on('held', dialSecondCall);
 
           call.hold();
         } catch (err) {
-          throw ATT.errorDictionary.getSDKError(27000);
+          logger.logError('Error while trying to hold call');
+
+          publishError('27000', err);
+          return;
         }
       } catch (err) {
+        logger.logError('addCall:error');
         logger.logError(err);
 
         emitter.publish('error', {
           error: err
         });
       }
+    }
+
+    function answerCall(call, options, bSwitching) {
+      /**
+       * Answering event.
+       * @desc Fired immediately after the `answer` method is invoked.
+       *
+       * @event Phone#answering
+       * @type {object}
+       * @property {Date} timestamp - Event fire time
+       * @property {Object} data - data
+       */
+      emitter.publish('answering', {
+        from: call.peer(),
+        mediaType: call.mediaType(),
+        codec: call.codec(),
+        timestamp: new Date()
+      });
+
+      call.on('connecting', function (data) {
+        emitter.publish('call-connecting', data);
+      });
+      call.on('connected', function (data) {
+        emitter.publish('call-connected', data);
+        if (bSwitching) {
+          /**
+           * call- switched event.
+           * @desc fires when the second incoming call is answered and is connected
+           *
+           * @event Phone# call-switched
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @property {Object} data - data
+           */
+          emitter.publish('call-switched', data);
+        }
+      });
+      call.on('media-established', mediaEstablished);
+      call.on('held', function (data) {
+        emitter.publish('call-held', data);
+      });
+      call.on('resumed', function (data) {
+        emitter.publish('call-resumed', data);
+      });
+      call.on('disconnected', function (data) {
+        onCallDisconnected(call, data);
+      });
+      call.on('notification', function (data) {
+        emitter.publish('notification', data);
+        session.deleteCurrentCall();
+      });
+      call.on('error', function (data) {
+        publishError(5002, data);
+      });
+
+      if (2 === ATT.private.pcv) {
+        connectWithMediaStream(options, call);
+        return;
+      }
+
+      call.connect(options);
     }
 
     /**
@@ -697,12 +910,14 @@
      *   - 5002 - Internal error occurred
      *   - 5003 - User is not logged in
      *   - 5004 - Mandatory fields can not be empty
+     *   - 5005 - Invalid Action parameter
      *
      * @memberof Phone
      * @instance
      * @param {Object} options
      * @param {HTMLElement} options.localVideo
      * @param {HTMLElement} options.remoteVideo
+     * @param {String} [options.action] `end|hold` Action to perform on the current call
 
      * @fires Phone#answering
      * @fires Phone#call-connecting
@@ -712,19 +927,30 @@
      * @fires Phone#call-held
      * @fires Phone#call-resumed
      * @fires Phone#call-disconnected
+     * @fires Phone#call-switched
+     * @fires Phone#notification
      * @fires Phone#error
 
      * @example
      var phone = ATT.rtc.Phone.getPhone();
      phone.answer({
           localMedia: document.getElementById('localVideo'),
-          remoteMedia: document.getElementById('remoteVideo')
+          remoteMedia: document.getElementById('remoteVideo'),
+          [action: 'hold|end']
         });
      */
     function answer(options) {
 
-      var call;
-      logger.logInfo('Answering ... ');
+      var event,
+        call,
+        currentCall;
+
+      function answerSecondCall() {
+        event = options.action === 'end' ? 'disconnected' : 'held';
+        currentCall.off(event, answerSecondCall);
+
+        answerCall(call, options, true);
+      }
 
       try {
         if (undefined === options) {
@@ -746,60 +972,43 @@
           publishError(5003);
           return;
         }
-        call = session.currentCall;
+        call = session.pendingCall;
 
         if (call === null) {
           publishError(5000);
           return;
         }
 
-        /**
-         * Answering event.
-         * @desc Fired immediately after the `answer` method is invoked.
-         *
-         * @event Phone#answering
-         * @type {object}
-         * @property {Date} timestamp - Event fire time
-         * @property {Object} data - data
-         */
-        emitter.publish('answering', {
-          from: call.peer(),
-          mediaType: call.mediaType(),
-          codec: call.codec(),
-          timestamp: new Date()
-        });
+        if (undefined !== options.action) {
+          if ('hold' !== options.action && 'end' !== options.action) {
+            publishError(5005);
+            return;
+          }
+        }
+        logger.logInfo('Answering ... ');
 
-        call.on('connecting', function (data) {
-          emitter.publish('call-connecting', data);
-        });
-        call.on('connected', function (data) {
-          emitter.publish('call-connected', data);
-        });
-        call.on('media-established', mediaEstablished);
-        call.on('held', function (data) {
-          emitter.publish('call-held', data);
-        });
-        call.on('resumed', function (data) {
-          emitter.publish('call-resumed', data);
-        });
-        call.on('disconnected', function (data) {
-          logger.logInfo('call disconnected event by phone layer');
-          call.off('media-established', mediaEstablished);
-          emitter.publish('call-disconnected', data);
-          session.deleteCurrentCall();
-        });
-        call.on('error', function (data) {
-          publishError(5002, data);
-        });
+        currentCall = session.currentCall;
 
-        if (2 === ATT.private.pcv) {
-          connectWithMediaStream(options, call);
+        if (null !== currentCall) {
+          if ('hold' === options.action) {
+            if ('held' !== currentCall.getState()) {
+              currentCall.on('held', answerSecondCall);
+              currentCall.hold();
+              return;
+            }
+            answerSecondCall(call, options, true);
+          }
+          if ('end' === options.action) {
+            currentCall.on('disconnected', answerSecondCall);
+            currentCall.disconnect();
+          }
           return;
         }
 
-        call.connect(options);
+        answerCall(call, options);
 
       } catch (err) {
+        logger.logError(err);
         publishError('5002', err);
         return;
       }
@@ -832,6 +1041,12 @@
      * @fires Phone#conference:connecting
      * @fires Phone#conference:connected
      * @fires Phone#media-established
+     * @fires Phone#conference:held
+     * @fires Phone#conference:resumed
+     * @fires Phone#conference:invitation-sent
+     * @fires Phone#conference:invitation-accepted
+     * @fires Phone#conference:invitation-rejected
+     * @fires Phone#conference:participant-removed
      * @fires Phone#conference:ended
      * @fires Phone#error
 
@@ -908,6 +1123,106 @@
           emitter.publish('conference:connected', data);
         });
 
+        conference.on('resumed', function (data) {
+          logger.logInfo('conference resumed by phone layer');
+          /**
+           * Conference resumed event.
+           * @desc This event fires when a conference has been resumed
+           * @event Phone#conference:resumed
+           * @type {object}
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:resumed', data);
+        });
+
+        conference.on('held', function (data) {
+          logger.logInfo('held conference event published to UI');
+          /**
+           * conference held event.
+           * @desc A conference has been put on hold.
+           *
+           * @event Phone#conference:held
+           * @type {object}
+           * @property {Date} timestamp - Event fire time
+           * @type {object}
+           * @property {String} from - The ID of the caller.
+           * @property {String} mediaType - The media type of the conference (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:held', data);
+        });
+
+        conference.on('response-pending', function (data) {
+          /**
+           * Invitation Sent event
+           * @desc Host side: this event fires when an invitation has been successfully sent.
+           *
+           * @event Phone#conference:invitation-sent
+           * @type {object}
+           * @property {String} to - The ID of the callee.
+           * @property {Object} invitations - The invitations list.
+           * @property {Object} participants - The participants list.
+           * @property {String} mediaType - The media type of the call (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:invitation-sent', data);
+        });
+
+        conference.on('invite-accepted', function (data) {
+          /**
+           * Invitation accepted event
+           * @desc Host side: this event fires when an invitation has been accepted
+           *
+           * @event Phone#conference:invitation-accepted
+           * @type {object}
+           * @property {String} to - The ID of the callee.
+           * @property {Object} participants - The participants list.
+           * @property {String} mediaType - The media type of the call (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:invitation-accepted', data);
+        });
+
+        conference.on('rejected', function (data) {
+          /**
+           * Invitation rejected event
+           * @desc Host side: this event fires when an invitation has been rejected
+           *
+           * @event Phone#conference:invitation-rejected
+           * @type {object}
+           * @property {String} to - The ID of the callee.
+           * @property {Object} participants - The participants list.
+           * @property {Object} invitations - The invitations list.
+           * @property {String} mediaType - The media type of the conference (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:invitation-rejected', data);
+        });
+
+        conference.on('notification', function (data) {
+          emitter.publish('notification', data);
+        });
+
+        conference.on('participant-removed', function (data) {
+          /**
+           * Participant removed
+           * @desc Host side: this event fires when a host has successfully removed a participant.
+           *
+           * @event Phone#conference:participant-removed
+           * @type {object}
+           * @property {Object} participants - The participants list.
+           * @property {Object} invitations - The invitations list.
+           * @property {String} mediaType - The media type of the conference (audio or video).
+           * @property {String} codec - The codec used by the conference.
+           * @property {Date} timestamp - Event fire time.
+           */
+          emitter.publish('conference:participant-removed', data);
+        });
+
         conference.on('disconnected', function (data) {
           logger.logInfo('conference ended  event by phone layer');
           /**
@@ -954,6 +1269,8 @@
      * @fires Phone#conference:joining
      * @fires Phone#conference:connecting
      * @fires Phone#conference:connected
+     * @fires Phone#conference:held
+     * @fires Phone#conference:resumed
      * @fires Phone#conference:ended
      * @fires Phone#media-established
      * @fires Phone#error
@@ -972,14 +1289,14 @@
         if (null === session || null === session.getId()) {
           throw ATT.errorDictionary.getSDKError('20001');
         }
-        if (null === session.currentCall) {
+        if (null === session.pendingCall) {
           throw ATT.errorDictionary.getSDKError('20002');
         }
 
         try {
           logger.logDebug('Phone.joinConference');
 
-          var conference = session.currentCall;
+          var conference = session.pendingCall;
 
           /**
            * Conference joining event.
@@ -1013,16 +1330,34 @@
              * @property {String} codec - The codec used by the conference.
              * @property {Date} timestamp - Event fire time.
              */
+            logger.logInfo('conference connecting event by phone layer');
             emitter.publish('conference:connecting', data);
           });
 
           conference.on('connected', function (data) {
+            logger.logInfo('conference connected event by phone layer');
             emitter.publish('conference:connected', data);
           });
 
+          conference.on('held', function (data) {
+            logger.logInfo('conference held event by phone layer');
+            emitter.publish('conference:held', data);
+          });
+
+          conference.on('resumed', function (data) {
+            logger.logInfo('conference resumed event by phone layer');
+            emitter.publish('conference:resumed', data);
+          });
+
           conference.on('disconnected', function (data) {
-            logger.logInfo('conference ended  event by phone layer');
+            logger.logInfo('conference ended event by phone layer');
             emitter.publish('conference:ended', data);
+            session.deleteCurrentCall();
+          });
+
+          conference.on('notification', function (data) {
+            logger.logInfo('Notification event by phone layer');
+            emitter.publish('notification', data);
             session.deleteCurrentCall();
           });
 
@@ -1196,6 +1531,24 @@
     }
 
     /**
+     * @summary
+     * Returns `true` if there is a call in progress.
+     * @memberOf Phone
+     * @instance
+     *
+     * @returns {Boolean} `true` if there's an active call, `false` otherwise.
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.isCallInProgress();
+     */
+    function isCallInProgress() {
+      var call = session.currentCall;
+
+      return (call !== null);
+    }
+
+    /**
      * @summary Hangup existing call
      * @desc Add description here
      *
@@ -1274,7 +1627,7 @@
      * phone.cancel();
      */
     function cancel() {
-      var call = session.currentCall;
+      var call = session.pendingCall;
 
       try {
         if (null === call) {
@@ -1290,7 +1643,7 @@
              * @property {Date} timestamp - Event fire time.
              */
             emitter.publish('call-canceled', data);
-            session.deleteCurrentCall();
+            session.deletePendingCall();
           });
 
           call.disconnect();
@@ -1329,17 +1682,19 @@
      */
     function reject() {
       try {
-        var call = session.currentCall;
+        var call = session.pendingCall;
 
         if (null === call || null === call.id()) {
           throw ATT.errorDictionary.getSDKError('12000');
         }
 
         try {
+
           call.on('rejected', function (data) {
             emitter.publish('call-rejected', data);
-            session.deleteCurrentCall();
+            session.deletePendingCall();
           });
+
           call.reject();
         } catch (err) {
           logger.logError(err);
@@ -1382,14 +1737,14 @@
         if (null === session || null === session.getId()) {
           throw ATT.errorDictionary.getSDKError('22001');
         }
-        if (null === session.currentCall) {
+        if (null === session.pendingCall) {
           throw ATT.errorDictionary.getSDKError('22002');
         }
 
         try {
           logger.logDebug('Phone.rejectConference');
 
-          var conference = session.currentCall;
+          var conference = session.pendingCall;
 
           conference.reject();
 
@@ -1407,7 +1762,7 @@
     }
 
     /**
-     * @summary Put the current call on hold
+     * @summary Put the current call or conference on hold
      * @desc Add description here
      *
      * **Error codes**
@@ -1435,6 +1790,15 @@
           throw ATT.errorDictionary.getSDKError('7000');
         }
 
+        if ('held' === call.getState()) {
+          logger.logWarning('Call is already on hold');
+          emitter.publish('warning', {
+            message: 'Call is already on hold',
+            timestamp: new Date()
+          });
+          return;
+        }
+
         try {
           call.hold();
         } catch (err) {
@@ -1452,7 +1816,7 @@
 
     /**
      * @summary
-     * Resume the current call
+     * Resume the current call or conference
      * @desc Add description here
      *
      * **Error Codes**
@@ -1495,6 +1859,59 @@
       } catch (err) {
         logger.logError(err);
 
+        emitter.publish('error', {
+          error: err
+        });
+      }
+    }
+
+    /**
+     * @summary
+     * Move the current call
+     * @desc Use this method to move the existing call to other devices
+     *
+     * **Error Codes**
+     *
+     *   - 28000 - User is not logged in
+     *   - 28001 - Call is not in progress
+     *   - 28002 - Internal error occurred
+     *
+     * @memberOf Phone
+     * @instance
+
+     * @example
+     var phone = ATT.rtc.Phone.getPhone();
+     phone.move();
+     */
+    function move() {
+
+      var call;
+
+      try {
+
+        if (null === session || null === session.getId()) {
+          throw ATT.errorDictionary.getSDKError('28000');
+        }
+
+        call = session.currentCall;
+
+        if (null === call || null === call.id()) {
+          throw ATT.errorDictionary.getSDKError('28001');
+        }
+
+        try {
+          logger.logDebug('Phone.move');
+
+          // pass `true` for move operation in RTC Manager
+          call.hold(true);
+
+        } catch (err) {
+          logger.logError(err);
+          throw ATT.errorDictionary.getSDKError('28002');
+        }
+
+      } catch (err) {
+        logger.logError(err);
         emitter.publish('error', {
           error: err
         });
@@ -1564,7 +1981,7 @@
       }
     }
 
-    /**
+    /* TODO: Removing because this is not part of the public API
      * @summary
      * Add participant
      * @desc
@@ -1638,6 +2055,7 @@
      * @fires Phone#conference:invitation-sent
      * @fires Phone#conference:invitation-accepted
      * @fires Phone#conference:invitation-rejected
+     * @fires Phone#notification
      * @fires Phone#error
 
      * @example
@@ -1673,63 +2091,14 @@
         }
 
         conference = session.currentCall;
-        if (null === conference || 'conference' !== conference.breed()) {
+
+        if ('conference' !== conference.breed()) {
           logger.logError('Conference not initiated ');
           publishError('24003');
           return;
         }
 
         currentParticipants = conference.participants();
-
-        conference.on('response-pending', function (data) {
-          /**
-           * Invitation Sent event
-           * @desc Host side: this event fires when an invitation has been successfully sent.
-           *
-           * @event Phone#conference:invitation-sent
-           * @type {object}
-           * @property {String} to - The ID of the callee.
-           * @property {Object} invitations - The invitations list.
-           * @property {Object} participants - The participants list.
-           * @property {String} mediaType - The media type of the call (audio or video).
-           * @property {String} codec - The codec used by the conference.
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('conference:invitation-sent', data);
-        });
-
-        conference.on('invite-accepted', function (data) {
-          /**
-           * Invitation accepted event
-           * @desc Host side: this event fires when an invitation has been accepted
-           *
-           * @event Phone#conference:invitation-accepted
-           * @type {object}
-           * @property {String} to - The ID of the callee.
-           * @property {Object} participants - The participants list.
-           * @property {String} mediaType - The media type of the call (audio or video).
-           * @property {String} codec - The codec used by the conference.
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('conference:invitation-accepted', data);
-        });
-
-        conference.on('rejected', function (data) {
-          /**
-           * Invitation rejected event
-           * @desc Host side: this event fires when an invitation has been rejected
-           *
-           * @event Phone#conference:invitation-rejected
-           * @type {object}
-           * @property {String} to - The ID of the callee.
-           * @property {Object} participants - The participants list.
-           * @property {Object} invitations - The invitations list.
-           * @property {String} mediaType - The media type of the conference (audio or video).
-           * @property {String} codec - The codec used by the conference.
-           * @property {Date} timestamp - Event fire time.
-           */
-          emitter.publish('conference:invitation-rejected', data);
-        });
 
         for (counter = 0; counter < participants.length; counter += 1) {
           invitee = participants[counter];
@@ -1767,17 +2136,20 @@
               conference.addParticipant(invitee);
             } else {
               for (participant in currentParticipants) {
-                if (invitee !== participant) {
-                  emitter.publish('conference:invitation-sending', {
-                    invitee: invitee,
-                    timestamp: new Date()
-                  });
-                  conference.addParticipant(invitee);
-                } else if (invitee === participant) {
-                  publishError('24005', {
-                    invitee: invitee,
-                    timestamp: new Date()
-                  });
+                if (currentParticipants.hasOwnProperty(participant)) {
+                  if (invitee !== participant) {
+                    emitter.publish('conference:invitation-sending', {
+                      invitee: invitee,
+                      timestamp: new Date()
+                    });
+                    conference.addParticipant(invitee);
+                  } else if (invitee === participant) {
+                    publishError('24005', {
+                      invitee: invitee,
+                      timestamp: new Date()
+                    });
+                    return;
+                  }
                 }
               }
             }
@@ -1936,7 +2308,6 @@
      * @memberOf Phone
      * @instance
      *
-     * @fires Phone#conference:participant-removed
      * @fires Phone#error
 
      * @example
@@ -1968,21 +2339,6 @@
         }
 
         try {
-          conference.on('participant-removed', function (data) {
-            /**
-             * Participant removed
-             * @desc Host side: this event fires when a host has successfully removed a participant.
-             *
-             * @event Phone#conference:participant-removed
-             * @type {object}
-             * @property {Object} participants - The participants list.
-             * @property {Object} invitations - The invitations list.
-             * @property {String} mediaType - The media type of the conference (audio or video).
-             * @property {String} codec - The codec used by the conference.
-             * @property {Date} timestamp - Event fire time.
-             */
-            emitter.publish('conference:participant-removed', data);
-          });
 
           conference.removeParticipant(participant);
         } catch (err) {
@@ -2012,9 +2368,11 @@
     this.mute = mute;
     this.unmute = unmute;
     this.getMediaType = getMediaType;
+    this.isCallInProgress = isCallInProgress;
     this.hangup = hangup;
     this.hold = hold;
     this.resume = resume;
+    this.move = move;
     this.cancel = cancel;
     this.reject = reject;
     this.updateE911Id = updateE911Id;
@@ -2032,6 +2390,11 @@
     this.addParticipants = addParticipants;
     this.getParticipants = getParticipants;
     this.removeParticipant = removeParticipant;
+
+    // ==================
+    // Utility methods
+    // ===================
+    this.getCalls = getCalls;
   }
 
   if (undefined === ATT.private) {

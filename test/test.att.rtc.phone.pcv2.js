@@ -21,14 +21,6 @@ describe('Phone [PCV2]', function () {
     createEventEmitterStub,
     publishStub;
 
-  before(function () {
-    ATT.private.pcv = 2;
-  });
-
-  after(function () {
-    ATT.private.pcv = 1;
-  });
-
   beforeEach(function () {
     factories = ATT.private.factories;
     ums = ATT.UserMediaService;
@@ -59,11 +51,12 @@ describe('Phone [PCV2]', function () {
     publishStub = sinon.stub(emitterPhone, 'publish');
 
     phone = new Phone();
+
+    createEventEmitterStub.restore();
   });
 
   afterEach(function () {
     sessionStub.restore();
-    createEventEmitterStub.restore();
     publishStub.restore();
   });
 
@@ -187,235 +180,6 @@ describe('Phone [PCV2]', function () {
       });
     });
 
-    describe('[US221924] addCall', function () {
-
-      var emitterCall,
-        call,
-        onSpy,
-        offSpy,
-        addCallOpts,
-        callHoldStub;
-
-      beforeEach(function () {
-        createEventEmitterStub.restore();
-
-        emitterCall = factories.createEventEmitter();
-
-        createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
-          return emitterCall;
-        });
-
-        call = new Call({
-          breed: 'call',
-          peer: '1234567',
-          type: 'abc',
-          mediaType: 'video'
-        });
-
-        callHoldStub = sinon.stub(call, 'hold');
-
-        onSpy = sinon.spy(call, 'on');
-        offSpy = sinon.spy(call, 'off');
-
-        addCallOpts = {
-          localMedia: 'localMedia',
-          remoteMedia: 'remoteMedia',
-          destination: '1234567890',
-          mediaType: 'video'
-        };
-
-        session.currentCall = call;
-
-        getUserMediaStub = sinon.stub(ums, 'getUserMedia');
-      });
-
-      afterEach(function () {
-        callHoldStub.restore();
-        onSpy.restore();
-        offSpy.restore();
-        getUserMediaStub.restore();
-      });
-
-      it('should exist', function () {
-        expect(phone.addCall).to.be.a('function');
-      });
-
-      it('[27001] should be published with error event if no options provided', function () {
-        phone.addCall();
-
-        expect(ATT.errorDictionary.getSDKError('27001')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27001')
-        })).to.equal(true);
-      });
-
-      it('[27002] should be published with error event if no local media provided', function () {
-        phone.addCall({});
-
-        expect(ATT.errorDictionary.getSDKError('27002')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27002')
-        })).to.equal(true);
-      });
-
-      it('[27003] should be published with error event if no remote media provided', function () {
-        phone.addCall({
-          localMedia: 'localMedia'
-        });
-
-        expect(ATT.errorDictionary.getSDKError('27003')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27003')
-        })).to.equal(true);
-      });
-
-      it('[27004] should be published with error event if no destination provided', function () {
-        phone.addCall({
-          localMedia: 'localMedia',
-          remoteMedia: 'remoteMedia'
-        });
-
-        expect(ATT.errorDictionary.getSDKError('27004')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27004')
-        })).to.equal(true);
-      });
-
-      it('[27005] should be published with error event if invalid phone number provided', function () {
-        phone.addCall({
-          localMedia: 'localMedia',
-          remoteMedia: 'remoteMedia',
-          destination: '12345'
-        });
-
-        expect(ATT.errorDictionary.getSDKError('27005')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27005')
-        })).to.equal(true);
-      });
-
-      it('[27006] should be published with error event if invalid SIP URI provided', function () {
-        phone.addCall({
-          localMedia: 'localMedia',
-          remoteMedia: 'remoteMedia',
-          destination: 'abcd@@@'
-        });
-
-        expect(ATT.errorDictionary.getSDKError('27006')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27006')
-        })).to.equal(true);
-      });
-
-      it('[27007] should be published with error event if invalid media constraints provided', function () {
-        phone.addCall({
-          localMedia: 'localMedia',
-          remoteMedia: 'remoteMedia',
-          destination: '1234567890',
-          mediaType: 'invalid'
-        });
-
-        expect(ATT.errorDictionary.getSDKError('27007')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27007')
-        })).to.equal(true);
-      });
-
-      it('[27008] should be published with error event if user is not logged in', function () {
-
-        session.setId(null);
-
-        phone.addCall(addCallOpts);
-
-        expect(ATT.errorDictionary.getSDKError('27008')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27008')
-        })).to.equal(true);
-      });
-
-      it('[27009] should be published with error event if no existing call', function () {
-
-        session.currentCall = null;
-
-        phone.addCall(addCallOpts);
-
-        expect(ATT.errorDictionary.getSDKError('27009')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27009')
-        })).to.equal(true);
-      });
-
-      it('[27000] should be published with error event if there is an unexpected exception', function () {
-
-        callHoldStub.restore();
-
-        callHoldStub = sinon.stub(call, 'hold', function () {
-          throw error;
-        });
-
-        phone.addCall(addCallOpts);
-
-        expect(ATT.errorDictionary.getSDKError('27000')).to.be.an('object');
-        expect(publishStub.calledWith('error', {
-          error: ATT.errorDictionary.getSDKError('27000')
-        })).to.equal(true);
-      });
-
-      it('should register for `held` event on current call', function () {
-
-        phone.addCall(addCallOpts);
-
-        expect(onSpy.calledWith('held')).to.equal(true);
-      });
-
-      it('should execute Call.hold on the current call', function () {
-
-        phone.addCall(addCallOpts);
-
-        expect(callHoldStub.called).to.equal(true);
-      });
-
-      describe('Events for AddCall', function () {
-
-        beforeEach(function () {
-          phone.addCall(addCallOpts);
-        });
-
-        describe('held', function () {
-
-          it('should unsubscribe for held event on current call', function (done) {
-
-            emitterCall.publish('held', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(offSpy.calledWith('held')).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 10);
-
-          });
-
-          it('should publish `dialing` (assuming it calls dial)', function (done) {
-
-            emitterCall.publish('held', eventData);
-
-            setTimeout(function () {
-              try {
-                expect(publishStub.calledWith('dialing')).to.equal(true);
-                done();
-              } catch (e) {
-                done(e);
-              }
-            }, 10);
-          });
-        });
-      });
-
-    });
-
     describe('answer', function () {
 
       var answerOpts,
@@ -438,7 +202,7 @@ describe('Phone [PCV2]', function () {
 
         incomingCall = new Call(incomingCallOpts);
 
-        session.currentCall = incomingCall;
+        session.pendingCall = incomingCall;
 
         getUserMediaStub = sinon.stub(ums, 'getUserMedia');
       });
@@ -448,7 +212,6 @@ describe('Phone [PCV2]', function () {
       });
 
       it('should execute ums.getUserMedia if pcv == 2', function () {
-        phone.pcv = 2;
         phone.answer(answerOpts);
 
         expect(getUserMediaStub.called).to.equal(true);
@@ -473,12 +236,105 @@ describe('Phone [PCV2]', function () {
         });
 
         it('should call `Call.connect`', function () {
-          phone.pcv = 2;
           phone.answer(answerOpts);
 
           expect(callConnectStub.called).to.equal(true);
         });
       });
+    });
+  });
+
+  describe('Events', function () {
+
+    var createCallStub,
+      callConnectStub,
+      localVideo,
+      remoteVideo;
+
+
+    var dialOpts,
+      outgoingCallOpts,
+      outgoingCall,
+      emitterCall;
+
+    beforeEach(function () {
+
+      localVideo = document.createElement('video');
+      remoteVideo = document.createElement('video');
+
+      dialOpts = {
+        destination: '1231234538',
+        mediaType: 'video',
+        localMedia: {},
+        remoteMedia: {}
+      };
+
+      outgoingCallOpts = {
+        id: 'ABC',
+        peer: '1234567123',
+        breed : 'call',
+        mediaType: 'video',
+        type: ATT.CallTypes.OUTGOING,
+        sessionInfo: {sessionId: '12345', token: '123'}
+      };
+
+      emitterCall = factories.createEventEmitter();
+      createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+        return emitterCall;
+      });
+
+      outgoingCall = new Call(outgoingCallOpts);
+
+      createEventEmitterStub.restore();
+
+      createCallStub = sinon.stub(session, 'createCall', function () {
+        // simulate successfully creating a call
+        session.currentCall = outgoingCall;
+        session.pendingCall = null;
+        session.addCall(outgoingCall);
+        return outgoingCall;
+      });
+
+      getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+
+      phone.dial({
+        destination: '1234567890',
+        localMedia: 'foo',
+        remoteMedia: 'bar',
+        mediaType: 'video'
+      });
+
+      console.log('pcv: ' + ATT.private.pcv);
+    });
+
+    afterEach(function () {
+      createCallStub.restore();
+      getUserMediaStub.restore();
+    });
+
+    it('should trigger `call-disconnected` with relevant data when a call publishes the `disconnected` event', function (done) {
+
+      var offSpy;
+
+      offSpy = sinon.spy(outgoingCall, 'off');
+
+      emitterCall.publish('disconnected', {
+        data: 'some data'
+      });
+
+      setTimeout(function () {
+        try {
+
+          expect(publishStub.calledWith('call-disconnected')).to.equal(true);
+          expect(offSpy.calledWith('media-established')).to.equal(true);
+
+          done();
+        } catch (e) {
+          done(e);
+        } finally {
+          offSpy.restore();
+        }
+      }, 50);
     });
   });
 });

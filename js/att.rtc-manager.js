@@ -133,19 +133,19 @@
 
       resourceManager.doOperation('refreshWebRTCSession', {
         success : function (response) {
-          var timeout;
+          logger.logInfo('refreshWebRTCSession: success');
 
-          timeout = parseInt(response.getResponseHeader('x-expires'), 10);
+          var timeout = parseInt(response.getResponseHeader('x-expires'), 10);
 
-          options.success({ timeout: (timeout * 1000).toString() });
+          options.success({
+            timeout: (timeout * 1000).toString()
+          });
         },
-        error: function(error) {
-          //todo fix this
-/*
-          logger.logError(error);
-          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","refreshSession","RTC"));
-*/
-		  return;
+        error: function (error) {
+          logger.logError('refreshWebRTCSession: error');
+          logger.logTrace(error);
+
+          options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'refreshSession', 'RTC'));
         },
         params: {
           url: [options.sessionId],
@@ -175,34 +175,45 @@
       logger.logDebug('connectSession');
 
       var doOperationSuccess = function (response) {
+        var onListening,
+          sessionInfo;
         try {
+          logger.logDebug('createWebRTCSession: success');
           logger.logInfo('Successfully created web rtc session on blackflag');
 
-          var sessionInfo = extractSessionInformation(response);
+          sessionInfo = extractSessionInformation(response);
 
           options.onSessionConnected(sessionInfo);
 
-          eventManager.on('listening', function () {
+          onListening = function () {
             logger.logInfo('listening@eventManager');
 
             options.onSessionReady({
               sessionId: sessionInfo.sessionId
             });
-          });
+
+            eventManager.off('listening', onListening);
+          };
+
+          eventManager.on('listening', onListening);
 
           eventManager.setup({
             sessionId: sessionInfo.sessionId,
             token: options.token,
-            onError: function (event) {
+            onError: function (error) {
+              logger.logError('eventManager.setup: onError');
+
+              logger.logTrace(error);
+
               // TODO: test this
               options.onError({
-                error: event
+                error: error
               });
             }
           });
 
-        } catch(err) {
-          logger.logError (err);
+        } catch (err) {
+          logger.logError(err);
 
           options.onError({
             error: ATT.errorDictionary.getSDKError('2004')
@@ -230,8 +241,10 @@
         },
         success: doOperationSuccess,
         error: function (error) {
-          logger.logError(error);
-          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","login","RTC"));
+          logger.logError('createWebRTCSession: error');
+          logger.logTrace(error);
+
+          options.onError(ATT.Error.createAPIErrorCode(error, "ATT.rtc.Phone", "login", "RTC"));
         }
       });
 
@@ -266,13 +279,16 @@
           }
         },
         success: function () {
+          logger.logDebug('deleteWebRTCSession: error');
           logger.logInfo('Successfully deleted web rtc session on blackflag');
 
           options.onSessionDisconnected();
         },
         error: function (error) {
-          logger.logError(error);
-          options.onError(ATT.Error.createAPIErrorCode(error,"ATT.rtc.Phone","logout","RTC"));
+          logger.logError('deleteWebRTCSession: error');
+          logger.logTrace(error);
+
+          options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'logout', 'RTC'));
         }
       });
     }
@@ -338,8 +354,6 @@
         }
       });
     }
-
-    function connectCall2() {}
 
     function connectConference(options) {
 
@@ -500,7 +514,7 @@
             'x-modId': options.modId
           }
         },
-        data:data,
+        data: data,
         success: function () {
           logger.logInfo('acceptMediaModifications: success');
         },
@@ -584,7 +598,7 @@
         throw new Error('No `onSuccess` callback passed');
       }
 
-      participant = options['participant'].toString();
+      participant = options.participant.toString();
 
       if (participant.indexOf('@') > -1) {
         participant = 'sip:' + participant;
@@ -719,10 +733,6 @@
       }
     }
 
-    function playStream() {
-
-    }
-
     function muteCall(options) {
       userMediaSvc.muteStream({
         onLocalStreamMuted: function () {
@@ -740,7 +750,13 @@
     }
 
     function holdCall(options) {
-      var data;
+      var data,
+        type;
+
+      if (undefined !== options) {
+        type = options.move ? 'move' : 'hold';
+      }
+
       if (2 === ATT.private.pcv) {
         if (undefined === options) {
           throw new Error('No options provided');
@@ -757,11 +773,49 @@
         if (undefined === options.description) {
           throw new Error('No sdp provided');
         }
+        if (undefined === options.breed) {
+          throw new Error('No breed provided');
+        }
         if (undefined === options.onSuccess) {
           throw new Error('No success callback provided');
         }
         if (undefined === options.onError) {
           throw new Error('No error callback provided');
+        }
+
+        if ('conference' === options.breed) {
+          data = {
+            conferenceModifications: {
+              sdp: options.description.sdp,
+              type: options.description.type
+            }
+          };
+
+          resourceManager.doOperation('modifyConference', {
+            params: {
+              url: {
+                sessionId: options.sessionId,
+                callId: options.callId
+              },
+              headers: {
+                'Authorization': 'Bearer ' + options.token,
+                'x-conference-action': 'initiate-hold'
+              }
+            },
+            data: data,
+            success: function (response) {
+              if (response.getResponseStatus() === 204) {
+                logger.logTrace('resourceManager.doOperation(`modifyConference`)');
+                options.onSuccess();
+              } else {
+                options.onError();
+              }
+            },
+            error: function (error) {
+              options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'hold', 'RTC'));
+            }
+          });
+          return;
         }
 
         data = {
@@ -772,28 +826,29 @@
         };
 
         logger.logTrace('doOperation: modifyCall');
+
         resourceManager.doOperation('modifyCall', {
           params: {
-            url: [
-              options.sessionId,
-              options.callId
-            ],
+            url: {
+              sessionId: options.sessionId,
+              callId: options.callId
+            },
             headers: {
               'Authorization': 'Bearer ' + options.token,
-              'x-calls-action': 'initiate-call-hold'
+              'x-calls-action': true === options.move ? 'initiate-call-move' : 'initiate-call-hold'
             }
           },
           data: data,
           success: function (response) {
             if (response.getResponseStatus() === 204) {
-              logger.logTrace('Hold request sent...');
+              logger.logTrace(type + 'request sent...');
               options.onSuccess();
             } else {
               options.onError();
             }
           },
           error: function (error) {
-            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'hold', 'RTC'));
+            options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', type, 'RTC'));
           }
         });
       } else {
@@ -820,6 +875,7 @@
 
     function resumeCall(options) {
       var data;
+
       if (2 === ATT.private.pcv) {
         if (undefined === options) {
           throw new Error('No options provided');
@@ -836,12 +892,52 @@
         if (undefined === options.description) {
           throw new Error('No sdp provided');
         }
+        if (undefined === options.breed) {
+          throw new Error('No breed provided');
+        }
         if (undefined === options.onSuccess) {
           throw new Error('No success callback provided');
         }
         if (undefined === options.onError) {
           throw new Error('No error callback provided');
         }
+
+        if ('conference' === options.breed) {
+          data = {
+            conferenceModifications: {
+              sdp: options.description.sdp,
+              type: options.description.type
+            }
+          };
+
+          logger.logTrace('doOperation: modifyConference');
+          resourceManager.doOperation('modifyConference', {
+            params: {
+              url: {
+                sessionId: options.sessionId,
+                callId: options.callId
+              },
+              headers: {
+                'Authorization': 'Bearer ' + options.token,
+                'x-conference-action': 'initiate-resume'
+              }
+            },
+            data: data,
+            success: function (response) {
+              if (response.getResponseStatus() === 204) {
+                logger.logTrace('resume request sent...');
+                options.onSuccess();
+              } else {
+                options.onError();
+              }
+            },
+            error: function (error) {
+              options.onError(ATT.Error.createAPIErrorCode(error, 'ATT.rtc.Phone', 'resume', 'RTC'));
+            }
+          });
+          return;
+        }
+
         data = {
           callsMediaModifications: {
             sdp: options.description.sdp,
@@ -851,10 +947,10 @@
         logger.logTrace('doOperation: modifyCall');
         resourceManager.doOperation('modifyCall', {
           params: {
-            url: [
-              options.sessionId,
-              options.callId
-            ],
+            url: {
+              sessionId: options.sessionId,
+              callId: options.callId
+            },
             headers: {
               'Authorization': 'Bearer ' + options.token,
               'x-calls-action': 'initiate-call-resume'
@@ -996,32 +1092,30 @@
       });
     }
 
-    this.on = on.bind(this);
-    this.off = off.bind(this);
-    this.connectSession = connectSession.bind(this);
-    this.disconnectSession = disconnectSession.bind(this);
-    this.connectCall = connectCall.bind(this);
-    this.connectCall2 = connectCall2.bind(this);
+    this.on = on;
+    this.off = off;
+    this.connectSession = connectSession;
+    this.disconnectSession = disconnectSession;
+    this.connectCall = connectCall;
     this.connectConference = connectConference;
     this.acceptMediaModifications = acceptMediaModifications;
-    this.addParticipant = addParticipant.bind(this);
-    this.removeParticipant = removeParticipant.bind(this);
-    this.disconnectCall = disconnectCall.bind(this);
-    this.refreshSession = refreshSession.bind(this);
-    this.cancelCall = cancelCall.bind(this);
-    this.playStream = playStream.bind(this);
-    this.muteCall = muteCall.bind(this);
-    this.unmuteCall = unmuteCall.bind(this);
-    this.setMediaModifications = setMediaModifications.bind(this);
-    this.resetPeerConnection = resetPeerConnection.bind(this);
-    this.setRemoteDescription = setRemoteDescription.bind(this);
-    this.disableMediaStream = disableMediaStream.bind(this);
-    this.enableMediaStream = enableMediaStream.bind(this);
-    this.stopUserMedia = stopUserMedia.bind(this);
-    this.holdCall = holdCall.bind(this);
-    this.resumeCall = resumeCall.bind(this);
-    this.rejectCall = rejectCall.bind(this);
-    this.updateSessionE911Id = updateSessionE911Id.bind(this);
+    this.addParticipant = addParticipant;
+    this.removeParticipant = removeParticipant;
+    this.disconnectCall = disconnectCall;
+    this.refreshSession = refreshSession;
+    this.cancelCall = cancelCall;
+    this.muteCall = muteCall;
+    this.unmuteCall = unmuteCall;
+    this.setMediaModifications = setMediaModifications;
+    this.resetPeerConnection = resetPeerConnection;
+    this.setRemoteDescription = setRemoteDescription;
+    this.disableMediaStream = disableMediaStream;
+    this.enableMediaStream = enableMediaStream;
+    this.stopUserMedia = stopUserMedia;
+    this.holdCall = holdCall;
+    this.resumeCall = resumeCall;
+    this.rejectCall = rejectCall;
+    this.updateSessionE911Id = updateSessionE911Id;
   }
 
   if (undefined === ATT.private) {

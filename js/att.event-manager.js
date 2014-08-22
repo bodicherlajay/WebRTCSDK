@@ -23,7 +23,9 @@
      */
     function processEvent(event) {
       var codec,
-        type;
+        type,
+        sessionId,
+        callId;
 
       if (!event) {
         logger.logError('Not able to consume null event...');
@@ -44,26 +46,31 @@
         type = event.type === 'calls' ? 'call' : 'conference';
       }
 
+      sessionId = event.resourceURL.split('/')[4];
+      callId = event.resourceURL.split('/')[6];
+
       switch (event.state) {
       case ATT.RTCCallEvents.INVITATION_RECEIVED:
         codec = ATT.sdpFilter.getInstance().getCodecfromSDP(event.sdp);
 
-        emitter.publish('invitation-received', {
+        emitter.publish(ATT.RTCCallEvents.INVITATION_RECEIVED + ':' + sessionId, {
           type: type,
-          id: event.resourceURL.split('/')[6],
+          id: callId,
           from: event.from.split('@')[0].split(':')[1],
           mediaType: (codec.length === 1) ? 'audio' : 'video',
           sdp: event.sdp
         });
         break;
       case ATT.RTCCallEvents.MODIFICATION_RECEIVED:
-        emitter.publish('media-modifications', {
+        emitter.publish(ATT.RTCCallEvents.MODIFICATION_RECEIVED + ':' + callId, {
+          id : callId,
           remoteSdp: event.sdp,
           modificationId: event.modId
         });
         break;
       case ATT.RTCCallEvents.MODIFICATION_TERMINATED:
-        emitter.publish('media-mod-terminations', {
+        emitter.publish(ATT.RTCCallEvents.MODIFICATION_TERMINATED + ':' + callId, {
+          id : callId,
           type: type,
           remoteSdp: event.sdp,
           modificationId: event.modId,
@@ -72,15 +79,16 @@
         });
         break;
       case ATT.RTCCallEvents.SESSION_OPEN:
-        emitter.publish('call-connected', {
+        emitter.publish(ATT.RTCCallEvents.SESSION_OPEN + ':' + callId, {
           type: type,
+          id: callId,
           remoteSdp: event.sdp
         });
         break;
       case ATT.RTCCallEvents.SESSION_TERMINATED:
-        emitter.publish('call-disconnected', {
+        emitter.publish(ATT.RTCCallEvents.SESSION_TERMINATED + ':' + callId, {
           type: type,
-          id: event.resourceURL.split('/')[6],
+          id: callId,
           from: event.from.split('@')[0].split(':')[1],
           reason: event.reason
         });
@@ -142,16 +150,15 @@
     }
 
     function on(event, handler) {
+
       if ('listening' !== event
           && 'stop-listening' !== event
-          && 'invitation-received' !== event
-          && 'call-disconnected' !== event
-          && 'remote-sdp' !== event
-          && 'call-connected' !== event
-          && 'media-modifications' !== event
-          && 'media-mod-terminations' !== event
-          && 'media-established' !== event) {
-        throw new Error('Event not found');
+          && event.indexOf(ATT.RTCCallEvents.INVITATION_RECEIVED + ':') < 0
+          && event.indexOf(ATT.RTCCallEvents.SESSION_OPEN + ':') < 0
+          && event.indexOf(ATT.RTCCallEvents.MODIFICATION_RECEIVED + ':') < 0
+          && event.indexOf(ATT.RTCCallEvents.MODIFICATION_TERMINATED + ':') < 0
+          && event.indexOf(ATT.RTCCallEvents.SESSION_TERMINATED + ':') < 0) {
+        throw new Error('Event ' + event + ' not found');
       }
 
       emitter.unsubscribe(event, handler);

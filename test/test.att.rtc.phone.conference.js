@@ -9,12 +9,10 @@ describe('Phone [Conference]', function () {
     Phone,
     createPeerConnectionStub,
     restClientStub,
-    userMediaService,
-    logger,
+    ums,
     phone,
     session,
     factories,
-    ums,
     sessionStub;
 
   beforeEach(function () {
@@ -41,8 +39,6 @@ describe('Phone [Conference]', function () {
   describe('Conference Methods', function () {
 
     beforeEach(function () {
-      logger = ATT.logManager.getInstance().addLoggerForModule('Phone');
-      userMediaService = ATT.UserMediaService;
       restClientStub = sinon.stub(RESTClient.prototype, 'ajax');
       createPeerConnectionStub = sinon.stub(ATT.private.factories, 'createPeerConnection', function () {
         return {};
@@ -101,7 +97,7 @@ describe('Phone [Conference]', function () {
       describe('Input Validation', function () {
 
         beforeEach(function () {
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia');
         });
 
         afterEach(function () {
@@ -238,10 +234,34 @@ describe('Phone [Conference]', function () {
           expect(createCallStub.getCall(0).args[0].type).to.be.an('string');
         });
 
+      });
+
+      describe('registrations', function () {
+
+        beforeEach(function () {
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia');
+        });
+
+        afterEach(function () {
+          getUserMediaStub.restore();
+        });
+
         it('it should subscribe to the `connected` event on the conference', function () {
           phone.startConference(startConfOpts);
 
           expect(conferenceOnStub.calledWith('connected')).to.equal(true);
+        });
+
+        it('it should subscribe to the `held` event on the conference', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.calledWith('held')).to.equal(true);
+        });
+
+        it('it should subscribe to the `resumed` event on the conference', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.calledWith('resumed')).to.equal(true);
         });
 
         it('it should subscribe to the `error` event on the conference', function () {
@@ -262,13 +282,47 @@ describe('Phone [Conference]', function () {
           expect(conferenceOnStub.calledWith('disconnected')).to.equal(true);
         });
 
+        it('should register for `response-pending` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.called).to.equal(true);
+          expect(conferenceOnStub.calledWith('response-pending')).to.equal(true);
+        });
+
+        it('should register for `invite-accepted` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.called).to.equal(true);
+          expect(conferenceOnStub.calledWith('invite-accepted')).to.equal(true);
+        });
+
+        it('should register for `notification` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.called).to.equal(true);
+          expect(conferenceOnStub.calledWith('notification')).to.equal(true);
+        });
+
+        it('should register for `rejected` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.calledWith('rejected')).to.equal(true);
+          expect(conferenceOnStub.called).to.equal(true);
+        });
+
+        it('should register for `participant-removed` event on the conference object', function () {
+          phone.startConference(startConfOpts);
+
+          expect(conferenceOnStub.called).to.equal(true);
+          expect(conferenceOnStub.calledWith('participant-removed')).to.equal(true);
+        });
       });
 
       it('should get the local userMedia', function () {
         var phone2;
 
         phone2 = new Phone();
-        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
+        getUserMediaStub = sinon.stub(ums, 'getUserMedia');
         phone2.startConference({
           localMedia : {},
           remoteMedia : {},
@@ -297,7 +351,7 @@ describe('Phone [Conference]', function () {
           onUserMediaDummy = function () {};
           onUserMediaSpy = sinon.spy(onUserMediaDummy);
 
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
             setTimeout(function () {
               onUserMediaSpy = sinon.spy(options, 'onUserMedia');
               options.onUserMedia(userMedia);
@@ -349,9 +403,8 @@ describe('Phone [Conference]', function () {
         it('should publish `media-established` when onMediaEstablished  is invoked', function (done) {
           var connectedSpy = sinon.spy(),
             getUserMediaStub;
-          userMediaService = ATT.UserMediaService;
 
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
             options.onMediaEstablished();
           });
           phone.on('media-established', connectedSpy);
@@ -380,7 +433,7 @@ describe('Phone [Conference]', function () {
 
         beforeEach(function () {
 
-          getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia', function (options) {
+          getUserMediaStub = sinon.stub(ums, 'getUserMedia', function (options) {
             options.onUserMediaError();
           });
 
@@ -563,7 +616,6 @@ describe('Phone [Conference]', function () {
         onSpy,
         callConstructorStub,
         removeParticipantStub,
-        onParticipantRemovedHandlerSpy,
         createEventEmitterStub;
 
       beforeEach(function () {
@@ -602,9 +654,6 @@ describe('Phone [Conference]', function () {
         removeParticipantStub  = sinon.stub(conference, 'removeParticipant');
 
         onSpy = sinon.spy(conference, 'on');
-        onParticipantRemovedHandlerSpy = sinon.spy();
-
-        phone.on('conference:participant-removed', onParticipantRemovedHandlerSpy);
 
         session.currentCall = conference;
         session.setId('1234');
@@ -621,31 +670,10 @@ describe('Phone [Conference]', function () {
         expect(phone.removeParticipant).to.be.a('function');
       });
 
-      it('should register for the `participant-removed` event on the conference object', function () {
-        phone.removeParticipant('waldo');
-
-        expect(onSpy.calledWith('participant-removed')).to.equal(true);
-      });
-
       it('should execute conference.removeParticipant', function () {
         phone.removeParticipant('joe');
 
         expect(removeParticipantStub.calledWith('joe')).to.equal(true);
-      });
-
-      it('should trigger `conference:participant-removed` with relevant data when call publishes `participant-removed` event', function (done) {
-        phone.removeParticipant('sally');
-
-        emitterConf.publish('participant-removed', eventData);
-
-        setTimeout(function () {
-          try {
-            expect(onParticipantRemovedHandlerSpy.calledWith(eventData)).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 100);
       });
 
       describe('Error handling', function () {
@@ -712,151 +740,252 @@ describe('Phone [Conference]', function () {
       });
     });
 
-    describe('Events', function () {
-      var outgoingAudioConference,
-        createCallStub,
-        emitterConf,
-        createEventEmitterStub;
+  });
 
-      beforeEach(function () {
-        emitterConf = factories.createEventEmitter();
-        createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
-          return emitterConf;
-        });
-        outgoingAudioConference = new Call({
-          breed: 'conference',
-          mediaType: 'audio',
-          type: ATT.CallTypes.OUTGOING,
-          sessionInfo : {sessionId : '12345', token : '123'}
-        });
+  describe('Events', function () {
+    var outgoingAudioConference,
+      createCallStub,
+      emitterConf,
+      createEventEmitterStub,
+      getUserMediaStub,
+      deleteCurrentCallStub,
+      connectedSpy,
+      heldSpy,
+      resumedSpy,
+      onInvitationSentSpy,
+      onInvitationAcceptedSpy,
+      onInvitationRejectedSpy,
+      onParticipantRemovedSpy,
+      onNotificationSpy,
+      disconnectedSpy,
+      errorSpy;
 
-        createCallStub = sinon.stub(session, 'createCall', function () {
-          return outgoingAudioConference;
-        });
+    beforeEach(function () {
+      emitterConf = factories.createEventEmitter();
+
+      createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
+        return emitterConf;
       });
 
-      afterEach(function () {
-        createEventEmitterStub.restore();
-        createCallStub.restore();
+      outgoingAudioConference = new Call({
+        breed: 'conference',
+        mediaType: 'audio',
+        type: ATT.CallTypes.OUTGOING,
+        sessionInfo : {sessionId : '12345', token : '123'}
       });
 
-      it('should publish `conference:connected` when conference publishes `connected`', function (done) {
-        var connectedSpy = sinon.spy(),
-          getUserMediaStub;
-        userMediaService = ATT.UserMediaService;
-
-        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
-        phone.on('conference:connected', connectedSpy);
-        phone.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType : 'video'
-        });
-
-        outgoingAudioConference.setState('connected');
-
-        setTimeout(function () {
-          try {
-            expect(connectedSpy.called).to.equal(true);
-            expect(connectedSpy.calledOnce).to.equal(true);
-            getUserMediaStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
-
+      createCallStub = sinon.stub(session, 'createCall', function () {
+        return outgoingAudioConference;
       });
 
-      it('should publish `conference:ended` when conference publishes `disconnected`', function (done) {
-        var disconnectedSpy = sinon.spy(),
-          getUserMediaStub = sinon.stub(ums, 'getUserMedia'),
-          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
+      getUserMediaStub = sinon.stub(ums, 'getUserMedia');
 
-        phone.on('conference:ended', disconnectedSpy);
-        phone.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType : 'video'
-        });
+      deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
 
-        outgoingAudioConference.setState('disconnected');
+      connectedSpy = sinon.spy();
+      heldSpy = sinon.spy();
+      resumedSpy = sinon.spy();
+      onInvitationSentSpy = sinon.spy();
+      onInvitationAcceptedSpy = sinon.spy();
+      onInvitationRejectedSpy = sinon.spy();
+      onParticipantRemovedSpy = sinon.spy();
+      onNotificationSpy = sinon.spy();
+      disconnectedSpy = sinon.spy();
+      errorSpy = sinon.spy();
 
-        setTimeout(function () {
-          try {
-            expect(disconnectedSpy.calledOnce).to.equal(true);
-            expect(deleteCurrentCallStub.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          } finally {
-            getUserMediaStub.restore();
-            deleteCurrentCallStub.restore();
-          }
-        }, 20);
+      phone.on('conference:connected', connectedSpy);
+      phone.on('conference:held', heldSpy);
+      phone.on('conference:resumed', resumedSpy);
+      phone.on('conference:invitation-sent', onInvitationSentSpy);
+      phone.on('conference:invitation-accepted', onInvitationAcceptedSpy);
+      phone.on('conference:invitation-rejected', onInvitationRejectedSpy);
+      phone.on('conference:participant-removed', onParticipantRemovedSpy);
+      phone.on('notification', onNotificationSpy);
+      phone.on('conference:ended', disconnectedSpy);
+      phone.on('error', errorSpy);
 
-      });
-
-      it('should execute userMediaSvc.showStream when conference publishes `stream-added`', function (done) {
-        var data,
-          showStreamStub = sinon.stub(ATT.UserMediaService, 'showStream');
-
-        data = {
-          stream: {
-            abc: 'stream'
-          }
-        };
-
-        phone.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType : 'video'
-        });
-
-        emitterConf.publish('stream-added', data);
-
-        setTimeout(function () {
-          try {
-            expect(showStreamStub.calledWith({
-              localOrRemote: 'remote',
-              stream: {
-                abc: 'stream'
-              }
-            })).to.equal(true);
-            showStreamStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-      });
-
-      it('should publish `error` when conference publishes `error`', function (done) {
-        var errorSpy = sinon.spy(),
-          getUserMediaStub;
-        userMediaService = ATT.UserMediaService;
-
-        getUserMediaStub = sinon.stub(ATT.UserMediaService, 'getUserMedia');
-        phone.on('error', errorSpy);
-        phone.startConference({
-          localMedia : {},
-          remoteMedia : {},
-          mediaType : 'video'
-        });
-
-        outgoingAudioConference.setState('error');
-
-        setTimeout(function () {
-          try {
-            expect(errorSpy.called).to.equal(true);
-            getUserMediaStub.restore();
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 20);
-
+      phone.startConference({
+        localMedia : {},
+        remoteMedia : {},
+        mediaType : 'video'
       });
     });
+
+    afterEach(function () {
+      createEventEmitterStub.restore();
+      createCallStub.restore();
+      getUserMediaStub.restore();
+      deleteCurrentCallStub.restore();
+    });
+
+    it('should publish `conference:connected` when conference publishes `connected`', function (done) {
+      outgoingAudioConference.setState('connected');
+
+      setTimeout(function () {
+        try {
+          expect(connectedSpy.called).to.equal(true);
+          expect(connectedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+
+    });
+
+    it('should publish `conference:held` when conference publishes `held`', function (done) {
+      outgoingAudioConference.setState('held');
+
+      setTimeout(function () {
+        try {
+          expect(heldSpy.called).to.equal(true);
+          expect(heldSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `conference:resumed` when conference publishes `resume`', function (done) {
+      outgoingAudioConference.setState('resumed');
+
+      setTimeout(function () {
+        try {
+          expect(resumedSpy.called).to.equal(true);
+          expect(resumedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `conference:invitation-sent` when conference publishes `response-pending`', function (done) {
+      outgoingAudioConference.setState('response-pending');
+
+      setTimeout(function () {
+        try {
+          expect(onInvitationSentSpy.called).to.equal(true);
+          expect(onInvitationSentSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 100);
+    });
+
+    it('should publish `conference:invitation-accepted` when conference publishes `invite-accepted`', function (done) {
+      outgoingAudioConference.setState('invite-accepted');
+
+      setTimeout(function () {
+        try {
+          expect(onInvitationAcceptedSpy.called).to.equal(true);
+          expect(onInvitationAcceptedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `conference:invitation-rejected` when conference publishes `rejected`', function (done) {
+      outgoingAudioConference.setState('rejected');
+
+      setTimeout(function () {
+        try {
+          expect(onInvitationRejectedSpy.called).to.equal(true);
+          expect(onInvitationRejectedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `conference:participant-removed` when conference publishes `participant-removed`', function (done) {
+      outgoingAudioConference.setState('participant-removed');
+
+      setTimeout(function () {
+        try {
+          expect(onParticipantRemovedSpy.called).to.equal(true);
+          expect(onParticipantRemovedSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+    });
+
+    it('should publish `notification` when conference publishes `notification`', function (done) {
+      outgoingAudioConference.setState('notification');
+
+      setTimeout(function () {
+        try {
+          expect(onNotificationSpy.called).to.equal(true);
+          expect(onNotificationSpy.calledOnce).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 100);
+    });
+
+    it('should publish `conference:ended` when conference publishes `disconnected`', function (done) {
+      outgoingAudioConference.setState('disconnected');
+
+      setTimeout(function () {
+        try {
+          expect(disconnectedSpy.calledOnce).to.equal(true);
+          expect(deleteCurrentCallStub.called).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+
+    });
+
+    it('should execute userMediaSvc.showStream when conference publishes `stream-added`', function (done) {
+      var data,
+        showStreamStub = sinon.stub(ums, 'showStream');
+
+      data = {
+        stream: {
+          abc: 'stream'
+        }
+      };
+      emitterConf.publish('stream-added', data);
+
+      setTimeout(function () {
+        try {
+          expect(showStreamStub.calledWith({
+            localOrRemote: 'remote',
+            stream: {
+              abc: 'stream'
+            }
+          })).to.equal(true);
+          showStreamStub.restore();
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 10);
+    });
+
+    it('should publish `error` when conference publishes `error`', function (done) {
+      outgoingAudioConference.setState('error');
+
+      setTimeout(function () {
+        try {
+          expect(errorSpy.called).to.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      }, 50);
+
+    });
   });
+
 });

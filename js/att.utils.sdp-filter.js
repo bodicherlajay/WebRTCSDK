@@ -143,6 +143,9 @@ if (!ATT) {
   function setupActivePassive(description) {
     //FOR CHROME 31: If receiving a call (initial is true), we need to modify the SDP
     //Setup must be set to actpass for the answer to be made correctly
+
+    incrementModCount();
+
     if (description.indexOf('setup:passive') != -1)
       description = description.replace(/setup:passive/g, 'setup:actpass');
     else if (description.indexOf('setup:active') != -1)
@@ -195,13 +198,14 @@ if (!ATT) {
 
       // adjust SDP for hold request
       sdp.sdp = sdp.sdp.replace(/a=sendrecv/g, 'a=recvonly');
+      sdp.sdp = setupActivePassive(sdp.sdp);
 
       sdp.type = 'offer';
 
       this.processChromeSDPOffer(sdp);
       incrementModCount();
 
-      incrementSDP(sdp, modificationCount);
+      sdp = incrementSDP(sdp, modificationCount);
       return sdp;
 
     } catch (error) {
@@ -223,12 +227,13 @@ if (!ATT) {
 
       // adjust SDP for resume request
       sdp.sdp = sdp.sdp.replace(/a=recvonly/g, 'a=sendrecv');
+      sdp.sdp = setupActivePassive(sdp.sdp);
 
       sdp.type = 'offer';
       this.processChromeSDPOffer(sdp);
       incrementModCount();
 
-      incrementSDP(sdp, modificationCount);
+      sdp = incrementSDP(sdp, modificationCount);
       return sdp;
 
     } catch (error) {

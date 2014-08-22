@@ -17,7 +17,6 @@ describe('RTCManager [Conference]', function () {
     apiConfig = ATT.private.config.api;
     userMediaSvc = ATT.UserMediaService;
     peerConnSvc = ATT.PeerConnectionService;
-
   });
 
   describe('Methods', function () {
@@ -32,7 +31,6 @@ describe('RTCManager [Conference]', function () {
       };
       rtcManager = new ATT.private.RTCManager(optionsForRTCM);
     });
-
 
     describe('connectConference [CREATE]', function () {
       var  connectConfOpts,
@@ -56,6 +54,12 @@ describe('RTCManager [Conference]', function () {
           onSuccess: onSuccessSpy,
           onError: onErrorSpy
         };
+
+        doOperationStub = sinon.stub(resourceManager, 'doOperation');
+      });
+
+      afterEach(function () {
+        doOperationStub.restore();
       });
 
       it('should exist', function () {
@@ -116,8 +120,6 @@ describe('RTCManager [Conference]', function () {
         connectConfOpts.breed = 'call';
         connectConfOpts.peer = 'junito@domain.com';
 
-        doOperationStub = sinon.stub(resourceManager, 'doOperation');
-
         rtcManager.connectConference(connectConfOpts);
 
         expect(doOperationStub.called).to.equal(true);
@@ -130,8 +132,6 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.getCall(0).args[1].data.call.sdp).to.equal(connectConfOpts.description.sdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
         expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
-
-        doOperationStub.restore();
       });
 
       it('should execute `doOperation(createCall)`[breed === conference] with required params', function () {
@@ -149,8 +149,6 @@ describe('RTCManager [Conference]', function () {
           }
         };
 
-        doOperationStub = sinon.stub(resourceManager, 'doOperation');
-
         rtcManager.connectConference(connectConfOpts);
 
         expect(doOperationStub.called).to.equal(true);
@@ -162,8 +160,6 @@ describe('RTCManager [Conference]', function () {
         expect(doOperationStub.getCall(0).args[1].data.conference.sdp).to.equal(connectConfOpts.description.sdp);
         expect(doOperationStub.getCall(0).args[1].success).to.be.a('function');
         expect(doOperationStub.getCall(0).args[1].error).to.be.a('function');
-
-        doOperationStub.restore();
       });
 
       describe('doOperation: Success', function () {
@@ -183,6 +179,8 @@ describe('RTCManager [Conference]', function () {
           }
         };
         beforeEach(function () {
+          doOperationStub.restore();
+
           doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
             setTimeout(function () {
               options.success(response);
@@ -190,9 +188,6 @@ describe('RTCManager [Conference]', function () {
           });
         });
 
-        afterEach(function () {
-          doOperationStub.restore();
-        });
         it('should execute `onSuccess` with required params: [conference ID, state:x-state]', function (done) {
           rtcManager.connectConference(connectConfOpts);
           setTimeout(function () {
@@ -211,7 +206,10 @@ describe('RTCManager [Conference]', function () {
 
       describe('doOperation: Error', function () {
         var err = {}
+
         beforeEach(function () {
+          doOperationStub.restore();
+
           doOperationStub = sinon.stub(resourceManager, 'doOperation', function (operationName, options) {
             setTimeout(function () {
               options.error(err);
@@ -219,9 +217,6 @@ describe('RTCManager [Conference]', function () {
           });
         });
 
-        afterEach(function () {
-          doOperationStub.restore();
-        });
         it('should execute `onError` callback for `connectConference`', function (done) {
           rtcManager.connectConference(connectConfOpts);
           setTimeout(function () {

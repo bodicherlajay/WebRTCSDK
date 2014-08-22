@@ -90,21 +90,19 @@
       // Using Long Polling
       if (true === channelConfig.usesLongPolling) {
         eventData = JSON.parse(messages.responseText);
-      } else { // using websockets
+      } else { // using WebSockets
         eventData = JSON.parse(messages.data);
       }
-      logger.logDebug("Event data from event channel...");
+      logger.logDebug('Event data from event channel...');
       logger.logDebug(eventData);
       if (eventData.events) {
-        var sessID = eventData.events.eventList[0].eventObject.resourceURL.split('/')[4],
-          events = eventData.events.eventList,
+        var events = eventData.events.eventList,
           evt;
-        // publish individually
+        // publish events individually
         for (evt in events) {
           if (events.hasOwnProperty(evt)) {
-            events[evt].timestamp = new Date();
             emitter.publish('api-event', events[evt].eventObject);
-            logger.logDebug("Published event " + sessID + '.responseEvent', events[evt].eventObject);
+            logger.logDebug(events[evt].eventObject);
           }
         }
       }
@@ -254,6 +252,4 @@
     throw new Error('Error exporting `createEventChannel`');
   }
   ATT.private.factories.createEventChannel = createEventChannel;
-//  ATT.utils.setResourceManager = setResourceManager;
-//  ATT.utils.setLogger = setLogger;
 }());

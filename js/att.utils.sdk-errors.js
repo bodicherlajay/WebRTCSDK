@@ -265,6 +265,14 @@
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
+      ErrorCode: "5003",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking answer"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "answer",
       ErrorCode: "5004",
       ErrorMessage: "Mandatory fields can not be empty",
       Cause: "One of the Mandatory Parameters is empty",
@@ -273,10 +281,10 @@
     {
       JSObject: "ATT.rtc.Phone",
       JSMethod: "answer",
-      ErrorCode: "5003",
-      ErrorMessage: "User is not logged in",
-      Cause: "Invalid operation",
-      Resolution: "Please login first before invoking answer"
+      ErrorCode: "5005",
+      ErrorMessage: "Invalid Action parameter",
+      Cause: "Action can only be `hold` or `end`",
+      Resolution: "Please provide a valid action (hold or end)"
     },
     {
       JSObject: "ATT.rtc.Phone",
@@ -893,8 +901,39 @@
       ErrorMessage: "Can not make second call. There is no first call in progress.",
       Cause: "Invalid operation",
       Resolution: "Please ensure that there is an existing call in progress before making second call"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "addCall",
+      ErrorCode: "27010",
+      ErrorMessage: "Cannot make a third call.",
+      Cause: "Trying to make a third call.",
+      Resolution: "Please end one of the calls."
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "move",
+      ErrorCode: "28000",
+      ErrorMessage: "User is not logged in",
+      Cause: "Invalid operation",
+      Resolution: "Please login first before invoking move"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "move",
+      ErrorCode: "28001",
+      ErrorMessage: "Move failed - call is not in progress",
+      Cause: "Cannot move. There is no active call in progress.",
+      Resolution: "Please make a call first ensure an active call is in progress before trying to move the call"
+    },
+    {
+      JSObject: "ATT.rtc.Phone",
+      JSMethod: "move",
+      ErrorCode: "28002",
+      ErrorMessage: "Internal error occurred",
+      Cause: "Uncaught error",
+      Resolution: "Please check the logs and contact support if needed"
     }
-
   ];
 
   // freezes a list of objects

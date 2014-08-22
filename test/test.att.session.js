@@ -65,7 +65,6 @@ describe('Session', function () {
     var session,
       rtcManager,
       createEventEmitterSpy,
-      rtcManagerOnSpy,
       getRTCManagerStub;
 
     beforeEach(function () {
@@ -73,7 +72,6 @@ describe('Session', function () {
       rtcManager = {
         on: function () {}
       };
-      rtcManagerOnSpy = sinon.spy(rtcManager, 'on');
       getRTCManagerStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcManager;
       });
@@ -83,7 +81,6 @@ describe('Session', function () {
     afterEach(function () {
       createEventEmitterSpy.restore();
       getRTCManagerStub.restore();
-      rtcManagerOnSpy.restore();
       session = null;
     });
 
@@ -99,13 +96,6 @@ describe('Session', function () {
       expect(getRTCManagerStub.called).to.equal(true);
     });
 
-    it('should register for `invitation-received` event on RTCManager', function () {
-      expect(rtcManagerOnSpy.calledWith('invitation-received')).to.equal(true);
-    });
-
-    it('should register for `media-mod-terminations` event on RTCManager', function () {
-      expect(rtcManagerOnSpy.calledWith('media-mod-terminations')).to.equal(true);
-    });
   });
 
   describe('Methods', function () {
@@ -124,6 +114,7 @@ describe('Session', function () {
       onSessionReadyData,
       createEventEmitterStub,
       rtcManager,
+      rtcManagerOnSpy,
       getRTCMgrStub,
       getTokenStub,
       error,
@@ -147,6 +138,7 @@ describe('Session', function () {
       });
 
       rtcManager = new ATT.private.RTCManager(optionsforRTCM);
+      rtcManagerOnSpy = sinon.spy(rtcManager, 'on');
 
       getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
         return rtcManager;
@@ -173,7 +165,11 @@ describe('Session', function () {
         id: '12345',
         peer: '12345',
         type: 'abc',
-        mediaType: 'audio'
+        mediaType: 'audio',
+        sessionInfo: {
+          sessionId: 'sessionId',
+          token: 'token'
+        }
       });
 
       secondCall = new ATT.rtc.Call({
@@ -181,7 +177,11 @@ describe('Session', function () {
         id: '98765',
         peer: '12452',
         type: 'abc',
-        mediaType: 'video'
+        mediaType: 'video',
+        sessionInfo: {
+          sessionId: 'sessionId',
+          token: 'token'
+        }
       });
 
       onConnectingSpy = sinon.spy();
@@ -202,6 +202,7 @@ describe('Session', function () {
     });
 
     afterEach(function () {
+      rtcManagerOnSpy.restore();
       getRTCMgrStub.restore();
       getTokenStub.restore();
     });
@@ -232,15 +233,170 @@ describe('Session', function () {
       });
     });
 
+    describe('getToken', function () {
+      var sessionForGetToken;
+
+      beforeEach(function () {
+        sessionForGetToken = new ATT.rtc.Session();
+        sessionForGetToken.setId('123');
+      });
+
+      it('should exist', function () {
+        expect(sessionForGetToken.getToken).to.be.a('function');
+      });
+
+      it('return the current token', function () {
+        expect(sessionForGetToken.getToken()).to.equal(null);
+        sessionForGetToken.update({
+          token: 'bogus'
+        });
+        expect(sessionForGetToken.getToken()).to.equal('bogus');
+      });
+    });
+
+    describe('getId', function () {
+
+      it('Should exist', function () {
+        expect(session.getId).to.be.a('function');
+      });
+
+      it('Should return the session id', function () {
+        session.setId('12345');
+        expect(session.getId()).to.equal('12345');
+      });
+    });
+
+    describe('setId', function () {
+
+      it('Should publish the `connected` event', function (done) {
+        var sessionId = '12345';
+
+        session.setId(sessionId);
+
+        setTimeout(function () {
+          try {
+            expect(onConnectedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+      it('Should publish `disconnected` event if id is null', function (done) {
+
+        session.setId(null);
+        setTimeout(function () {
+          try {
+            expect(onDisconnectedSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+
+      });
+
+      it('should execute rtcManager.stopUserMedia on `disconnected` event', function (done) {
+        var stopUserMediaStub = sinon.stub(rtcManager, 'stopUserMedia');
+
+        session.setId(null);
+
+        setTimeout(function () {
+          try {
+            expect(stopUserMediaStub.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+
+        stopUserMediaStub.restore();
+      });
+
+      it('should update the id of the session', function () {
+        session.setId('1334');
+        expect(session.getId()).to.equal('1334');
+      });
+
+    });
+
+    describe('update', function () {
+      var refreshSessionStub,
+        publishSpy,
+        setIntervalStub;
+
+      beforeEach(function () {
+        session.setId('123');
+        options = { timeout : 123};
+        publishSpy = sinon.spy(emitter, 'publish');
+        refreshSessionStub = sinon.stub(rtcManager, 'refreshSession');
+        setIntervalStub = sinon.stub(window, 'setInterval', function (fn) {
+          fn();
+          return 1;
+        });
+      });
+
+      afterEach(function () {
+        refreshSessionStub.restore();
+        setIntervalStub.restore();
+        publishSpy.restore();
+      });
+
+      it('Should exist', function () {
+        expect(session.update).to.be.a('function');
+      });
+
+      it('Should throw an error if no options', function () {
+        expect(session.update.bind(session)).to.throw('No options provided');
+      });
+
+      it('Should trigger `updating` event with options', function (done) {
+
+        session.update(options);
+
+        setTimeout(function () {
+          try {
+            expect(onUpdatingSpy.calledWith(options)).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+      describe('timeout', function () {
+
+        it('Should throw an error if the timeout value is not a number', function () {
+          options.timeout = '123';
+
+          expect(session.update.bind(session, options)).to.throw('Timeout is not a number.');
+        });
+
+        it('Should set the timeout', function () {
+          session.update(options);
+
+          expect(session.timeout).to.equal(123);
+        });
+
+        it('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function () {
+          options.timeout = 60020;
+
+          session.update(options);
+
+          expect(session.timer).to.be.a('number');
+          expect(publishSpy.calledWith('needs-refresh')).to.equal(true);
+        });
+
+      });
+    });
+
     describe('connect', function () {
 
       var connectSessionStub;
 
       beforeEach(function () {
-
-        connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
-        });
-
+        connectSessionStub = sinon.stub(rtcManager, 'connectSession');
       });
 
       afterEach(function () {
@@ -333,7 +489,6 @@ describe('Session', function () {
               }, 0);
             });
 
-            session.connect(options);
           });
 
           afterEach(function () {
@@ -341,6 +496,8 @@ describe('Session', function () {
           });
 
           it('should publish the ready event with data on session', function (done) {
+            session.connect(options);
+
             setTimeout(function () {
               try {
                 expect(onReadyHandlerSpy.calledWith(onSessionReadyData)).to.equal(true);
@@ -350,6 +507,21 @@ describe('Session', function () {
               }
             }, 10);
           });
+
+          it('should register for `invitation-received` event on RTCManager', function (done) {
+            session.connect(options);
+
+            setTimeout(function () {
+              try {
+                expect(rtcManagerOnSpy.calledWith('invitation-received:' + session.getId())).to.equal(true);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+
+          });
+
         });
 
         describe('onError', function () {
@@ -539,7 +711,7 @@ describe('Session', function () {
             setIdStub.restore();
 
             setIdStub = sinon.stub(session, 'setId', function () {
-              throw error;
+              throw error
             });
 
             session.disconnect();
@@ -574,231 +746,27 @@ describe('Session', function () {
 
     });
 
-    describe('getToken', function () {
-      var sessionForGetToken;
-
-      beforeEach(function () {
-        sessionForGetToken = new ATT.rtc.Session();
-        sessionForGetToken.setId('123');
-      });
-
-      it('should exist', function () {
-        expect(sessionForGetToken.getToken).to.be.a('function');
-      });
-
-      it('return the current token', function () {
-        expect(sessionForGetToken.getToken()).to.equal(null);
-        sessionForGetToken.update({
-          token: 'bogus',
-          timeout: 1000000 // so big that it will never hit the network for refreshSession
-        });
-        expect(sessionForGetToken.getToken()).to.equal('bogus');
-      });
-    });
-
-    describe('setId', function () {
-
-      it('Should publish the `connected` event', function (done) {
-        var sessionId = '12345';
-
-        session.setId(sessionId);
-
-        setTimeout(function () {
-          try {
-            expect(onConnectedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-      });
-
-      it('Should publish `disconnected` event if id is null', function (done) {
-
-        session.setId(null);
-        setTimeout(function () {
-          try {
-            expect(onDisconnectedSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-
-      });
-
-      it('should execute rtcManager.stopUserMedia on `disconnected` event', function (done) {
-        var stopUserMediaStub = sinon.stub(rtcManager, 'stopUserMedia');
-
-        session.setId(null);
-          
-        setTimeout(function () {
-          try {
-            expect(stopUserMediaStub.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-
-        stopUserMediaStub.restore();
-      });
-
-      it('should update the id of the session', function () {
-        session.setId('1334');
-        expect(session.getId()).to.equal('1334');
-      });
-
-    });
-
-    describe('getId', function () {
+    describe('addCall', function () {
 
       it('Should exist', function () {
-        expect(session.getId).to.be.a('function');
+        expect(session.addCall).to.be.a('function');
       });
 
-      it('Should return the session id', function () {
-        session.setId('12345');
-        expect(session.getId()).to.equal('12345');
-      });
-    });
+      it('Should add a call to the session', function () {
 
-    describe('update', function () {
-      var refreshSessionStub;
+        session.addCall(call);
 
-      beforeEach(function () {
-        session.setId('123');
-        options = { timeout : 123};
-        refreshSessionStub = sinon.stub(rtcManager, 'refreshSession');
+        expect(session.getCall(call.id())).to.equal(call);
       });
 
-      afterEach(function () {
-        refreshSessionStub.restore();
-      });
-
-      it('Should exist', function () {
-        expect(session.update).to.be.a('function');
-      });
-
-      it('Should throw and error if no options', function () {
-        expect(session.update.bind(session)).to.throw('No options provided');
-      });
-
-      it('Should trigger onUpdating callback with options', function (done) {
-
-        session.update(options);
-
-        setTimeout(function () {
-          try {
-            expect(onUpdatingSpy.calledWith(options)).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 10);
-      });
-
-      describe('timeout', function () {
-
-        it('Should throw an error if the timeout value is not a number', function () {
-
-          options.timeout = '123';
-          expect(session.update.bind(session, options)).to.throw('Timeout is not a number.');
-
-        });
-
-        it('Should set the timeout', function () {
-          session.update(options);
-          expect(session.timeout).to.equal(123);
-        });
-
-        it('Should set an interval to publish `needs-refresh` event 60000 ms before timeout', function (done) {
-          var onNeedsRefreshSpy = sinon.spy();
-          options.timeout = 60020;
-          session.on('needs-refresh', onNeedsRefreshSpy);
-          session.update(options);
-          expect(session.timer).to.be.a('number');
-          setTimeout(function () {
-            try {
-              expect(onNeedsRefreshSpy.called).to.equal(true);
-              done();
-            } catch (e) {
-              done(e);
-            }
-          }, 30);
-
-        });
-
-      });
-    });
-
-    describe('updateE911Id', function () {
-      var updateE911stub, updateOptions, onSuccessCall = function () {
-      }, onError = function () {};
-
-      beforeEach(function () {
-        updateOptions = {
-          e911Id: '1234',
-          sessionId: session.getId(),
-          token: session.getToken(),
-          onSuccess: onSuccessCall,
-          onError: onError
-        };
-
-        options = { timeout : 123};
-        updateE911stub = sinon.stub(rtcManager, 'updateSessionE911Id', function (options) {
-          options.onSuccess();
-        });
-      });
-
-      afterEach(function () {
-        updateE911stub.restore();
-      });
-      it('Should exist', function () {
-        expect(session.updateE911Id).to.be.a('function');
-      });
-
-      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
-        session.token = 'dsfgdsdf';
-        session.updateE911Id({e911Id : '1234'});
-        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
-        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
-        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
-
-      });
-
-      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
-        session.token = 'dsfgdsdf';
-        session.updateE911Id({e911Id : '1234'});
-        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
-        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
-        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
-      });
-
-      it('Should publish `updatedE911` on success callback ', function (done) {
-        var  onNeedsRefreshSpy = sinon.spy();
-
-        session.on('address-updated', onNeedsRefreshSpy);
-        session.updateE911Id({e911Id : '1234'});
-
-        setTimeout(function () {
-          try {
-            expect(onNeedsRefreshSpy.called).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 30);
-
-      });
     });
 
     describe('createCall', function () {
 
-      var callOpts;
+      var createCallOpts;
 
       beforeEach(function () {
-        callOpts = {
+        createCallOpts = {
           breed: 'call',
           peer: '12345',
           type: 'incoming',
@@ -813,7 +781,7 @@ describe('Session', function () {
       it('should call ATT.rtc.Call', function () {
         var callConstructorSpy = sinon.spy(ATT.rtc, 'Call');
 
-        session.createCall(callOpts);
+        session.createCall(createCallOpts);
 
         expect(callConstructorSpy.called).to.equal(true);
 
@@ -821,29 +789,83 @@ describe('Session', function () {
       });
 
       it('should return the newly created call object', function () {
-        call = session.createCall(callOpts);
-        expect(call instanceof ATT.rtc.Call).to.equal(true);
-        expect(call.breed()).to.equal('call');
+        var newCall = session.createCall(createCallOpts);
+        expect(newCall instanceof ATT.rtc.Call).to.equal(true);
+        expect(newCall.breed()).to.equal('call');
       });
 
-      it('should set the currentCall as the newly created call', function () {
-        call = session.createCall(callOpts);
+      it('should subscribe to `connected` event on the newly created call', function () {
+        var callOnStub = sinon.stub(call, 'on'),
+          callConstructorStub = sinon.stub(ATT.rtc, 'Call', function () {
+            return call;
+          });
 
-        expect(session.currentCall).to.equal(call);
+        session.createCall(createCallOpts);
+
+        expect(callOnStub.calledWith('connected')).to.equal(true);
+
+        callOnStub.restore();
+        callConstructorStub.restore();
       });
-    });
 
-    describe('addCall', function () {
+      it('should set the pendingCall as the newly created call', function () {
+        var newCall = session.createCall(createCallOpts);
 
-      it('Should exist', function () {
-        expect(session.addCall).to.be.a('function');
+        expect(session.pendingCall).to.equal(newCall);
       });
 
-      it('Should add a call to the session', function () {
+      describe('Events on newly created Call', function () {
 
-        session.addCall(call);
+        var newCall;
 
-        expect(session.getCall(call.id())).to.equal(call);
+        beforeEach(function () {
+          newCall = session.createCall(createCallOpts);
+          newCall.setId('12345');
+        });
+
+        describe('connected', function () {
+
+          it('should set the pending call as the current call', function (done) {
+            newCall.setState('connected');
+
+            setTimeout(function () {
+              try {
+                expect(session.currentCall).to.equal(newCall);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+
+          });
+
+          it('should set the pending call to null', function (done) {
+            newCall.setState('connected');
+
+            setTimeout(function () {
+              try {
+                expect(session.pendingCall).to.equal(null);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+
+          it('should add the currentCall to the calls stack', function (done) {
+            newCall.setState('connected');
+
+            setTimeout(function () {
+              try {
+                expect(session.getCall(newCall.id())).to.equal(newCall);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            }, 10);
+          });
+
+        });
       });
 
     });
@@ -868,7 +890,26 @@ describe('Session', function () {
 
     });
 
-    xdescribe('terminateCalls', function () {
+    describe('getCalls', function () {
+
+      it('Should exist', function () {
+        expect(session.getCalls).to.be.a('function');
+      });
+
+      it('Should return all the calls in the session', function () {
+
+        session.addCall({
+          id: function () { return '1'; }
+        });
+
+        session.addCall({
+          id: function () { return '2'; }
+        });
+        expect(Object.keys(session.getCalls()).length).to.equal(2);
+      });
+    });
+
+    describe('terminateCalls', function () {
 
       beforeEach(function () {
         session.addCall(call);
@@ -934,36 +975,130 @@ describe('Session', function () {
 
     });
 
+    describe('deletePendingCall', function () {
+
+      it('should exist', function () {
+        expect(session.deletePendingCall).to.be.a('function');
+      });
+
+      it('should set the pendingCall to null', function () {
+        session.pendingCall = call;
+
+        session.deletePendingCall();
+
+        expect(session.pendingCall).to.equal(null);
+      });
+    });
+
     describe('deleteCurrentCall', function () {
 
       it('Should exist', function () {
         expect(session.deleteCurrentCall).to.be.a('function');
       });
 
+      it('should delete the current call from the calls stack', function () {
+        session.currentCall = call;
+        session.addCall(call);
+
+        session.deleteCurrentCall();
+
+        expect(session.getCall(call.id())).to.equal(undefined);
+      });
+
       it('Should delete the current Call', function () {
         session.currentCall = call;
+        session.addCall(call);
 
         session.deleteCurrentCall();
 
         expect(session.currentCall).to.equal(null);
       });
+
     });
+
+    describe('updateE911Id', function () {
+      var updateE911stub;
+
+      beforeEach(function () {
+        options = {
+          timeout : 123
+        };
+
+        updateE911stub = sinon.stub(rtcManager, 'updateSessionE911Id', function (options) {
+          options.onSuccess();
+        });
+      });
+
+      afterEach(function () {
+        updateE911stub.restore();
+      });
+
+      it('Should exist', function () {
+        expect(session.updateE911Id).to.be.a('function');
+      });
+
+      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
+        session.token = 'dsfgdsdf';
+
+        session.updateE911Id({e911Id : '1234'});
+
+        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
+        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
+        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
+      });
+
+      it('Should call rtc-manager `updateE911` with token,session and E911Id', function () {
+        session.token = 'dsfgdsdf';
+
+        session.updateE911Id({e911Id : '1234'});
+
+        expect(updateE911stub.getCall(0).args[0].e911Id).to.equal('1234');
+        expect(updateE911stub.getCall(0).args[0].sessionId).to.equal(session.getId());
+        expect(updateE911stub.getCall(0).args[0].token).to.equal('dsfgdsdf');
+      });
+
+      it('Should publish `updatedE911` on success callback ', function (done) {
+        var  onNeedsRefreshSpy = sinon.spy();
+
+        session.on('address-updated', onNeedsRefreshSpy);
+        session.updateE911Id({e911Id : '1234'});
+
+        setTimeout(function () {
+          try {
+            expect(onNeedsRefreshSpy.called).to.equal(true);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 30);
+
+      });
+    });
+
+    describe('off', function () {
+      it('Should exist', function () {
+        expect(session.off).to.be.a('function');
+      });
+
+      it('Should call session `unsubscribe` when off methos is called', function () {
+        var unsubscribeStub = sinon.stub(emitter, 'unsubscribe'),
+          dummy = function () {return; };
+       session.off('ready', dummy);
+
+        expect(unsubscribeStub.calledWith('ready', dummy)).to.equal(true);
+        unsubscribeStub.restore();
+      });
+    });
+
   });
 
   describe('Events', function () {
-
-    var eventData;
-
-    beforeEach(function () {
-      eventData = {
-        abc: 'abc'
-      };
-    });
 
     describe('needs-refresh', function () {
 
       var onNeedsRefreshSpy,
         refreshSessionStub,
+        setIntervalStub,
         rtcManager,
         getRTCManagerStub;
 
@@ -973,10 +1108,15 @@ describe('Session', function () {
           return rtcManager;
         });
         refreshSessionStub = sinon.stub(rtcManager, 'refreshSession');
+        setIntervalStub = sinon.stub(window, 'setInterval', function (fn) {
+          fn();
+          return 1;
+        });
       });
 
       afterEach(function () {
         refreshSessionStub.restore();
+        setIntervalStub.restore();
         getRTCManagerStub.restore();
       });
 
@@ -1066,7 +1206,9 @@ describe('Session', function () {
       });
 
       it('should call rtcManager.refreshSession', function (done) {
-        var session4 = new ATT.rtc.Session();
+        var callArgs,
+          session4 = new ATT.rtc.Session();
+
         session4.setId('123');
         session4.update({
           token: 'bogus',
@@ -1077,13 +1219,11 @@ describe('Session', function () {
         setTimeout(function () {
           try {
             expect(refreshSessionStub.called).to.equal(true);
-
-//            callArgs = refreshSessionSpy.getCall(0).args[0];
-//            expect(callArgs.sessionId !== undefined).to.equal(true);
-//            expect(callArgs.token).to.equal('bogus');
-//            expect(refreshSessionSpy.getCall(0).args[0].success).to.be.a('function');
-//            expect(refreshSessionSpy.getCall(0).args[0].error).to.be.a('function');
-
+            callArgs = refreshSessionStub.getCall(0).args[0];
+            expect(callArgs.sessionId !== undefined).to.equal(true);
+            expect(callArgs.token).to.equal('bogus');
+            expect(refreshSessionStub.getCall(0).args[0].success).to.be.a('function');
+            expect(refreshSessionStub.getCall(0).args[0].error).to.be.a('function');
             done();
           } catch (e) {
             done(e);
@@ -1098,6 +1238,7 @@ describe('Session', function () {
 
       var rtcManager,
         session,
+        connectSessionStub,
         callInfo,
         conferenceInfo,
         emitterEM,
@@ -1106,7 +1247,8 @@ describe('Session', function () {
         createCallSpyStub,
         setRemoteSdpSpy,
         callIncomingHandlerSpy,
-        conferenceInviteHandlerSpy;
+        conferenceInviteHandlerSpy,
+        notificationHandlerSpy;
 
       beforeEach(function () {
         callInfo = {
@@ -1142,25 +1284,88 @@ describe('Session', function () {
 
         session = new ATT.rtc.Session();
 
-        callIncomingHandlerSpy = sinon.spy();
+        connectSessionStub = sinon.stub(rtcManager, 'connectSession', function (options) {
+          session.setId('12345');
 
-        conferenceInviteHandlerSpy = sinon.spy();
-
-        session.on('call-incoming', callIncomingHandlerSpy);
-
-        session.on('conference-invite', conferenceInviteHandlerSpy);
+          options.onSessionReady();
+        });
 
         createCallSpyStub = sinon.spy(session, 'createCall');
+
+        callIncomingHandlerSpy = sinon.spy();
+        conferenceInviteHandlerSpy = sinon.spy();
+        notificationHandlerSpy = sinon.spy();
+
+        session.on('call-incoming', callIncomingHandlerSpy);
+        session.on('conference-invite', conferenceInviteHandlerSpy);
+        session.on('notification', notificationHandlerSpy);
+
+        session.connect(options);
       });
 
       afterEach(function () {
         getRTCMgrStub.restore();
+        connectSessionStub.restore();
         createCallSpyStub.restore();
+      });
+
+      it('should publish `notification` event with a message if there is already a pending Call', function (done) {
+        session.pendingCall = {
+          id: 'dummyCall'
+        };
+
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(notificationHandlerSpy.called).to.equal(true);
+            expect(notificationHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(notificationHandlerSpy.getCall(0).args[0].from).to.equal(callInfo.from);
+            expect(notificationHandlerSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
+            expect(notificationHandlerSpy.getCall(0).args[0].type).to.equal(callInfo.type);
+            expect(notificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            expect(notificationHandlerSpy.getCall(0).args[0].message).to.equal('A pending call exist. Will ignore incoming call');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 10);
+      });
+
+      it('should publish `notification` event with a message if there are two existing calls in the calls stack', function (done) {
+        session.addCall({
+          id: function () {
+            return 'firstcall';
+          }
+        });
+
+        session.addCall({
+          id: function () {
+            return 'secondcall';
+          }
+        });
+
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
+
+        setTimeout(function () {
+          try {
+            expect(notificationHandlerSpy.called).to.equal(true);
+            expect(notificationHandlerSpy.getCall(0).args[0]).to.be.an('object');
+            expect(notificationHandlerSpy.getCall(0).args[0].from).to.equal(callInfo.from);
+            expect(notificationHandlerSpy.getCall(0).args[0].mediaType).to.equal(callInfo.mediaType);
+            expect(notificationHandlerSpy.getCall(0).args[0].type).to.equal(callInfo.type);
+            expect(notificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
+            expect(notificationHandlerSpy.getCall(0).args[0].message).to.equal('There are two existing calls in progress. Unable to handle a third incoming call');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 100);
       });
 
       it('should execute session.createCall with breed as the type received in event data from event manager', function (done) {
 
-        emitterEM.publish('invitation-received', callInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
 
         setTimeout(function () {
           try {
@@ -1174,68 +1379,6 @@ describe('Session', function () {
             done(e);
           }
         }, 10);
-      });
-
-      it('should register for `canceled` event on the newly created incoming call', function (done) {
-        var call = new ATT.rtc.Call({
-          breed: 'call',
-          peer: callInfo.from,
-          type: ATT.CallTypes.INCOMING,
-          mediaType: callInfo.mediaType,
-          remoteSdp: 'ABD'
-        }),
-          callOnSpy = sinon.spy(call, 'on');
-
-        createCallSpyStub.restore();
-
-        createCallSpyStub = sinon.stub(session, 'createCall', function () {
-          return call;
-        });
-
-        emitterEM.publish('invitation-received', callInfo);
-
-        setTimeout(function () {
-          try {
-            expect(callOnSpy.calledWith('canceled')).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          } finally {
-            callOnSpy.restore();
-          }
-        }, 10);
-
-      });
-
-      it('should register for `disconnected` event on the newly created incoming call', function (done) {
-        var call = new ATT.rtc.Call({
-            breed: 'call',
-            peer: callInfo.from,
-            type: ATT.CallTypes.INCOMING,
-            mediaType: callInfo.mediaType,
-            remoteSdp: 'ABD'
-          }),
-          callOnSpy = sinon.spy(call, 'on');
-
-        createCallSpyStub.restore();
-
-        createCallSpyStub = sinon.stub(session, 'createCall', function () {
-          return call;
-        });
-
-        emitterEM.publish('invitation-received', callInfo);
-
-        setTimeout(function () {
-          try {
-            expect(callOnSpy.calledWith('disconnected')).to.equal(true);
-            done();
-          } catch (e) {
-            done(e);
-          } finally {
-            callOnSpy.restore();
-          }
-        }, 10);
-
       });
 
       it('should execute call.setRemoteSdp with remoteDescription on the newly created call', function (done) {
@@ -1256,7 +1399,7 @@ describe('Session', function () {
 
         setRemoteSdpSpy = sinon.spy(call, 'setRemoteSdp');
 
-        emitterEM.publish('invitation-received', callInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
 
         setTimeout(function () {
           try {
@@ -1274,7 +1417,7 @@ describe('Session', function () {
 
       it('should trigger `call-incoming` with relevant data on creating the new call', function (done) {
 
-        emitterEM.publish('invitation-received', callInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), callInfo);
 
         setTimeout(function () {
           try {
@@ -1293,7 +1436,7 @@ describe('Session', function () {
 
       it('should trigger `conference-invite` with relevant data on creating the new conference', function (done) {
 
-        emitterEM.publish('invitation-received', conferenceInfo);
+        emitterEM.publish('invitation-received:' + session.getId(), conferenceInfo);
 
         setTimeout(function () {
           try {
@@ -1311,165 +1454,8 @@ describe('Session', function () {
         }, 30);
       });
 
-      describe('Events on newly created Call', function () {
-
-        var call,
-          emitterCall,
-          deleteCurrentCallStub;
-
-        beforeEach(function () {
-          deleteCurrentCallStub = sinon.stub(session, 'deleteCurrentCall');
-
-          emitterCall = factories.createEventEmitter();
-
-          createEventEmitterStub = sinon.stub(factories, 'createEventEmitter', function () {
-            return emitterCall;
-          });
-
-          call = new ATT.rtc.Call({
-            breed: 'call',
-            peer: callInfo.from,
-            type: ATT.CallTypes.INCOMING,
-            mediaType: callInfo.mediaType,
-            remoteSdp: 'ABD'
-          });
-
-          createEventEmitterStub.restore();
-
-          createCallSpyStub.restore();
-
-          createCallSpyStub = sinon.stub(session, 'createCall', function () {
-            return call;
-          });
-
-          emitterEM.publish('invitation-received', callInfo);
-        });
-
-        afterEach(function () {
-          deleteCurrentCallStub.restore();
-        });
-
-        describe('canceled', function () {
-
-          it('should publish `call-canceled` when call publishes `canceled` with relevant data', function (done) {
-            var callCancelHandlerSpy = sinon.spy();
-
-            session.on('call-canceled', callCancelHandlerSpy);
-
-            setTimeout(function () {
-              emitterCall.publish('canceled', eventData);
-
-              setTimeout(function () {
-                try {
-                  expect(callCancelHandlerSpy.calledWith(eventData)).to.equal(true);
-                  expect(deleteCurrentCallStub.called).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 10);
-            }, 10);
-          });
-        });
-
-        describe('disconnected', function () {
-
-          it('should publish `call-disconnected` when call publishes `disconnected` with relevant data', function (done) {
-            var callDisconnectedHandlerSpy = sinon.spy();
-
-            session.on('call-disconnected', callDisconnectedHandlerSpy);
-
-            setTimeout(function () {
-              emitterCall.publish('disconnected', eventData);
-
-              setTimeout(function () {
-                try {
-                  expect(callDisconnectedHandlerSpy.calledWith(eventData)).to.equal(true);
-                  expect(deleteCurrentCallStub.called).to.equal(true);
-                  done();
-                } catch (e) {
-                  done(e);
-                }
-              }, 10);
-            }, 10);
-          });
-        });
-
-      });
     });
 
-    describe('network-notification', function () {
-
-      var rtcManager,
-        session,
-        callInfo,
-        emitterEM,
-        createEventEmitterStub,
-        onNetworkNotificationHandlerSpy,
-        getRTCMgrStub;
-
-      beforeEach(function () {
-        callInfo = {
-          id: '123',
-          type: 'call',
-          from: '1234',
-          mediaType: 'video',
-          remoteDescription: 'abc'
-        };
-
-        emitterEM = ATT.private.factories.createEventEmitter();
-
-        createEventEmitterStub = sinon.stub(ATT.private.factories, 'createEventEmitter', function () {
-          return emitterEM;
-        });
-
-        rtcManager = new ATT.private.RTCManager(optionsforRTCM);
-
-        getRTCMgrStub = sinon.stub(ATT.private.rtcManager, 'getRTCManager', function () {
-          return rtcManager;
-        });
-
-        createEventEmitterStub.restore();
-
-        session = new ATT.rtc.Session();
-
-        session.currentCall = new ATT.rtc.Call({
-          breed: 'conference',
-          id: '12345',
-          peer: '12345',
-          type: 'abc',
-          mediaType: 'audio'
-        });
-
-        onNetworkNotificationHandlerSpy = sinon.spy();
-
-        session.on('network-notification', onNetworkNotificationHandlerSpy);
-      });
-
-      afterEach(function () {
-        getRTCMgrStub.restore();
-      });
-
-      it('should publish `network-notification` with data on getting `media-mod-terminations` if [event.reason !== `success`]', function (done) {
-
-        var eventInfo = {
-          reason: 'anything but success'
-        };
-
-        emitterEM.publish('media-mod-terminations', eventInfo);
-
-        setTimeout(function () {
-          try {
-            expect(onNetworkNotificationHandlerSpy.called).to.equal(true);
-            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].message).to.not.equal('success');
-            expect(onNetworkNotificationHandlerSpy.getCall(0).args[0].timestamp).to.be.a('date');
-            done();
-          } catch (e) {
-            done(e);
-          }
-        }, 50);
-      });
-    });
   });
 
 });
