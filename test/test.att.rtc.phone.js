@@ -3055,6 +3055,15 @@ describe('Phone', function () {
             expect(phone.hold).to.be.a('function');
           });
 
+          it('should NOT execute call.hold if [state===held]', function () {
+            call.setState('held');
+
+            phone.hold();
+
+            expect(callHoldStub.called).to.equal(false);
+
+          });
+
           it('should execute call.hold', function () {
             phone.hold();
 

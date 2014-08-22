@@ -1785,7 +1785,7 @@
         }
 
         if ('held' === call.getState()) {
-          logger.logInfo('Call is already on hold');
+          logger.logWarning('Call is already on hold');
           return;
         }
 
