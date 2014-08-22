@@ -1784,6 +1784,11 @@
           throw ATT.errorDictionary.getSDKError('7000');
         }
 
+        if ('held' === call.getState()) {
+          logger.logInfo('Call is already on hold');
+          return;
+        }
+
         try {
           call.hold();
         } catch (err) {
